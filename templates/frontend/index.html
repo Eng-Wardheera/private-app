@@ -1,48 +1,65 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+          content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <meta name="description"
           content="Private Management - Professional education, management and career development programs.">
 
+    <meta name="theme-color"
+          content="#0b2c5f">
+
     <title>Private Management | Home</title>
+
 
     <!-- =========================================================
          GOOGLE FONTS
     ========================================================== -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
+
     <!-- =========================================================
          FONT AWESOME
     ========================================================== -->
+
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
 
     <style>
 
         /* =====================================================
-           GLOBAL
+           GLOBAL RESET
         ====================================================== */
 
-        * {
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+
         html {
             scroll-behavior: smooth;
+            scroll-padding-top: 120px;
         }
+
 
         body {
             font-family: "Inter", sans-serif;
@@ -50,54 +67,94 @@
             background: #ffffff;
             line-height: 1.6;
             overflow-x: hidden;
+            width: 100%;
         }
+
+
+        body.menu-open {
+            overflow: hidden;
+        }
+
 
         img {
             max-width: 100%;
             display: block;
         }
 
+
         a {
             text-decoration: none;
             color: inherit;
         }
 
+
         ul {
             list-style: none;
         }
 
-        button {
+
+        button,
+        input,
+        textarea,
+        select {
             font-family: inherit;
         }
 
+
+        button {
+            border: 0;
+        }
+
+
         :root {
+
             --primary: #0b2c5f;
             --primary-dark: #071e42;
+
             --secondary: #16a085;
+
             --accent: #f4b942;
+
             --light: #f5f8fc;
+
             --text: #172033;
+
             --muted: #687386;
+
             --white: #ffffff;
+
             --border: #e7ebf1;
-            --shadow: 0 15px 45px rgba(10, 35, 75, .10);
+
+            --shadow:
+                0 15px 45px rgba(10, 35, 75, .10);
+
             --radius: 18px;
+
+            --header-height: 82px;
         }
+
+
+        /* =====================================================
+           CONTAINER
+        ====================================================== */
 
         .container {
             width: min(1180px, 92%);
-            margin: auto;
+            margin: 0 auto;
         }
+
 
         .section {
             padding: 95px 0;
         }
+
 
         .section-header {
             text-align: center;
             max-width: 720px;
             margin: 0 auto 55px;
         }
+
 
         .section-header span {
             display: inline-block;
@@ -109,6 +166,7 @@
             margin-bottom: 10px;
         }
 
+
         .section-header h2 {
             font-family: "Poppins", sans-serif;
             font-size: clamp(30px, 4vw, 44px);
@@ -117,10 +175,12 @@
             color: var(--primary);
         }
 
+
         .section-header p {
             color: var(--muted);
             font-size: 16px;
         }
+
 
 
         /* =====================================================
@@ -131,7 +191,10 @@
             background: var(--primary-dark);
             color: #fff;
             font-size: 13px;
+            position: relative;
+            z-index: 1100;
         }
+
 
         .topbar-inner {
             min-height: 40px;
@@ -141,11 +204,14 @@
             gap: 20px;
         }
 
+
         .top-info {
             display: flex;
             align-items: center;
             gap: 20px;
+            flex-wrap: wrap;
         }
+
 
         .top-info span {
             display: flex;
@@ -153,14 +219,17 @@
             gap: 7px;
         }
 
+
         .top-info i {
             color: var(--accent);
         }
+
 
         .top-social {
             display: flex;
             gap: 12px;
         }
+
 
         .top-social a {
             width: 28px;
@@ -171,58 +240,104 @@
             transition: .3s;
         }
 
+
         .top-social a:hover {
             background: var(--secondary);
         }
 
 
+
         /* =====================================================
-           NAVIGATION
+           FIXED NAVBAR
         ====================================================== */
 
         .navbar {
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
             z-index: 1000;
-            background: #fff;
-            box-shadow: 0 4px 25px rgba(0, 0, 0, .05);
+            background: rgba(255,255,255,.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 25px rgba(0,0,0,.07);
+            transition:
+                box-shadow .3s ease,
+                background .3s ease;
         }
 
+
+        .navbar.scrolled {
+            box-shadow:
+                0 8px 30px rgba(0,0,0,.12);
+        }
+
+
+        /*
+         IMPORTANT:
+         Since navbar is fixed, add space before page content.
+        */
+
+        body {
+            padding-top: var(--header-height);
+        }
+
+
         .nav-inner {
-            height: 82px;
+            min-height: var(--header-height);
+            height: var(--header-height);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 30px;
+            gap: 25px;
         }
+
+
+        /* =====================================================
+           LOGO
+        ====================================================== */
 
         .logo {
             display: flex;
             align-items: center;
             gap: 12px;
             min-width: max-content;
+            flex-shrink: 0;
         }
+
 
         .logo-icon {
             width: 45px;
             height: 45px;
             border-radius: 12px;
-            background: linear-gradient(
-                135deg,
-                var(--primary),
-                var(--secondary)
-            );
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    var(--secondary)
+                );
+
             color: white;
+
             display: grid;
             place-items: center;
+
             font-size: 21px;
+
+            flex-shrink: 0;
         }
+
 
         .logo-text {
             font-family: "Poppins", sans-serif;
             font-size: 20px;
             font-weight: 800;
             color: var(--primary);
+            line-height: 1.1;
         }
+
 
         .logo-text small {
             display: block;
@@ -230,65 +345,100 @@
             font-size: 9px;
             letter-spacing: 2px;
             line-height: 1;
+            margin-top: 5px;
         }
+
+
+
+        /* =====================================================
+           NAVIGATION MENU
+        ====================================================== */
 
         .nav-menu {
             display: flex;
             align-items: center;
-            gap: 7px;
+            justify-content: center;
+            gap: 5px;
         }
+
 
         .nav-menu > li > a {
             position: relative;
-            padding: 12px 14px;
+            display: block;
+            padding: 12px 13px;
             font-size: 14px;
             font-weight: 600;
             color: #3c4658;
             transition: .3s;
         }
 
+
         .nav-menu > li > a::after {
             content: "";
+
             position: absolute;
-            left: 14px;
-            right: 14px;
+
+            left: 13px;
+            right: 13px;
             bottom: 4px;
+
             height: 2px;
+
             background: var(--secondary);
+
             transform: scaleX(0);
             transform-origin: center;
+
             transition: .3s;
         }
+
 
         .nav-menu > li > a:hover,
         .nav-menu > li > a.active {
             color: var(--secondary);
         }
 
+
         .nav-menu > li > a:hover::after,
         .nav-menu > li > a.active::after {
             transform: scaleX(1);
         }
 
+
+
+        /* =====================================================
+           NAV ACTIONS
+        ====================================================== */
+
         .nav-actions {
             display: flex;
             align-items: center;
             gap: 9px;
+            flex-shrink: 0;
         }
+
 
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+
             border: none;
             cursor: pointer;
+
             border-radius: 10px;
+
             padding: 12px 20px;
+
             font-size: 13px;
             font-weight: 700;
+
             transition: .3s;
+
+            white-space: nowrap;
         }
+
 
         .btn-login {
             color: var(--primary);
@@ -296,46 +446,81 @@
             background: #fff;
         }
 
+
         .btn-login:hover {
             background: var(--light);
         }
 
+
         .btn-primary {
             color: #fff;
             background: var(--primary);
-            box-shadow: 0 8px 20px rgba(11, 44, 95, .2);
+
+            box-shadow:
+                0 8px 20px rgba(11,44,95,.20);
         }
+
 
         .btn-primary:hover {
             background: var(--secondary);
             transform: translateY(-2px);
         }
 
+
         .btn-secondary {
             color: #fff;
             background: var(--secondary);
         }
+
 
         .btn-secondary:hover {
             background: #11836d;
             transform: translateY(-2px);
         }
 
-        .menu-toggle {
-            display: none;
-            width: 43px;
-            height: 43px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
+
+        .btn-light {
             background: #fff;
-            cursor: pointer;
             color: var(--primary);
-            font-size: 19px;
+        }
+
+
+        .btn-light:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
         }
 
 
         /* =====================================================
-           HERO SLIDER
+           MOBILE MENU BUTTON
+        ====================================================== */
+
+        .menu-toggle {
+            display: none;
+
+            width: 43px;
+            height: 43px;
+
+            border: 1px solid var(--border);
+            border-radius: 10px;
+
+            background: #fff;
+
+            cursor: pointer;
+
+            color: var(--primary);
+
+            font-size: 19px;
+
+            place-items: center;
+
+            flex-shrink: 0;
+        }
+
+
+
+        /* =====================================================
+           HERO
         ====================================================== */
 
         .hero {
@@ -345,101 +530,141 @@
             background: #071e42;
         }
 
+
         .slides {
             position: absolute;
             inset: 0;
         }
 
+
         .slide {
             position: absolute;
             inset: 0;
+
             opacity: 0;
             visibility: hidden;
+
             transition:
                 opacity .8s ease,
                 visibility .8s ease;
         }
+
 
         .slide.active {
             opacity: 1;
             visibility: visible;
         }
 
+
         .slide-bg {
             position: absolute;
             inset: 0;
+
             background-size: cover;
             background-position: center;
+
             transform: scale(1.05);
-            transition: transform 6s ease;
+
+            transition:
+                transform 6s ease;
         }
+
 
         .slide.active .slide-bg {
             transform: scale(1);
         }
 
+
         .slide::after {
             content: "";
+
             position: absolute;
             inset: 0;
+
             background:
                 linear-gradient(
                     90deg,
-                    rgba(5, 25, 55, .90) 0%,
-                    rgba(5, 25, 55, .68) 48%,
-                    rgba(5, 25, 55, .22) 100%
+                    rgba(5,25,55,.90) 0%,
+                    rgba(5,25,55,.68) 48%,
+                    rgba(5,25,55,.22) 100%
                 );
         }
+
 
         .slide-content {
             position: relative;
             z-index: 2;
+
             min-height: 680px;
+
             display: flex;
             align-items: center;
         }
+
 
         .hero-content {
             max-width: 720px;
             color: white;
         }
 
+
         .hero-label {
             display: inline-flex;
             align-items: center;
             gap: 8px;
+
             background: rgba(255,255,255,.12);
+
             border: 1px solid rgba(255,255,255,.2);
+
             backdrop-filter: blur(10px);
+
             padding: 8px 14px;
+
             border-radius: 50px;
+
             font-size: 12px;
             font-weight: 700;
+
             margin-bottom: 20px;
         }
+
 
         .hero-label i {
             color: var(--accent);
         }
 
+
         .hero-content h1 {
             font-family: "Poppins", sans-serif;
-            font-size: clamp(38px, 5.3vw, 68px);
+
+            font-size:
+                clamp(38px, 5.3vw, 68px);
+
             line-height: 1.12;
+
             margin-bottom: 22px;
+
             font-weight: 800;
         }
+
 
         .hero-content h1 span {
             color: var(--accent);
         }
 
+
         .hero-content p {
             max-width: 610px;
-            color: rgba(255,255,255,.86);
+
+            color:
+                rgba(255,255,255,.86);
+
             font-size: 17px;
+
             margin-bottom: 32px;
         }
+
 
         .hero-buttons {
             display: flex;
@@ -447,71 +672,93 @@
             gap: 13px;
         }
 
+
         .hero .btn {
             padding: 14px 23px;
         }
 
-        .btn-light {
-            background: #fff;
-            color: var(--primary);
-        }
 
-        .btn-light:hover {
-            background: var(--accent);
-            transform: translateY(-2px);
-        }
 
-        /* Slider Controls */
+        /* =====================================================
+           SLIDER CONTROLS
+        ====================================================== */
 
         .slider-controls {
             position: absolute;
+
             z-index: 10;
+
             right: 5%;
             bottom: 50px;
+
             display: flex;
             gap: 9px;
         }
 
+
         .slider-btn {
             width: 46px;
             height: 46px;
-            border: 1px solid rgba(255,255,255,.3);
-            background: rgba(255,255,255,.1);
+
+            border:
+                1px solid rgba(255,255,255,.3);
+
+            background:
+                rgba(255,255,255,.1);
+
             backdrop-filter: blur(8px);
+
             color: white;
+
             border-radius: 50%;
+
             cursor: pointer;
+
             transition: .3s;
         }
+
 
         .slider-btn:hover {
             background: var(--secondary);
             border-color: var(--secondary);
         }
 
+
         .slider-dots {
             position: absolute;
+
             z-index: 10;
+
             left: 5%;
             bottom: 65px;
+
             display: flex;
             gap: 7px;
         }
 
+
         .dot {
             width: 25px;
             height: 4px;
+
             border: none;
+
             border-radius: 5px;
-            background: rgba(255,255,255,.35);
+
+            background:
+                rgba(255,255,255,.35);
+
             cursor: pointer;
+
             transition: .3s;
         }
+
 
         .dot.active {
             width: 45px;
             background: var(--accent);
         }
+
 
 
         /* =====================================================
@@ -520,52 +767,79 @@
 
         .features {
             position: relative;
+
             margin-top: -55px;
+
             z-index: 20;
         }
 
+
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
             gap: 15px;
         }
 
+
         .feature-card {
             background: white;
+
             border-radius: 15px;
+
             padding: 27px 22px;
+
             box-shadow: var(--shadow);
-            border: 1px solid rgba(0,0,0,.04);
+
+            border:
+                1px solid rgba(0,0,0,.04);
+
             transition: .3s;
         }
+
 
         .feature-card:hover {
             transform: translateY(-7px);
         }
 
+
         .feature-icon {
             width: 50px;
             height: 50px;
+
             border-radius: 13px;
+
             display: grid;
             place-items: center;
+
             color: var(--secondary);
+
             background: #eaf8f5;
+
             font-size: 20px;
+
             margin-bottom: 17px;
         }
 
+
         .feature-card h3 {
             font-family: "Poppins", sans-serif;
+
             font-size: 16px;
+
             margin-bottom: 7px;
+
             color: var(--primary);
         }
+
 
         .feature-card p {
             font-size: 12px;
             color: var(--muted);
         }
+
 
 
         /* =====================================================
@@ -576,85 +850,130 @@
             background: var(--light);
         }
 
+
         .about-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+
+            grid-template-columns:
+                1fr 1fr;
+
             gap: 75px;
+
             align-items: center;
         }
+
 
         .about-image {
             position: relative;
         }
 
+
         .about-image img {
             width: 100%;
             height: 500px;
+
             object-fit: cover;
+
             border-radius: 24px;
         }
 
+
         .experience-box {
             position: absolute;
+
             right: -25px;
             bottom: 30px;
+
             background: var(--primary);
+
             color: white;
+
             padding: 25px;
+
             border-radius: 18px;
+
             box-shadow: var(--shadow);
         }
 
+
         .experience-box strong {
             display: block;
+
             font-size: 38px;
+
             line-height: 1;
+
             color: var(--accent);
         }
+
 
         .experience-box span {
             font-size: 12px;
         }
 
+
         .about-content .label {
             color: var(--secondary);
+
             text-transform: uppercase;
+
             font-size: 12px;
+
             letter-spacing: 2px;
+
             font-weight: 800;
         }
 
+
         .about-content h2 {
             font-family: "Poppins", sans-serif;
+
             color: var(--primary);
-            font-size: clamp(30px, 4vw, 43px);
+
+            font-size:
+                clamp(30px, 4vw, 43px);
+
             line-height: 1.2;
+
             margin: 10px 0 18px;
         }
 
+
         .about-content > p {
             color: var(--muted);
+
             margin-bottom: 25px;
         }
 
+
         .check-list {
             display: grid;
+
             gap: 13px;
+
             margin-bottom: 30px;
         }
 
+
         .check-list li {
             display: flex;
+
             gap: 10px;
+
             align-items: flex-start;
+
             font-size: 14px;
+
             font-weight: 600;
         }
 
+
         .check-list i {
             color: var(--secondary);
+
             margin-top: 4px;
         }
+
 
 
         /* =====================================================
@@ -666,33 +985,49 @@
             color: white;
         }
 
+
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
             gap: 25px;
+
             text-align: center;
         }
+
 
         .stat {
             padding: 20px;
         }
 
+
         .stat i {
             color: var(--accent);
+
             font-size: 26px;
+
             margin-bottom: 15px;
         }
 
+
         .stat strong {
             display: block;
+
             font-family: "Poppins", sans-serif;
+
             font-size: 38px;
         }
 
+
         .stat span {
-            color: rgba(255,255,255,.7);
+            color:
+                rgba(255,255,255,.7);
+
             font-size: 13px;
         }
+
 
 
         /* =====================================================
@@ -701,109 +1036,173 @@
 
         .courses-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
             gap: 24px;
         }
 
+
         .course-card {
-            border: 1px solid var(--border);
+            border:
+                1px solid var(--border);
+
             border-radius: 18px;
+
             overflow: hidden;
+
             background: white;
+
             transition: .35s;
         }
 
+
         .course-card:hover {
             transform: translateY(-8px);
+
             box-shadow: var(--shadow);
         }
 
+
         .course-image {
             position: relative;
+
             height: 215px;
+
             overflow: hidden;
         }
+
 
         .course-image img {
             width: 100%;
             height: 100%;
+
             object-fit: cover;
+
             transition: .5s;
         }
 
-        .course-card:hover .course-image img {
+
+        .course-card:hover
+        .course-image img {
             transform: scale(1.07);
         }
 
+
         .course-badge {
             position: absolute;
+
             top: 15px;
             left: 15px;
+
             background: var(--secondary);
+
             color: white;
+
             padding: 6px 11px;
+
             border-radius: 7px;
+
             font-size: 10px;
+
             font-weight: 700;
         }
+
 
         .course-body {
             padding: 22px;
         }
 
+
         .course-meta {
             display: flex;
+
             justify-content: space-between;
+
             color: var(--muted);
+
             font-size: 11px;
+
             margin-bottom: 12px;
+
+            gap: 10px;
         }
+
 
         .course-meta span {
             display: flex;
+
             align-items: center;
+
             gap: 5px;
         }
 
+
         .course-body h3 {
             color: var(--primary);
+
             font-family: "Poppins", sans-serif;
+
             font-size: 18px;
+
             line-height: 1.35;
+
             margin-bottom: 9px;
         }
 
+
         .course-body p {
             color: var(--muted);
+
             font-size: 13px;
+
             margin-bottom: 18px;
         }
 
+
         .course-footer {
-            border-top: 1px solid var(--border);
+            border-top:
+                1px solid var(--border);
+
             padding-top: 16px;
+
             display: flex;
+
             align-items: center;
+
             justify-content: space-between;
+
+            gap: 10px;
         }
+
 
         .price {
             color: var(--primary);
+
             font-weight: 800;
+
             font-size: 17px;
         }
 
+
         .price small {
             color: var(--muted);
+
             font-size: 10px;
+
             font-weight: 400;
         }
 
+
         .course-link {
             color: var(--secondary);
+
             font-weight: 700;
+
             font-size: 12px;
         }
+
 
 
         /* =====================================================
@@ -814,52 +1213,78 @@
             background: var(--light);
         }
 
+
         .why-grid {
             display: grid;
-            grid-template-columns: .9fr 1.1fr;
+
+            grid-template-columns:
+                .9fr 1.1fr;
+
             gap: 70px;
+
             align-items: center;
         }
+
 
         .why-image img {
             width: 100%;
             height: 500px;
+
             object-fit: cover;
+
             border-radius: 24px;
         }
+
 
         .why-list {
             display: grid;
             gap: 22px;
         }
 
+
         .why-item {
             display: flex;
             gap: 17px;
         }
 
+
         .why-icon {
-            flex: 0 0 52px;
+            flex:
+                0 0 52px;
+
             height: 52px;
+
             border-radius: 14px;
+
             background: white;
+
             color: var(--secondary);
+
             display: grid;
             place-items: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,.06);
+
+            box-shadow:
+                0 8px 20px rgba(0,0,0,.06);
         }
+
 
         .why-item h3 {
             color: var(--primary);
+
             font-family: "Poppins", sans-serif;
+
             font-size: 17px;
+
             margin-bottom: 4px;
         }
 
+
         .why-item p {
             color: var(--muted);
+
             font-size: 13px;
         }
+
 
 
         /* =====================================================
@@ -868,82 +1293,127 @@
 
         .blog-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
             gap: 24px;
         }
 
+
         .blog-card {
-            border: 1px solid var(--border);
+            border:
+                1px solid var(--border);
+
             border-radius: 18px;
+
             overflow: hidden;
+
             transition: .3s;
+
+            background: #fff;
         }
+
 
         .blog-card:hover {
             box-shadow: var(--shadow);
+
             transform: translateY(-6px);
         }
 
+
         .blog-image {
             height: 210px;
+
             position: relative;
+
             overflow: hidden;
         }
+
 
         .blog-image img {
             width: 100%;
             height: 100%;
+
             object-fit: cover;
+
             transition: .5s;
         }
+
 
         .blog-card:hover img {
             transform: scale(1.06);
         }
 
+
         .blog-date {
             position: absolute;
+
             left: 15px;
             bottom: 15px;
+
             background: white;
+
             color: var(--primary);
+
             padding: 8px 12px;
+
             border-radius: 8px;
+
             font-size: 11px;
+
             font-weight: 700;
         }
+
 
         .blog-body {
             padding: 21px;
         }
 
+
         .blog-category {
             color: var(--secondary);
+
             font-size: 10px;
+
             text-transform: uppercase;
+
             font-weight: 800;
+
             letter-spacing: 1px;
         }
 
+
         .blog-body h3 {
             color: var(--primary);
+
             font-family: "Poppins", sans-serif;
+
             font-size: 18px;
+
             line-height: 1.35;
+
             margin: 9px 0;
         }
 
+
         .blog-body p {
             color: var(--muted);
+
             font-size: 13px;
+
             margin-bottom: 15px;
         }
 
+
         .read-more {
             color: var(--secondary);
+
             font-weight: 700;
+
             font-size: 12px;
         }
+
 
 
         /* =====================================================
@@ -954,58 +1424,90 @@
             padding: 75px 0;
         }
 
+
         .cta-box {
             position: relative;
+
             overflow: hidden;
+
             background:
                 linear-gradient(
                     120deg,
                     var(--primary),
                     #124b88
                 );
+
             color: white;
+
             border-radius: 25px;
+
             padding: 65px;
+
             display: flex;
+
             align-items: center;
+
             justify-content: space-between;
+
             gap: 30px;
         }
 
+
         .cta-box::after {
             content: "";
+
             position: absolute;
+
             width: 300px;
             height: 300px;
-            border: 50px solid rgba(255,255,255,.05);
+
+            border:
+                50px solid rgba(255,255,255,.05);
+
             border-radius: 50%;
+
             right: -100px;
             top: -100px;
         }
 
+
         .cta-content {
             position: relative;
+
             z-index: 2;
+
             max-width: 680px;
         }
 
+
         .cta-content h2 {
             font-family: "Poppins", sans-serif;
-            font-size: clamp(28px, 4vw, 42px);
+
+            font-size:
+                clamp(28px, 4vw, 42px);
+
             line-height: 1.2;
+
             margin-bottom: 12px;
         }
 
+
         .cta-content p {
-            color: rgba(255,255,255,.78);
+            color:
+                rgba(255,255,255,.78);
+
             font-size: 14px;
         }
 
+
         .cta-action {
             position: relative;
+
             z-index: 2;
+
             flex-shrink: 0;
         }
+
 
 
         /* =====================================================
@@ -1016,98 +1518,157 @@
             background: var(--light);
         }
 
+
         .contact-grid {
             display: grid;
-            grid-template-columns: .8fr 1.2fr;
+
+            grid-template-columns:
+                .8fr 1.2fr;
+
             gap: 30px;
         }
 
+
         .contact-info {
             background: var(--primary);
+
             color: white;
+
             padding: 38px;
+
             border-radius: 20px;
         }
+
 
         .contact-info h3 {
             font-family: "Poppins", sans-serif;
+
             font-size: 25px;
+
             margin-bottom: 10px;
         }
 
+
         .contact-info > p {
-            color: rgba(255,255,255,.7);
+            color:
+                rgba(255,255,255,.7);
+
             font-size: 13px;
+
             margin-bottom: 30px;
         }
 
+
         .contact-item {
             display: flex;
+
             gap: 14px;
+
             margin-bottom: 22px;
         }
 
+
         .contact-item i {
             color: var(--accent);
+
             margin-top: 4px;
         }
 
+
         .contact-item strong {
             display: block;
+
             font-size: 12px;
+
             margin-bottom: 2px;
         }
 
+
         .contact-item span {
-            color: rgba(255,255,255,.7);
+            color:
+                rgba(255,255,255,.7);
+
             font-size: 12px;
         }
 
+
         .contact-form {
             background: white;
+
             border-radius: 20px;
+
             padding: 38px;
-            border: 1px solid var(--border);
+
+            border:
+                1px solid var(--border);
         }
+
 
         .form-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+
+            grid-template-columns:
+                1fr 1fr;
+
             gap: 15px;
         }
+
 
         .form-group {
             margin-bottom: 17px;
         }
 
+
         .form-group label {
             display: block;
+
             color: var(--primary);
+
             font-size: 12px;
+
             font-weight: 700;
+
             margin-bottom: 7px;
         }
 
+
         .form-control {
             width: 100%;
-            border: 1px solid var(--border);
+
+            border:
+                1px solid var(--border);
+
             border-radius: 9px;
+
             padding: 12px 13px;
+
             outline: none;
+
             font-family: inherit;
+
             font-size: 13px;
+
             transition: .3s;
+
+            background: #fff;
         }
+
 
         .form-control:focus {
             border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(22,160,133,.08);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(22,160,133,.08);
         }
+
 
         textarea.form-control {
             min-height: 125px;
+
             resize: vertical;
         }
+
 
 
         /* =====================================================
@@ -1116,106 +1677,168 @@
 
         footer {
             background: #06182f;
+
             color: white;
         }
+
 
         .footer-main {
             padding: 70px 0 45px;
         }
 
+
         .footer-grid {
             display: grid;
-            grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+
+            grid-template-columns:
+                1.4fr 1fr 1fr 1.2fr;
+
             gap: 40px;
         }
 
+
         .footer-brand p {
-            color: rgba(255,255,255,.6);
+            color:
+                rgba(255,255,255,.6);
+
             font-size: 13px;
+
             max-width: 330px;
+
             margin: 17px 0 22px;
         }
+
 
         .footer-social {
             display: flex;
             gap: 9px;
         }
 
+
         .footer-social a {
             width: 34px;
             height: 34px;
+
             border-radius: 8px;
-            background: rgba(255,255,255,.08);
+
+            background:
+                rgba(255,255,255,.08);
+
             display: grid;
             place-items: center;
+
             transition: .3s;
         }
+
 
         .footer-social a:hover {
             background: var(--secondary);
         }
 
+
         .footer-col h4 {
             font-family: "Poppins", sans-serif;
+
             margin-bottom: 20px;
+
             font-size: 15px;
         }
+
 
         .footer-col ul {
             display: grid;
             gap: 10px;
         }
 
+
         .footer-col li a {
-            color: rgba(255,255,255,.6);
+            color:
+                rgba(255,255,255,.6);
+
             font-size: 12px;
+
             transition: .3s;
         }
 
+
         .footer-col li a:hover {
             color: white;
+
             padding-left: 4px;
         }
 
+
         .newsletter {
             display: flex;
+
             margin-top: 13px;
+
+            width: 100%;
         }
+
 
         .newsletter input {
             width: 100%;
+
+            min-width: 0;
+
             border: none;
+
             outline: none;
+
             padding: 12px;
-            border-radius: 8px 0 0 8px;
+
+            border-radius:
+                8px 0 0 8px;
+
             font-size: 11px;
         }
+
 
         .newsletter button {
             width: 45px;
+
+            min-width: 45px;
+
             border: none;
+
             background: var(--secondary);
+
             color: white;
-            border-radius: 0 8px 8px 0;
+
+            border-radius:
+                0 8px 8px 0;
+
             cursor: pointer;
         }
 
+
         .footer-bottom {
-            border-top: 1px solid rgba(255,255,255,.08);
+            border-top:
+                1px solid rgba(255,255,255,.08);
+
             padding: 20px 0;
         }
 
+
         .footer-bottom-inner {
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
+
             gap: 20px;
         }
 
+
         .footer-bottom p {
-            color: rgba(255,255,255,.5);
+            color:
+                rgba(255,255,255,.5);
+
             font-size: 11px;
         }
+
 
 
         /* =====================================================
@@ -1224,243 +1847,1211 @@
 
         .scroll-top {
             position: fixed;
+
             right: 25px;
             bottom: 25px;
+
             width: 44px;
             height: 44px;
+
             border: none;
+
             border-radius: 50%;
+
             background: var(--secondary);
+
             color: white;
+
             cursor: pointer;
+
             display: grid;
             place-items: center;
+
             z-index: 999;
+
             opacity: 0;
+
             visibility: hidden;
-            transform: translateY(15px);
+
+            transform:
+                translateY(15px);
+
             transition: .3s;
         }
 
+
         .scroll-top.show {
             opacity: 1;
+
             visibility: visible;
-            transform: translateY(0);
+
+            transform:
+                translateY(0);
         }
 
 
+
         /* =====================================================
-           RESPONSIVE
+           TABLET
         ====================================================== */
 
-        @media (max-width: 1050px) {
+        @media (max-width: 1100px) {
+
+            .container {
+                width: 94%;
+            }
+
 
             .nav-menu {
                 gap: 0;
             }
 
+
             .nav-menu > li > a {
-                padding: 10px 9px;
-                font-size: 13px;
+                padding:
+                    10px 8px;
+
+                font-size: 12.5px;
             }
+
 
             .nav-actions .btn {
-                padding: 10px 13px;
+                padding:
+                    10px 12px;
             }
+
 
             .features-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns:
+                    repeat(2, 1fr);
             }
 
+
             .footer-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns:
+                    repeat(2, 1fr);
             }
+
         }
 
 
+
+        /* =====================================================
+           MOBILE NAV
+        ====================================================== */
+
         @media (max-width: 850px) {
 
-            .top-info span:last-child {
+            :root {
+                --header-height: 72px;
+            }
+
+
+            html {
+                scroll-padding-top: 90px;
+            }
+
+
+            body {
+                padding-top:
+                    var(--header-height);
+            }
+
+
+            .topbar {
                 display: none;
             }
+
+
+            .navbar {
+                height:
+                    var(--header-height);
+            }
+
+
+            .nav-inner {
+                height:
+                    var(--header-height);
+
+                min-height:
+                    var(--header-height);
+
+                gap: 10px;
+            }
+
+
+            .logo-text {
+                font-size: 17px;
+            }
+
+
+            .logo-text small {
+                font-size: 7px;
+
+                letter-spacing:
+                    1.5px;
+            }
+
+
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+
+                border-radius: 10px;
+
+                font-size: 18px;
+            }
+
 
             .menu-toggle {
                 display: grid;
-                place-items: center;
             }
 
-            .nav-inner {
-                height: 72px;
-            }
 
             .nav-menu {
-                position: absolute;
-                top: 72px;
+
+                position: fixed;
+
+                top:
+                    var(--header-height);
+
                 left: 0;
                 right: 0;
-                background: white;
-                border-top: 1px solid var(--border);
-                box-shadow: 0 15px 25px rgba(0,0,0,.08);
-                padding: 10px 5%;
-                display: none;
+
+                width: 100%;
+
+                height:
+                    calc(100vh - var(--header-height));
+
+                height:
+                    calc(100dvh - var(--header-height));
+
+                background: #fff;
+
+                border-top:
+                    1px solid var(--border);
+
+                box-shadow:
+                    0 15px 30px
+                    rgba(0,0,0,.12);
+
+                padding:
+                    12px 5% 30px;
+
+                display: flex;
+
                 flex-direction: column;
+
                 align-items: stretch;
+
+                justify-content: flex-start;
+
+                gap: 0;
+
+                overflow-y: auto;
+
+                overscroll-behavior:
+                    contain;
+
+                transform:
+                    translateX(100%);
+
+                opacity: 0;
+
+                visibility: hidden;
+
+                transition:
+                    transform .3s ease,
+                    opacity .3s ease,
+                    visibility .3s ease;
             }
+
 
             .nav-menu.open {
-                display: flex;
+
+                transform:
+                    translateX(0);
+
+                opacity: 1;
+
+                visibility: visible;
             }
 
-            .nav-menu > li > a {
-                display: block;
-                padding: 13px 8px;
+
+            .nav-menu > li {
+                width: 100%;
             }
+
+
+            .nav-menu > li > a {
+
+                display: flex;
+
+                align-items: center;
+
+                min-height: 52px;
+
+                padding:
+                    14px 8px;
+
+                font-size: 14px;
+
+                border-bottom:
+                    1px solid #f0f2f5;
+            }
+
 
             .nav-menu > li > a::after {
                 display: none;
             }
 
+
+            .nav-menu > li > a.active {
+                color:
+                    var(--secondary);
+
+                background:
+                    #f5faf9;
+
+                border-radius:
+                    8px;
+            }
+
+
             .nav-actions {
                 margin-left: auto;
             }
+
+
+            .nav-actions .btn-login {
+                display: none;
+            }
+
+
+            .nav-actions .btn-primary {
+                padding:
+                    10px 13px;
+
+                font-size: 12px;
+            }
+
 
             .hero,
             .slide-content {
                 min-height: 620px;
             }
 
+
+            .hero-content {
+                max-width: 680px;
+            }
+
+
             .about-grid,
             .why-grid,
             .contact-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns:
+                    1fr;
             }
+
 
             .courses-grid,
             .blog-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns:
+                    repeat(2, 1fr);
             }
 
+
             .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns:
+                    repeat(2, 1fr);
             }
+
 
             .about-image,
             .why-image {
                 max-width: 650px;
-                margin: auto;
+
+                margin:
+                    0 auto;
+
                 width: 100%;
             }
 
+
             .cta-box {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 45px 35px;
+                flex-direction:
+                    column;
+
+                align-items:
+                    flex-start;
+
+                padding:
+                    45px 35px;
             }
+
         }
 
+
+
+        /* =====================================================
+           SMALL MOBILE
+        ====================================================== */
 
         @media (max-width: 600px) {
 
-            .topbar {
-                display: none;
+            :root {
+                --header-height: 64px;
             }
+
+
+            html {
+                scroll-padding-top: 78px;
+            }
+
+
+            body {
+                padding-top:
+                    var(--header-height);
+            }
+
+
+            .navbar {
+                height:
+                    var(--header-height);
+            }
+
+
+            .nav-inner {
+                height:
+                    var(--header-height);
+
+                min-height:
+                    var(--header-height);
+            }
+
 
             .container {
-                width: 90%;
+                width: 92%;
             }
 
-            .nav-actions .btn-login {
+
+            .logo {
+                gap: 8px;
+            }
+
+
+            .logo-icon {
+                width: 37px;
+                height: 37px;
+
+                border-radius: 9px;
+
+                font-size: 16px;
+            }
+
+
+            .logo-text {
+                font-size: 15px;
+            }
+
+
+            .logo-text small {
+                font-size: 6.5px;
+
+                letter-spacing:
+                    1.1px;
+
+                margin-top: 3px;
+            }
+
+
+            .nav-actions .btn-primary {
                 display: none;
             }
 
-            .logo-text {
+
+            .menu-toggle {
+                width: 39px;
+                height: 39px;
+
                 font-size: 17px;
             }
 
-            .logo-icon {
-                width: 40px;
-                height: 40px;
+
+            .nav-menu {
+                top:
+                    var(--header-height);
+
+                height:
+                    calc(100vh - var(--header-height));
+
+                height:
+                    calc(100dvh - var(--header-height));
             }
+
+
+            /* HERO */
 
             .hero,
             .slide-content {
-                min-height: 610px;
+                min-height:
+                    calc(100svh - var(--header-height));
+
+                min-height:
+                    590px;
             }
+
+
+            .slide-bg {
+                background-position:
+                    center center;
+            }
+
+
+            .slide::after {
+
+                background:
+                    linear-gradient(
+                        180deg,
+                        rgba(5,25,55,.88),
+                        rgba(5,25,55,.74)
+                    );
+            }
+
+
+            .slide-content {
+                align-items:
+                    center;
+            }
+
+
+            .hero-content {
+                width: 100%;
+            }
+
+
+            .hero-label {
+                font-size: 10px;
+
+                padding:
+                    7px 11px;
+
+                margin-bottom:
+                    15px;
+            }
+
 
             .hero-content h1 {
-                font-size: 37px;
+
+                font-size:
+                    clamp(31px, 10vw, 42px);
+
+                line-height:
+                    1.12;
+
+                margin-bottom:
+                    16px;
             }
+
 
             .hero-content p {
-                font-size: 14px;
+
+                font-size:
+                    13.5px;
+
+                line-height:
+                    1.65;
+
+                margin-bottom:
+                    23px;
             }
+
 
             .hero-buttons {
-                flex-direction: column;
-                align-items: flex-start;
+
+                display:
+                    grid;
+
+                grid-template-columns:
+                    1fr;
+
+                gap: 10px;
+
+                width: 100%;
+
+                max-width:
+                    270px;
             }
 
-            .hero-buttons .btn {
-                width: auto;
+
+            .hero .btn {
+
+                width: 100%;
+
+                padding:
+                    12px 16px;
+
+                font-size:
+                    12px;
             }
+
 
             .slider-controls {
-                right: 5%;
-                bottom: 28px;
+
+                right:
+                    4%;
+
+                bottom:
+                    24px;
             }
+
+
+            .slider-btn {
+
+                width:
+                    38px;
+
+                height:
+                    38px;
+
+                font-size:
+                    12px;
+            }
+
 
             .slider-dots {
-                left: 5%;
-                bottom: 49px;
+
+                left:
+                    4%;
+
+                bottom:
+                    40px;
             }
+
+
+            .dot {
+                width:
+                    20px;
+            }
+
+
+            .dot.active {
+                width:
+                    35px;
+            }
+
+
+
+            /* FEATURES */
 
             .features {
-                margin-top: 20px;
+                margin-top:
+                    20px;
             }
 
-            .features-grid,
-            .courses-grid,
-            .blog-grid,
-            .stats-grid,
-            .footer-grid {
-                grid-template-columns: 1fr;
+
+            .features-grid {
+
+                grid-template-columns:
+                    1fr;
+
+                gap:
+                    12px;
             }
+
+
+            .feature-card {
+
+                padding:
+                    22px 19px;
+
+                border-radius:
+                    14px;
+            }
+
+
+            .feature-icon {
+
+                width:
+                    45px;
+
+                height:
+                    45px;
+
+                font-size:
+                    18px;
+
+                margin-bottom:
+                    13px;
+            }
+
+
+            .feature-card h3 {
+                font-size:
+                    15px;
+            }
+
+
+            .feature-card p {
+                font-size:
+                    11.5px;
+
+                line-height:
+                    1.6;
+            }
+
+
+
+            /* SECTIONS */
 
             .section {
-                padding: 70px 0;
+                padding:
+                    65px 0;
             }
+
+
+            .section-header {
+                margin-bottom:
+                    35px;
+            }
+
+
+            .section-header span {
+                font-size:
+                    10px;
+
+                letter-spacing:
+                    1.4px;
+            }
+
+
+            .section-header h2 {
+                font-size:
+                    27px;
+            }
+
+
+            .section-header p {
+                font-size:
+                    13px;
+
+                line-height:
+                    1.7;
+            }
+
+
+
+            /* ABOUT */
+
+            .about-grid {
+                gap:
+                    45px;
+            }
+
 
             .about-image img,
             .why-image img {
-                height: 360px;
+
+                height:
+                    330px;
+
+                border-radius:
+                    18px;
             }
+
 
             .experience-box {
-                right: 15px;
-                bottom: 15px;
+
+                right:
+                    12px;
+
+                bottom:
+                    12px;
+
+                padding:
+                    17px;
+
+                border-radius:
+                    13px;
             }
 
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 0;
+
+            .experience-box strong {
+                font-size:
+                    30px;
             }
 
-            .contact-form,
-            .contact-info {
-                padding: 25px;
+
+            .experience-box span {
+                font-size:
+                    10px;
             }
+
+
+            .about-content h2 {
+                font-size:
+                    28px;
+            }
+
+
+            .about-content > p {
+                font-size:
+                    13px;
+            }
+
+
+            .check-list li {
+                font-size:
+                    12.5px;
+            }
+
+
+
+            /* STATS */
+
+            .stats-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+                gap:
+                    8px;
+            }
+
+
+            .stat {
+                padding:
+                    15px 5px;
+            }
+
+
+            .stat i {
+                font-size:
+                    21px;
+
+                margin-bottom:
+                    8px;
+            }
+
+
+            .stat strong {
+                font-size:
+                    27px;
+            }
+
+
+            .stat span {
+                font-size:
+                    10px;
+            }
+
+
+
+            /* COURSES */
+
+            .courses-grid,
+            .blog-grid {
+
+                grid-template-columns:
+                    1fr;
+
+                gap:
+                    18px;
+            }
+
+
+            .course-image {
+                height:
+                    200px;
+            }
+
+
+            .course-body {
+                padding:
+                    18px;
+            }
+
+
+            .course-body h3 {
+                font-size:
+                    17px;
+            }
+
+
+            .course-body p {
+                font-size:
+                    12px;
+            }
+
+
+            .course-meta {
+                font-size:
+                    10px;
+            }
+
+
+            .course-footer {
+                flex-wrap:
+                    wrap;
+            }
+
+
+
+            /* WHY */
+
+            .why-grid {
+                gap:
+                    40px;
+            }
+
+
+            .why-list {
+                gap:
+                    18px;
+            }
+
+
+            .why-item {
+                gap:
+                    12px;
+            }
+
+
+            .why-icon {
+                flex:
+                    0 0 44px;
+
+                height:
+                    44px;
+
+                border-radius:
+                    11px;
+            }
+
+
+            .why-item h3 {
+                font-size:
+                    15px;
+            }
+
+
+            .why-item p {
+                font-size:
+                    11.5px;
+
+                line-height:
+                    1.6;
+            }
+
+
+
+            /* BLOG */
+
+            .blog-image {
+                height:
+                    200px;
+            }
+
+
+            .blog-body h3 {
+                font-size:
+                    17px;
+            }
+
+
+            .blog-body p {
+                font-size:
+                    12px;
+            }
+
+
+
+            /* CTA */
+
+            .cta {
+                padding:
+                    45px 0;
+            }
+
 
             .cta-box {
-                padding: 38px 25px;
+
+                padding:
+                    34px 23px;
+
+                border-radius:
+                    18px;
+
+                gap:
+                    22px;
             }
 
-            .footer-bottom-inner {
-                flex-direction: column;
-                text-align: center;
+
+            .cta-content h2 {
+                font-size:
+                    27px;
             }
+
+
+            .cta-content p {
+                font-size:
+                    12px;
+
+                line-height:
+                    1.7;
+            }
+
+
+            .cta-action,
+            .cta-action .btn {
+                width:
+                    100%;
+            }
+
+
+
+            /* CONTACT */
+
+            .contact-grid {
+                gap:
+                    18px;
+            }
+
+
+            .contact-info,
+            .contact-form {
+
+                padding:
+                    23px 19px;
+
+                border-radius:
+                    16px;
+            }
+
+
+            .contact-info h3 {
+                font-size:
+                    22px;
+            }
+
+
+            .contact-info > p {
+                font-size:
+                    12px;
+            }
+
+
+            .contact-item {
+                gap:
+                    11px;
+
+                margin-bottom:
+                    18px;
+            }
+
+
+            .contact-item strong {
+                font-size:
+                    11px;
+            }
+
+
+            .contact-item span {
+                font-size:
+                    11px;
+            }
+
+
+            .form-row {
+
+                grid-template-columns:
+                    1fr;
+
+                gap:
+                    0;
+            }
+
+
+            .form-control {
+                padding:
+                    11px;
+
+                font-size:
+                    12px;
+            }
+
+
+            textarea.form-control {
+                min-height:
+                    115px;
+            }
+
+
+            .contact-form .btn {
+                width:
+                    100%;
+            }
+
+
+
+            /* FOOTER */
+
+            .footer-main {
+                padding:
+                    55px 0 35px;
+            }
+
+
+            .footer-grid {
+
+                grid-template-columns:
+                    1fr;
+
+                gap:
+                    32px;
+            }
+
+
+            .footer-brand p {
+                font-size:
+                    12px;
+            }
+
+
+            .footer-col h4 {
+                margin-bottom:
+                    14px;
+            }
+
+
+            .footer-col li a {
+                font-size:
+                    11px;
+            }
+
+
+            .footer-bottom-inner {
+
+                flex-direction:
+                    column;
+
+                text-align:
+                    center;
+
+                gap:
+                    8px;
+            }
+
+
+            .footer-bottom p {
+                font-size:
+                    10px;
+            }
+
+
+            .scroll-top {
+
+                width:
+                    40px;
+
+                height:
+                    40px;
+
+                right:
+                    15px;
+
+                bottom:
+                    15px;
+            }
+
+        }
+
+
+
+        /* =====================================================
+           VERY SMALL PHONES
+        ====================================================== */
+
+        @media (max-width: 380px) {
+
+            .logo-text {
+                font-size:
+                    13px;
+            }
+
+
+            .logo-text small {
+                font-size:
+                    5.5px;
+            }
+
+
+            .logo-icon {
+                width:
+                    34px;
+
+                height:
+                    34px;
+            }
+
+
+            .hero-content h1 {
+                font-size:
+                    29px;
+            }
+
+
+            .hero-content p {
+                font-size:
+                    12.5px;
+            }
+
+
+            .stats-grid {
+                gap:
+                    4px;
+            }
+
+
+            .stat strong {
+                font-size:
+                    24px;
+            }
+
+        }
+
+
+
+        /* =====================================================
+           REDUCE MOTION
+        ====================================================== */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            html {
+                scroll-behavior:
+                    auto;
+            }
+
+
+            *,
+            *::before,
+            *::after {
+                animation-duration:
+                    .01ms !important;
+
+                animation-iteration-count:
+                    1 !important;
+
+                transition-duration:
+                    .01ms !important;
+            }
+
         }
 
     </style>
+
 </head>
 
 
@@ -1497,19 +3088,19 @@
 
         <div class="top-social">
 
-            <a href="#">
+            <a href="#" aria-label="Facebook">
                 <i class="fa-brands fa-facebook-f"></i>
             </a>
 
-            <a href="#">
+            <a href="#" aria-label="Instagram">
                 <i class="fa-brands fa-instagram"></i>
             </a>
 
-            <a href="#">
+            <a href="#" aria-label="LinkedIn">
                 <i class="fa-brands fa-linkedin-in"></i>
             </a>
 
-            <a href="#">
+            <a href="#" aria-label="YouTube">
                 <i class="fa-brands fa-youtube"></i>
             </a>
 
@@ -1522,23 +3113,30 @@
 
 
 <!-- ============================================================
-     NAVIGATION
+     FIXED NAVIGATION
 ============================================================= -->
 
-<header class="navbar">
+<header class="navbar"
+        id="mainNavbar">
 
     <div class="container nav-inner">
 
 
-        <a href="#home" class="logo">
+        <a href="#home"
+           class="logo">
 
             <div class="logo-icon">
                 <i class="fa-solid fa-building-columns"></i>
             </div>
 
             <div class="logo-text">
+
                 Private Management
-                <small>LEARNING & DEVELOPMENT</small>
+
+                <small>
+                    LEARNING & DEVELOPMENT
+                </small>
+
             </div>
 
         </a>
@@ -1546,30 +3144,44 @@
 
         <nav>
 
-            <ul class="nav-menu" id="navMenu">
+            <ul class="nav-menu"
+                id="navMenu">
 
                 <li>
-                    <a href="#home" class="active">Home</a>
+                    <a href="#home"
+                       class="active">
+                        Home
+                    </a>
                 </li>
 
                 <li>
-                    <a href="#about">About</a>
+                    <a href="#about">
+                        About
+                    </a>
                 </li>
 
                 <li>
-                    <a href="#courses">Courses</a>
+                    <a href="#courses">
+                        Courses
+                    </a>
                 </li>
 
                 <li>
-                    <a href="#blog">Blog</a>
+                    <a href="#blog">
+                        Blog
+                    </a>
                 </li>
 
                 <li>
-                    <a href="#news">News</a>
+                    <a href="#news">
+                        News
+                    </a>
                 </li>
 
                 <li>
-                    <a href="#contact">Contact</a>
+                    <a href="#contact">
+                        Contact
+                    </a>
                 </li>
 
             </ul>
@@ -1579,16 +3191,30 @@
 
         <div class="nav-actions">
 
-          
+            <a href="/login"
+               class="btn btn-login">
 
-            <!-- <a href="/join" class="btn btn-primary">
+                <i class="fa-solid fa-right-to-bracket"></i>
+
+                Login
+
+            </a>
+
+
+            <a href="/join"
+               class="btn btn-primary">
+
                 Join Now
-            </a> -->
+
+            </a>
+
 
             <button
                 class="menu-toggle"
                 id="menuToggle"
-                aria-label="Open menu">
+                type="button"
+                aria-label="Open navigation"
+                aria-expanded="false">
 
                 <i class="fa-solid fa-bars"></i>
 
@@ -1606,7 +3232,8 @@
      HERO SLIDER
 ============================================================= -->
 
-<section class="hero" id="home">
+<section class="hero"
+         id="home">
 
 
     <div class="slides">
@@ -1630,20 +3257,35 @@
                 <div class="hero-content">
 
                     <div class="hero-label">
+
                         <i class="fa-solid fa-star"></i>
+
                         Professional Development Platform
+
                     </div>
 
+
                     <h1>
+
                         Build Skills.
-                        <span>Build Your Future.</span>
+
+                        <span>
+                            Build Your Future.
+                        </span>
+
                     </h1>
 
+
                     <p>
-                        Discover professional courses, practical learning
-                        programs and management skills designed to help you
-                        grow your career and achieve your goals.
+
+                        Discover professional courses,
+                        practical learning programs and
+                        management skills designed to help
+                        you grow your career and achieve
+                        your goals.
+
                     </p>
+
 
                     <div class="hero-buttons">
 
@@ -1651,9 +3293,11 @@
                            class="btn btn-secondary">
 
                             Explore Courses
+
                             <i class="fa-solid fa-arrow-right"></i>
 
                         </a>
+
 
                         <a href="#about"
                            class="btn btn-light">
@@ -1690,20 +3334,35 @@
                 <div class="hero-content">
 
                     <div class="hero-label">
+
                         <i class="fa-solid fa-graduation-cap"></i>
+
                         Learn From Professionals
+
                     </div>
 
+
                     <h1>
+
                         Learn Today.
-                        <span>Lead Tomorrow.</span>
+
+                        <span>
+                            Lead Tomorrow.
+                        </span>
+
                     </h1>
 
+
                     <p>
-                        Gain industry-ready knowledge through structured
-                        courses delivered by experienced instructors and
-                        professional trainers.
+
+                        Gain industry-ready knowledge
+                        through structured courses
+                        delivered by experienced
+                        instructors and professional
+                        trainers.
+
                     </p>
+
 
                     <div class="hero-buttons">
 
@@ -1711,9 +3370,11 @@
                            class="btn btn-secondary">
 
                             View Programs
+
                             <i class="fa-solid fa-arrow-right"></i>
 
                         </a>
+
 
                         <a href="/join"
                            class="btn btn-light">
@@ -1750,20 +3411,35 @@
                 <div class="hero-content">
 
                     <div class="hero-label">
+
                         <i class="fa-solid fa-chart-line"></i>
+
                         Management Excellence
+
                     </div>
 
+
                     <h1>
+
                         Empower People.
-                        <span>Grow Organizations.</span>
+
+                        <span>
+                            Grow Organizations.
+                        </span>
+
                     </h1>
 
+
                     <p>
-                        Develop leadership, communication and business
-                        management capabilities that create meaningful
-                        professional impact.
+
+                        Develop leadership,
+                        communication and business
+                        management capabilities that
+                        create meaningful professional
+                        impact.
+
                     </p>
+
 
                     <div class="hero-buttons">
 
@@ -1771,13 +3447,11 @@
                            class="btn btn-secondary">
 
                             Contact Us
+
                             <i class="fa-solid fa-arrow-right"></i>
 
                         </a>
-                        <a href="/login" class="btn btn-login">
-                            <i class="fa-solid fa-right-to-bracket"></i>
-                            Login
-                        </a>
+
 
                         <a href="/join"
                            class="btn btn-light">
@@ -1798,34 +3472,57 @@
 
 
 
-    <!-- DOTS -->
+    <!-- SLIDER DOTS -->
 
     <div class="slider-dots">
 
-        <button class="dot active" data-slide="0"></button>
+        <button
+            class="dot active"
+            data-slide="0"
+            type="button"
+            aria-label="Slide 1">
+        </button>
 
-        <button class="dot" data-slide="1"></button>
 
-        <button class="dot" data-slide="2"></button>
+        <button
+            class="dot"
+            data-slide="1"
+            type="button"
+            aria-label="Slide 2">
+        </button>
+
+
+        <button
+            class="dot"
+            data-slide="2"
+            type="button"
+            aria-label="Slide 3">
+        </button>
 
     </div>
 
 
-    <!-- CONTROLS -->
+
+    <!-- SLIDER CONTROLS -->
 
     <div class="slider-controls">
 
         <button
             class="slider-btn"
-            id="prevSlide">
+            id="prevSlide"
+            type="button"
+            aria-label="Previous slide">
 
             <i class="fa-solid fa-chevron-left"></i>
 
         </button>
 
+
         <button
             class="slider-btn"
-            id="nextSlide">
+            id="nextSlide"
+            type="button"
+            aria-label="Next slide">
 
             <i class="fa-solid fa-chevron-right"></i>
 
@@ -1852,11 +3549,13 @@
                 <i class="fa-solid fa-certificate"></i>
             </div>
 
-            <h3>Professional Certificates</h3>
+            <h3>
+                Professional Certificates
+            </h3>
 
             <p>
-                Earn certificates that demonstrate your
-                knowledge and skills.
+                Earn certificates that demonstrate
+                your knowledge and skills.
             </p>
 
         </div>
@@ -1868,11 +3567,13 @@
                 <i class="fa-solid fa-user-tie"></i>
             </div>
 
-            <h3>Expert Instructors</h3>
+            <h3>
+                Expert Instructors
+            </h3>
 
             <p>
-                Learn from experienced professionals and
-                industry experts.
+                Learn from experienced professionals
+                and industry experts.
             </p>
 
         </div>
@@ -1884,11 +3585,13 @@
                 <i class="fa-solid fa-laptop"></i>
             </div>
 
-            <h3>Flexible Learning</h3>
+            <h3>
+                Flexible Learning
+            </h3>
 
             <p>
-                Access learning programs designed around
-                your schedule.
+                Access learning programs designed
+                around your schedule.
             </p>
 
         </div>
@@ -1900,11 +3603,13 @@
                 <i class="fa-solid fa-headset"></i>
             </div>
 
-            <h3>Student Support</h3>
+            <h3>
+                Student Support
+            </h3>
 
             <p>
-                Get guidance and support throughout your
-                learning journey.
+                Get guidance and support throughout
+                your learning journey.
             </p>
 
         </div>
@@ -1920,7 +3625,8 @@
      ABOUT
 ============================================================= -->
 
-<section class="section about" id="about">
+<section class="section about"
+         id="about">
 
     <div class="container about-grid">
 
@@ -1929,11 +3635,15 @@
 
             <img
                 src="https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&fit=crop&w=1200&q=85"
-                alt="Private Management Team">
+                alt="Private Management Team"
+                loading="lazy">
+
 
             <div class="experience-box">
 
-                <strong>10+</strong>
+                <strong>
+                    10+
+                </strong>
 
                 <span>
                     Years of Learning
@@ -1951,51 +3661,67 @@
                 About Private Management
             </span>
 
+
             <h2>
+
                 Developing People.
                 Strengthening Organizations.
+
             </h2>
 
+
             <p>
-                Private Management is a professional learning and
-                development platform focused on practical education,
-                leadership, business management and career development.
+
+                Private Management is a professional
+                learning and development platform focused
+                on practical education, leadership,
+                business management and career development.
+
             </p>
+
 
             <ul class="check-list">
 
                 <li>
                     <i class="fa-solid fa-circle-check"></i>
+
                     Industry-focused professional programs
                 </li>
 
+
                 <li>
                     <i class="fa-solid fa-circle-check"></i>
+
                     Experienced trainers and instructors
                 </li>
 
-                <li>
-                    <i class="fa-solid fa-circle-check"></i>
-                    Practical and career-oriented learning
-                </li>
 
                 <li>
                     <i class="fa-solid fa-circle-check"></i>
+
+                    Practical and career-oriented learning
+                </li>
+
+
+                <li>
+                    <i class="fa-solid fa-circle-check"></i>
+
                     Professional certificates and support
                 </li>
 
             </ul>
 
+
             <a href="#contact"
                class="btn btn-primary">
 
                 Discover More
+
                 <i class="fa-solid fa-arrow-right"></i>
 
             </a>
 
         </div>
-
 
     </div>
 
@@ -2021,7 +3747,9 @@
                 0
             </strong>
 
-            <span>Students</span>
+            <span>
+                Students
+            </span>
 
         </div>
 
@@ -2035,7 +3763,9 @@
                 0
             </strong>
 
-            <span>Professional Courses</span>
+            <span>
+                Professional Courses
+            </span>
 
         </div>
 
@@ -2049,7 +3779,9 @@
                 0
             </strong>
 
-            <span>Expert Instructors</span>
+            <span>
+                Expert Instructors
+            </span>
 
         </div>
 
@@ -2063,7 +3795,9 @@
                 0
             </strong>
 
-            <span>Certificates Issued</span>
+            <span>
+                Certificates Issued
+            </span>
 
         </div>
 
@@ -2078,22 +3812,30 @@
      COURSES
 ============================================================= -->
 
-<section class="section" id="courses">
+<section class="section"
+         id="courses">
 
     <div class="container">
 
 
         <div class="section-header">
 
-            <span>Our Programs</span>
+            <span>
+                Our Programs
+            </span>
+
 
             <h2>
                 Explore Professional Courses
             </h2>
 
+
             <p>
-                Build practical skills through courses designed
-                for students, professionals and organizations.
+
+                Build practical skills through courses
+                designed for students, professionals
+                and organizations.
+
             </p>
 
         </div>
@@ -2110,13 +3852,16 @@
 
                     <img
                         src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80"
-                        alt="Business Management">
+                        alt="Business Management"
+                        loading="lazy">
+
 
                     <span class="course-badge">
                         POPULAR
                     </span>
 
                 </div>
+
 
                 <div class="course-body">
 
@@ -2127,6 +3872,7 @@
                             8 Weeks
                         </span>
 
+
                         <span>
                             <i class="fa-solid fa-user-group"></i>
                             120 Students
@@ -2134,26 +3880,39 @@
 
                     </div>
 
+
                     <h3>
                         Business Management
                     </h3>
 
+
                     <p>
-                        Learn essential management, planning,
-                        leadership and business development skills.
+
+                        Learn essential management,
+                        planning, leadership and business
+                        development skills.
+
                     </p>
+
 
                     <div class="course-footer">
 
                         <span class="price">
+
                             $120
-                            <small>/ course</small>
+
+                            <small>
+                                / course
+                            </small>
+
                         </span>
+
 
                         <a href="#"
                            class="course-link">
 
                             View Course
+
                             <i class="fa-solid fa-arrow-right"></i>
 
                         </a>
@@ -2174,13 +3933,16 @@
 
                     <img
                         src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=80"
-                        alt="Leadership">
+                        alt="Leadership"
+                        loading="lazy">
+
 
                     <span class="course-badge">
                         NEW
                     </span>
 
                 </div>
+
 
                 <div class="course-body">
 
@@ -2191,6 +3953,7 @@
                             6 Weeks
                         </span>
 
+
                         <span>
                             <i class="fa-solid fa-user-group"></i>
                             85 Students
@@ -2198,26 +3961,39 @@
 
                     </div>
 
+
                     <h3>
                         Leadership & Management
                     </h3>
 
+
                     <p>
-                        Develop leadership abilities, communication
-                        and team management skills.
+
+                        Develop leadership abilities,
+                        communication and team management
+                        skills.
+
                     </p>
+
 
                     <div class="course-footer">
 
                         <span class="price">
+
                             $95
-                            <small>/ course</small>
+
+                            <small>
+                                / course
+                            </small>
+
                         </span>
+
 
                         <a href="#"
                            class="course-link">
 
                             View Course
+
                             <i class="fa-solid fa-arrow-right"></i>
 
                         </a>
@@ -2238,13 +4014,16 @@
 
                     <img
                         src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80"
-                        alt="Digital Skills">
+                        alt="Digital Skills"
+                        loading="lazy">
+
 
                     <span class="course-badge">
                         FEATURED
                     </span>
 
                 </div>
+
 
                 <div class="course-body">
 
@@ -2255,6 +4034,7 @@
                             10 Weeks
                         </span>
 
+
                         <span>
                             <i class="fa-solid fa-user-group"></i>
                             160 Students
@@ -2262,26 +4042,39 @@
 
                     </div>
 
+
                     <h3>
                         Digital Business Skills
                     </h3>
 
+
                     <p>
-                        Master essential digital tools and skills
-                        for today's professional environment.
+
+                        Master essential digital tools
+                        and skills for today's professional
+                        environment.
+
                     </p>
+
 
                     <div class="course-footer">
 
                         <span class="price">
+
                             $110
-                            <small>/ course</small>
+
+                            <small>
+                                / course
+                            </small>
+
                         </span>
+
 
                         <a href="#"
                            class="course-link">
 
                             View Course
+
                             <i class="fa-solid fa-arrow-right"></i>
 
                         </a>
@@ -2305,6 +4098,7 @@
                class="btn btn-primary">
 
                 View All Courses
+
                 <i class="fa-solid fa-arrow-right"></i>
 
             </a>
@@ -2331,7 +4125,8 @@
 
             <img
                 src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=85"
-                alt="Professional Team">
+                alt="Professional Team"
+                loading="lazy">
 
         </div>
 
@@ -2344,17 +4139,24 @@
                     margin:0 0 35px;
                  ">
 
-                <span>Why Choose Us</span>
+                <span>
+                    Why Choose Us
+                </span>
+
 
                 <h2>
                     Learning Designed
                     For Real Results
                 </h2>
 
+
                 <p>
+
                     We combine professional instruction,
-                    practical activities and modern learning
-                    methods to create meaningful outcomes.
+                    practical activities and modern
+                    learning methods to create
+                    meaningful outcomes.
+
                 </p>
 
             </div>
@@ -2366,8 +4168,11 @@
                 <div class="why-item">
 
                     <div class="why-icon">
+
                         <i class="fa-solid fa-bullseye"></i>
+
                     </div>
+
 
                     <div>
 
@@ -2376,8 +4181,10 @@
                         </h3>
 
                         <p>
+
                             Learn concepts and immediately
                             apply them to practical situations.
+
                         </p>
 
                     </div>
@@ -2388,8 +4195,11 @@
                 <div class="why-item">
 
                     <div class="why-icon">
+
                         <i class="fa-solid fa-people-group"></i>
+
                     </div>
+
 
                     <div>
 
@@ -2398,8 +4208,10 @@
                         </h3>
 
                         <p>
-                            Connect with learners and professionals
-                            who share your goals.
+
+                            Connect with learners and
+                            professionals who share your goals.
+
                         </p>
 
                     </div>
@@ -2410,8 +4222,11 @@
                 <div class="why-item">
 
                     <div class="why-icon">
+
                         <i class="fa-solid fa-chart-line"></i>
+
                     </div>
+
 
                     <div>
 
@@ -2420,8 +4235,11 @@
                         </h3>
 
                         <p>
-                            Develop skills that can support your
-                            professional and entrepreneurial journey.
+
+                            Develop skills that can support
+                            your professional and
+                            entrepreneurial journey.
+
                         </p>
 
                     </div>
@@ -2432,8 +4250,11 @@
                 <div class="why-item">
 
                     <div class="why-icon">
+
                         <i class="fa-solid fa-shield-halved"></i>
+
                     </div>
+
 
                     <div>
 
@@ -2442,8 +4263,10 @@
                         </h3>
 
                         <p>
-                            Receive structured learning and
-                            continuous learner support.
+
+                            Receive structured learning
+                            and continuous learner support.
+
                         </p>
 
                     </div>
@@ -2455,7 +4278,6 @@
 
         </div>
 
-
     </div>
 
 </section>
@@ -2466,22 +4288,29 @@
      BLOG / NEWS
 ============================================================= -->
 
-<section class="section" id="blog">
+<section class="section"
+         id="blog">
 
     <div class="container">
 
 
         <div class="section-header">
 
-            <span>Blog & News</span>
+            <span>
+                Blog & News
+            </span>
+
 
             <h2>
                 Latest From Private Management
             </h2>
 
+
             <p>
+
                 Discover useful insights, announcements,
                 learning resources and professional news.
+
             </p>
 
         </div>
@@ -2490,13 +4319,17 @@
         <div class="blog-grid">
 
 
+            <!-- BLOG -->
+
             <article class="blog-card">
 
                 <div class="blog-image">
 
                     <img
                         src="https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=900&q=80"
-                        alt="Management">
+                        alt="Management"
+                        loading="lazy">
+
 
                     <span class="blog-date">
                         Sep 16, 2026
@@ -2504,25 +4337,33 @@
 
                 </div>
 
+
                 <div class="blog-body">
 
                     <span class="blog-category">
                         Management
                     </span>
 
+
                     <h3>
                         Five Skills Every Modern Manager Needs
                     </h3>
 
+
                     <p>
-                        Explore practical management skills that
-                        can improve teamwork and productivity.
+
+                        Explore practical management skills
+                        that can improve teamwork and
+                        productivity.
+
                     </p>
+
 
                     <a href="#"
                        class="read-more">
 
                         Read Article
+
                         <i class="fa-solid fa-arrow-right"></i>
 
                     </a>
@@ -2532,6 +4373,8 @@
             </article>
 
 
+
+            <!-- EDUCATION -->
 
             <article class="blog-card">
 
@@ -2539,7 +4382,9 @@
 
                     <img
                         src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80"
-                        alt="Students">
+                        alt="Students"
+                        loading="lazy">
+
 
                     <span class="blog-date">
                         Sep 12, 2026
@@ -2547,25 +4392,33 @@
 
                 </div>
 
+
                 <div class="blog-body">
 
                     <span class="blog-category">
                         Education
                     </span>
 
+
                     <h3>
                         Why Practical Learning Matters
                     </h3>
 
+
                     <p>
-                        Understand how practical learning can
-                        strengthen professional development.
+
+                        Understand how practical learning
+                        can strengthen professional
+                        development.
+
                     </p>
+
 
                     <a href="#"
                        class="read-more">
 
                         Read Article
+
                         <i class="fa-solid fa-arrow-right"></i>
 
                     </a>
@@ -2575,6 +4428,8 @@
             </article>
 
 
+
+            <!-- NEWS -->
 
             <article class="blog-card"
                      id="news">
@@ -2583,7 +4438,9 @@
 
                     <img
                         src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=80"
-                        alt="Office">
+                        alt="Office"
+                        loading="lazy">
+
 
                     <span class="blog-date">
                         Sep 08, 2026
@@ -2591,25 +4448,33 @@
 
                 </div>
 
+
                 <div class="blog-body">
 
                     <span class="blog-category">
                         News
                     </span>
 
+
                     <h3>
                         New Professional Programs Coming Soon
                     </h3>
 
+
                     <p>
-                        We are expanding our professional learning
-                        programs with new courses and resources.
+
+                        We are expanding our professional
+                        learning programs with new courses
+                        and resources.
+
                     </p>
+
 
                     <a href="#"
                        class="read-more">
 
                         Read News
+
                         <i class="fa-solid fa-arrow-right"></i>
 
                     </a>
@@ -2637,17 +4502,24 @@
 
         <div class="cta-box">
 
+
             <div class="cta-content">
 
                 <h2>
+
                     Ready to Start Your
                     Learning Journey?
+
                 </h2>
 
+
                 <p>
-                    Join our professional learning community
-                    and start developing skills that can create
-                    new opportunities.
+
+                    Join our professional learning
+                    community and start developing
+                    skills that can create new
+                    opportunities.
+
                 </p>
 
             </div>
@@ -2659,11 +4531,13 @@
                    class="btn btn-light">
 
                     Join Private Management
+
                     <i class="fa-solid fa-arrow-right"></i>
 
                 </a>
 
             </div>
+
 
         </div>
 
@@ -2685,15 +4559,21 @@
 
         <div class="section-header">
 
-            <span>Contact Us</span>
+            <span>
+                Contact Us
+            </span>
+
 
             <h2>
                 Let's Start a Conversation
             </h2>
 
+
             <p>
+
                 Have a question about our programs?
                 Our team is ready to help.
+
             </p>
 
         </div>
@@ -2708,10 +4588,13 @@
                     Get In Touch
                 </h3>
 
+
                 <p>
+
                     Contact Private Management for
                     courses, enrollment, partnerships
                     and professional development.
+
                 </p>
 
 
@@ -2721,7 +4604,9 @@
 
                     <div>
 
-                        <strong>Address</strong>
+                        <strong>
+                            Address
+                        </strong>
 
                         <span>
                             Mogadishu, Somalia
@@ -2738,7 +4623,9 @@
 
                     <div>
 
-                        <strong>Phone</strong>
+                        <strong>
+                            Phone
+                        </strong>
 
                         <span>
                             +252 61 0000000
@@ -2755,7 +4642,9 @@
 
                     <div>
 
-                        <strong>Email</strong>
+                        <strong>
+                            Email
+                        </strong>
 
                         <span>
                             info@privatemanagement.com
@@ -2772,7 +4661,9 @@
 
                     <div>
 
-                        <strong>Working Hours</strong>
+                        <strong>
+                            Working Hours
+                        </strong>
 
                         <span>
                             Saturday – Thursday
@@ -2783,6 +4674,7 @@
                 </div>
 
             </div>
+
 
 
             <form class="contact-form"
@@ -2801,6 +4693,7 @@
                             type="text"
                             class="form-control"
                             placeholder="Your name"
+                            autocomplete="name"
                             required>
 
                     </div>
@@ -2816,6 +4709,7 @@
                             type="email"
                             class="form-control"
                             placeholder="Your email"
+                            autocomplete="email"
                             required>
 
                     </div>
@@ -2834,7 +4728,8 @@
                         <input
                             type="text"
                             class="form-control"
-                            placeholder="+252...">
+                            placeholder="+252..."
+                            autocomplete="tel">
 
                     </div>
 
@@ -2874,6 +4769,7 @@
                     class="btn btn-primary">
 
                     Send Message
+
                     <i class="fa-solid fa-paper-plane"></i>
 
                 </button>
@@ -2901,6 +4797,8 @@
         <div class="container footer-grid">
 
 
+            <!-- BRAND -->
+
             <div class="footer-brand">
 
                 <a href="#home"
@@ -2912,13 +4810,16 @@
 
                     </div>
 
+
                     <div class="logo-text"
                          style="color:white;">
 
                         Private Management
 
                         <small style="color:#16a085;">
+
                             LEARNING & DEVELOPMENT
+
                         </small>
 
                     </div>
@@ -2927,28 +4828,46 @@
 
 
                 <p>
-                    Professional learning and development
-                    programs designed to help people build
-                    skills, careers and organizations.
+
+                    Professional learning and
+                    development programs designed
+                    to help people build skills,
+                    careers and organizations.
+
                 </p>
 
 
                 <div class="footer-social">
 
-                    <a href="#">
+                    <a href="#"
+                       aria-label="Facebook">
+
                         <i class="fa-brands fa-facebook-f"></i>
+
                     </a>
 
-                    <a href="#">
+
+                    <a href="#"
+                       aria-label="Instagram">
+
                         <i class="fa-brands fa-instagram"></i>
+
                     </a>
 
-                    <a href="#">
+
+                    <a href="#"
+                       aria-label="LinkedIn">
+
                         <i class="fa-brands fa-linkedin-in"></i>
+
                     </a>
 
-                    <a href="#">
+
+                    <a href="#"
+                       aria-label="YouTube">
+
                         <i class="fa-brands fa-youtube"></i>
+
                     </a>
 
                 </div>
@@ -2957,36 +4876,56 @@
 
 
 
+            <!-- QUICK LINKS -->
+
             <div class="footer-col">
 
                 <h4>
                     Quick Links
                 </h4>
 
+
                 <ul>
 
                     <li>
-                        <a href="#home">Home</a>
+                        <a href="#home">
+                            Home
+                        </a>
                     </li>
 
-                    <li>
-                        <a href="#about">About Us</a>
-                    </li>
 
                     <li>
-                        <a href="#courses">Courses</a>
+                        <a href="#about">
+                            About Us
+                        </a>
                     </li>
 
-                    <li>
-                        <a href="#blog">Blog</a>
-                    </li>
 
                     <li>
-                        <a href="#news">News</a>
+                        <a href="#courses">
+                            Courses
+                        </a>
                     </li>
 
+
                     <li>
-                        <a href="#contact">Contact</a>
+                        <a href="#blog">
+                            Blog
+                        </a>
+                    </li>
+
+
+                    <li>
+                        <a href="#news">
+                            News
+                        </a>
+                    </li>
+
+
+                    <li>
+                        <a href="#contact">
+                            Contact
+                        </a>
                     </li>
 
                 </ul>
@@ -2995,11 +4934,14 @@
 
 
 
+            <!-- PROGRAMS -->
+
             <div class="footer-col">
 
                 <h4>
                     Programs
                 </h4>
+
 
                 <ul>
 
@@ -3009,11 +4951,13 @@
                         </a>
                     </li>
 
+
                     <li>
                         <a href="#">
                             Leadership
                         </a>
                     </li>
+
 
                     <li>
                         <a href="#">
@@ -3021,11 +4965,13 @@
                         </a>
                     </li>
 
+
                     <li>
                         <a href="#">
                             Professional Development
                         </a>
                     </li>
+
 
                     <li>
                         <a href="#">
@@ -3039,11 +4985,14 @@
 
 
 
+            <!-- NEWSLETTER -->
+
             <div class="footer-col">
 
                 <h4>
                     Newsletter
                 </h4>
+
 
                 <p style="
                     color:rgba(255,255,255,.6);
@@ -3056,14 +5005,19 @@
                 </p>
 
 
-                <form class="newsletter">
+                <form class="newsletter"
+                      id="newsletterForm">
 
                     <input
                         type="email"
                         placeholder="Your email address"
+                        autocomplete="email"
                         required>
 
-                    <button type="submit">
+
+                    <button
+                        type="submit"
+                        aria-label="Subscribe">
 
                         <i class="fa-solid fa-paper-plane"></i>
 
@@ -3080,17 +5034,24 @@
 
 
 
+    <!-- FOOTER BOTTOM -->
+
     <div class="footer-bottom">
 
         <div class="container footer-bottom-inner">
 
             <p>
+
                 © 2026 Private Management.
                 All Rights Reserved.
+
             </p>
 
+
             <p>
+
                 Designed & Developed Professionally
+
             </p>
 
         </div>
@@ -3108,7 +5069,9 @@
 
 <button
     class="scroll-top"
-    id="scrollTop">
+    id="scrollTop"
+    type="button"
+    aria-label="Scroll to top">
 
     <i class="fa-solid fa-arrow-up"></i>
 
@@ -3122,60 +5085,174 @@
 
 <script>
 
+
     /* =========================================================
-       MOBILE NAVIGATION
+       ELEMENTS
     ========================================================== */
+
+    const navbar =
+        document.getElementById("mainNavbar");
+
 
     const menuToggle =
         document.getElementById("menuToggle");
 
+
     const navMenu =
         document.getElementById("navMenu");
 
-    menuToggle.addEventListener("click", function () {
 
-        navMenu.classList.toggle("open");
+
+    /* =========================================================
+       MOBILE NAVIGATION
+    ========================================================== */
+
+    function closeMobileMenu() {
+
+        navMenu.classList.remove("open");
+
+        menuToggle.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+
+        document.body.classList.remove(
+            "menu-open"
+        );
+
 
         const icon =
             menuToggle.querySelector("i");
 
-        if (navMenu.classList.contains("open")) {
 
-            icon.classList.remove("fa-bars");
+        icon.classList.remove(
+            "fa-xmark"
+        );
 
-            icon.classList.add("fa-xmark");
 
-        } else {
+        icon.classList.add(
+            "fa-bars"
+        );
 
-            icon.classList.remove("fa-xmark");
+    }
 
-            icon.classList.add("fa-bars");
+
+    function openMobileMenu() {
+
+        navMenu.classList.add("open");
+
+        menuToggle.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+
+        document.body.classList.add(
+            "menu-open"
+        );
+
+
+        const icon =
+            menuToggle.querySelector("i");
+
+
+        icon.classList.remove(
+            "fa-bars"
+        );
+
+
+        icon.classList.add(
+            "fa-xmark"
+        );
+
+    }
+
+
+    menuToggle.addEventListener(
+        "click",
+        function () {
+
+            if (
+                navMenu.classList.contains("open")
+            ) {
+
+                closeMobileMenu();
+
+            } else {
+
+                openMobileMenu();
+
+            }
 
         }
+    );
 
-    });
 
-
-    /* Close menu after clicking */
+    /* Close mobile menu when link clicked */
 
     document
         .querySelectorAll(".nav-menu a")
         .forEach(link => {
 
-            link.addEventListener("click", () => {
+            link.addEventListener(
+                "click",
+                function () {
 
-                navMenu.classList.remove("open");
+                    closeMobileMenu();
 
-                const icon =
-                    menuToggle.querySelector("i");
-
-                icon.classList.remove("fa-xmark");
-
-                icon.classList.add("fa-bars");
-
-            });
+                }
+            );
 
         });
+
+
+    /* Close menu when resize to desktop */
+
+    window.addEventListener(
+        "resize",
+        function () {
+
+            if (window.innerWidth > 850) {
+
+                closeMobileMenu();
+
+            }
+
+        }
+    );
+
+
+
+    /* =========================================================
+       NAVBAR SCROLL EFFECT
+    ========================================================== */
+
+    function updateNavbar() {
+
+        if (window.scrollY > 20) {
+
+            navbar.classList.add(
+                "scrolled"
+            );
+
+        } else {
+
+            navbar.classList.remove(
+                "scrolled"
+            );
+
+        }
+
+    }
+
+
+    window.addEventListener(
+        "scroll",
+        updateNavbar,
+        { passive: true }
+    );
+
+
+    updateNavbar();
 
 
 
@@ -3186,49 +5263,78 @@
     const slides =
         document.querySelectorAll(".slide");
 
+
     const dots =
         document.querySelectorAll(".dot");
+
 
     const nextBtn =
         document.getElementById("nextSlide");
 
+
     const prevBtn =
         document.getElementById("prevSlide");
 
+
     let currentSlide = 0;
 
-    let sliderTimer;
+    let sliderTimer = null;
 
 
     function showSlide(index) {
 
-        slides.forEach(slide => {
-
-            slide.classList.remove("active");
-
-        });
-
-        dots.forEach(dot => {
-
-            dot.classList.remove("active");
-
-        });
+        if (!slides.length) {
+            return;
+        }
 
 
         if (index >= slides.length) {
+
             currentSlide = 0;
+
         }
 
+
         if (index < 0) {
-            currentSlide = slides.length - 1;
+
+            currentSlide =
+                slides.length - 1;
+
         }
+
+
+        slides.forEach(
+            slide => {
+
+                slide.classList.remove(
+                    "active"
+                );
+
+            }
+        );
+
+
+        dots.forEach(
+            dot => {
+
+                dot.classList.remove(
+                    "active"
+                );
+
+            }
+        );
 
 
         slides[currentSlide]
             .classList.add("active");
 
-        dots[currentSlide]
-            .classList.add("active");
+
+        if (dots[currentSlide]) {
+
+            dots[currentSlide]
+                .classList.add("active");
+
+        }
 
     }
 
@@ -3237,7 +5343,9 @@
 
         currentSlide++;
 
-        showSlide(currentSlide);
+        showSlide(
+            currentSlide
+        );
 
         restartSlider();
 
@@ -3248,7 +5356,9 @@
 
         currentSlide--;
 
-        showSlide(currentSlide);
+        showSlide(
+            currentSlide
+        );
 
         restartSlider();
 
@@ -3257,21 +5367,33 @@
 
     function startSlider() {
 
+        clearInterval(
+            sliderTimer
+        );
+
+
         sliderTimer =
-            setInterval(() => {
+            setInterval(
+                function () {
 
-                currentSlide++;
+                    currentSlide++;
 
-                showSlide(currentSlide);
+                    showSlide(
+                        currentSlide
+                    );
 
-            }, 6000);
+                },
+                6000
+            );
 
     }
 
 
     function restartSlider() {
 
-        clearInterval(sliderTimer);
+        clearInterval(
+            sliderTimer
+        );
 
         startSlider();
 
@@ -3283,31 +5405,62 @@
         nextSlide
     );
 
+
     prevBtn.addEventListener(
         "click",
         prevSlide
     );
 
 
-    dots.forEach((dot, index) => {
+    dots.forEach(
+        (dot, index) => {
 
-        dot.addEventListener(
-            "click",
-            () => {
+            dot.addEventListener(
+                "click",
+                function () {
 
-                currentSlide = index;
+                    currentSlide =
+                        index;
 
-                showSlide(currentSlide);
+                    showSlide(
+                        currentSlide
+                    );
 
-                restartSlider();
+                    restartSlider();
 
-            }
-        );
+                }
+            );
 
-    });
+        }
+    );
 
 
     startSlider();
+
+
+
+    /* =========================================================
+       PAUSE SLIDER WHEN TAB NOT ACTIVE
+    ========================================================== */
+
+    document.addEventListener(
+        "visibilitychange",
+        function () {
+
+            if (document.hidden) {
+
+                clearInterval(
+                    sliderTimer
+                );
+
+            } else {
+
+                startSlider();
+
+            }
+
+        }
+    );
 
 
 
@@ -3316,60 +5469,120 @@
     ========================================================== */
 
     const counters =
-        document.querySelectorAll(".counter");
+        document.querySelectorAll(
+            ".counter"
+        );
+
 
     let countersStarted = false;
 
 
     function animateCounters() {
 
-        if (countersStarted) return;
+        if (countersStarted) {
+            return;
+        }
+
 
         const stats =
-            document.querySelector(".stats");
+            document.querySelector(
+                ".stats"
+            );
+
+
+        if (!stats) {
+            return;
+        }
+
 
         const rect =
             stats.getBoundingClientRect();
 
-        if (rect.top < window.innerHeight - 100) {
+
+        if (
+            rect.top <
+            window.innerHeight - 100
+        ) {
 
             countersStarted = true;
 
-            counters.forEach(counter => {
 
-                const target =
-                    Number(counter.dataset.target);
+            counters.forEach(
+                counter => {
 
-                let count = 0;
+                    const target =
+                        Number(
+                            counter.dataset.target
+                        );
 
-                const increment =
-                    Math.max(1, Math.ceil(target / 80));
+
+                    let count = 0;
 
 
-                const update = () => {
+                    const duration = 1400;
 
-                    count += increment;
+                    const startTime =
+                        performance.now();
 
-                    if (count >= target) {
+
+                    function updateCounter(
+                        currentTime
+                    ) {
+
+                        const elapsed =
+                            currentTime -
+                            startTime;
+
+
+                        const progress =
+                            Math.min(
+                                elapsed /
+                                duration,
+                                1
+                            );
+
+
+                        const eased =
+                            1 -
+                            Math.pow(
+                                1 - progress,
+                                3
+                            );
+
+
+                        count =
+                            Math.floor(
+                                target *
+                                eased
+                            );
+
 
                         counter.textContent =
-                            target.toLocaleString();
+                            count.toLocaleString();
 
-                        return;
+
+                        if (progress < 1) {
+
+                            requestAnimationFrame(
+                                updateCounter
+                            );
+
+                        } else {
+
+                            counter.textContent =
+                                target.toLocaleString();
+
+                        }
 
                     }
 
-                    counter.textContent =
-                        count.toLocaleString();
 
-                    requestAnimationFrame(update);
+                    requestAnimationFrame(
+                        updateCounter
+                    );
 
-                };
-
-
-                update();
-
-            });
+                }
+            );
 
         }
 
@@ -3378,8 +5591,10 @@
 
     window.addEventListener(
         "scroll",
-        animateCounters
+        animateCounters,
+        { passive: true }
     );
+
 
     animateCounters();
 
@@ -3390,34 +5605,50 @@
     ========================================================== */
 
     const scrollTop =
-        document.getElementById("scrollTop");
+        document.getElementById(
+            "scrollTop"
+        );
+
+
+    function updateScrollTop() {
+
+        if (window.scrollY > 500) {
+
+            scrollTop.classList.add(
+                "show"
+            );
+
+        } else {
+
+            scrollTop.classList.remove(
+                "show"
+            );
+
+        }
+
+    }
 
 
     window.addEventListener(
         "scroll",
-        () => {
-
-            if (window.scrollY > 500) {
-
-                scrollTop.classList.add("show");
-
-            } else {
-
-                scrollTop.classList.remove("show");
-
-            }
-
-        }
+        updateScrollTop,
+        { passive: true }
     );
+
+
+    updateScrollTop();
 
 
     scrollTop.addEventListener(
         "click",
-        () => {
+        function () {
 
             window.scrollTo({
+
                 top: 0,
+
                 behavior: "smooth"
+
             });
 
         }
@@ -3430,50 +5661,118 @@
     ========================================================== */
 
     const sections =
-        document.querySelectorAll("section[id]");
+        document.querySelectorAll(
+            "section[id]"
+        );
+
 
     const navLinks =
-        document.querySelectorAll(".nav-menu a");
+        document.querySelectorAll(
+            ".nav-menu a"
+        );
+
+
+    function updateActiveNav() {
+
+        let current = "";
+
+
+        const scrollPosition =
+            window.scrollY +
+            180;
+
+
+        sections.forEach(
+            section => {
+
+                const sectionTop =
+                    section.offsetTop;
+
+
+                const sectionHeight =
+                    section.offsetHeight;
+
+
+                if (
+                    scrollPosition >=
+                    sectionTop &&
+                    scrollPosition <
+                    sectionTop +
+                    sectionHeight
+                ) {
+
+                    current =
+                        section.getAttribute(
+                            "id"
+                        );
+
+                }
+
+            }
+        );
+
+
+        navLinks.forEach(
+            link => {
+
+                link.classList.remove(
+                    "active"
+                );
+
+
+                if (
+                    link.getAttribute(
+                        "href"
+                    ) ===
+                    "#" + current
+                ) {
+
+                    link.classList.add(
+                        "active"
+                    );
+
+                }
+
+            }
+        );
+
+    }
 
 
     window.addEventListener(
         "scroll",
-        () => {
-
-            let current = "";
-
-            sections.forEach(section => {
-
-                const sectionTop =
-                    section.offsetTop - 150;
-
-                if (
-                    window.scrollY >=
-                    sectionTop
-                ) {
-
-                    current =
-                        section.getAttribute("id");
-
-                }
-
-            });
+        updateActiveNav,
+        { passive: true }
+    );
 
 
-            navLinks.forEach(link => {
+    updateActiveNav();
 
-                link.classList.remove("active");
 
-                if (
-                    link.getAttribute("href") ===
-                    "#" + current
-                ) {
 
-                    link.classList.add("active");
+    /* =========================================================
+       CONTACT FORM
+    ========================================================== */
 
-                }
+    const contactForm =
+        document.getElementById(
+            "contactForm"
+        );
 
-            });
+
+    contactForm.addEventListener(
+        "submit",
+        function (e) {
+
+            e.preventDefault();
+
+
+            alert(
+                "Thank you! Your message has been received."
+            );
+
+
+            this.reset();
 
         }
     );
@@ -3481,50 +5780,117 @@
 
 
     /* =========================================================
-       CONTACT FORM DEMO
+       NEWSLETTER
     ========================================================== */
 
-    document
-        .getElementById("contactForm")
-        .addEventListener(
-            "submit",
-            function (e) {
-
-                e.preventDefault();
-
-                alert(
-                    "Thank you! Your message has been received."
-                );
-
-                this.reset();
-
-            }
+    const newsletterForm =
+        document.getElementById(
+            "newsletterForm"
         );
+
+
+    newsletterForm.addEventListener(
+        "submit",
+        function (e) {
+
+            e.preventDefault();
+
+
+            alert(
+                "Thank you for subscribing!"
+            );
+
+
+            this.reset();
+
+        }
+    );
+
 
 
     /* =========================================================
-       NEWSLETTER DEMO
+       ESC KEY CLOSE MOBILE MENU
     ========================================================== */
 
-    document
-        .querySelector(".newsletter")
-        .addEventListener(
-            "submit",
-            function (e) {
+    document.addEventListener(
+        "keydown",
+        function (e) {
 
-                e.preventDefault();
+            if (
+                e.key === "Escape" &&
+                navMenu.classList.contains("open")
+            ) {
 
-                alert(
-                    "Thank you for subscribing!"
-                );
-
-                this.reset();
+                closeMobileMenu();
 
             }
-        );
+
+        }
+    );
+
+
+
+    /* =========================================================
+       TOUCH SWIPE FOR HERO SLIDER
+    ========================================================== */
+
+    let touchStartX = 0;
+
+    let touchEndX = 0;
+
+
+    const hero =
+        document.querySelector(".hero");
+
+
+    hero.addEventListener(
+        "touchstart",
+        function (e) {
+
+            touchStartX =
+                e.changedTouches[0].screenX;
+
+        },
+        { passive: true }
+    );
+
+
+    hero.addEventListener(
+        "touchend",
+        function (e) {
+
+            touchEndX =
+                e.changedTouches[0].screenX;
+
+
+            const distance =
+                touchEndX -
+                touchStartX;
+
+
+            if (Math.abs(distance) < 50) {
+                return;
+            }
+
+
+            if (distance < 0) {
+
+                nextSlide();
+
+            } else {
+
+                prevSlide();
+
+            }
+
+        },
+        { passive: true }
+    );
+
 
 </script>
 
-</body>
-</html>
 
+</body>
+
+</html>
