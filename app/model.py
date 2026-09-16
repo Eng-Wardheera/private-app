@@ -5,6 +5,24 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app import db
 
 
+# ============================================================
+# USER ROLE
+# ============================================================
+
+class UserRole(enum.Enum):
+
+    superadmin = "superadmin"
+
+    school_admin = "school_admin"
+
+    branch_admin = "branch_admin"
+
+    teacher = "teacher"
+
+    student = "student"
+
+    parent = "parent"
+
 
 # ============================================================
 # USER MODEL
@@ -93,27 +111,35 @@ class User(UserMixin, db.Model):
     )
 
     # ========================================================
-    # ROLE & STATUS
+    # ROLE
     # ========================================================
 
     role = db.Column(
         db.String(50),
-        nullable=True,
+        nullable=False,
+        default=UserRole.student.value,
+        server_default=UserRole.student.value,
         index=True
     )
+
+    # ========================================================
+    # ACCOUNT STATUS
+    # ========================================================
 
     status = db.Column(
         db.Boolean,
         nullable=False,
         default=True,
-        server_default="true"
+        server_default="true",
+        index=True
     )
 
     is_verified = db.Column(
         db.Boolean,
         nullable=False,
         default=False,
-        server_default="false"
+        server_default="false",
+        index=True
     )
 
     # ========================================================
@@ -140,32 +166,36 @@ class User(UserMixin, db.Model):
         db.String(10),
         nullable=False,
         default="logout",
-        server_default="logout"
+        server_default="logout",
+        index=True
     )
 
     session_token = db.Column(
         db.String(64),
-        nullable=True,
         unique=True,
+        nullable=True,
         index=True
     )
 
     login_time = db.Column(
         db.DateTime,
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     last_active = db.Column(
         db.DateTime,
         nullable=True,
-        default=datetime.utcnow
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
     )
 
     last_seen = db.Column(
         db.DateTime,
         nullable=True,
-        default=datetime.utcnow
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
     )
 
     # ========================================================
@@ -174,50 +204,42 @@ class User(UserMixin, db.Model):
 
     facebook = db.Column(
         db.String(255),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     twitter = db.Column(
         db.String(255),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     google = db.Column(
         db.String(255),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     linkedin = db.Column(
         db.String(255),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     skype = db.Column(
         db.String(255),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     whatsapp = db.Column(
         db.String(255),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     instagram = db.Column(
         db.String(255),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     github = db.Column(
         db.String(255),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     # ========================================================
@@ -231,14 +253,12 @@ class User(UserMixin, db.Model):
 
     pob = db.Column(
         db.String(255),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     gender = db.Column(
         db.String(20),
-        nullable=True,
-        default=None
+        nullable=True
     )
 
     # ========================================================
@@ -248,25 +268,17 @@ class User(UserMixin, db.Model):
     created_at = db.Column(
         db.DateTime,
         nullable=False,
-        default=datetime.utcnow
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
     )
 
     updated_at = db.Column(
         db.DateTime,
         nullable=False,
         default=datetime.utcnow,
-        onupdate=datetime.utcnow
-    )
-
-    # ========================================================
-    # RELATIONSHIPS
-    # ========================================================
-
-    properties = db.relationship(
-        "Property",
-        backref="agent",
-        lazy=True,
-        cascade="all, delete-orphan"
+        onupdate=datetime.utcnow,
+        server_default=db.func.now()
     )
 
     # ========================================================
@@ -293,10 +305,64 @@ class User(UserMixin, db.Model):
         )
 
     # ========================================================
+    # USER ROLE HELPERS
+    # ========================================================
+
+    def is_superadmin(self):
+
+        return self.role == UserRole.superadmin.value
+
+    # --------------------------------------------------------
+
+    def is_school_admin(self):
+
+        return self.role == UserRole.school_admin.value
+
+    # --------------------------------------------------------
+
+    def is_branch_admin(self):
+
+        return self.role == UserRole.branch_admin.value
+
+    # --------------------------------------------------------
+
+    def is_teacher(self):
+
+        return self.role == UserRole.teacher.value
+
+    # --------------------------------------------------------
+
+    def is_student(self):
+
+        return self.role == UserRole.student.value
+
+    # --------------------------------------------------------
+
+    def is_parent(self):
+
+        return self.role == UserRole.parent.value
+
+    # ========================================================
+    # ACCOUNT HELPERS
+    # ========================================================
+
+    def is_active(self):
+
+        return bool(self.status)
+
+    # ========================================================
     # REPRESENTATION
     # ========================================================
 
     def __repr__(self):
 
-        return f"<User {self.username}>"
+        return (
+            f"<User "
+            f"id={self.id} "
+            f"username={self.username!r} "
+            f"role={self.role!r}>"
+        )
 
+
+
+   

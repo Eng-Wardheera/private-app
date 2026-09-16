@@ -1,0 +1,1705 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Register | Private Management</title>
+
+    <!-- =========================================================
+         GOOGLE FONT
+    ========================================================== -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- =========================================================
+         FONT AWESOME
+    ========================================================== -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+
+        /* =====================================================
+           GLOBAL
+        ====================================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            background:
+                radial-gradient(
+                    circle at top left,
+                    rgba(37, 99, 235, 0.12),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at bottom right,
+                    rgba(16, 185, 129, 0.10),
+                    transparent 35%
+                ),
+                #f5f7fb;
+
+            color: #172033;
+            overflow-x: hidden;
+        }
+
+        button,
+        input {
+            font-family: inherit;
+        }
+
+        /* =====================================================
+           PAGE
+        ====================================================== */
+
+        .register-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 35px 20px;
+        }
+
+        /* =====================================================
+           MAIN CARD
+        ====================================================== */
+
+        .register-wrapper {
+            width: 100%;
+            max-width: 1050px;
+            min-height: 650px;
+
+            display: grid;
+            grid-template-columns: 0.95fr 1.05fr;
+
+            background: #ffffff;
+
+            border-radius: 24px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 25px 70px rgba(15, 23, 42, 0.12);
+
+            border: 1px solid rgba(15, 23, 42, 0.05);
+        }
+
+        /* =====================================================
+           LEFT SIDE
+        ====================================================== */
+
+        .register-info {
+            position: relative;
+
+            padding: 55px 45px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #0f172a 0%,
+                    #172554 45%,
+                    #1d4ed8 100%
+                );
+
+            overflow: hidden;
+        }
+
+        .register-info::before {
+            content: "";
+            position: absolute;
+
+            width: 280px;
+            height: 280px;
+
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.05);
+
+            top: -100px;
+            right: -100px;
+        }
+
+        .register-info::after {
+            content: "";
+            position: absolute;
+
+            width: 220px;
+            height: 220px;
+
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.04);
+
+            bottom: -90px;
+            left: -90px;
+        }
+
+        .brand {
+            position: relative;
+            z-index: 2;
+
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            margin-bottom: 50px;
+        }
+
+        .brand-icon {
+            width: 46px;
+            height: 46px;
+
+            border-radius: 13px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: rgba(255, 255, 255, 0.14);
+
+            border: 1px solid rgba(255, 255, 255, 0.15);
+
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .info-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .info-content h1 {
+            font-size: 40px;
+            line-height: 1.15;
+
+            font-weight: 800;
+
+            letter-spacing: -1.3px;
+
+            margin-bottom: 20px;
+        }
+
+        .info-content p {
+            color: rgba(255, 255, 255, 0.78);
+
+            font-size: 14px;
+            line-height: 1.8;
+
+            max-width: 390px;
+
+            margin-bottom: 35px;
+        }
+
+        /* =====================================================
+           FEATURES
+        ====================================================== */
+
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 17px;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+
+            color: rgba(255, 255, 255, 0.90);
+
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .feature-icon {
+            width: 34px;
+            height: 34px;
+
+            flex-shrink: 0;
+
+            border-radius: 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: rgba(255, 255, 255, 0.10);
+
+            font-size: 13px;
+        }
+
+        /* =====================================================
+           RIGHT SIDE
+        ====================================================== */
+
+        .register-form-area {
+            padding: 48px 50px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #ffffff;
+        }
+
+        .register-form-container {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        /* =====================================================
+           FORM HEADER
+        ====================================================== */
+
+        .form-header {
+            margin-bottom: 30px;
+        }
+
+        .form-header h2 {
+            font-size: 27px;
+
+            font-weight: 800;
+
+            color: #111827;
+
+            letter-spacing: -0.7px;
+
+            margin-bottom: 8px;
+        }
+
+        .form-header p {
+            font-size: 13px;
+
+            color: #6b7280;
+
+            line-height: 1.6;
+        }
+
+        /* =====================================================
+           FLASH MESSAGES
+        ====================================================== */
+
+        .flash-container {
+            margin-bottom: 22px;
+        }
+
+        .flash-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+
+            padding: 12px 14px;
+
+            border-radius: 10px;
+
+            font-size: 12px;
+            line-height: 1.5;
+
+            margin-bottom: 8px;
+        }
+
+        .flash-message.success {
+            color: #166534;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .flash-message.danger,
+        .flash-message.error {
+            color: #991b1b;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .flash-message.warning {
+            color: #92400e;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+        }
+
+        .flash-message.info {
+            color: #1e40af;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .flash-close {
+            margin-left: auto;
+
+            border: 0;
+            background: transparent;
+
+            cursor: pointer;
+
+            color: inherit;
+
+            opacity: 0.6;
+        }
+
+        /* =====================================================
+           FORM GROUP
+        ====================================================== */
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            gap: 15px;
+        }
+
+        .form-label {
+            display: block;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            color: #374151;
+
+            margin-bottom: 8px;
+        }
+
+        /* =====================================================
+           INPUT
+        ====================================================== */
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+
+            left: 14px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            color: #9ca3af;
+
+            font-size: 13px;
+
+            pointer-events: none;
+
+            transition: 0.2s ease;
+        }
+
+        .form-input {
+            width: 100%;
+
+            height: 47px;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 11px;
+
+            background: #f9fafb;
+
+            padding:
+                0 43px
+                0 40px;
+
+            outline: none;
+
+            font-size: 13px;
+
+            color: #111827;
+
+            transition:
+                border-color 0.2s ease,
+                background 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .form-input::placeholder {
+            color: #a1a1aa;
+        }
+
+        .form-input:hover {
+            border-color: #d1d5db;
+        }
+
+        .form-input:focus {
+            background: #ffffff;
+
+            border-color: #2563eb;
+
+            box-shadow:
+                0 0 0 3px rgba(37, 99, 235, 0.10);
+        }
+
+        .input-wrapper:focus-within .input-icon {
+            color: #2563eb;
+        }
+
+        /* =====================================================
+           PASSWORD BUTTON
+        ====================================================== */
+
+        .password-toggle {
+            position: absolute;
+
+            right: 13px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            width: 28px;
+            height: 28px;
+
+            border: 0;
+
+            background: transparent;
+
+            color: #9ca3af;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 7px;
+
+            transition: 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: #2563eb;
+            background: #eff6ff;
+        }
+
+        /* =====================================================
+           PASSWORD STRENGTH
+        ====================================================== */
+
+        .password-strength {
+            margin-top: 8px;
+
+            display: none;
+        }
+
+        .strength-bar {
+            width: 100%;
+            height: 4px;
+
+            background: #e5e7eb;
+
+            border-radius: 50px;
+
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            width: 0;
+            height: 100%;
+
+            border-radius: 50px;
+
+            transition: width 0.25s ease;
+        }
+
+        .strength-text {
+            margin-top: 5px;
+
+            font-size: 10px;
+
+            color: #6b7280;
+        }
+
+        /* =====================================================
+           TERMS
+        ====================================================== */
+
+        .terms {
+            display: flex;
+            align-items: flex-start;
+
+            gap: 9px;
+
+            margin: 5px 0 20px;
+        }
+
+        .terms input {
+            margin-top: 2px;
+
+            width: 14px;
+            height: 14px;
+
+            accent-color: #2563eb;
+
+            cursor: pointer;
+        }
+
+        .terms label {
+            font-size: 11px;
+
+            line-height: 1.5;
+
+            color: #6b7280;
+
+            cursor: pointer;
+        }
+
+        .terms a {
+            color: #2563eb;
+
+            text-decoration: none;
+
+            font-weight: 600;
+        }
+
+        .terms a:hover {
+            text-decoration: underline;
+        }
+
+        /* =====================================================
+           REGISTER BUTTON
+        ====================================================== */
+
+        .register-button {
+            width: 100%;
+
+            height: 48px;
+
+            border: 0;
+
+            border-radius: 11px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #1d4ed8
+                );
+
+            color: #ffffff;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 9px;
+
+            box-shadow:
+                0 8px 20px rgba(37, 99, 235, 0.20);
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                opacity 0.2s ease;
+        }
+
+        .register-button:hover {
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 12px 25px rgba(37, 99, 235, 0.26);
+        }
+
+        .register-button:active {
+            transform: translateY(0);
+        }
+
+        .register-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* =====================================================
+           LOGIN LINK
+        ====================================================== */
+
+        .login-link {
+            text-align: center;
+
+            margin-top: 22px;
+
+            font-size: 12px;
+
+            color: #6b7280;
+        }
+
+        .login-link a {
+            color: #2563eb;
+
+            font-weight: 700;
+
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* =====================================================
+           FOOTER
+        ====================================================== */
+
+        .form-footer {
+            text-align: center;
+
+            margin-top: 28px;
+
+            padding-top: 18px;
+
+            border-top: 1px solid #f1f5f9;
+
+            font-size: 10px;
+
+            color: #9ca3af;
+        }
+
+        /* =====================================================
+           LOADING
+        ====================================================== */
+
+        .spinner {
+            width: 15px;
+            height: 15px;
+
+            border: 2px solid rgba(255, 255, 255, 0.35);
+
+            border-top-color: #ffffff;
+
+            border-radius: 50%;
+
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =====================================================
+           MOBILE
+        ====================================================== */
+
+        @media (max-width: 850px) {
+
+            .register-page {
+                padding: 20px 15px;
+            }
+
+            .register-wrapper {
+                max-width: 560px;
+
+                grid-template-columns: 1fr;
+
+                min-height: auto;
+
+                border-radius: 20px;
+            }
+
+            .register-info {
+                padding: 32px 28px;
+
+                min-height: auto;
+            }
+
+            .brand {
+                margin-bottom: 25px;
+            }
+
+            .info-content h1 {
+                font-size: 28px;
+
+                letter-spacing: -0.8px;
+
+                margin-bottom: 12px;
+            }
+
+            .info-content p {
+                font-size: 12px;
+
+                line-height: 1.7;
+
+                margin-bottom: 22px;
+            }
+
+            .features {
+                display: grid;
+
+                grid-template-columns: 1fr 1fr;
+
+                gap: 12px;
+            }
+
+            .feature {
+                font-size: 11px;
+            }
+
+            .feature-icon {
+                width: 30px;
+                height: 30px;
+            }
+
+            .register-form-area {
+                padding: 35px 28px;
+            }
+
+        }
+
+        @media (max-width: 520px) {
+
+            .register-page {
+                padding: 0;
+                align-items: stretch;
+            }
+
+            .register-wrapper {
+                min-height: 100vh;
+
+                border-radius: 0;
+
+                border: 0;
+
+                box-shadow: none;
+            }
+
+            .register-info {
+                padding: 28px 20px 25px;
+            }
+
+            .brand {
+                margin-bottom: 22px;
+            }
+
+            .brand-icon {
+                width: 40px;
+                height: 40px;
+
+                border-radius: 11px;
+            }
+
+            .brand-name {
+                font-size: 16px;
+            }
+
+            .info-content h1 {
+                font-size: 25px;
+            }
+
+            .info-content p {
+                font-size: 11px;
+
+                margin-bottom: 18px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+                gap: 9px;
+            }
+
+            .feature {
+                font-size: 10.5px;
+            }
+
+            .feature-icon {
+                width: 28px;
+                height: 28px;
+            }
+
+            .register-form-area {
+                padding: 30px 20px 35px;
+
+                align-items: flex-start;
+            }
+
+            .form-header {
+                margin-bottom: 24px;
+            }
+
+            .form-header h2 {
+                font-size: 23px;
+            }
+
+            .form-header p {
+                font-size: 11px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+
+                gap: 0;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .form-input {
+                height: 45px;
+
+                font-size: 12px;
+            }
+
+            .register-button {
+                height: 46px;
+
+                font-size: 12px;
+            }
+
+            .login-link {
+                font-size: 11px;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="register-page">
+
+    <div class="register-wrapper">
+
+        <!-- =================================================
+             LEFT INFORMATION
+        ================================================== -->
+
+        <section class="register-info">
+
+            <div class="brand">
+
+                <div class="brand-icon">
+                    <i class="fa-solid fa-building"></i>
+                </div>
+
+                <div class="brand-name">
+                    Private Management
+                </div>
+
+            </div>
+
+            <div class="info-content">
+
+                <h1>
+                    Create your account
+                </h1>
+
+                <p>
+                    Join Private Management and manage your
+                    account securely with a simple and modern
+                    management experience.
+                </p>
+
+                <div class="features">
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+
+                        <span>
+                            Secure account management
+                        </span>
+
+                    </div>
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+
+                        <span>
+                            Easy profile management
+                        </span>
+
+                    </div>
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+
+                        <span>
+                            Simple management tools
+                        </span>
+
+                    </div>
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+
+                        <span>
+                            Protected login access
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             REGISTER FORM
+        ================================================== -->
+
+        <section class="register-form-area">
+
+            <div class="register-form-container">
+
+                <!-- =================================================
+                     HEADER
+                ================================================== -->
+
+                <div class="form-header">
+
+                    <h2>
+                        Create Account
+                    </h2>
+
+                    <p>
+                        Fill in your details below to create
+                        your account.
+                    </p>
+
+                </div>
+
+
+                <!-- =================================================
+                     FLASH MESSAGES
+                ================================================== -->
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+
+                    {% if messages %}
+
+                        <div class="flash-container">
+
+                            {% for category, message in messages %}
+
+                                <div class="flash-message {{ category }}">
+
+                                    {% if category == "success" %}
+
+                                        <i class="fa-solid fa-circle-check"></i>
+
+                                    {% elif category in ["danger", "error"] %}
+
+                                        <i class="fa-solid fa-circle-exclamation"></i>
+
+                                    {% elif category == "warning" %}
+
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+
+                                    {% else %}
+
+                                        <i class="fa-solid fa-circle-info"></i>
+
+                                    {% endif %}
+
+                                    <span>
+                                        {{ message }}
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        class="flash-close"
+                                        onclick="this.parentElement.remove()"
+                                    >
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                {% endwith %}
+
+
+                <!-- =================================================
+                     FORM
+                ================================================== -->
+
+                <form
+                    method="POST"
+                    action="{{ url_for('main.register') }}"
+                    id="registerForm"
+                    novalidate
+                >
+
+                    <!-- =================================================
+                         USERNAME + EMAIL
+                    ================================================== -->
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="username"
+                            >
+                                Username
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <i class="fa-solid fa-user input-icon"></i>
+
+                                <input
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    class="form-input"
+                                    placeholder="Enter username"
+                                    autocomplete="username"
+                                    value="{{ request.form.get('username', '') }}"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="email"
+                            >
+                                Email Address
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <i class="fa-solid fa-envelope input-icon"></i>
+
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    class="form-input"
+                                    placeholder="Enter email"
+                                    autocomplete="email"
+                                    value="{{ request.form.get('email', '') }}"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         FULL NAME
+                    ================================================== -->
+
+                    <div class="form-group">
+
+                        <label
+                            class="form-label"
+                            for="fullname"
+                        >
+                            Full Name
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-id-card input-icon"></i>
+
+                            <input
+                                type="text"
+                                id="fullname"
+                                name="fullname"
+                                class="form-input"
+                                placeholder="Enter your full name"
+                                autocomplete="name"
+                                value="{{ request.form.get('fullname', '') }}"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         PASSWORD
+                    ================================================== -->
+
+                    <div class="form-group">
+
+                        <label
+                            class="form-label"
+                            for="password"
+                        >
+                            Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock input-icon"></i>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-input"
+                                placeholder="Create a password"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                onclick="togglePassword('password', this)"
+                                aria-label="Show password"
+                            >
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+
+                        </div>
+
+                        <div
+                            class="password-strength"
+                            id="passwordStrength"
+                        >
+
+                            <div class="strength-bar">
+
+                                <div
+                                    class="strength-fill"
+                                    id="strengthFill"
+                                ></div>
+
+                            </div>
+
+                            <div
+                                class="strength-text"
+                                id="strengthText"
+                            >
+                                Password strength
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         CONFIRM PASSWORD
+                    ================================================== -->
+
+                    <div class="form-group">
+
+                        <label
+                            class="form-label"
+                            for="confirm_password"
+                        >
+                            Confirm Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock input-icon"></i>
+
+                            <input
+                                type="password"
+                                id="confirm_password"
+                                name="confirm_password"
+                                class="form-input"
+                                placeholder="Confirm your password"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                onclick="togglePassword('confirm_password', this)"
+                                aria-label="Show password"
+                            >
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         TERMS
+                    ================================================== -->
+
+                    <div class="terms">
+
+                        <input
+                            type="checkbox"
+                            id="terms"
+                            name="terms"
+                        >
+
+                        <label for="terms">
+
+                            I agree to the
+                            <a href="#" onclick="return false;">
+                                Terms & Conditions
+                            </a>
+                            and
+                            <a href="#" onclick="return false;">
+                                Privacy Policy
+                            </a>.
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         SUBMIT
+                    ================================================== -->
+
+                    <button
+                        type="submit"
+                        class="register-button"
+                        id="registerButton"
+                    >
+
+                        <i class="fa-solid fa-user-plus"></i>
+
+                        <span>
+                            Create Account
+                        </span>
+
+                    </button>
+
+
+                    <!-- =================================================
+                         LOGIN
+                    ================================================== -->
+
+                    <div class="login-link">
+
+                        Already have an account?
+
+                        <a href="{{ url_for('main.login') }}">
+                            Login
+                        </a>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         FOOTER
+                    ================================================== -->
+
+                    <div class="form-footer">
+
+                        © {{ current_year if current_year is defined else "2026" }}
+                        Private Management.
+                        All rights reserved.
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+
+<!-- =============================================================
+     JAVASCRIPT
+============================================================== -->
+
+<script>
+
+    /* =========================================================
+       PASSWORD SHOW / HIDE
+    ========================================================== */
+
+    function togglePassword(inputId, button) {
+
+        const input = document.getElementById(inputId);
+
+        if (!input) return;
+
+        const icon = button.querySelector("i");
+
+        if (input.type === "password") {
+
+            input.type = "text";
+
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+
+            button.setAttribute(
+                "aria-label",
+                "Hide password"
+            );
+
+        } else {
+
+            input.type = "password";
+
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+
+            button.setAttribute(
+                "aria-label",
+                "Show password"
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       PASSWORD STRENGTH
+    ========================================================== */
+
+    const passwordInput =
+        document.getElementById("password");
+
+    const passwordStrength =
+        document.getElementById("passwordStrength");
+
+    const strengthFill =
+        document.getElementById("strengthFill");
+
+    const strengthText =
+        document.getElementById("strengthText");
+
+
+    if (passwordInput) {
+
+        passwordInput.addEventListener(
+            "input",
+            function () {
+
+                const password = this.value;
+
+                if (!password) {
+
+                    passwordStrength.style.display = "none";
+
+                    return;
+                }
+
+                passwordStrength.style.display = "block";
+
+                let score = 0;
+
+                if (password.length >= 6) {
+                    score++;
+                }
+
+                if (password.length >= 8) {
+                    score++;
+                }
+
+                if (/[A-Z]/.test(password)) {
+                    score++;
+                }
+
+                if (/[0-9]/.test(password)) {
+                    score++;
+                }
+
+                if (/[^A-Za-z0-9]/.test(password)) {
+                    score++;
+                }
+
+
+                let width = "20%";
+                let text = "Very weak";
+
+                if (score === 2) {
+
+                    width = "40%";
+                    text = "Weak";
+
+                } else if (score === 3) {
+
+                    width = "60%";
+                    text = "Medium";
+
+                } else if (score === 4) {
+
+                    width = "80%";
+                    text = "Strong";
+
+                } else if (score >= 5) {
+
+                    width = "100%";
+                    text = "Very strong";
+
+                }
+
+
+                strengthFill.style.width = width;
+
+                strengthText.textContent = text;
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       FORM SUBMIT
+    ========================================================== */
+
+    const registerForm =
+        document.getElementById("registerForm");
+
+    const registerButton =
+        document.getElementById("registerButton");
+
+
+    if (registerForm) {
+
+        registerForm.addEventListener(
+            "submit",
+            function (event) {
+
+                const username =
+                    document.getElementById("username");
+
+                const email =
+                    document.getElementById("email");
+
+                const fullname =
+                    document.getElementById("fullname");
+
+                const password =
+                    document.getElementById("password");
+
+                const confirmPassword =
+                    document.getElementById("confirm_password");
+
+                const terms =
+                    document.getElementById("terms");
+
+
+                /* =============================================
+                   BASIC VALIDATION
+                ============================================== */
+
+                if (!username.value.trim()) {
+
+                    event.preventDefault();
+
+                    username.focus();
+
+                    alert("Please enter your username.");
+
+                    return;
+                }
+
+
+                if (!email.value.trim()) {
+
+                    event.preventDefault();
+
+                    email.focus();
+
+                    alert("Please enter your email address.");
+
+                    return;
+                }
+
+
+                if (!fullname.value.trim()) {
+
+                    event.preventDefault();
+
+                    fullname.focus();
+
+                    alert("Please enter your full name.");
+
+                    return;
+                }
+
+
+                if (!password.value) {
+
+                    event.preventDefault();
+
+                    password.focus();
+
+                    alert("Please enter your password.");
+
+                    return;
+                }
+
+
+                if (
+                    password.value !==
+                    confirmPassword.value
+                ) {
+
+                    event.preventDefault();
+
+                    confirmPassword.focus();
+
+                    alert("Passwords do not match.");
+
+                    return;
+                }
+
+
+                /*
+                 * Terms checkbox is intentionally not enforced
+                 * because the Flask route does not currently
+                 * validate a "terms" field.
+                 */
+
+
+                /* =============================================
+                   LOADING STATE
+                ============================================== */
+
+                registerButton.disabled = true;
+
+                registerButton.innerHTML = `
+                    <span class="spinner"></span>
+                    <span>Creating Account...</span>
+                `;
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       AUTO HIDE FLASH MESSAGES
+    ========================================================== */
+
+    setTimeout(function () {
+
+        const messages =
+            document.querySelectorAll(
+                ".flash-message"
+            );
+
+        messages.forEach(function (message) {
+
+            message.style.transition =
+                "opacity 0.3s ease, transform 0.3s ease";
+
+            message.style.opacity = "0";
+
+            message.style.transform =
+                "translateY(-5px)";
+
+            setTimeout(function () {
+
+                message.remove();
+
+            }, 300);
+
+        });
+
+    }, 6000);
+
+</script>
+
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Flash message handling with SweetAlert2 -->
+<script>
+   // Flash message handling with SweetAlert2
+   const flashMessages = {{ get_flashed_messages(with_categories=True) | tojson | safe }};
+   
+   if (flashMessages.length > 0) {
+       const [category, message] = flashMessages[0];
+   
+       const Toast = Swal.mixin({
+           toast: true,
+           position: 'top-end',
+           showConfirmButton: false,
+           timer: 3000,
+           timerProgressBar: true,
+           background: '#fff',
+           color: '#333',
+           didOpen: (toast) => {
+               toast.addEventListener('mouseenter', Swal.stopTimer)
+               toast.addEventListener('mouseleave', Swal.resumeTimer)
+           }
+       });
+   
+       Toast.fire({
+           icon: category === "success" ? "success" : "info",
+           title: message
+       });
+   }
+</script>
+
+
+</body>
+</html>
+

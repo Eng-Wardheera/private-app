@@ -1,0 +1,450 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Flood Prediction Detection System</title>
+    <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
+
+    <link rel="icon" href="{{ url_for('static', filename='backend/assets/img/favicon.ico') }}" type="image/x-icon" />
+    <script src="{{ url_for('static', filename='backend/assets/js/plugin/webfont/webfont.min.js') }}"></script>
+    <script>
+        WebFont.load({
+            google: { families: ["Public Sans:300,400,500,600,700"] },
+            custom: {
+                families: [
+                    "Font Awesome 5 Solid",
+                    "Font Awesome 5 Regular",
+                    "Font Awesome 5 Brands",
+                    "simple-line-icons",
+                ],
+                urls: ["{{ url_for('static', filename='backend/assets/css/fonts.min.css') }}"],
+            },
+            active: function () {
+                sessionStorage.fonts = true;
+            },
+        });
+    </script>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='backend/assets/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='backend/assets/css/plugins.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='backend/assets/css/kaiadmin.min.css') }}">
+
+    <!-- Demo CSS (optional - don't include in production) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='backend/assets/css/demo.css') }}">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
+    <link rel="icon" href="{{ url_for('static', filename='backend/assets/img/flood.png') }}" type="image/x-icon">
+  
+    <!-- initial Stylesheet -->
+    <!-- profile-initial users dynamically  -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='backend/css/initial.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+    
+</head>
+<body>
+    <div class="wrapper">
+        {% include 'backend/components/sidebar.html' %}
+        
+        <div class="main-panel">
+            {% include 'backend/components/navbar.html' %}
+            
+            <div class="container">
+                <div class="page-inner">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+
+            <!-- Flash messages -->
+              
+
+            
+            {% include 'backend/components/footer.html' %}
+        </div>
+
+          <!-- Custom template | don't include it in your project! -->
+       {% include 'backend/components/settings.html' %}
+
+    </div>
+    
+
+<!-- Core JS Files -->
+<script src="{{ url_for('static', filename='backend/assets/js/core/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='backend/assets/js/core/popper.min.js') }}"></script>
+<script src="{{ url_for('static', filename='backend/assets/js/core/bootstrap.min.js') }}"></script>
+
+<!-- jQuery Scrollbar -->
+<script src="{{ url_for('static', filename='backend/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js') }}"></script>
+
+<!-- Chart JS -->
+<script src="{{ url_for('static', filename='backend/assets/js/plugin/chart.js/chart.min.js') }}"></script>
+
+<!-- jQuery Sparkline -->
+<script src="{{ url_for('static', filename='backend/assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js') }}"></script>
+
+<!-- Chart Circle -->
+<script src="{{ url_for('static', filename='backend/assets/js/plugin/chart-circle/circles.min.js') }}"></script>
+
+<!-- Datatables -->
+<script src="{{ url_for('static', filename='backend/assets/js/plugin/datatables/datatables.min.js') }}"></script>
+
+<!-- Bootstrap Notify -->
+<script src="{{ url_for('static', filename='backend/assets/js/plugin/bootstrap-notify/bootstrap-notify.min.js') }}"></script>
+
+<!-- jQuery Vector Maps -->
+<script src="{{ url_for('static', filename='backend/assets/js/plugin/jsvectormap/jsvectormap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='backend/assets/js/plugin/jsvectormap/world.js') }}"></script>
+
+<!-- Sweet Alert -->
+<script src="{{ url_for('static', filename='backend/assets/js/plugin/sweetalert/sweetalert.min.js') }}"></script>
+
+<!-- Kaiadmin JS -->
+<script src="{{ url_for('static', filename='backend/assets/js/kaiadmin.min.js') }}"></script>
+
+<!-- Kaiadmin DEMO methods, don't include in production -->
+<script src="{{ url_for('static', filename='backend/assets/js/setting-demo.js') }}"></script>
+
+    <script>
+        var currentUsername = "{{ current_user.username if current_user.is_authenticated else '' }}";
+    </script>
+    <script src="{{ url_for('static', filename='backend/assets/js/demo.js') }}"></script>
+
+
+   <script>
+     $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
+       type: "line",
+       height: "70",
+       width: "100%",
+       lineWidth: "2",
+       lineColor: "#177dff",
+       fillColor: "rgba(23, 125, 255, 0.14)",
+     });
+
+     $("#lineChart2").sparkline([99, 125, 122, 105, 110, 124, 115], {
+       type: "line",
+       height: "70",
+       width: "100%",
+       lineWidth: "2",
+       lineColor: "#f3545d",
+       fillColor: "rgba(243, 84, 93, .14)",
+     });
+
+     $("#lineChart3").sparkline([105, 103, 123, 100, 95, 105, 115], {
+       type: "line",
+       height: "70",
+       width: "100%",
+       lineWidth: "2",
+       lineColor: "#ffa534",
+       fillColor: "rgba(255, 165, 52, .14)",
+     });
+   </script>
+
+
+<script>
+    // $(document).ready(function() {
+    //     $('#our-datatables').DataTable({
+    //         "paging": true,  // Enable paging (pagination)
+    //         "lengthChange": false,  // Disable the ability to change the number of rows displayed
+    //         "searching": true,  // Enable the search bar
+    //         "ordering": true,  // Enable column ordering
+    //         "info": true,  // Show information about the table
+    //         "autoWidth": false,  // Disable auto width adjustment
+    //     });
+    // });
+
+    $(document).ready(function () {
+        if ($.fn.DataTable.isDataTable('#our-datatables')) {
+            $('#our-datatables').DataTable().destroy();
+        }
+
+        $('#our-datatables').DataTable();
+    });
+
+
+</script>
+
+ <!-- jQuery and Scripts -->
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script> -->
+
+<script>
+  
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const notifLinks = document.querySelectorAll('.notif-link');
+    
+      notifLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          const logId = this.getAttribute("data-log-id");
+          const notificationElement = this;
+    
+          fetch(`/mark_as_read/${logId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.unread_notifications_count !== undefined) {
+              // Update counter
+              document.getElementById('notif_count').innerText = data.unread_notifications_count;
+              document.getElementById('notif_message_count').innerText = data.unread_notifications_count;
+    
+              // Remove this notification from the UI
+              notificationElement.remove();
+            }
+          })
+          .catch(error => {
+            console.error("Error:", error);
+          });
+        });
+      });
+    });
+    </script>
+    
+
+<!-- SweetAlert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+   <!-- Make sure you load jQuery before DataTables JS -->
+   <!-- <script src="{{ url_for('static', filename='backend/assets/js/plugin/datatables/datatables.min.js') }}"></script> -->
+
+   <!-- safety_tips -->
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      const userSelect = document.getElementById('user-select');
+      const predictionSelect = document.getElementById('prediction-select');
+  
+      userSelect.addEventListener('change', function () {
+          const userId = this.value;
+          predictionSelect.innerHTML = '<option value="">Loading...</option>';
+  
+          fetch(`/get_user_predictions/${userId}`)
+              .then(res => res.json())
+              .then(data => {
+                  predictionSelect.innerHTML = '<option value="">-- Select Prediction --</option>';
+                  data.predictions.forEach(pred => {
+                      const option = document.createElement('option');
+                      option.value = pred.title;
+                      option.textContent = pred.title;
+                      predictionSelect.appendChild(option);
+                  });
+              })
+              .catch(err => {
+                  predictionSelect.innerHTML = '<option value="">Error loading predictions</option>';
+              });
+      });
+  });
+  </script>
+  
+
+    
+<script>
+
+    
+    // Flash message handling with SweetAlert2
+    const flashMessages = {{ get_flashed_messages(with_categories=True) | tojson | safe }};
+    
+    if (flashMessages.length > 0) {
+        flashMessages.forEach(([category, message]) => {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: '#fff',
+                color: '#333',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            // Display SweetAlert based on message category
+            Toast.fire({
+                icon: category === "success" ? "success" : "error", 
+                title: message
+            });
+        });
+    }
+
+     // Inactivity timer: User will be logged out after 5 minutes of inactivity
+   let timeout;
+   
+   function resetTimer() {
+     clearTimeout(timeout);
+     timeout = setTimeout(() => {
+       alert("You were inactive for 24 hours. You will now be logged out.");
+       window.location.href = "/logout";  // Redirect to logout route
+    }, 24 * 60 * 60 * 1000);  // 24 hours in milliseconds
+   }
+   
+   // Reset timer on any activity
+   ['click', 'mousemove', 'keypress', 'scroll'].forEach(evt =>
+     document.addEventListener(evt, resetTimer)
+   );
+   
+   resetTimer(); // Start timer initially
+
+   // Check if "Remember me" is checked and set the form fields from localStorage
+   document.addEventListener("DOMContentLoaded", function() {
+     const rememberMe = document.getElementById("rememberMe").checked;
+
+     if (rememberMe) {
+       const storedUsername = localStorage.getItem("username");
+       const storedPassword = localStorage.getItem("password");
+
+       if (storedUsername && storedPassword) {
+         document.getElementById("username").value = storedUsername;
+         document.getElementById("password").value = storedPassword;
+       }
+     }
+   });
+
+   // When form is submitted, store username and password in localStorage if "Remember me" is checked
+   document.getElementById("login-form").addEventListener("submit", function(event) {
+     const rememberMe = document.getElementById("rememberMe").checked;
+
+     if (rememberMe) {
+       const username = document.getElementById("username").value;
+       const password = document.getElementById("password").value;
+       localStorage.setItem("username", username);
+       localStorage.setItem("password", password);
+     } else {
+       localStorage.removeItem("username");
+       localStorage.removeItem("password");
+     }
+   });
+   
+</script>
+
+
+  <!-- profile-initial users dynamically photo visibility validation seen first 
+    character  start username users preview  -->
+
+  <!-- profile-initial-name user details dynamically photo visibility validation seen
+    first  character  -->
+
+  <!-- profile-initial-username single bloog details dynamically photo visibility validation 
+  seen first character start username Smalls ka -->
+
+  <!-- initial Script -->
+  <script src="{{ url_for('static', filename='backend/js/initial.js') }}"></script>
+  
+
+
+  <!-- Include the map script -->
+  <script src="https://cdn.jsdelivr.net/npm/jsvectormap@3.3.0/dist/js/jsvectormap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsvectormap@3.3.0/dist/maps/world.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<!-- Heartbeat Handler for Active Tab -->
+<script>
+  (function () {
+    let heartbeatIntervalUser;
+
+    function sendUserHeartbeat() {
+      fetch("/api/heartbeat", { method: "POST" })
+        .then(res => res.json())
+        .then(data => console.log("✅ Heartbeat", data.timestamp))
+        .catch(err => console.error("❌ Heartbeat error", err));
+    }
+
+    function startUserHeartbeat() {
+      if (!heartbeatIntervalUser) {
+        sendUserHeartbeat();
+        heartbeatIntervalUser = setInterval(sendUserHeartbeat, 15000); // 15s
+      }
+    }
+
+    function stopUserHeartbeat() {
+      if (heartbeatIntervalUser) {
+        clearInterval(heartbeatIntervalUser);
+        heartbeatIntervalUser = null;
+        console.log("⛔️ Heartbeat stopped (tab hidden)");
+      }
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        console.log("🟢 Tab visible");
+        startUserHeartbeat();
+        updateSingleUserStatus({{ user.id }}); // Refresh on return
+      } else {
+        console.log("🔴 Tab hidden");
+        stopUserHeartbeat();
+      }
+    });
+
+    if (document.visibilityState === "visible") {
+      startUserHeartbeat();
+    }
+  })();
+</script>
+
+<!-- Online Status Checker for All Users -->
+<script>
+  (function () {
+    async function fetchAllUsersStatus() {
+      try {
+        const response = await fetch("/api/online-status");
+        const users = await response.json();
+
+        users.forEach(user => {
+          const el = document.getElementById(`user-status-${user.id}`);
+          if (el) {
+            el.innerHTML = user.is_online
+              ? `<span class="badge bg-success text-white">Online</span>`
+              : `<small class="text-muted">Last seen: ${user.last_seen_ago}</small>`;
+          }
+        });
+      } catch (err) {
+        console.error("Error updating all users' status:", err);
+      }
+    }
+
+    setInterval(fetchAllUsersStatus, 1000); // every second
+    window.addEventListener("DOMContentLoaded", fetchAllUsersStatus);
+  })();
+</script>
+
+<!-- Single User Status Updater (for detailed page) -->
+<script>
+  (function () {
+    async function updateSingleUserStatus(userId) {
+      try {
+        const response = await fetch(`/api/user-last-active/${userId}`);
+        if (!response.ok) throw new Error("Failed to get last active");
+
+        const data = await response.json();
+        const el = document.getElementById(`user-last-active-${data.id}`);
+
+        if (el) {
+          if (data.is_online) {
+            el.innerHTML = `<span class="badge bg-success text-white">Online</span>`;
+          } else {
+            el.innerHTML = `Last Active: ${data.formatted_time} (${data.last_seen_ago})`;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    setInterval(() => {
+      updateSingleUserStatus({{ user.id }});
+    }, 5000); // every 5s
+  })();
+</script>
+
+
+
+</body>
+</html>
