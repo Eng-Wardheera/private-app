@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
 
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <meta name="description"
           content="Private Management - Professional education, management and career development programs.">
@@ -43,23 +43,19 @@
     <style>
 
         /* =====================================================
-           GLOBAL RESET
+           GLOBAL
         ====================================================== */
 
-        *,
-        *::before,
-        *::after {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-
         html {
             scroll-behavior: smooth;
-            scroll-padding-top: 120px;
+            scroll-padding-top: 100px;
         }
-
 
         body {
             font-family: "Inter", sans-serif;
@@ -67,94 +63,62 @@
             background: #ffffff;
             line-height: 1.6;
             overflow-x: hidden;
-            width: 100%;
         }
-
-
-        body.menu-open {
-            overflow: hidden;
-        }
-
 
         img {
             max-width: 100%;
             display: block;
         }
 
-
         a {
             text-decoration: none;
             color: inherit;
         }
 
-
         ul {
             list-style: none;
         }
 
-
         button,
         input,
-        textarea,
-        select {
+        textarea {
             font-family: inherit;
         }
 
-
         button {
-            border: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
-
         :root {
-
             --primary: #0b2c5f;
             --primary-dark: #071e42;
-
             --secondary: #16a085;
-
             --accent: #f4b942;
-
             --light: #f5f8fc;
-
             --text: #172033;
-
             --muted: #687386;
-
             --white: #ffffff;
-
             --border: #e7ebf1;
-
-            --shadow:
-                0 15px 45px rgba(10, 35, 75, .10);
-
+            --shadow: 0 15px 45px rgba(10, 35, 75, .10);
             --radius: 18px;
-
             --header-height: 82px;
         }
 
-
-        /* =====================================================
-           CONTAINER
-        ====================================================== */
-
         .container {
             width: min(1180px, 92%);
-            margin: 0 auto;
+            margin-left: auto;
+            margin-right: auto;
         }
-
 
         .section {
             padding: 95px 0;
         }
-
 
         .section-header {
             text-align: center;
             max-width: 720px;
             margin: 0 auto 55px;
         }
-
 
         .section-header span {
             display: inline-block;
@@ -166,7 +130,6 @@
             margin-bottom: 10px;
         }
 
-
         .section-header h2 {
             font-family: "Poppins", sans-serif;
             font-size: clamp(30px, 4vw, 44px);
@@ -175,12 +138,10 @@
             color: var(--primary);
         }
 
-
         .section-header p {
             color: var(--muted);
             font-size: 16px;
         }
-
 
 
         /* =====================================================
@@ -195,7 +156,6 @@
             z-index: 1100;
         }
 
-
         .topbar-inner {
             min-height: 40px;
             display: flex;
@@ -204,32 +164,30 @@
             gap: 20px;
         }
 
-
         .top-info {
             display: flex;
             align-items: center;
             gap: 20px;
-            flex-wrap: wrap;
+            min-width: 0;
         }
-
 
         .top-info span {
             display: flex;
             align-items: center;
             gap: 7px;
+            white-space: nowrap;
         }
-
 
         .top-info i {
             color: var(--accent);
         }
 
-
         .top-social {
             display: flex;
-            gap: 12px;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
         }
-
 
         .top-social a {
             width: 28px;
@@ -240,63 +198,32 @@
             transition: .3s;
         }
 
-
         .top-social a:hover {
             background: var(--secondary);
         }
 
 
-
         /* =====================================================
-           FIXED NAVBAR
+           NAVIGATION
         ====================================================== */
 
         .navbar {
-            position: fixed;
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            z-index: 1000;
-            background: rgba(255,255,255,.97);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 4px 25px rgba(0,0,0,.07);
-            transition:
-                box-shadow .3s ease,
-                background .3s ease;
+            z-index: 1050;
+            background: rgba(255, 255, 255, .98);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, .06);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
         }
-
-
-        .navbar.scrolled {
-            box-shadow:
-                0 8px 30px rgba(0,0,0,.12);
-        }
-
-
-        /*
-         IMPORTANT:
-         Since navbar is fixed, add space before page content.
-        */
-
-        body {
-            padding-top: var(--header-height);
-        }
-
 
         .nav-inner {
             min-height: var(--header-height);
-            height: var(--header-height);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 25px;
+            gap: 20px;
         }
-
-
-        /* =====================================================
-           LOGO
-        ====================================================== */
 
         .logo {
             display: flex;
@@ -306,139 +233,111 @@
             flex-shrink: 0;
         }
 
-
         .logo-icon {
             width: 45px;
             height: 45px;
             border-radius: 12px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    var(--primary),
-                    var(--secondary)
-                );
-
+            background: linear-gradient(
+                135deg,
+                var(--primary),
+                var(--secondary)
+            );
             color: white;
-
             display: grid;
             place-items: center;
-
             font-size: 21px;
-
             flex-shrink: 0;
         }
-
 
         .logo-text {
             font-family: "Poppins", sans-serif;
             font-size: 20px;
             font-weight: 800;
             color: var(--primary);
-            line-height: 1.1;
+            line-height: 1.15;
         }
-
 
         .logo-text small {
             display: block;
             color: var(--secondary);
-            font-size: 9px;
-            letter-spacing: 2px;
+            font-size: 8px;
+            letter-spacing: 1.7px;
             line-height: 1;
-            margin-top: 5px;
+            margin-top: 4px;
         }
 
-
-
-        /* =====================================================
-           NAVIGATION MENU
-        ====================================================== */
+        .nav-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-width: 0;
+        }
 
         .nav-menu {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 4px;
         }
-
 
         .nav-menu > li > a {
             position: relative;
-            display: block;
-            padding: 12px 13px;
-            font-size: 14px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            padding: 12px 12px;
+            font-size: 13px;
             font-weight: 600;
             color: #3c4658;
             transition: .3s;
         }
 
-
         .nav-menu > li > a::after {
             content: "";
-
             position: absolute;
-
-            left: 13px;
-            right: 13px;
+            left: 12px;
+            right: 12px;
             bottom: 4px;
-
             height: 2px;
-
             background: var(--secondary);
-
             transform: scaleX(0);
             transform-origin: center;
-
             transition: .3s;
         }
-
 
         .nav-menu > li > a:hover,
         .nav-menu > li > a.active {
             color: var(--secondary);
         }
 
-
         .nav-menu > li > a:hover::after,
         .nav-menu > li > a.active::after {
             transform: scaleX(1);
         }
 
-
-
-        /* =====================================================
-           NAV ACTIONS
-        ====================================================== */
-
         .nav-actions {
             display: flex;
             align-items: center;
-            gap: 9px;
+            gap: 8px;
             flex-shrink: 0;
         }
-
 
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-
             border: none;
             cursor: pointer;
-
             border-radius: 10px;
-
             padding: 12px 20px;
-
             font-size: 13px;
             font-weight: 700;
-
             transition: .3s;
-
             white-space: nowrap;
+            min-height: 44px;
         }
-
 
         .btn-login {
             color: var(--primary);
@@ -446,81 +345,48 @@
             background: #fff;
         }
 
-
         .btn-login:hover {
             background: var(--light);
         }
 
-
         .btn-primary {
             color: #fff;
             background: var(--primary);
-
-            box-shadow:
-                0 8px 20px rgba(11,44,95,.20);
+            box-shadow: 0 8px 20px rgba(11, 44, 95, .2);
         }
-
 
         .btn-primary:hover {
             background: var(--secondary);
             transform: translateY(-2px);
         }
 
-
         .btn-secondary {
             color: #fff;
             background: var(--secondary);
         }
-
 
         .btn-secondary:hover {
             background: #11836d;
             transform: translateY(-2px);
         }
 
-
-        .btn-light {
-            background: #fff;
-            color: var(--primary);
-        }
-
-
-        .btn-light:hover {
-            background: var(--accent);
-            transform: translateY(-2px);
-        }
-
-
-        /* =====================================================
-           MOBILE MENU BUTTON
-        ====================================================== */
-
         .menu-toggle {
             display: none;
-
-            width: 43px;
-            height: 43px;
-
+            width: 44px;
+            height: 44px;
             border: 1px solid var(--border);
             border-radius: 10px;
-
             background: #fff;
-
             cursor: pointer;
-
             color: var(--primary);
-
             font-size: 19px;
-
             place-items: center;
-
             flex-shrink: 0;
         }
 
 
-
         /* =====================================================
-           HERO
+           HERO SLIDER
         ====================================================== */
 
         .hero {
@@ -530,141 +396,101 @@
             background: #071e42;
         }
 
-
         .slides {
             position: absolute;
             inset: 0;
         }
 
-
         .slide {
             position: absolute;
             inset: 0;
-
             opacity: 0;
             visibility: hidden;
-
             transition:
                 opacity .8s ease,
                 visibility .8s ease;
         }
-
 
         .slide.active {
             opacity: 1;
             visibility: visible;
         }
 
-
         .slide-bg {
             position: absolute;
             inset: 0;
-
             background-size: cover;
             background-position: center;
-
             transform: scale(1.05);
-
-            transition:
-                transform 6s ease;
+            transition: transform 6s ease;
         }
-
 
         .slide.active .slide-bg {
             transform: scale(1);
         }
 
-
         .slide::after {
             content: "";
-
             position: absolute;
             inset: 0;
-
             background:
                 linear-gradient(
                     90deg,
-                    rgba(5,25,55,.90) 0%,
-                    rgba(5,25,55,.68) 48%,
-                    rgba(5,25,55,.22) 100%
+                    rgba(5, 25, 55, .90) 0%,
+                    rgba(5, 25, 55, .68) 48%,
+                    rgba(5, 25, 55, .22) 100%
                 );
         }
-
 
         .slide-content {
             position: relative;
             z-index: 2;
-
             min-height: 680px;
-
             display: flex;
             align-items: center;
         }
-
 
         .hero-content {
             max-width: 720px;
             color: white;
         }
 
-
         .hero-label {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-
             background: rgba(255,255,255,.12);
-
             border: 1px solid rgba(255,255,255,.2);
-
             backdrop-filter: blur(10px);
-
             padding: 8px 14px;
-
             border-radius: 50px;
-
             font-size: 12px;
             font-weight: 700;
-
             margin-bottom: 20px;
         }
-
 
         .hero-label i {
             color: var(--accent);
         }
 
-
         .hero-content h1 {
             font-family: "Poppins", sans-serif;
-
-            font-size:
-                clamp(38px, 5.3vw, 68px);
-
+            font-size: clamp(38px, 5.3vw, 68px);
             line-height: 1.12;
-
             margin-bottom: 22px;
-
             font-weight: 800;
         }
-
 
         .hero-content h1 span {
             color: var(--accent);
         }
 
-
         .hero-content p {
             max-width: 610px;
-
-            color:
-                rgba(255,255,255,.86);
-
+            color: rgba(255,255,255,.86);
             font-size: 17px;
-
             margin-bottom: 32px;
         }
-
 
         .hero-buttons {
             display: flex;
@@ -672,11 +498,19 @@
             gap: 13px;
         }
 
-
         .hero .btn {
             padding: 14px 23px;
         }
 
+        .btn-light {
+            background: #fff;
+            color: var(--primary);
+        }
+
+        .btn-light:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
 
 
         /* =====================================================
@@ -685,80 +519,53 @@
 
         .slider-controls {
             position: absolute;
-
             z-index: 10;
-
             right: 5%;
             bottom: 50px;
-
             display: flex;
             gap: 9px;
         }
 
-
         .slider-btn {
             width: 46px;
             height: 46px;
-
-            border:
-                1px solid rgba(255,255,255,.3);
-
-            background:
-                rgba(255,255,255,.1);
-
+            border: 1px solid rgba(255,255,255,.3);
+            background: rgba(255,255,255,.1);
             backdrop-filter: blur(8px);
-
             color: white;
-
             border-radius: 50%;
-
             cursor: pointer;
-
             transition: .3s;
         }
-
 
         .slider-btn:hover {
             background: var(--secondary);
             border-color: var(--secondary);
         }
 
-
         .slider-dots {
             position: absolute;
-
             z-index: 10;
-
             left: 5%;
             bottom: 65px;
-
             display: flex;
             gap: 7px;
         }
 
-
         .dot {
             width: 25px;
             height: 4px;
-
             border: none;
-
             border-radius: 5px;
-
-            background:
-                rgba(255,255,255,.35);
-
+            background: rgba(255,255,255,.35);
             cursor: pointer;
-
             transition: .3s;
         }
-
 
         .dot.active {
             width: 45px;
             background: var(--accent);
         }
-
 
 
         /* =====================================================
@@ -767,79 +574,52 @@
 
         .features {
             position: relative;
-
             margin-top: -55px;
-
             z-index: 20;
         }
 
-
         .features-grid {
             display: grid;
-
-            grid-template-columns:
-                repeat(4, 1fr);
-
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
         }
 
-
         .feature-card {
             background: white;
-
             border-radius: 15px;
-
             padding: 27px 22px;
-
             box-shadow: var(--shadow);
-
-            border:
-                1px solid rgba(0,0,0,.04);
-
+            border: 1px solid rgba(0,0,0,.04);
             transition: .3s;
         }
-
 
         .feature-card:hover {
             transform: translateY(-7px);
         }
 
-
         .feature-icon {
             width: 50px;
             height: 50px;
-
             border-radius: 13px;
-
             display: grid;
             place-items: center;
-
             color: var(--secondary);
-
             background: #eaf8f5;
-
             font-size: 20px;
-
             margin-bottom: 17px;
         }
 
-
         .feature-card h3 {
             font-family: "Poppins", sans-serif;
-
             font-size: 16px;
-
             margin-bottom: 7px;
-
             color: var(--primary);
         }
-
 
         .feature-card p {
             font-size: 12px;
             color: var(--muted);
         }
-
 
 
         /* =====================================================
@@ -850,130 +630,85 @@
             background: var(--light);
         }
 
-
         .about-grid {
             display: grid;
-
-            grid-template-columns:
-                1fr 1fr;
-
+            grid-template-columns: 1fr 1fr;
             gap: 75px;
-
             align-items: center;
         }
-
 
         .about-image {
             position: relative;
         }
 
-
         .about-image img {
             width: 100%;
             height: 500px;
-
             object-fit: cover;
-
             border-radius: 24px;
         }
 
-
         .experience-box {
             position: absolute;
-
             right: -25px;
             bottom: 30px;
-
             background: var(--primary);
-
             color: white;
-
             padding: 25px;
-
             border-radius: 18px;
-
             box-shadow: var(--shadow);
         }
 
-
         .experience-box strong {
             display: block;
-
             font-size: 38px;
-
             line-height: 1;
-
             color: var(--accent);
         }
-
 
         .experience-box span {
             font-size: 12px;
         }
 
-
         .about-content .label {
             color: var(--secondary);
-
             text-transform: uppercase;
-
             font-size: 12px;
-
             letter-spacing: 2px;
-
             font-weight: 800;
         }
 
-
         .about-content h2 {
             font-family: "Poppins", sans-serif;
-
             color: var(--primary);
-
-            font-size:
-                clamp(30px, 4vw, 43px);
-
+            font-size: clamp(30px, 4vw, 43px);
             line-height: 1.2;
-
             margin: 10px 0 18px;
         }
 
-
         .about-content > p {
             color: var(--muted);
-
             margin-bottom: 25px;
         }
 
-
         .check-list {
             display: grid;
-
             gap: 13px;
-
             margin-bottom: 30px;
         }
 
-
         .check-list li {
             display: flex;
-
             gap: 10px;
-
             align-items: flex-start;
-
             font-size: 14px;
-
             font-weight: 600;
         }
 
-
         .check-list i {
             color: var(--secondary);
-
             margin-top: 4px;
         }
-
 
 
         /* =====================================================
@@ -985,49 +720,33 @@
             color: white;
         }
 
-
         .stats-grid {
             display: grid;
-
-            grid-template-columns:
-                repeat(4, 1fr);
-
+            grid-template-columns: repeat(4, 1fr);
             gap: 25px;
-
             text-align: center;
         }
-
 
         .stat {
             padding: 20px;
         }
 
-
         .stat i {
             color: var(--accent);
-
             font-size: 26px;
-
             margin-bottom: 15px;
         }
 
-
         .stat strong {
             display: block;
-
             font-family: "Poppins", sans-serif;
-
             font-size: 38px;
         }
 
-
         .stat span {
-            color:
-                rgba(255,255,255,.7);
-
+            color: rgba(255,255,255,.7);
             font-size: 13px;
         }
-
 
 
         /* =====================================================
@@ -1036,173 +755,111 @@
 
         .courses-grid {
             display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
         }
 
-
         .course-card {
-            border:
-                1px solid var(--border);
-
+            border: 1px solid var(--border);
             border-radius: 18px;
-
             overflow: hidden;
-
             background: white;
-
             transition: .35s;
         }
 
-
         .course-card:hover {
             transform: translateY(-8px);
-
             box-shadow: var(--shadow);
         }
 
-
         .course-image {
             position: relative;
-
             height: 215px;
-
             overflow: hidden;
         }
-
 
         .course-image img {
             width: 100%;
             height: 100%;
-
             object-fit: cover;
-
             transition: .5s;
         }
 
-
-        .course-card:hover
-        .course-image img {
+        .course-card:hover .course-image img {
             transform: scale(1.07);
         }
 
-
         .course-badge {
             position: absolute;
-
             top: 15px;
             left: 15px;
-
             background: var(--secondary);
-
             color: white;
-
             padding: 6px 11px;
-
             border-radius: 7px;
-
             font-size: 10px;
-
             font-weight: 700;
         }
-
 
         .course-body {
             padding: 22px;
         }
 
-
         .course-meta {
             display: flex;
-
             justify-content: space-between;
-
-            color: var(--muted);
-
-            font-size: 11px;
-
-            margin-bottom: 12px;
-
             gap: 10px;
+            color: var(--muted);
+            font-size: 11px;
+            margin-bottom: 12px;
         }
-
 
         .course-meta span {
             display: flex;
-
             align-items: center;
-
             gap: 5px;
         }
 
-
         .course-body h3 {
             color: var(--primary);
-
             font-family: "Poppins", sans-serif;
-
             font-size: 18px;
-
             line-height: 1.35;
-
             margin-bottom: 9px;
         }
 
-
         .course-body p {
             color: var(--muted);
-
             font-size: 13px;
-
             margin-bottom: 18px;
         }
 
-
         .course-footer {
-            border-top:
-                1px solid var(--border);
-
+            border-top: 1px solid var(--border);
             padding-top: 16px;
-
             display: flex;
-
             align-items: center;
-
             justify-content: space-between;
-
             gap: 10px;
         }
 
-
         .price {
             color: var(--primary);
-
             font-weight: 800;
-
             font-size: 17px;
         }
 
-
         .price small {
             color: var(--muted);
-
             font-size: 10px;
-
             font-weight: 400;
         }
 
-
         .course-link {
             color: var(--secondary);
-
             font-weight: 700;
-
             font-size: 12px;
         }
-
 
 
         /* =====================================================
@@ -1213,78 +870,52 @@
             background: var(--light);
         }
 
-
         .why-grid {
             display: grid;
-
-            grid-template-columns:
-                .9fr 1.1fr;
-
+            grid-template-columns: .9fr 1.1fr;
             gap: 70px;
-
             align-items: center;
         }
-
 
         .why-image img {
             width: 100%;
             height: 500px;
-
             object-fit: cover;
-
             border-radius: 24px;
         }
-
 
         .why-list {
             display: grid;
             gap: 22px;
         }
 
-
         .why-item {
             display: flex;
             gap: 17px;
         }
 
-
         .why-icon {
-            flex:
-                0 0 52px;
-
+            flex: 0 0 52px;
             height: 52px;
-
             border-radius: 14px;
-
             background: white;
-
             color: var(--secondary);
-
             display: grid;
             place-items: center;
-
-            box-shadow:
-                0 8px 20px rgba(0,0,0,.06);
+            box-shadow: 0 8px 20px rgba(0,0,0,.06);
         }
-
 
         .why-item h3 {
             color: var(--primary);
-
             font-family: "Poppins", sans-serif;
-
             font-size: 17px;
-
             margin-bottom: 4px;
         }
 
-
         .why-item p {
             color: var(--muted);
-
             font-size: 13px;
         }
-
 
 
         /* =====================================================
@@ -1293,127 +924,83 @@
 
         .blog-grid {
             display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
         }
 
-
         .blog-card {
-            border:
-                1px solid var(--border);
-
+            border: 1px solid var(--border);
             border-radius: 18px;
-
             overflow: hidden;
-
             transition: .3s;
-
             background: #fff;
         }
 
-
         .blog-card:hover {
             box-shadow: var(--shadow);
-
             transform: translateY(-6px);
         }
 
-
         .blog-image {
             height: 210px;
-
             position: relative;
-
             overflow: hidden;
         }
-
 
         .blog-image img {
             width: 100%;
             height: 100%;
-
             object-fit: cover;
-
             transition: .5s;
         }
-
 
         .blog-card:hover img {
             transform: scale(1.06);
         }
 
-
         .blog-date {
             position: absolute;
-
             left: 15px;
             bottom: 15px;
-
             background: white;
-
             color: var(--primary);
-
             padding: 8px 12px;
-
             border-radius: 8px;
-
             font-size: 11px;
-
             font-weight: 700;
         }
-
 
         .blog-body {
             padding: 21px;
         }
 
-
         .blog-category {
             color: var(--secondary);
-
             font-size: 10px;
-
             text-transform: uppercase;
-
             font-weight: 800;
-
             letter-spacing: 1px;
         }
 
-
         .blog-body h3 {
             color: var(--primary);
-
             font-family: "Poppins", sans-serif;
-
             font-size: 18px;
-
             line-height: 1.35;
-
             margin: 9px 0;
         }
 
-
         .blog-body p {
             color: var(--muted);
-
             font-size: 13px;
-
             margin-bottom: 15px;
         }
 
-
         .read-more {
             color: var(--secondary);
-
             font-weight: 700;
-
             font-size: 12px;
         }
-
 
 
         /* =====================================================
@@ -1424,90 +1011,58 @@
             padding: 75px 0;
         }
 
-
         .cta-box {
             position: relative;
-
             overflow: hidden;
-
             background:
                 linear-gradient(
                     120deg,
                     var(--primary),
                     #124b88
                 );
-
             color: white;
-
             border-radius: 25px;
-
             padding: 65px;
-
             display: flex;
-
             align-items: center;
-
             justify-content: space-between;
-
             gap: 30px;
         }
 
-
         .cta-box::after {
             content: "";
-
             position: absolute;
-
             width: 300px;
             height: 300px;
-
-            border:
-                50px solid rgba(255,255,255,.05);
-
+            border: 50px solid rgba(255,255,255,.05);
             border-radius: 50%;
-
             right: -100px;
             top: -100px;
         }
 
-
         .cta-content {
             position: relative;
-
             z-index: 2;
-
             max-width: 680px;
         }
 
-
         .cta-content h2 {
             font-family: "Poppins", sans-serif;
-
-            font-size:
-                clamp(28px, 4vw, 42px);
-
+            font-size: clamp(28px, 4vw, 42px);
             line-height: 1.2;
-
             margin-bottom: 12px;
         }
 
-
         .cta-content p {
-            color:
-                rgba(255,255,255,.78);
-
+            color: rgba(255,255,255,.78);
             font-size: 14px;
         }
 
-
         .cta-action {
             position: relative;
-
             z-index: 2;
-
             flex-shrink: 0;
         }
-
 
 
         /* =====================================================
@@ -1518,157 +1073,98 @@
             background: var(--light);
         }
 
-
         .contact-grid {
             display: grid;
-
-            grid-template-columns:
-                .8fr 1.2fr;
-
+            grid-template-columns: .8fr 1.2fr;
             gap: 30px;
         }
 
-
         .contact-info {
             background: var(--primary);
-
             color: white;
-
             padding: 38px;
-
             border-radius: 20px;
         }
-
 
         .contact-info h3 {
             font-family: "Poppins", sans-serif;
-
             font-size: 25px;
-
             margin-bottom: 10px;
         }
 
-
         .contact-info > p {
-            color:
-                rgba(255,255,255,.7);
-
+            color: rgba(255,255,255,.7);
             font-size: 13px;
-
             margin-bottom: 30px;
         }
 
-
         .contact-item {
             display: flex;
-
             gap: 14px;
-
             margin-bottom: 22px;
         }
 
-
         .contact-item i {
             color: var(--accent);
-
             margin-top: 4px;
         }
 
-
         .contact-item strong {
             display: block;
-
             font-size: 12px;
-
             margin-bottom: 2px;
         }
 
-
         .contact-item span {
-            color:
-                rgba(255,255,255,.7);
-
+            color: rgba(255,255,255,.7);
             font-size: 12px;
         }
 
-
         .contact-form {
             background: white;
-
             border-radius: 20px;
-
             padding: 38px;
-
-            border:
-                1px solid var(--border);
+            border: 1px solid var(--border);
         }
-
 
         .form-row {
             display: grid;
-
-            grid-template-columns:
-                1fr 1fr;
-
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-
 
         .form-group {
             margin-bottom: 17px;
         }
 
-
         .form-group label {
             display: block;
-
             color: var(--primary);
-
             font-size: 12px;
-
             font-weight: 700;
-
             margin-bottom: 7px;
         }
 
-
         .form-control {
             width: 100%;
-
-            border:
-                1px solid var(--border);
-
+            border: 1px solid var(--border);
             border-radius: 9px;
-
             padding: 12px 13px;
-
             outline: none;
-
             font-family: inherit;
-
             font-size: 13px;
-
             transition: .3s;
-
-            background: #fff;
         }
-
 
         .form-control:focus {
             border-color: var(--secondary);
-
-            box-shadow:
-                0 0 0 3px
-                rgba(22,160,133,.08);
+            box-shadow: 0 0 0 3px rgba(22,160,133,.08);
         }
-
 
         textarea.form-control {
             min-height: 125px;
-
             resize: vertical;
         }
-
 
 
         /* =====================================================
@@ -1677,168 +1173,106 @@
 
         footer {
             background: #06182f;
-
             color: white;
         }
-
 
         .footer-main {
             padding: 70px 0 45px;
         }
 
-
         .footer-grid {
             display: grid;
-
-            grid-template-columns:
-                1.4fr 1fr 1fr 1.2fr;
-
+            grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
             gap: 40px;
         }
 
-
         .footer-brand p {
-            color:
-                rgba(255,255,255,.6);
-
+            color: rgba(255,255,255,.6);
             font-size: 13px;
-
             max-width: 330px;
-
             margin: 17px 0 22px;
         }
-
 
         .footer-social {
             display: flex;
             gap: 9px;
         }
 
-
         .footer-social a {
             width: 34px;
             height: 34px;
-
             border-radius: 8px;
-
-            background:
-                rgba(255,255,255,.08);
-
+            background: rgba(255,255,255,.08);
             display: grid;
             place-items: center;
-
             transition: .3s;
         }
-
 
         .footer-social a:hover {
             background: var(--secondary);
         }
 
-
         .footer-col h4 {
             font-family: "Poppins", sans-serif;
-
             margin-bottom: 20px;
-
             font-size: 15px;
         }
-
 
         .footer-col ul {
             display: grid;
             gap: 10px;
         }
 
-
         .footer-col li a {
-            color:
-                rgba(255,255,255,.6);
-
+            color: rgba(255,255,255,.6);
             font-size: 12px;
-
             transition: .3s;
         }
 
-
         .footer-col li a:hover {
             color: white;
-
             padding-left: 4px;
         }
 
-
         .newsletter {
             display: flex;
-
             margin-top: 13px;
-
-            width: 100%;
         }
-
 
         .newsletter input {
             width: 100%;
-
-            min-width: 0;
-
             border: none;
-
             outline: none;
-
             padding: 12px;
-
-            border-radius:
-                8px 0 0 8px;
-
+            border-radius: 8px 0 0 8px;
             font-size: 11px;
         }
-
 
         .newsletter button {
             width: 45px;
-
-            min-width: 45px;
-
             border: none;
-
             background: var(--secondary);
-
             color: white;
-
-            border-radius:
-                0 8px 8px 0;
-
+            border-radius: 0 8px 8px 0;
             cursor: pointer;
         }
 
-
         .footer-bottom {
-            border-top:
-                1px solid rgba(255,255,255,.08);
-
+            border-top: 1px solid rgba(255,255,255,.08);
             padding: 20px 0;
         }
 
-
         .footer-bottom-inner {
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
-
             gap: 20px;
         }
 
-
         .footer-bottom p {
-            color:
-                rgba(255,255,255,.5);
-
+            color: rgba(255,255,255,.5);
             font-size: 11px;
         }
-
 
 
         /* =====================================================
@@ -1847,48 +1281,29 @@
 
         .scroll-top {
             position: fixed;
-
             right: 25px;
             bottom: 25px;
-
             width: 44px;
             height: 44px;
-
             border: none;
-
             border-radius: 50%;
-
             background: var(--secondary);
-
             color: white;
-
             cursor: pointer;
-
             display: grid;
             place-items: center;
-
             z-index: 999;
-
             opacity: 0;
-
             visibility: hidden;
-
-            transform:
-                translateY(15px);
-
+            transform: translateY(15px);
             transition: .3s;
         }
 
-
         .scroll-top.show {
             opacity: 1;
-
             visibility: visible;
-
-            transform:
-                translateY(0);
+            transform: translateY(0);
         }
-
 
 
         /* =====================================================
@@ -1897,1130 +1312,916 @@
 
         @media (max-width: 1100px) {
 
-            .container {
-                width: 94%;
-            }
-
-
-            .nav-menu {
-                gap: 0;
-            }
-
-
             .nav-menu > li > a {
-                padding:
-                    10px 8px;
-
-                font-size: 12.5px;
+                padding: 10px 8px;
+                font-size: 12px;
             }
-
 
             .nav-actions .btn {
-                padding:
-                    10px 12px;
+                padding: 10px 12px;
             }
-
-
-            .features-grid {
-                grid-template-columns:
-                    repeat(2, 1fr);
-            }
-
-
-            .footer-grid {
-                grid-template-columns:
-                    repeat(2, 1fr);
-            }
-
-        }
-
-
-
-        /* =====================================================
-           MOBILE NAV
-        ====================================================== */
-
-        @media (max-width: 850px) {
-
-            :root {
-                --header-height: 72px;
-            }
-
-
-            html {
-                scroll-padding-top: 90px;
-            }
-
-
-            body {
-                padding-top:
-                    var(--header-height);
-            }
-
-
-            .topbar {
-                display: none;
-            }
-
-
-            .navbar {
-                height:
-                    var(--header-height);
-            }
-
-
-            .nav-inner {
-                height:
-                    var(--header-height);
-
-                min-height:
-                    var(--header-height);
-
-                gap: 10px;
-            }
-
 
             .logo-text {
-                font-size: 17px;
-            }
-
-
-            .logo-text small {
-                font-size: 7px;
-
-                letter-spacing:
-                    1.5px;
-            }
-
-
-            .logo-icon {
-                width: 40px;
-                height: 40px;
-
-                border-radius: 10px;
-
                 font-size: 18px;
             }
 
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+
+        /* =====================================================
+           MOBILE NAVIGATION
+        ====================================================== */
+
+        @media (max-width: 900px) {
+
+            :root {
+                --header-height: 70px;
+            }
+
+            .topbar {
+                display: block;
+            }
+
+            .topbar-inner {
+                min-height: 42px;
+                justify-content: center;
+            }
+
+            .top-info {
+                width: 100%;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .top-info span {
+                font-size: 11px;
+            }
+
+            .top-info span:last-child {
+                display: none;
+            }
+
+            .top-social {
+                display: none;
+            }
+
+            .navbar {
+                position: sticky;
+                top: 0;
+            }
+
+            .nav-inner {
+                min-height: 70px;
+                gap: 10px;
+            }
+
+            .nav-center {
+                position: static;
+                flex: 0;
+            }
 
             .menu-toggle {
                 display: grid;
             }
 
-
             .nav-menu {
-
-                position: fixed;
-
-                top:
-                    var(--header-height);
-
+                position: absolute;
+                top: 100%;
                 left: 0;
                 right: 0;
-
                 width: 100%;
-
-                height:
-                    calc(100vh - var(--header-height));
-
-                height:
-                    calc(100dvh - var(--header-height));
-
-                background: #fff;
-
-                border-top:
-                    1px solid var(--border);
-
-                box-shadow:
-                    0 15px 30px
-                    rgba(0,0,0,.12);
-
-                padding:
-                    12px 5% 30px;
-
-                display: flex;
-
+                background: rgba(255,255,255,.99);
+                border-top: 1px solid var(--border);
+                border-bottom: 1px solid var(--border);
+                box-shadow: 0 18px 30px rgba(0,0,0,.10);
+                padding: 10px 5%;
+                display: none;
                 flex-direction: column;
-
                 align-items: stretch;
-
                 justify-content: flex-start;
-
                 gap: 0;
-
+                max-height: calc(100vh - 112px);
                 overflow-y: auto;
-
-                overscroll-behavior:
-                    contain;
-
-                transform:
-                    translateX(100%);
-
-                opacity: 0;
-
-                visibility: hidden;
-
-                transition:
-                    transform .3s ease,
-                    opacity .3s ease,
-                    visibility .3s ease;
+                -webkit-overflow-scrolling: touch;
             }
-
 
             .nav-menu.open {
-
-                transform:
-                    translateX(0);
-
-                opacity: 1;
-
-                visibility: visible;
+                display: flex;
             }
-
 
             .nav-menu > li {
                 width: 100%;
             }
 
-
             .nav-menu > li > a {
-
+                width: 100%;
+                min-height: 48px;
                 display: flex;
-
                 align-items: center;
-
-                min-height: 52px;
-
-                padding:
-                    14px 8px;
-
+                padding: 13px 10px;
+                border-bottom: 1px solid #f0f2f5;
                 font-size: 14px;
-
-                border-bottom:
-                    1px solid #f0f2f5;
             }
 
+            .nav-menu > li:last-child > a {
+                border-bottom: none;
+            }
 
             .nav-menu > li > a::after {
                 display: none;
             }
 
-
-            .nav-menu > li > a.active {
-                color:
-                    var(--secondary);
-
-                background:
-                    #f5faf9;
-
-                border-radius:
-                    8px;
-            }
-
-
             .nav-actions {
                 margin-left: auto;
             }
 
-
+            /*
+             * LOGIN IS VISIBLE ON MOBILE
+             */
             .nav-actions .btn-login {
-                display: none;
+                display: inline-flex;
+                padding: 9px 12px;
+                min-height: 42px;
             }
 
+            .nav-actions .btn-login span {
+                display: inline;
+            }
 
             .nav-actions .btn-primary {
-                padding:
-                    10px 13px;
-
-                font-size: 12px;
+                display: inline-flex;
+                padding: 9px 12px;
+                min-height: 42px;
             }
-
 
             .hero,
             .slide-content {
                 min-height: 620px;
             }
 
-
-            .hero-content {
-                max-width: 680px;
-            }
-
-
             .about-grid,
             .why-grid,
             .contact-grid {
-                grid-template-columns:
-                    1fr;
+                grid-template-columns: 1fr;
             }
-
 
             .courses-grid,
             .blog-grid {
-                grid-template-columns:
-                    repeat(2, 1fr);
+                grid-template-columns: repeat(2, 1fr);
             }
-
 
             .stats-grid {
-                grid-template-columns:
-                    repeat(2, 1fr);
+                grid-template-columns: repeat(2, 1fr);
             }
-
 
             .about-image,
             .why-image {
                 max-width: 650px;
-
-                margin:
-                    0 auto;
-
+                margin: auto;
                 width: 100%;
             }
 
-
             .cta-box {
-                flex-direction:
-                    column;
-
-                align-items:
-                    flex-start;
-
-                padding:
-                    45px 35px;
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 45px 35px;
             }
-
         }
 
 
-
         /* =====================================================
-           SMALL MOBILE
+           SMALL TABLET / LARGE MOBILE
         ====================================================== */
 
-        @media (max-width: 600px) {
-
-            :root {
-                --header-height: 64px;
-            }
-
-
-            html {
-                scroll-padding-top: 78px;
-            }
-
-
-            body {
-                padding-top:
-                    var(--header-height);
-            }
-
-
-            .navbar {
-                height:
-                    var(--header-height);
-            }
-
-
-            .nav-inner {
-                height:
-                    var(--header-height);
-
-                min-height:
-                    var(--header-height);
-            }
-
+        @media (max-width: 700px) {
 
             .container {
                 width: 92%;
             }
 
+            .topbar-inner {
+                min-height: 40px;
+            }
 
-            .logo {
+            .top-info {
+                justify-content: space-between;
                 gap: 8px;
             }
 
+            .top-info span {
+                font-size: 10.5px;
+            }
 
-            .logo-icon {
-                width: 37px;
-                height: 37px;
+            .top-info span:first-child,
+            .top-info span:nth-child(2) {
+                flex: 1;
+                justify-content: center;
+            }
 
-                border-radius: 9px;
-
+            .logo-text {
                 font-size: 16px;
             }
 
-
-            .logo-text {
-                font-size: 15px;
-            }
-
-
             .logo-text small {
-                font-size: 6.5px;
-
-                letter-spacing:
-                    1.1px;
-
-                margin-top: 3px;
+                font-size: 7px;
+                letter-spacing: 1.2px;
             }
 
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                font-size: 18px;
+            }
+
+            .nav-actions {
+                gap: 5px;
+            }
+
+            .nav-actions .btn-login {
+                font-size: 11px;
+                padding: 8px 10px;
+            }
 
             .nav-actions .btn-primary {
-                display: none;
+                font-size: 11px;
+                padding: 8px 10px;
             }
-
 
             .menu-toggle {
-                width: 39px;
-                height: 39px;
-
-                font-size: 17px;
+                width: 42px;
+                height: 42px;
             }
-
-
-            .nav-menu {
-                top:
-                    var(--header-height);
-
-                height:
-                    calc(100vh - var(--header-height));
-
-                height:
-                    calc(100dvh - var(--header-height));
-            }
-
-
-            /* HERO */
 
             .hero,
             .slide-content {
-                min-height:
-                    calc(100svh - var(--header-height));
-
-                min-height:
-                    590px;
+                min-height: 610px;
             }
-
-
-            .slide-bg {
-                background-position:
-                    center center;
-            }
-
-
-            .slide::after {
-
-                background:
-                    linear-gradient(
-                        180deg,
-                        rgba(5,25,55,.88),
-                        rgba(5,25,55,.74)
-                    );
-            }
-
-
-            .slide-content {
-                align-items:
-                    center;
-            }
-
 
             .hero-content {
-                width: 100%;
+                max-width: 100%;
+                padding-top: 15px;
             }
-
-
-            .hero-label {
-                font-size: 10px;
-
-                padding:
-                    7px 11px;
-
-                margin-bottom:
-                    15px;
-            }
-
 
             .hero-content h1 {
-
-                font-size:
-                    clamp(31px, 10vw, 42px);
-
-                line-height:
-                    1.12;
-
-                margin-bottom:
-                    16px;
+                font-size: clamp(32px, 9vw, 44px);
             }
-
 
             .hero-content p {
-
-                font-size:
-                    13.5px;
-
-                line-height:
-                    1.65;
-
-                margin-bottom:
-                    23px;
+                font-size: 14px;
+                line-height: 1.7;
             }
 
+            .hero-label {
+                font-size: 10.5px;
+                padding: 7px 11px;
+            }
 
             .hero-buttons {
-
-                display:
-                    grid;
-
-                grid-template-columns:
-                    1fr;
-
-                gap: 10px;
-
-                width: 100%;
-
-                max-width:
-                    270px;
+                flex-direction: row;
+                align-items: center;
             }
 
-
-            .hero .btn {
-
-                width: 100%;
-
-                padding:
-                    12px 16px;
-
-                font-size:
-                    12px;
+            .hero-buttons .btn {
+                min-height: 44px;
+                padding: 11px 15px;
+                font-size: 11px;
             }
-
 
             .slider-controls {
-
-                right:
-                    4%;
-
-                bottom:
-                    24px;
+                right: 4%;
+                bottom: 25px;
             }
-
 
             .slider-btn {
-
-                width:
-                    38px;
-
-                height:
-                    38px;
-
-                font-size:
-                    12px;
+                width: 42px;
+                height: 42px;
             }
-
 
             .slider-dots {
-
-                left:
-                    4%;
-
-                bottom:
-                    40px;
+                left: 4%;
+                bottom: 44px;
             }
-
 
             .dot {
-                width:
-                    20px;
+                width: 20px;
             }
-
 
             .dot.active {
-                width:
-                    35px;
+                width: 35px;
             }
-
-
-
-            /* FEATURES */
 
             .features {
-                margin-top:
-                    20px;
+                margin-top: 20px;
             }
-
 
             .features-grid {
-
-                grid-template-columns:
-                    1fr;
-
-                gap:
-                    12px;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
             }
-
 
             .feature-card {
-
-                padding:
-                    22px 19px;
-
-                border-radius:
-                    14px;
+                padding: 20px 16px;
             }
-
 
             .feature-icon {
-
-                width:
-                    45px;
-
-                height:
-                    45px;
-
-                font-size:
-                    18px;
-
-                margin-bottom:
-                    13px;
+                width: 44px;
+                height: 44px;
+                margin-bottom: 12px;
             }
-
 
             .feature-card h3 {
-                font-size:
-                    15px;
+                font-size: 14px;
             }
-
 
             .feature-card p {
-                font-size:
-                    11.5px;
-
-                line-height:
-                    1.6;
+                font-size: 11px;
             }
-
-
-
-            /* SECTIONS */
 
             .section {
-                padding:
-                    65px 0;
+                padding: 70px 0;
             }
-
 
             .section-header {
-                margin-bottom:
-                    35px;
+                margin-bottom: 38px;
             }
-
-
-            .section-header span {
-                font-size:
-                    10px;
-
-                letter-spacing:
-                    1.4px;
-            }
-
 
             .section-header h2 {
-                font-size:
-                    27px;
+                font-size: 29px;
             }
-
 
             .section-header p {
-                font-size:
-                    13px;
-
-                line-height:
-                    1.7;
+                font-size: 13px;
             }
-
-
-
-            /* ABOUT */
-
-            .about-grid {
-                gap:
-                    45px;
-            }
-
 
             .about-image img,
             .why-image img {
-
-                height:
-                    330px;
-
-                border-radius:
-                    18px;
+                height: 380px;
             }
-
 
             .experience-box {
-
-                right:
-                    12px;
-
-                bottom:
-                    12px;
-
-                padding:
-                    17px;
-
-                border-radius:
-                    13px;
+                right: 15px;
+                bottom: 15px;
+                padding: 18px;
             }
-
 
             .experience-box strong {
-                font-size:
-                    30px;
+                font-size: 30px;
             }
-
 
             .experience-box span {
-                font-size:
-                    10px;
+                font-size: 10px;
             }
-
 
             .about-content h2 {
-                font-size:
-                    28px;
+                font-size: 29px;
             }
-
-
-            .about-content > p {
-                font-size:
-                    13px;
-            }
-
-
-            .check-list li {
-                font-size:
-                    12.5px;
-            }
-
-
-
-            /* STATS */
 
             .stats-grid {
-
-                grid-template-columns:
-                    repeat(2, 1fr);
-
-                gap:
-                    8px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
-
 
             .stat {
-                padding:
-                    15px 5px;
+                padding: 15px 8px;
             }
-
-
-            .stat i {
-                font-size:
-                    21px;
-
-                margin-bottom:
-                    8px;
-            }
-
 
             .stat strong {
-                font-size:
-                    27px;
+                font-size: 29px;
             }
-
 
             .stat span {
-                font-size:
-                    10px;
+                font-size: 11px;
             }
-
-
-
-            /* COURSES */
 
             .courses-grid,
             .blog-grid {
-
-                grid-template-columns:
-                    1fr;
-
-                gap:
-                    18px;
+                grid-template-columns: 1fr;
             }
-
 
             .course-image {
-                height:
-                    200px;
+                height: 220px;
             }
-
-
-            .course-body {
-                padding:
-                    18px;
-            }
-
-
-            .course-body h3 {
-                font-size:
-                    17px;
-            }
-
-
-            .course-body p {
-                font-size:
-                    12px;
-            }
-
-
-            .course-meta {
-                font-size:
-                    10px;
-            }
-
-
-            .course-footer {
-                flex-wrap:
-                    wrap;
-            }
-
-
-
-            /* WHY */
 
             .why-grid {
-                gap:
-                    40px;
+                gap: 40px;
             }
-
-
-            .why-list {
-                gap:
-                    18px;
-            }
-
 
             .why-item {
-                gap:
-                    12px;
+                gap: 12px;
             }
-
 
             .why-icon {
-                flex:
-                    0 0 44px;
-
-                height:
-                    44px;
-
-                border-radius:
-                    11px;
+                flex-basis: 46px;
+                height: 46px;
             }
-
-
-            .why-item h3 {
-                font-size:
-                    15px;
-            }
-
-
-            .why-item p {
-                font-size:
-                    11.5px;
-
-                line-height:
-                    1.6;
-            }
-
-
-
-            /* BLOG */
-
-            .blog-image {
-                height:
-                    200px;
-            }
-
-
-            .blog-body h3 {
-                font-size:
-                    17px;
-            }
-
-
-            .blog-body p {
-                font-size:
-                    12px;
-            }
-
-
-
-            /* CTA */
 
             .cta {
-                padding:
-                    45px 0;
+                padding: 55px 0;
             }
-
 
             .cta-box {
-
-                padding:
-                    34px 23px;
-
-                border-radius:
-                    18px;
-
-                gap:
-                    22px;
+                padding: 38px 25px;
+                border-radius: 20px;
             }
 
-
-            .cta-content h2 {
-                font-size:
-                    27px;
+            .contact-form,
+            .contact-info {
+                padding: 25px;
             }
-
-
-            .cta-content p {
-                font-size:
-                    12px;
-
-                line-height:
-                    1.7;
-            }
-
-
-            .cta-action,
-            .cta-action .btn {
-                width:
-                    100%;
-            }
-
-
-
-            /* CONTACT */
-
-            .contact-grid {
-                gap:
-                    18px;
-            }
-
-
-            .contact-info,
-            .contact-form {
-
-                padding:
-                    23px 19px;
-
-                border-radius:
-                    16px;
-            }
-
-
-            .contact-info h3 {
-                font-size:
-                    22px;
-            }
-
-
-            .contact-info > p {
-                font-size:
-                    12px;
-            }
-
-
-            .contact-item {
-                gap:
-                    11px;
-
-                margin-bottom:
-                    18px;
-            }
-
-
-            .contact-item strong {
-                font-size:
-                    11px;
-            }
-
-
-            .contact-item span {
-                font-size:
-                    11px;
-            }
-
 
             .form-row {
-
-                grid-template-columns:
-                    1fr;
-
-                gap:
-                    0;
+                grid-template-columns: 1fr;
+                gap: 0;
             }
-
-
-            .form-control {
-                padding:
-                    11px;
-
-                font-size:
-                    12px;
-            }
-
-
-            textarea.form-control {
-                min-height:
-                    115px;
-            }
-
-
-            .contact-form .btn {
-                width:
-                    100%;
-            }
-
-
-
-            /* FOOTER */
-
-            .footer-main {
-                padding:
-                    55px 0 35px;
-            }
-
 
             .footer-grid {
-
-                grid-template-columns:
-                    1fr;
-
-                gap:
-                    32px;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px 20px;
             }
 
-
-            .footer-brand p {
-                font-size:
-                    12px;
+            .footer-main {
+                padding: 55px 0 35px;
             }
-
-
-            .footer-col h4 {
-                margin-bottom:
-                    14px;
-            }
-
-
-            .footer-col li a {
-                font-size:
-                    11px;
-            }
-
 
             .footer-bottom-inner {
-
-                flex-direction:
-                    column;
-
-                text-align:
-                    center;
-
-                gap:
-                    8px;
+                flex-direction: column;
+                text-align: center;
             }
-
-
-            .footer-bottom p {
-                font-size:
-                    10px;
-            }
-
 
             .scroll-top {
+                right: 15px;
+                bottom: 15px;
+                width: 42px;
+                height: 42px;
+            }
+        }
 
-                width:
-                    40px;
 
-                height:
-                    40px;
+        /* =====================================================
+           PHONE
+        ====================================================== */
 
-                right:
-                    15px;
+        @media (max-width: 480px) {
 
-                bottom:
-                    15px;
+            html {
+                scroll-padding-top: 95px;
+            }
+
+            .container {
+                width: 91%;
+            }
+
+            /*
+             * TOPBAR:
+             * PHONE + EMAIL ALWAYS VISIBLE
+             */
+            .topbar-inner {
+                min-height: 38px;
+            }
+
+            .top-info {
+                gap: 5px;
+            }
+
+            .top-info span {
+                font-size: 9.5px;
+                gap: 4px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .top-info i {
+                font-size: 9px;
+            }
+
+            .top-info span:first-child,
+            .top-info span:nth-child(2) {
+                white-space: nowrap;
+            }
+
+            /*
+             * HEADER
+             */
+            .nav-inner {
+                min-height: 64px;
+            }
+
+            .logo {
+                gap: 7px;
+            }
+
+            .logo-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+                border-radius: 9px;
+            }
+
+            .logo-text {
+                font-size: 13px;
+            }
+
+            .logo-text small {
+                font-size: 5.8px;
+                letter-spacing: 1px;
+                margin-top: 2px;
+            }
+
+            .nav-actions {
+                gap: 4px;
+            }
+
+            .nav-actions .btn-login {
+                min-height: 38px;
+                padding: 7px 8px;
+                border-radius: 8px;
+                font-size: 10px;
+                gap: 5px;
+            }
+
+            .nav-actions .btn-primary {
+                min-height: 38px;
+                padding: 7px 8px;
+                border-radius: 8px;
+                font-size: 10px;
+            }
+
+            .menu-toggle {
+                width: 38px;
+                height: 38px;
+                border-radius: 8px;
+                font-size: 16px;
+            }
+
+            /*
+             * MOBILE MENU
+             */
+            .nav-menu {
+                padding: 8px 4.5%;
+                max-height: calc(100vh - 102px);
+            }
+
+            .nav-menu > li > a {
+                min-height: 46px;
+                font-size: 13px;
+                padding: 12px 8px;
+            }
+
+            /*
+             * HERO
+             */
+            .hero,
+            .slide-content {
+                min-height: 570px;
+            }
+
+            .slide-content {
+                align-items: center;
+            }
+
+            .hero-content {
+                padding-bottom: 40px;
+            }
+
+            .hero-label {
+                margin-bottom: 15px;
+                font-size: 9px;
+            }
+
+            .hero-content h1 {
+                font-size: 31px;
+                line-height: 1.15;
+                margin-bottom: 16px;
+            }
+
+            .hero-content p {
+                font-size: 12px;
+                margin-bottom: 23px;
+                line-height: 1.65;
+            }
+
+            .hero-buttons {
+                gap: 8px;
+            }
+
+            .hero-buttons .btn {
+                font-size: 10px;
+                padding: 10px 12px;
+                min-height: 40px;
+            }
+
+            .slider-controls {
+                bottom: 20px;
+            }
+
+            .slider-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 11px;
+            }
+
+            .slider-dots {
+                bottom: 38px;
+            }
+
+            /*
+             * FEATURES
+             */
+            .features-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .feature-card {
+                padding: 17px 13px;
+                border-radius: 12px;
+            }
+
+            .feature-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+
+            .feature-card h3 {
+                font-size: 12px;
+                line-height: 1.35;
+            }
+
+            .feature-card p {
+                font-size: 9.5px;
+                line-height: 1.55;
+            }
+
+            /*
+             * SECTIONS
+             */
+            .section {
+                padding: 55px 0;
+            }
+
+            .section-header span {
+                font-size: 10px;
+            }
+
+            .section-header h2 {
+                font-size: 25px;
+            }
+
+            .section-header p {
+                font-size: 12px;
+            }
+
+            /*
+             * ABOUT
+             */
+            .about-image img,
+            .why-image img {
+                height: 310px;
+                border-radius: 18px;
+            }
+
+            .experience-box {
+                right: 10px;
+                bottom: 10px;
+                padding: 14px;
+                border-radius: 13px;
+            }
+
+            .experience-box strong {
+                font-size: 25px;
+            }
+
+            .experience-box span {
+                font-size: 9px;
+            }
+
+            .about-content h2 {
+                font-size: 25px;
+            }
+
+            .about-content > p {
+                font-size: 12px;
+            }
+
+            .check-list {
+                gap: 10px;
+            }
+
+            .check-list li {
+                font-size: 11px;
+            }
+
+            /*
+             * STATS
+             */
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat i {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+
+            .stat strong {
+                font-size: 25px;
+            }
+
+            .stat span {
+                font-size: 9px;
+            }
+
+            /*
+             * COURSES
+             */
+            .course-image {
+                height: 190px;
+            }
+
+            .course-body {
+                padding: 17px;
+            }
+
+            .course-body h3 {
+                font-size: 16px;
+            }
+
+            .course-body p {
+                font-size: 11px;
+            }
+
+            .course-meta {
+                font-size: 9px;
+            }
+
+            .price {
+                font-size: 15px;
+            }
+
+            .course-link {
+                font-size: 10px;
+            }
+
+            /*
+             * WHY
+             */
+            .why-item h3 {
+                font-size: 14px;
+            }
+
+            .why-item p {
+                font-size: 11px;
+            }
+
+            .why-icon {
+                flex-basis: 42px;
+                height: 42px;
+                border-radius: 11px;
+            }
+
+            /*
+             * BLOG
+             */
+            .blog-image {
+                height: 190px;
+            }
+
+            .blog-body {
+                padding: 17px;
+            }
+
+            .blog-body h3 {
+                font-size: 16px;
+            }
+
+            .blog-body p {
+                font-size: 11px;
+            }
+
+            /*
+             * CTA
+             */
+            .cta-box {
+                padding: 30px 20px;
+            }
+
+            .cta-content h2 {
+                font-size: 25px;
+            }
+
+            .cta-content p {
+                font-size: 11px;
+            }
+
+            /*
+             * CONTACT
+             */
+            .contact-info,
+            .contact-form {
+                padding: 20px;
+                border-radius: 15px;
+            }
+
+            .contact-info h3 {
+                font-size: 21px;
+            }
+
+            .contact-item span,
+            .contact-item strong {
+                font-size: 10px;
+            }
+
+            .form-control {
+                font-size: 11px;
+                padding: 11px;
+            }
+
+            /*
+             * FOOTER
+             */
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-brand p {
+                font-size: 11px;
+            }
+
+            .footer-col li a {
+                font-size: 11px;
+            }
+
+            .footer-bottom p {
+                font-size: 9px;
             }
 
         }
-
 
 
         /* =====================================================
            VERY SMALL PHONES
         ====================================================== */
 
-        @media (max-width: 380px) {
+        @media (max-width: 360px) {
+
+            .top-info span {
+                font-size: 8.5px;
+            }
 
             .logo-text {
-                font-size:
-                    13px;
+                font-size: 11.5px;
             }
-
 
             .logo-text small {
-                font-size:
-                    5.5px;
+                font-size: 5px;
             }
 
-
-            .logo-icon {
-                width:
-                    34px;
-
-                height:
-                    34px;
+            .nav-actions .btn-login {
+                padding: 6px 7px;
+                font-size: 9px;
             }
 
+            .nav-actions .btn-primary {
+                padding: 6px 7px;
+                font-size: 9px;
+            }
+
+            .menu-toggle {
+                width: 35px;
+                height: 35px;
+            }
 
             .hero-content h1 {
-                font-size:
-                    29px;
+                font-size: 28px;
             }
-
 
             .hero-content p {
-                font-size:
-                    12.5px;
+                font-size: 11px;
             }
 
-
-            .stats-grid {
-                gap:
-                    4px;
+            .hero-buttons .btn {
+                font-size: 9px;
+                padding: 9px 10px;
             }
 
+            .feature-card h3 {
+                font-size: 11px;
+            }
 
-            .stat strong {
-                font-size:
-                    24px;
+            .feature-card p {
+                font-size: 8.5px;
             }
 
         }
-
 
 
         /* =====================================================
@@ -3030,22 +2231,15 @@
         @media (prefers-reduced-motion: reduce) {
 
             html {
-                scroll-behavior:
-                    auto;
+                scroll-behavior: auto;
             }
-
 
             *,
             *::before,
             *::after {
-                animation-duration:
-                    .01ms !important;
-
-                animation-iteration-count:
-                    1 !important;
-
-                transition-duration:
-                    .01ms !important;
+                transition-duration: .01ms !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
             }
 
         }
@@ -3068,19 +2262,27 @@
 
         <div class="top-info">
 
+            <!-- PHONE -->
+
             <span>
                 <i class="fa-solid fa-phone"></i>
-                +252 61 0000000
+                <span>+252 61 0000000</span>
             </span>
+
+
+            <!-- EMAIL -->
 
             <span>
                 <i class="fa-solid fa-envelope"></i>
-                info@privatemanagement.com
+                <span>info@privatemanagement.com</span>
             </span>
+
+
+            <!-- LOCATION -->
 
             <span>
                 <i class="fa-solid fa-location-dot"></i>
-                Mogadishu, Somalia
+                <span>Mogadishu, Somalia</span>
             </span>
 
         </div>
@@ -3113,20 +2315,23 @@
 
 
 <!-- ============================================================
-     FIXED NAVIGATION
+     NAVIGATION
 ============================================================= -->
 
-<header class="navbar"
-        id="mainNavbar">
+<header class="navbar">
 
     <div class="container nav-inner">
 
+
+        <!-- LOGO -->
 
         <a href="#home"
            class="logo">
 
             <div class="logo-icon">
+
                 <i class="fa-solid fa-building-columns"></i>
+
             </div>
 
             <div class="logo-text">
@@ -3142,78 +2347,91 @@
         </a>
 
 
-        <nav>
 
-            <ul class="nav-menu"
-                id="navMenu">
+        <!-- NAVIGATION -->
 
-                <li>
-                    <a href="#home"
-                       class="active">
-                        Home
-                    </a>
-                </li>
+        <div class="nav-center">
 
-                <li>
-                    <a href="#about">
-                        About
-                    </a>
-                </li>
+            <nav>
 
-                <li>
-                    <a href="#courses">
-                        Courses
-                    </a>
-                </li>
+                <ul class="nav-menu"
+                    id="navMenu">
 
-                <li>
-                    <a href="#blog">
-                        Blog
-                    </a>
-                </li>
+                    <li>
+                        <a href="#home"
+                           class="active">
+                            Home
+                        </a>
+                    </li>
 
-                <li>
-                    <a href="#news">
-                        News
-                    </a>
-                </li>
+                    <li>
+                        <a href="#about">
+                            About
+                        </a>
+                    </li>
 
-                <li>
-                    <a href="#contact">
-                        Contact
-                    </a>
-                </li>
+                    <li>
+                        <a href="#courses">
+                            Courses
+                        </a>
+                    </li>
 
-            </ul>
+                    <li>
+                        <a href="#blog">
+                            Blog
+                        </a>
+                    </li>
 
-        </nav>
+                    <li>
+                        <a href="#news">
+                            News
+                        </a>
+                    </li>
 
+                    <li>
+                        <a href="#contact">
+                            Contact
+                        </a>
+                    </li>
+
+                </ul>
+
+            </nav>
+
+        </div>
+
+
+
+        <!-- ACTIONS -->
 
         <div class="nav-actions">
+
+
+            <!-- LOGIN
+                 VISIBLE ON DESKTOP + MOBILE
+            -->
 
             <a href="/login"
                class="btn btn-login">
 
                 <i class="fa-solid fa-right-to-bracket"></i>
 
-                Login
+                <span>
+                    Login
+                </span>
 
             </a>
 
 
-            <a href="/join"
-               class="btn btn-primary">
+           
 
-                Join Now
-
-            </a>
-
+            <!-- MOBILE MENU -->
 
             <button
                 class="menu-toggle"
                 id="menuToggle"
                 type="button"
-                aria-label="Open navigation"
+                aria-label="Open navigation menu"
                 aria-expanded="false">
 
                 <i class="fa-solid fa-bars"></i>
@@ -3278,11 +2496,9 @@
 
                     <p>
 
-                        Discover professional courses,
-                        practical learning programs and
-                        management skills designed to help
-                        you grow your career and achieve
-                        your goals.
+                        Discover professional courses, practical learning
+                        programs and management skills designed to help you
+                        grow your career and achieve your goals.
 
                     </p>
 
@@ -3355,11 +2571,9 @@
 
                     <p>
 
-                        Gain industry-ready knowledge
-                        through structured courses
-                        delivered by experienced
-                        instructors and professional
-                        trainers.
+                        Gain industry-ready knowledge through structured
+                        courses delivered by experienced instructors and
+                        professional trainers.
 
                     </p>
 
@@ -3432,11 +2646,9 @@
 
                     <p>
 
-                        Develop leadership,
-                        communication and business
-                        management capabilities that
-                        create meaningful professional
-                        impact.
+                        Develop leadership, communication and business
+                        management capabilities that create meaningful
+                        professional impact.
 
                     </p>
 
@@ -3472,30 +2684,25 @@
 
 
 
-    <!-- SLIDER DOTS -->
+    <!-- DOTS -->
 
     <div class="slider-dots">
 
         <button
             class="dot active"
             data-slide="0"
-            type="button"
             aria-label="Slide 1">
         </button>
-
 
         <button
             class="dot"
             data-slide="1"
-            type="button"
             aria-label="Slide 2">
         </button>
-
 
         <button
             class="dot"
             data-slide="2"
-            type="button"
             aria-label="Slide 3">
         </button>
 
@@ -3503,7 +2710,7 @@
 
 
 
-    <!-- SLIDER CONTROLS -->
+    <!-- CONTROLS -->
 
     <div class="slider-controls">
 
@@ -3554,8 +2761,8 @@
             </h3>
 
             <p>
-                Earn certificates that demonstrate
-                your knowledge and skills.
+                Earn certificates that demonstrate your
+                knowledge and skills.
             </p>
 
         </div>
@@ -3572,8 +2779,8 @@
             </h3>
 
             <p>
-                Learn from experienced professionals
-                and industry experts.
+                Learn from experienced professionals and
+                industry experts.
             </p>
 
         </div>
@@ -3590,8 +2797,8 @@
             </h3>
 
             <p>
-                Access learning programs designed
-                around your schedule.
+                Access learning programs designed around
+                your schedule.
             </p>
 
         </div>
@@ -3608,8 +2815,8 @@
             </h3>
 
             <p>
-                Get guidance and support throughout
-                your learning journey.
+                Get guidance and support throughout your
+                learning journey.
             </p>
 
         </div>
@@ -3635,9 +2842,7 @@
 
             <img
                 src="https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&fit=crop&w=1200&q=85"
-                alt="Private Management Team"
-                loading="lazy">
-
+                alt="Private Management Team">
 
             <div class="experience-box">
 
@@ -3661,21 +2866,16 @@
                 About Private Management
             </span>
 
-
             <h2>
-
                 Developing People.
                 Strengthening Organizations.
-
             </h2>
-
 
             <p>
 
-                Private Management is a professional
-                learning and development platform focused
-                on practical education, leadership,
-                business management and career development.
+                Private Management is a professional learning and
+                development platform focused on practical education,
+                leadership, business management and career development.
 
             </p>
 
@@ -3684,28 +2884,21 @@
 
                 <li>
                     <i class="fa-solid fa-circle-check"></i>
-
                     Industry-focused professional programs
                 </li>
 
-
                 <li>
                     <i class="fa-solid fa-circle-check"></i>
-
                     Experienced trainers and instructors
                 </li>
 
-
                 <li>
                     <i class="fa-solid fa-circle-check"></i>
-
                     Practical and career-oriented learning
                 </li>
 
-
                 <li>
                     <i class="fa-solid fa-circle-check"></i>
-
                     Professional certificates and support
                 </li>
 
@@ -3824,18 +3017,13 @@
                 Our Programs
             </span>
 
-
             <h2>
                 Explore Professional Courses
             </h2>
 
-
             <p>
-
-                Build practical skills through courses
-                designed for students, professionals
-                and organizations.
-
+                Build practical skills through courses designed
+                for students, professionals and organizations.
             </p>
 
         </div>
@@ -3852,9 +3040,7 @@
 
                     <img
                         src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80"
-                        alt="Business Management"
-                        loading="lazy">
-
+                        alt="Business Management">
 
                     <span class="course-badge">
                         POPULAR
@@ -3872,7 +3058,6 @@
                             8 Weeks
                         </span>
 
-
                         <span>
                             <i class="fa-solid fa-user-group"></i>
                             120 Students
@@ -3885,28 +3070,18 @@
                         Business Management
                     </h3>
 
-
                     <p>
-
-                        Learn essential management,
-                        planning, leadership and business
-                        development skills.
-
+                        Learn essential management, planning,
+                        leadership and business development skills.
                     </p>
 
 
                     <div class="course-footer">
 
                         <span class="price">
-
                             $120
-
-                            <small>
-                                / course
-                            </small>
-
+                            <small>/ course</small>
                         </span>
-
 
                         <a href="#"
                            class="course-link">
@@ -3933,9 +3108,7 @@
 
                     <img
                         src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=80"
-                        alt="Leadership"
-                        loading="lazy">
-
+                        alt="Leadership">
 
                     <span class="course-badge">
                         NEW
@@ -3953,7 +3126,6 @@
                             6 Weeks
                         </span>
 
-
                         <span>
                             <i class="fa-solid fa-user-group"></i>
                             85 Students
@@ -3966,28 +3138,18 @@
                         Leadership & Management
                     </h3>
 
-
                     <p>
-
-                        Develop leadership abilities,
-                        communication and team management
-                        skills.
-
+                        Develop leadership abilities, communication
+                        and team management skills.
                     </p>
 
 
                     <div class="course-footer">
 
                         <span class="price">
-
                             $95
-
-                            <small>
-                                / course
-                            </small>
-
+                            <small>/ course</small>
                         </span>
-
 
                         <a href="#"
                            class="course-link">
@@ -4014,9 +3176,7 @@
 
                     <img
                         src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80"
-                        alt="Digital Skills"
-                        loading="lazy">
-
+                        alt="Digital Skills">
 
                     <span class="course-badge">
                         FEATURED
@@ -4034,7 +3194,6 @@
                             10 Weeks
                         </span>
 
-
                         <span>
                             <i class="fa-solid fa-user-group"></i>
                             160 Students
@@ -4047,28 +3206,18 @@
                         Digital Business Skills
                     </h3>
 
-
                     <p>
-
-                        Master essential digital tools
-                        and skills for today's professional
-                        environment.
-
+                        Master essential digital tools and skills
+                        for today's professional environment.
                     </p>
 
 
                     <div class="course-footer">
 
                         <span class="price">
-
                             $110
-
-                            <small>
-                                / course
-                            </small>
-
+                            <small>/ course</small>
                         </span>
-
 
                         <a href="#"
                            class="course-link">
@@ -4105,7 +3254,6 @@
 
         </div>
 
-
     </div>
 
 </section>
@@ -4125,8 +3273,7 @@
 
             <img
                 src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=85"
-                alt="Professional Team"
-                loading="lazy">
+                alt="Professional Team">
 
         </div>
 
@@ -4143,20 +3290,15 @@
                     Why Choose Us
                 </span>
 
-
                 <h2>
                     Learning Designed
                     For Real Results
                 </h2>
 
-
                 <p>
-
                     We combine professional instruction,
-                    practical activities and modern
-                    learning methods to create
-                    meaningful outcomes.
-
+                    practical activities and modern learning
+                    methods to create meaningful outcomes.
                 </p>
 
             </div>
@@ -4173,7 +3315,6 @@
 
                     </div>
 
-
                     <div>
 
                         <h3>
@@ -4181,10 +3322,8 @@
                         </h3>
 
                         <p>
-
                             Learn concepts and immediately
                             apply them to practical situations.
-
                         </p>
 
                     </div>
@@ -4200,7 +3339,6 @@
 
                     </div>
 
-
                     <div>
 
                         <h3>
@@ -4208,10 +3346,8 @@
                         </h3>
 
                         <p>
-
-                            Connect with learners and
-                            professionals who share your goals.
-
+                            Connect with learners and professionals
+                            who share your goals.
                         </p>
 
                     </div>
@@ -4227,7 +3363,6 @@
 
                     </div>
 
-
                     <div>
 
                         <h3>
@@ -4235,11 +3370,8 @@
                         </h3>
 
                         <p>
-
-                            Develop skills that can support
-                            your professional and
-                            entrepreneurial journey.
-
+                            Develop skills that can support your
+                            professional and entrepreneurial journey.
                         </p>
 
                     </div>
@@ -4255,7 +3387,6 @@
 
                     </div>
 
-
                     <div>
 
                         <h3>
@@ -4263,10 +3394,8 @@
                         </h3>
 
                         <p>
-
-                            Receive structured learning
-                            and continuous learner support.
-
+                            Receive structured learning and
+                            continuous learner support.
                         </p>
 
                     </div>
@@ -4300,17 +3429,13 @@
                 Blog & News
             </span>
 
-
             <h2>
                 Latest From Private Management
             </h2>
 
-
             <p>
-
                 Discover useful insights, announcements,
                 learning resources and professional news.
-
             </p>
 
         </div>
@@ -4319,17 +3444,13 @@
         <div class="blog-grid">
 
 
-            <!-- BLOG -->
-
             <article class="blog-card">
 
                 <div class="blog-image">
 
                     <img
                         src="https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=900&q=80"
-                        alt="Management"
-                        loading="lazy">
-
+                        alt="Management">
 
                     <span class="blog-date">
                         Sep 16, 2026
@@ -4344,20 +3465,14 @@
                         Management
                     </span>
 
-
                     <h3>
                         Five Skills Every Modern Manager Needs
                     </h3>
 
-
                     <p>
-
-                        Explore practical management skills
-                        that can improve teamwork and
-                        productivity.
-
+                        Explore practical management skills that
+                        can improve teamwork and productivity.
                     </p>
-
 
                     <a href="#"
                        class="read-more">
@@ -4374,17 +3489,13 @@
 
 
 
-            <!-- EDUCATION -->
-
             <article class="blog-card">
 
                 <div class="blog-image">
 
                     <img
                         src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80"
-                        alt="Students"
-                        loading="lazy">
-
+                        alt="Students">
 
                     <span class="blog-date">
                         Sep 12, 2026
@@ -4399,20 +3510,14 @@
                         Education
                     </span>
 
-
                     <h3>
                         Why Practical Learning Matters
                     </h3>
 
-
                     <p>
-
-                        Understand how practical learning
-                        can strengthen professional
-                        development.
-
+                        Understand how practical learning can
+                        strengthen professional development.
                     </p>
-
 
                     <a href="#"
                        class="read-more">
@@ -4429,8 +3534,6 @@
 
 
 
-            <!-- NEWS -->
-
             <article class="blog-card"
                      id="news">
 
@@ -4438,9 +3541,7 @@
 
                     <img
                         src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=80"
-                        alt="Office"
-                        loading="lazy">
-
+                        alt="Office">
 
                     <span class="blog-date">
                         Sep 08, 2026
@@ -4455,20 +3556,14 @@
                         News
                     </span>
 
-
                     <h3>
                         New Professional Programs Coming Soon
                     </h3>
 
-
                     <p>
-
-                        We are expanding our professional
-                        learning programs with new courses
-                        and resources.
-
+                        We are expanding our professional learning
+                        programs with new courses and resources.
                     </p>
-
 
                     <a href="#"
                        class="read-more">
@@ -4502,24 +3597,17 @@
 
         <div class="cta-box">
 
-
             <div class="cta-content">
 
                 <h2>
-
                     Ready to Start Your
                     Learning Journey?
-
                 </h2>
 
-
                 <p>
-
-                    Join our professional learning
-                    community and start developing
-                    skills that can create new
-                    opportunities.
-
+                    Join our professional learning community
+                    and start developing skills that can create
+                    new opportunities.
                 </p>
 
             </div>
@@ -4537,7 +3625,6 @@
                 </a>
 
             </div>
-
 
         </div>
 
@@ -4563,17 +3650,13 @@
                 Contact Us
             </span>
 
-
             <h2>
                 Let's Start a Conversation
             </h2>
 
-
             <p>
-
                 Have a question about our programs?
                 Our team is ready to help.
-
             </p>
 
         </div>
@@ -4588,13 +3671,10 @@
                     Get In Touch
                 </h3>
 
-
                 <p>
-
                     Contact Private Management for
                     courses, enrollment, partnerships
                     and professional development.
-
                 </p>
 
 
@@ -4693,7 +3773,6 @@
                             type="text"
                             class="form-control"
                             placeholder="Your name"
-                            autocomplete="name"
                             required>
 
                     </div>
@@ -4709,7 +3788,6 @@
                             type="email"
                             class="form-control"
                             placeholder="Your email"
-                            autocomplete="email"
                             required>
 
                     </div>
@@ -4728,8 +3806,7 @@
                         <input
                             type="text"
                             class="form-control"
-                            placeholder="+252..."
-                            autocomplete="tel">
+                            placeholder="+252...">
 
                     </div>
 
@@ -4797,8 +3874,6 @@
         <div class="container footer-grid">
 
 
-            <!-- BRAND -->
-
             <div class="footer-brand">
 
                 <a href="#home"
@@ -4810,16 +3885,13 @@
 
                     </div>
 
-
                     <div class="logo-text"
                          style="color:white;">
 
                         Private Management
 
                         <small style="color:#16a085;">
-
                             LEARNING & DEVELOPMENT
-
                         </small>
 
                     </div>
@@ -4829,45 +3901,29 @@
 
                 <p>
 
-                    Professional learning and
-                    development programs designed
-                    to help people build skills,
-                    careers and organizations.
+                    Professional learning and development
+                    programs designed to help people build
+                    skills, careers and organizations.
 
                 </p>
 
 
                 <div class="footer-social">
 
-                    <a href="#"
-                       aria-label="Facebook">
-
+                    <a href="#">
                         <i class="fa-brands fa-facebook-f"></i>
-
                     </a>
 
-
-                    <a href="#"
-                       aria-label="Instagram">
-
+                    <a href="#">
                         <i class="fa-brands fa-instagram"></i>
-
                     </a>
 
-
-                    <a href="#"
-                       aria-label="LinkedIn">
-
+                    <a href="#">
                         <i class="fa-brands fa-linkedin-in"></i>
-
                     </a>
 
-
-                    <a href="#"
-                       aria-label="YouTube">
-
+                    <a href="#">
                         <i class="fa-brands fa-youtube"></i>
-
                     </a>
 
                 </div>
@@ -4876,14 +3932,11 @@
 
 
 
-            <!-- QUICK LINKS -->
-
             <div class="footer-col">
 
                 <h4>
                     Quick Links
                 </h4>
-
 
                 <ul>
 
@@ -4893,13 +3946,11 @@
                         </a>
                     </li>
 
-
                     <li>
                         <a href="#about">
                             About Us
                         </a>
                     </li>
-
 
                     <li>
                         <a href="#courses">
@@ -4907,20 +3958,17 @@
                         </a>
                     </li>
 
-
                     <li>
                         <a href="#blog">
                             Blog
                         </a>
                     </li>
 
-
                     <li>
                         <a href="#news">
                             News
                         </a>
                     </li>
-
 
                     <li>
                         <a href="#contact">
@@ -4934,14 +3982,11 @@
 
 
 
-            <!-- PROGRAMS -->
-
             <div class="footer-col">
 
                 <h4>
                     Programs
                 </h4>
-
 
                 <ul>
 
@@ -4951,13 +3996,11 @@
                         </a>
                     </li>
 
-
                     <li>
                         <a href="#">
                             Leadership
                         </a>
                     </li>
-
 
                     <li>
                         <a href="#">
@@ -4965,13 +4008,11 @@
                         </a>
                     </li>
 
-
                     <li>
                         <a href="#">
                             Professional Development
                         </a>
                     </li>
-
 
                     <li>
                         <a href="#">
@@ -4985,14 +4026,11 @@
 
 
 
-            <!-- NEWSLETTER -->
-
             <div class="footer-col">
 
                 <h4>
                     Newsletter
                 </h4>
-
 
                 <p style="
                     color:rgba(255,255,255,.6);
@@ -5005,19 +4043,14 @@
                 </p>
 
 
-                <form class="newsletter"
-                      id="newsletterForm">
+                <form class="newsletter">
 
                     <input
                         type="email"
                         placeholder="Your email address"
-                        autocomplete="email"
                         required>
 
-
-                    <button
-                        type="submit"
-                        aria-label="Subscribe">
+                    <button type="submit">
 
                         <i class="fa-solid fa-paper-plane"></i>
 
@@ -5034,24 +4067,17 @@
 
 
 
-    <!-- FOOTER BOTTOM -->
-
     <div class="footer-bottom">
 
         <div class="container footer-bottom-inner">
 
             <p>
-
                 © 2026 Private Management.
                 All Rights Reserved.
-
             </p>
 
-
             <p>
-
                 Designed & Developed Professionally
-
             </p>
 
         </div>
@@ -5087,25 +4113,15 @@
 
 
     /* =========================================================
-       ELEMENTS
+       MOBILE NAVIGATION
     ========================================================== */
-
-    const navbar =
-        document.getElementById("mainNavbar");
-
 
     const menuToggle =
         document.getElementById("menuToggle");
 
-
     const navMenu =
         document.getElementById("navMenu");
 
-
-
-    /* =========================================================
-       MOBILE NAVIGATION
-    ========================================================== */
 
     function closeMobileMenu() {
 
@@ -5116,23 +4132,12 @@
             "false"
         );
 
-        document.body.classList.remove(
-            "menu-open"
-        );
-
-
         const icon =
             menuToggle.querySelector("i");
 
+        icon.classList.remove("fa-xmark");
 
-        icon.classList.remove(
-            "fa-xmark"
-        );
-
-
-        icon.classList.add(
-            "fa-bars"
-        );
+        icon.classList.add("fa-bars");
 
     }
 
@@ -5146,23 +4151,12 @@
             "true"
         );
 
-        document.body.classList.add(
-            "menu-open"
-        );
-
-
         const icon =
             menuToggle.querySelector("i");
 
+        icon.classList.remove("fa-bars");
 
-        icon.classList.remove(
-            "fa-bars"
-        );
-
-
-        icon.classList.add(
-            "fa-xmark"
-        );
+        icon.classList.add("fa-xmark");
 
     }
 
@@ -5187,7 +4181,7 @@
     );
 
 
-    /* Close mobile menu when link clicked */
+    /* CLOSE AFTER NAV LINK */
 
     document
         .querySelectorAll(".nav-menu a")
@@ -5205,13 +4199,39 @@
         });
 
 
-    /* Close menu when resize to desktop */
+    /* CLOSE WHEN CLICKING OUTSIDE */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const clickedInsideMenu =
+                navMenu.contains(event.target);
+
+            const clickedToggle =
+                menuToggle.contains(event.target);
+
+            if (
+                !clickedInsideMenu &&
+                !clickedToggle &&
+                navMenu.classList.contains("open")
+            ) {
+
+                closeMobileMenu();
+
+            }
+
+        }
+    );
+
+
+    /* CLOSE WHEN SCREEN BECOMES DESKTOP */
 
     window.addEventListener(
         "resize",
         function () {
 
-            if (window.innerWidth > 850) {
+            if (window.innerWidth > 900) {
 
                 closeMobileMenu();
 
@@ -5223,54 +4243,17 @@
 
 
     /* =========================================================
-       NAVBAR SCROLL EFFECT
-    ========================================================== */
-
-    function updateNavbar() {
-
-        if (window.scrollY > 20) {
-
-            navbar.classList.add(
-                "scrolled"
-            );
-
-        } else {
-
-            navbar.classList.remove(
-                "scrolled"
-            );
-
-        }
-
-    }
-
-
-    window.addEventListener(
-        "scroll",
-        updateNavbar,
-        { passive: true }
-    );
-
-
-    updateNavbar();
-
-
-
-    /* =========================================================
        HERO SLIDER
     ========================================================== */
 
     const slides =
         document.querySelectorAll(".slide");
 
-
     const dots =
         document.querySelectorAll(".dot");
 
-
     const nextBtn =
         document.getElementById("nextSlide");
-
 
     const prevBtn =
         document.getElementById("prevSlide");
@@ -5278,22 +4261,16 @@
 
     let currentSlide = 0;
 
-    let sliderTimer = null;
+    let sliderTimer;
 
 
     function showSlide(index) {
-
-        if (!slides.length) {
-            return;
-        }
-
 
         if (index >= slides.length) {
 
             currentSlide = 0;
 
         }
-
 
         if (index < 0) {
 
@@ -5329,12 +4306,8 @@
             .classList.add("active");
 
 
-        if (dots[currentSlide]) {
-
-            dots[currentSlide]
-                .classList.add("active");
-
-        }
+        dots[currentSlide]
+            .classList.add("active");
 
     }
 
@@ -5343,9 +4316,7 @@
 
         currentSlide++;
 
-        showSlide(
-            currentSlide
-        );
+        showSlide(currentSlide);
 
         restartSlider();
 
@@ -5356,9 +4327,7 @@
 
         currentSlide--;
 
-        showSlide(
-            currentSlide
-        );
+        showSlide(currentSlide);
 
         restartSlider();
 
@@ -5367,10 +4336,7 @@
 
     function startSlider() {
 
-        clearInterval(
-            sliderTimer
-        );
-
+        clearInterval(sliderTimer);
 
         sliderTimer =
             setInterval(
@@ -5440,39 +4406,11 @@
 
 
     /* =========================================================
-       PAUSE SLIDER WHEN TAB NOT ACTIVE
-    ========================================================== */
-
-    document.addEventListener(
-        "visibilitychange",
-        function () {
-
-            if (document.hidden) {
-
-                clearInterval(
-                    sliderTimer
-                );
-
-            } else {
-
-                startSlider();
-
-            }
-
-        }
-    );
-
-
-
-    /* =========================================================
        COUNTER ANIMATION
     ========================================================== */
 
     const counters =
-        document.querySelectorAll(
-            ".counter"
-        );
-
+        document.querySelectorAll(".counter");
 
     let countersStarted = false;
 
@@ -5480,18 +4418,20 @@
     function animateCounters() {
 
         if (countersStarted) {
+
             return;
+
         }
 
 
         const stats =
-            document.querySelector(
-                ".stats"
-            );
+            document.querySelector(".stats");
 
 
         if (!stats) {
+
             return;
+
         }
 
 
@@ -5519,67 +4459,47 @@
                     let count = 0;
 
 
-                    const duration = 1400;
-
-                    const startTime =
-                        performance.now();
-
-
-                    function updateCounter(
-                        currentTime
-                    ) {
-
-                        const elapsed =
-                            currentTime -
-                            startTime;
+                    const increment =
+                        Math.max(
+                            1,
+                            Math.ceil(
+                                target / 80
+                            )
+                        );
 
 
-                        const progress =
-                            Math.min(
-                                elapsed /
-                                duration,
-                                1
-                            );
+                    const update =
+                        () => {
+
+                            count +=
+                                increment;
 
 
-                        const eased =
-                            1 -
-                            Math.pow(
-                                1 - progress,
-                                3
-                            );
+                            if (
+                                count >=
+                                target
+                            ) {
 
+                                counter.textContent =
+                                    target.toLocaleString();
 
-                        count =
-                            Math.floor(
-                                target *
-                                eased
-                            );
+                                return;
 
+                            }
 
-                        counter.textContent =
-                            count.toLocaleString();
-
-
-                        if (progress < 1) {
-
-                            requestAnimationFrame(
-                                updateCounter
-                            );
-
-                        } else {
 
                             counter.textContent =
-                                target.toLocaleString();
-
-                        }
-
-                    }
+                                count.toLocaleString();
 
 
-                    requestAnimationFrame(
-                        updateCounter
-                    );
+                            requestAnimationFrame(
+                                update
+                            );
+
+                        };
+
+
+                    update();
 
                 }
             );
@@ -5592,7 +4512,9 @@
     window.addEventListener(
         "scroll",
         animateCounters,
-        { passive: true }
+        {
+            passive: true
+        }
     );
 
 
@@ -5610,33 +4532,31 @@
         );
 
 
-    function updateScrollTop() {
-
-        if (window.scrollY > 500) {
-
-            scrollTop.classList.add(
-                "show"
-            );
-
-        } else {
-
-            scrollTop.classList.remove(
-                "show"
-            );
-
-        }
-
-    }
-
-
     window.addEventListener(
         "scroll",
-        updateScrollTop,
-        { passive: true }
+        function () {
+
+            if (
+                window.scrollY > 500
+            ) {
+
+                scrollTop.classList.add(
+                    "show"
+                );
+
+            } else {
+
+                scrollTop.classList.remove(
+                    "show"
+                );
+
+            }
+
+        },
+        {
+            passive: true
+        }
     );
-
-
-    updateScrollTop();
 
 
     scrollTop.addEventListener(
@@ -5665,40 +4585,27 @@
             "section[id]"
         );
 
-
     const navLinks =
         document.querySelectorAll(
             ".nav-menu a"
         );
 
 
-    function updateActiveNav() {
+    function updateActiveNavigation() {
 
         let current = "";
-
-
-        const scrollPosition =
-            window.scrollY +
-            180;
 
 
         sections.forEach(
             section => {
 
                 const sectionTop =
-                    section.offsetTop;
-
-
-                const sectionHeight =
-                    section.offsetHeight;
+                    section.offsetTop - 150;
 
 
                 if (
-                    scrollPosition >=
-                    sectionTop &&
-                    scrollPosition <
-                    sectionTop +
-                    sectionHeight
+                    window.scrollY >=
+                    sectionTop
                 ) {
 
                     current =
@@ -5741,17 +4648,19 @@
 
     window.addEventListener(
         "scroll",
-        updateActiveNav,
-        { passive: true }
+        updateActiveNavigation,
+        {
+            passive: true
+        }
     );
 
 
-    updateActiveNav();
+    updateActiveNavigation();
 
 
 
     /* =========================================================
-       CONTACT FORM
+       CONTACT FORM DEMO
     ========================================================== */
 
     const contactForm =
@@ -5780,16 +4689,16 @@
 
 
     /* =========================================================
-       NEWSLETTER
+       NEWSLETTER DEMO
     ========================================================== */
 
-    const newsletterForm =
-        document.getElementById(
-            "newsletterForm"
+    const newsletter =
+        document.querySelector(
+            ".newsletter"
         );
 
 
-    newsletterForm.addEventListener(
+    newsletter.addEventListener(
         "submit",
         function (e) {
 
@@ -5809,82 +4718,15 @@
 
 
     /* =========================================================
-       ESC KEY CLOSE MOBILE MENU
+       PREVENT DOUBLE-TAP ZOOM / TOUCH ISSUES
     ========================================================== */
 
     document.addEventListener(
-        "keydown",
-        function (e) {
-
-            if (
-                e.key === "Escape" &&
-                navMenu.classList.contains("open")
-            ) {
-
-                closeMobileMenu();
-
-            }
-
-        }
-    );
-
-
-
-    /* =========================================================
-       TOUCH SWIPE FOR HERO SLIDER
-    ========================================================== */
-
-    let touchStartX = 0;
-
-    let touchEndX = 0;
-
-
-    const hero =
-        document.querySelector(".hero");
-
-
-    hero.addEventListener(
         "touchstart",
-        function (e) {
-
-            touchStartX =
-                e.changedTouches[0].screenX;
-
-        },
-        { passive: true }
-    );
-
-
-    hero.addEventListener(
-        "touchend",
-        function (e) {
-
-            touchEndX =
-                e.changedTouches[0].screenX;
-
-
-            const distance =
-                touchEndX -
-                touchStartX;
-
-
-            if (Math.abs(distance) < 50) {
-                return;
-            }
-
-
-            if (distance < 0) {
-
-                nextSlide();
-
-            } else {
-
-                prevSlide();
-
-            }
-
-        },
-        { passive: true }
+        function () {},
+        {
+            passive: true
+        }
     );
 
 
@@ -5892,5 +4734,4 @@
 
 
 </body>
-
 </html>
