@@ -91,5 +91,8 @@ Pillow==11.3.0
 gunicorn==23.0.0
 
 bcrypt
+python-slugify
+Werkzeug
+
 
 
