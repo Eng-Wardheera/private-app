@@ -538,15 +538,40 @@ def dashboard():
 #---- Route: Ending |  Logout Sections ----
 #---------------------------------------
 @bp.route("/logout")
-@login_required
 def logout():
-  
-    logout_user()
 
-    flash("You have been logged out.", "info")
-    return redirect(url_for("main.login"))
- 
- 
+    if current_user.is_authenticated:
+
+        user = User.query.get(current_user.id)
+
+        if user:
+            user.auth_status = "logout"
+            user.session_token = None
+            user.last_seen = datetime.utcnow()
+
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("Logout update error")
+
+        logout_user()
+
+        flash(
+            "You have been logged out successfully.",
+            "success"
+        )
+
+    else:
+
+        flash(
+            "You are already logged out.",
+            "info"
+        )
+
+    return redirect(
+        url_for("main.login")
+    )
 
 
 
