@@ -1,0 +1,1083 @@
+
+{% extends 'backend/home/base.html' %}
+
+{% block content %}
+
+<style>
+/* ============================================================
+   ACCOUNT SETTINGS
+   ============================================================ */
+
+.account-settings-page {
+    width: 100%;
+}
+
+/* ------------------------------------------------------------
+   PROFILE CARD
+   ------------------------------------------------------------ */
+
+.account-profile-card {
+    border: 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.account-profile-header {
+    padding: 30px 20px 24px;
+    text-align: center;
+}
+
+.account-profile-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid rgba(6, 36, 95, 0.08);
+    background: #f5f6fa;
+}
+
+.account-profile-placeholder {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #06245f;
+    color: #ffffff;
+    font-size: 52px;
+    font-weight: 700;
+    border: 5px solid rgba(6, 36, 95, 0.08);
+}
+
+.account-profile-name {
+    margin-top: 18px;
+    margin-bottom: 5px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.account-profile-role {
+    margin: 0;
+    color: #6c757d;
+    text-transform: capitalize;
+}
+
+/* ------------------------------------------------------------
+   PROFILE INFORMATION
+   ------------------------------------------------------------ */
+
+.account-info-table {
+    margin-bottom: 0;
+}
+
+.account-info-table td {
+    vertical-align: middle;
+    padding: 12px 0;
+    border-top: 1px solid #eeeeee;
+}
+
+.account-info-table tr:first-child td {
+    border-top: 0;
+}
+
+.account-info-label {
+    color: #6c757d;
+    font-weight: 600;
+    width: 40%;
+}
+
+.account-info-value {
+    color: #222222;
+    font-weight: 500;
+    word-break: break-word;
+}
+
+/* ------------------------------------------------------------
+   PASSWORD CARD
+   ------------------------------------------------------------ */
+
+.password-card {
+    border: 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.password-card .card-header {
+    padding: 20px 24px;
+    background: transparent;
+}
+
+.password-card .card-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.password-card .card-body {
+    padding: 24px;
+}
+
+/* ------------------------------------------------------------
+   FORM
+   ------------------------------------------------------------ */
+
+.password-form-group {
+    margin-bottom: 22px;
+}
+
+.password-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper .form-control {
+    padding-right: 48px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #7b8190;
+    z-index: 5;
+}
+
+.password-toggle:hover {
+    color: #06245f;
+}
+
+/* ------------------------------------------------------------
+   PASSWORD REQUIREMENTS
+   ------------------------------------------------------------ */
+
+#passwordRequirements {
+    display: none;
+    margin: 9px 0 0;
+    padding-left: 20px;
+    line-height: 1.8;
+}
+
+#passwordRequirements li {
+    font-size: 13px;
+}
+
+#confirmFeedback {
+    min-height: 20px;
+    font-size: 13px;
+    margin-top: 7px;
+}
+
+/* ------------------------------------------------------------
+   PASSWORD STRENGTH
+   ------------------------------------------------------------ */
+
+.password-strength-wrapper {
+    margin-top: 8px;
+}
+
+.password-strength-bar {
+    width: 100%;
+    height: 5px;
+    border-radius: 10px;
+    background: #eeeeee;
+    overflow: hidden;
+}
+
+.password-strength-progress {
+    width: 0;
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.25s ease;
+}
+
+.password-strength-text {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ------------------------------------------------------------
+   SECURITY INFO
+   ------------------------------------------------------------ */
+
+.security-info {
+    margin-top: 25px;
+    padding: 15px 18px;
+    border-radius: 8px;
+    background: rgba(6, 36, 95, 0.05);
+    border-left: 4px solid #06245f;
+}
+
+.security-info-title {
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.security-info-text {
+    margin: 0;
+    color: #6c757d;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ------------------------------------------------------------
+   BUTTONS
+   ------------------------------------------------------------ */
+
+.account-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+/* ------------------------------------------------------------
+   RESPONSIVE
+   ------------------------------------------------------------ */
+
+@media (max-width: 991px) {
+
+    .account-profile-card {
+        margin-bottom: 20px;
+    }
+
+}
+
+@media (max-width: 575px) {
+
+    .password-card .card-body {
+        padding: 18px;
+    }
+
+    .account-actions {
+        flex-direction: column;
+    }
+
+    .account-actions .btn {
+        width: 100%;
+    }
+
+}
+</style>
+
+
+<div class="account-settings-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="page-header">
+
+        <h3 class="fw-bold mb-3">
+            Account Settings
+        </h3>
+
+        <ul class="breadcrumbs mb-3">
+
+            <li class="nav-home">
+                <a href="{{ url_for('main.dashboard') }}">
+                    <i class="icon-home"></i>
+                </a>
+            </li>
+
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+
+            <li class="nav-item">
+                <a href="#">
+                    Settings
+                </a>
+            </li>
+
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+
+            <li class="nav-item">
+                <a href="#">
+                    Account Settings
+                </a>
+            </li>
+
+        </ul>
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN CONTENT
+         ======================================================== -->
+
+    <div class="row">
+
+
+        <!-- ====================================================
+             LEFT PROFILE CARD
+             ==================================================== -->
+
+        <div class="col-lg-4 col-md-5">
+
+            <div class="card account-profile-card">
+
+                <!-- PROFILE HEADER -->
+                <div class="account-profile-header">
+
+                    {% if user.photo %}
+
+                        <img
+                            src="{{ user.photo }}"
+                            alt="{{ user.fullname or 'Profile Photo' }}"
+                            class="account-profile-avatar"
+                            onerror="this.onerror=null;this.style.display='none';document.getElementById('profilePlaceholder').style.display='flex';"
+                        >
+
+                        <div
+                            id="profilePlaceholder"
+                            class="account-profile-placeholder"
+                            style="display:none;"
+                        >
+                            {{ (user.fullname or user.username or 'U')[:1]|upper }}
+                        </div>
+
+                    {% else %}
+
+                        <div class="account-profile-placeholder">
+                            {{ (user.fullname or user.username or 'U')[:1]|upper }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <h4 class="account-profile-name">
+                        {{ user.fullname or user.username or 'User' }}
+                    </h4>
+
+                    <p class="account-profile-role">
+                        {{ user.role|replace('_', ' ')|title }}
+                    </p>
+
+                </div>
+
+
+                <!-- PROFILE INFORMATION -->
+                <div class="card-body pt-0">
+
+                    <table class="table account-info-table">
+
+                        <tbody>
+
+                            <!-- Username -->
+                            <tr>
+
+                                <td class="account-info-label">
+                                    Username
+                                </td>
+
+                                <td class="account-info-value">
+                                    {{ user.username or '—' }}
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Email -->
+                            <tr>
+
+                                <td class="account-info-label">
+                                    Email
+                                </td>
+
+                                <td class="account-info-value">
+                                    {{ user.email or '—' }}
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Phone -->
+                            <tr>
+
+                                <td class="account-info-label">
+                                    Phone
+                                </td>
+
+                                <td class="account-info-value">
+                                    {{ user.phone or '—' }}
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Country -->
+                            <tr>
+
+                                <td class="account-info-label">
+                                    Country
+                                </td>
+
+                                <td class="account-info-value">
+                                    {{ user.country or '—' }}
+                                </td>
+
+                            </tr>
+
+
+                            <!-- City -->
+                            <tr>
+
+                                <td class="account-info-label">
+                                    City
+                                </td>
+
+                                <td class="account-info-value">
+                                    {{ user.city or '—' }}
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Account Status -->
+                            <tr>
+
+                                <td class="account-info-label">
+                                    Status
+                                </td>
+
+                                <td class="account-info-value">
+
+                                    {% if user.status %}
+
+                                        <span class="badge badge-success">
+                                            Active
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge badge-danger">
+                                            Inactive
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Verification -->
+                            <tr>
+
+                                <td class="account-info-label">
+                                    Verification
+                                </td>
+
+                                <td class="account-info-value">
+
+                                    {% if user.is_verified %}
+
+                                        <span class="badge badge-success">
+                                            Verified
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge badge-warning">
+                                            Not Verified
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             RIGHT CHANGE PASSWORD
+             ==================================================== -->
+
+        <div class="col-lg-8 col-md-7">
+
+            <div class="card password-card">
+
+                <div class="card-header">
+
+                    <h4 class="card-title">
+                        Change Password
+                    </h4>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <form
+                        id="changePasswordForm"
+                        method="POST"
+                        action="{{ url_for('main.account_settings') }}"
+                        autocomplete="off"
+                    >
+
+                        <!-- =================================================
+                             CURRENT PASSWORD
+                             ================================================= -->
+
+                        <div class="password-form-group">
+
+                            <label for="current_password">
+                                Current Password
+                            </label>
+
+                            <div class="password-input-wrapper">
+
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    id="current_password"
+                                    name="current_password"
+                                    placeholder="Enter your current password"
+                                    autocomplete="current-password"
+                                    required
+                                >
+
+                                <span
+                                    class="password-toggle"
+                                    onclick="togglePassword('current_password', this)"
+                                    title="Show password"
+                                >
+                                    <i class="fas fa-eye"></i>
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             NEW PASSWORD
+                             ================================================= -->
+
+                        <div class="password-form-group">
+
+                            <label for="new_password">
+                                New Password
+                            </label>
+
+                            <div class="password-input-wrapper">
+
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    id="new_password"
+                                    name="new_password"
+                                    placeholder="Enter a strong password"
+                                    autocomplete="new-password"
+                                    minlength="8"
+                                    required
+                                    oninput="validatePassword()"
+                                >
+
+                                <span
+                                    class="password-toggle"
+                                    onclick="togglePassword('new_password', this)"
+                                    title="Show password"
+                                >
+                                    <i class="fas fa-eye"></i>
+                                </span>
+
+                            </div>
+
+
+                            <!-- Strength -->
+                            <div
+                                id="passwordStrengthWrapper"
+                                class="password-strength-wrapper"
+                                style="display:none;"
+                            >
+
+                                <div class="password-strength-bar">
+
+                                    <div
+                                        id="passwordStrengthProgress"
+                                        class="password-strength-progress"
+                                    ></div>
+
+                                </div>
+
+                                <span
+                                    id="passwordStrengthText"
+                                    class="password-strength-text"
+                                ></span>
+
+                            </div>
+
+
+                            <!-- Requirements -->
+                            <ul id="passwordRequirements"></ul>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             CONFIRM PASSWORD
+                             ================================================= -->
+
+                        <div class="password-form-group">
+
+                            <label for="confirm_password">
+                                Confirm New Password
+                            </label>
+
+                            <div class="password-input-wrapper">
+
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    id="confirm_password"
+                                    name="confirm_password"
+                                    placeholder="Confirm your new password"
+                                    autocomplete="new-password"
+                                    minlength="8"
+                                    required
+                                    oninput="validatePassword()"
+                                >
+
+                                <span
+                                    class="password-toggle"
+                                    onclick="togglePassword('confirm_password', this)"
+                                    title="Show password"
+                                >
+                                    <i class="fas fa-eye"></i>
+                                </span>
+
+                            </div>
+
+                            <div id="confirmFeedback"></div>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             SECURITY INFORMATION
+                             ================================================= -->
+
+                        <div class="security-info">
+
+                            <div class="security-info-title">
+                                <i class="fas fa-shield-alt mr-1"></i>
+                                Password Security
+                            </div>
+
+                            <p class="security-info-text">
+                                Use a strong password that contains at least
+                                8 characters, including uppercase letters,
+                                lowercase letters, numbers and a special
+                                character.
+                            </p>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             ACTION BUTTONS
+                             ================================================= -->
+
+                        <div class="account-actions">
+
+                            <a
+                                href="{{ url_for('main.dashboard') }}"
+                                class="btn btn-danger"
+                            >
+                                Cancel
+                            </a>
+
+                            <button
+                                type="submit"
+                                id="changePasswordBtn"
+                                class="btn btn-success"
+                            >
+                                <i class="fas fa-key mr-1"></i>
+                                Change Password
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
+<script>
+
+/* ============================================================
+   TOGGLE PASSWORD VISIBILITY
+   ============================================================ */
+
+function togglePassword(fieldId, iconContainer) {
+
+    const input = document.getElementById(fieldId);
+    const icon = iconContainer.querySelector("i");
+
+    if (!input || !icon) {
+        return;
+    }
+
+    if (input.type === "password") {
+
+        input.type = "text";
+
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+
+        iconContainer.setAttribute(
+            "title",
+            "Hide password"
+        );
+
+    } else {
+
+        input.type = "password";
+
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+
+        iconContainer.setAttribute(
+            "title",
+            "Show password"
+        );
+    }
+}
+
+
+/* ============================================================
+   PASSWORD VALIDATION
+   ============================================================ */
+
+function validatePassword() {
+
+    const passwordInput =
+        document.getElementById("new_password");
+
+    const confirmInput =
+        document.getElementById("confirm_password");
+
+    const requirementsContainer =
+        document.getElementById("passwordRequirements");
+
+    const feedback =
+        document.getElementById("confirmFeedback");
+
+    const strengthWrapper =
+        document.getElementById("passwordStrengthWrapper");
+
+    const strengthProgress =
+        document.getElementById("passwordStrengthProgress");
+
+    const strengthText =
+        document.getElementById("passwordStrengthText");
+
+
+    if (!passwordInput || !confirmInput) {
+        return false;
+    }
+
+
+    const password = passwordInput.value;
+    const confirmPassword = confirmInput.value;
+
+
+    /* ---------------------------------------------------------
+       PASSWORD REQUIREMENTS
+       --------------------------------------------------------- */
+
+    const requirements = [
+
+        {
+            regex: /.{8,}/,
+            message: "At least 8 characters"
+        },
+
+        {
+            regex: /[A-Z]/,
+            message: "At least one uppercase letter"
+        },
+
+        {
+            regex: /[a-z]/,
+            message: "At least one lowercase letter"
+        },
+
+        {
+            regex: /[0-9]/,
+            message: "At least one number"
+        },
+
+        {
+            regex: /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`';]/,
+            message: "At least one special character"
+        }
+
+    ];
+
+
+    /* ---------------------------------------------------------
+       EMPTY PASSWORD
+       --------------------------------------------------------- */
+
+    if (password.length === 0) {
+
+        requirementsContainer.style.display = "none";
+        strengthWrapper.style.display = "none";
+
+    } else {
+
+        requirementsContainer.style.display = "block";
+        strengthWrapper.style.display = "block";
+
+
+        let passedCount = 0;
+
+        requirementsContainer.innerHTML = "";
+
+
+        requirements.forEach(function(requirement) {
+
+            const passed =
+                requirement.regex.test(password);
+
+            if (passed) {
+                passedCount++;
+            }
+
+
+            const li =
+                document.createElement("li");
+
+            li.style.color =
+                passed ? "green" : "red";
+
+            li.innerHTML =
+                (passed ? "✅ " : "❌ ") +
+                requirement.message;
+
+            requirementsContainer.appendChild(li);
+
+        });
+
+
+        /* -----------------------------------------------------
+           STRENGTH
+           ----------------------------------------------------- */
+
+        const percentage =
+            (passedCount / requirements.length) * 100;
+
+        strengthProgress.style.width =
+            percentage + "%";
+
+
+        if (passedCount <= 2) {
+
+            strengthText.textContent =
+                "Weak password";
+
+        } else if (passedCount <= 4) {
+
+            strengthText.textContent =
+                "Medium password";
+
+        } else {
+
+            strengthText.textContent =
+                "Strong password";
+        }
+
+    }
+
+
+    /* ---------------------------------------------------------
+       CONFIRM PASSWORD
+       --------------------------------------------------------- */
+
+    if (confirmPassword.length === 0) {
+
+        feedback.textContent = "";
+        feedback.className = "";
+
+    } else if (password !== confirmPassword) {
+
+        feedback.textContent =
+            "Passwords do not match.";
+
+        feedback.className =
+            "text-danger";
+
+    } else {
+
+        feedback.textContent =
+            "Passwords match.";
+
+        feedback.className =
+            "text-success";
+    }
+
+
+    /* ---------------------------------------------------------
+       FINAL VALIDATION
+       --------------------------------------------------------- */
+
+    const passwordValid =
+        requirements.every(function(requirement) {
+            return requirement.regex.test(password);
+        });
+
+    const passwordsMatch =
+        password.length > 0 &&
+        password === confirmPassword;
+
+
+    return passwordValid && passwordsMatch;
+}
+
+
+/* ============================================================
+   FORM SUBMIT
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const form =
+            document.getElementById(
+                "changePasswordForm"
+            );
+
+
+        if (!form) {
+            return;
+        }
+
+
+        form.addEventListener(
+            "submit",
+            function(event) {
+
+                if (!validatePassword()) {
+
+                    event.preventDefault();
+
+                    if (
+                        typeof Swal !== "undefined"
+                    ) {
+
+                        Swal.fire({
+                            icon: "error",
+                            title: "Invalid Password",
+                            text: "Please make sure your new password meets all requirements and both passwords match.",
+                            confirmButtonColor: "#06245f"
+                        });
+
+                    } else {
+
+                        alert(
+                            "Please fix the password requirements before submitting."
+                        );
+
+                    }
+
+                    return false;
+                }
+
+
+                /* ------------------------------------------------
+                   OPTIONAL CONFIRMATION
+                   ------------------------------------------------ */
+
+                if (
+                    typeof Swal !== "undefined"
+                ) {
+
+                    event.preventDefault();
+
+                    Swal.fire({
+
+                        title: "Change Password?",
+
+                        text:
+                            "Are you sure you want to change your password?",
+
+                        icon: "question",
+
+                        showCancelButton: true,
+
+                        confirmButtonText:
+                            "Yes, Change Password",
+
+                        cancelButtonText:
+                            "Cancel",
+
+                        confirmButtonColor:
+                            "#06245f",
+
+                        cancelButtonColor:
+                            "#d33",
+
+                        reverseButtons: true
+
+                    }).then(function(result) {
+
+                        if (result.isConfirmed) {
+
+                            form.submit();
+
+                        }
+
+                    });
+
+                }
+
+            }
+        );
+
+    }
+);
+
+</script>
+
+{% endblock %}
+

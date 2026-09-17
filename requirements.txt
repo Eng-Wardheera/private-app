@@ -94,5 +94,10 @@ bcrypt
 python-slugify
 Werkzeug
 
+pycountry
+pytz
+cloudinary
+xhtml2pdf
+dnspython
 
 

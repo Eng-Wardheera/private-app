@@ -163,6 +163,7 @@
                     </li>
                   </ul>
                 </li>
+
                 <li class="nav-item topbar-icon dropdown hidden-caret">
                   <a
                     class="nav-link dropdown-toggle"
@@ -241,6 +242,7 @@
                     </li>
                   </ul>
                 </li>
+
                 <li class="nav-item topbar-icon dropdown hidden-caret">
                   <a
                     class="nav-link"
@@ -320,60 +322,204 @@
                   </div>
                 </li>
 
+             
+                <!-- ============================================================
+                  TOPBAR USER DROPDOWN
+                  ============================================================ -->
+
                 <li class="nav-item topbar-user dropdown hidden-caret">
-                  <a
-                    class="dropdown-toggle profile-pic"
-                    data-bs-toggle="dropdown"
-                    href="#"
-                    aria-expanded="false"
-                  >
-                    <div class="avatar-sm">
-                      <img
-                        src="assets/img/profile.jpg"
-                        alt="..."
-                        class="avatar-img rounded-circle"
-                      />
-                    </div>
-                    <span class="profile-username">
-                      <span class="op-7">Hi,</span>
-                      <span class="fw-bold">Hizrian</span>
-                    </span>
-                  </a>
-                  <ul class="dropdown-menu dropdown-user animated fadeIn">
-                    <div class="dropdown-user-scroll scrollbar-outer">
-                      <li>
-                        <div class="user-box">
-                          <div class="avatar-lg">
-                            <img
-                              src="assets/img/profile.jpg"
-                              alt="image profile"
-                              class="avatar-img rounded"
-                            />
-                          </div>
-                          <div class="u-text">
-                            <h4>Hizrian</h4>
-                            <p class="text-muted">hello@example.com</p>
-                            <a
-                              href="profile.html"
-                              class="btn btn-xs btn-secondary btn-sm"
-                              >View Profile</a
-                            >
-                          </div>
+
+                    <a
+                        class="dropdown-toggle profile-pic"
+                        data-bs-toggle="dropdown"
+                        href="#"
+                        aria-expanded="false"
+                    >
+
+                        <!-- TOPBAR AVATAR -->
+                        <div class="avatar-sm">
+
+                            {% if user and user.photo %}
+
+                                <img
+                                    src="{{ user.photo }}"
+                                    alt="{{ user.name or 'Profile' }}"
+                                    class="avatar-img rounded-circle"
+                                    onerror="this.onerror=null; this.src='{{ url_for('static', filename='assets/img/profile.jpg') }}';"
+                                >
+
+                            {% else %}
+
+                                <div
+                                    class="avatar-img rounded-circle d-flex align-items-center justify-content-center"
+                                    style="
+                                        background:#06245f;
+                                        color:#fff;
+                                        font-weight:700;
+                                        font-size:16px;
+                                    "
+                                >
+                                    {{ (user.name or 'U')[:1]|upper if user else 'U' }}
+                                </div>
+
+                            {% endif %}
+
                         </div>
-                      </li>
-                      <li>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">My Profile</a>
-                        <a class="dropdown-item" href="#">My Balance</a>
-                        <a class="dropdown-item" href="#">Inbox</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Account Setting</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Logout</a>
-                      </li>
-                    </div>
-                  </ul>
+
+
+                        <!-- USERNAME -->
+                        <span class="profile-username">
+
+                            <span class="op-7">Hi,</span>
+
+                            <span class="fw-bold">
+                                {{ user.fullname if user else 'User' }}
+                            </span>
+
+                        </span>
+
+                    </a>
+
+
+                    <!-- ========================================================
+                        DROPDOWN
+                        ======================================================== -->
+
+                    <ul class="dropdown-menu dropdown-user animated fadeIn">
+
+                        <div class="dropdown-user-scroll scrollbar-outer">
+
+                            <!-- USER INFORMATION -->
+                            <li>
+
+                                <div class="user-box">
+
+                                    <!-- LARGE AVATAR -->
+                                    <div class="avatar-lg">
+
+                                        {% if user and user.photo %}
+
+                                            <img
+                                                src="{{ user.photo }}"
+                                                alt="{{ user.name or 'Profile' }}"
+                                                class="avatar-img rounded"
+                                                onerror="this.onerror=null; this.src='{{ url_for('static', filename='assets/img/profile.jpg') }}';"
+                                            >
+
+                                        {% else %}
+
+                                            <div
+                                                class="avatar-img rounded d-flex align-items-center justify-content-center"
+                                                style="
+                                                    width:100%;
+                                                    height:100%;
+                                                    background:#06245f;
+                                                    color:#fff;
+                                                    font-weight:700;
+                                                    font-size:30px;
+                                                "
+                                            >
+                                                {{ (user.name or 'U')[:1]|upper if user else 'U' }}
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- USER DETAILS -->
+                                    <div class="u-text">
+
+                                        <h4>
+                                            {{ user.name if user else 'User' }}
+                                        </h4>
+
+                                        <p class="text-muted">
+                                            {{ user.email if user else '' }}
+                                        </p>
+
+                                        <a
+                                            href="{{ url_for('main.profile') }}"
+                                            class="btn btn-xs btn-secondary btn-sm"
+                                        >
+                                            View Profile
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </li>
+
+
+                            <!-- ==================================================
+                                MENU ITEMS
+                                ================================================== -->
+
+                            <li>
+
+                                <div class="dropdown-divider"></div>
+
+
+                                <!-- PROFILE -->
+                                <a
+                                    class="dropdown-item"
+                                    href="{{ url_for('main.profile') }}"
+                                >
+                                    My Profile
+                                </a>
+
+
+                                <!-- BALANCE -->
+                                <a
+                                    class="dropdown-item"
+                                    href="#"
+                                >
+                                    My Balance
+                                </a>
+
+
+                                <!-- INBOX -->
+                                <a
+                                    class="dropdown-item"
+                                    href="#"
+                                >
+                                    Inbox
+                                </a>
+
+
+                                <div class="dropdown-divider"></div>
+
+
+                                <!-- ACCOUNT SETTINGS -->
+                                <a
+                                    class="dropdown-item"
+                                    href="{{ url_for('main.account_settings') }}"
+                                >
+                                    Account Setting
+                                </a>
+
+
+                                <div class="dropdown-divider"></div>
+
+
+                                <!-- LOGOUT -->
+                                <a
+                                    class="dropdown-item"
+                                    href="{{ url_for('main.logout') }}"
+                                >
+                                    Logout
+                                </a>
+
+                            </li>
+
+                        </div>
+
+                    </ul>
+
                 </li>
+
+
               </ul>
             </div>
           </nav>

@@ -1,0 +1,2376 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   PROFILE PAGE
+   ============================================================ */
+
+.profile-page {
+    width: 100%;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: 330px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+/* ============================================================
+   PROFILE CARD
+   ============================================================ */
+
+.profile-card {
+    background: #ffffff;
+    border: 1px solid #e7eaf0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.profile-cover {
+    height: 105px;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #173d86
+    );
+    position: relative;
+}
+
+.profile-main {
+    padding: 0 24px 24px;
+    text-align: center;
+}
+
+/* ============================================================
+   AVATAR
+   ============================================================ */
+
+.profile-avatar-wrapper {
+    position: relative;
+    width: 132px;
+    height: 132px;
+    margin: -66px auto 14px;
+    z-index: 2;
+}
+
+.profile-avatar {
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #ffffff;
+    background: #f2f4f8;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.15);
+    display: block;
+}
+
+.profile-avatar-fallback {
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    border: 5px solid #ffffff;
+    background: #06245f;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 46px;
+    font-weight: 700;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+}
+
+.online-dot {
+    position: absolute;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: #2dbd63;
+    border: 3px solid #ffffff;
+    right: 8px;
+    bottom: 8px;
+    box-sizing: border-box;
+}
+
+/* ============================================================
+   PROFILE NAME
+   ============================================================ */
+
+.profile-name {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 700;
+    color: #172033;
+}
+
+.profile-username {
+    margin: 5px 0 14px;
+    color: #7a8497;
+    font-size: 14px;
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+
+.profile-badges {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 20px;
+}
+
+.profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge-role {
+    background: #edf3ff;
+    color: #06245f;
+}
+
+.badge-active {
+    background: #eaf9ef;
+    color: #198754;
+}
+
+.badge-inactive {
+    background: #fff0f0;
+    color: #dc3545;
+}
+
+.badge-verified {
+    background: #eef8ff;
+    color: #087ea4;
+}
+
+.badge-unverified {
+    background: #fff7e8;
+    color: #a86b00;
+}
+
+/* ============================================================
+   PROFILE SUMMARY
+   ============================================================ */
+
+.profile-summary {
+    border-top: 1px solid #edf0f4;
+    margin-top: 18px;
+    padding-top: 5px;
+    text-align: left;
+}
+
+.profile-summary-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.profile-summary-row:last-child {
+    border-bottom: 0;
+}
+
+.summary-label {
+    color: #7b8494;
+    font-size: 13px;
+    flex: 0 0 auto;
+}
+
+.summary-value {
+    color: #263247;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+    word-break: break-word;
+    max-width: 65%;
+}
+
+/* ============================================================
+   FORM CARD
+   ============================================================ */
+
+.profile-form-card {
+    background: #ffffff;
+    border: 1px solid #e7eaf0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.profile-form-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e9edf2;
+}
+
+.profile-form-header h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #172033;
+}
+
+.profile-form-header p {
+    margin: 5px 0 0;
+    color: #7b8494;
+    font-size: 13px;
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+
+.profile-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 14px 20px 0;
+    border-bottom: 1px solid #e9edf2;
+}
+
+.profile-tab {
+    border: 0;
+    background: transparent;
+    padding: 11px 15px;
+    color: #737d8e;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s ease;
+}
+
+.profile-tab:hover {
+    color: #06245f;
+}
+
+.profile-tab.active {
+    color: #06245f;
+    border-bottom-color: #06245f;
+}
+
+/* ============================================================
+   TAB CONTENT
+   ============================================================ */
+
+.profile-tab-content {
+    padding: 24px;
+}
+
+.profile-panel {
+    display: none;
+}
+
+.profile-panel.active {
+    display: block;
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.form-group {
+    min-width: 0;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #3b4659;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.form-control-profile,
+.form-select-profile {
+    width: 100%;
+    height: 44px;
+    padding: 0 13px;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #273246;
+    font-size: 14px;
+    outline: none;
+    transition:
+        border-color .2s,
+        box-shadow .2s;
+    box-sizing: border-box;
+}
+
+textarea.form-control-profile {
+    height: auto;
+    min-height: 110px;
+    padding: 12px 13px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.form-control-profile:focus,
+.form-select-profile:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.form-help {
+    display: block;
+    margin-top: 5px;
+    color: #8992a2;
+    font-size: 11px;
+}
+
+/* ============================================================
+   PHONE
+   ============================================================ */
+
+.phone-group {
+    display: flex;
+}
+
+.phone-code {
+    min-width: 65px;
+    height: 44px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dfe4eb;
+    border-right: 0;
+    border-radius: 9px 0 0 9px;
+    background: #f6f8fb;
+    color: #5f6979;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.phone-group .form-control-profile {
+    border-radius: 0 9px 9px 0;
+}
+
+/* ============================================================
+   PHOTO UPLOAD
+   ============================================================ */
+
+.photo-upload-box {
+    border: 1px dashed #cfd6e1;
+    border-radius: 12px;
+    padding: 15px;
+    background: #fafbfd;
+}
+
+.photo-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.photo-preview {
+    width: 82px;
+    height: 82px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid #dfe4eb;
+    background: #f2f4f8;
+    display: block;
+}
+
+.photo-preview-fallback {
+    width: 82px;
+    height: 82px;
+    border-radius: 10px;
+    background: #06245f;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    flex: 0 0 82px;
+}
+
+.photo-upload-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.photo-upload-info strong {
+    display: block;
+    color: #263247;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.photo-upload-info span {
+    display: block;
+    color: #8a93a3;
+    font-size: 11px;
+    margin-bottom: 9px;
+}
+
+.file-input {
+    width: 100%;
+    font-size: 12px;
+    color: #596476;
+}
+
+/* ============================================================
+   SOCIAL INPUT
+   ============================================================ */
+
+.social-field {
+    position: relative;
+}
+
+.social-prefix {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8a93a3;
+    font-size: 13px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.social-field input {
+    padding-left: 38px;
+}
+
+/* ============================================================
+   READ ONLY ACCOUNT INFO
+   ============================================================ */
+
+.readonly-box {
+    background: #f7f9fc;
+    border: 1px solid #e5e9ef;
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #556074;
+    font-size: 13px;
+    min-height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    word-break: break-word;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.profile-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px 24px;
+    border-top: 1px solid #e9edf2;
+}
+
+.profile-btn {
+    border: 0;
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition:
+        background .2s ease,
+        transform .15s ease;
+}
+
+.profile-btn:active {
+    transform: translateY(1px);
+}
+
+.btn-save-profile {
+    background: #06245f;
+    color: #ffffff;
+}
+
+.btn-save-profile:hover {
+    background: #041d4e;
+    color: #ffffff;
+}
+
+.btn-cancel-profile {
+    background: #f0f2f5;
+    color: #4d586b;
+}
+
+.btn-cancel-profile:hover {
+    background: #e5e8ed;
+    color: #3f4858;
+}
+
+/* ============================================================
+   DANGER ZONE
+   ============================================================ */
+
+.danger-zone {
+    margin-top: 20px;
+    padding: 17px;
+    border: 1px solid #f1d2d2;
+    border-radius: 11px;
+    background: #fffafa;
+}
+
+.danger-zone h5 {
+    margin: 0 0 5px;
+    color: #c92a2a;
+    font-size: 14px;
+}
+
+.danger-zone p {
+    margin: 0;
+    color: #7f6868;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   UPLOAD STATUS
+   ============================================================ */
+
+.upload-status {
+    display: none;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #06245f;
+}
+
+.upload-status.show {
+    display: block;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+
+    .profile-grid {
+        grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+}
+
+@media (max-width: 850px) {
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-card {
+        width: 100%;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group.full {
+        grid-column: auto;
+    }
+
+    .profile-tab-content {
+        padding: 18px;
+    }
+
+    .profile-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .profile-tab {
+        white-space: nowrap;
+    }
+
+    .profile-actions {
+        padding: 16px 18px;
+        flex-direction: column-reverse;
+    }
+
+    .profile-btn {
+        width: 100%;
+    }
+
+    .photo-upload-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .photo-upload-info {
+        width: 100%;
+    }
+
+    .summary-value {
+        max-width: 60%;
+    }
+
+}
+
+</style>
+
+<!-- ============================================================
+     PAGE HEADER
+     ============================================================ -->
+
+<div class="page-header">
+
+
+<h3 class="fw-bold mb-3">
+    Profile
+</h3>
+
+<ul class="breadcrumbs mb-3">
+
+    <li class="nav-home">
+        <a href="{{ url_for('main.dashboard') }}">
+            <i class="icon-home"></i>
+        </a>
+    </li>
+
+    <li class="separator">
+        <i class="icon-arrow-right"></i>
+    </li>
+
+    <li class="nav-item">
+        <a href="#">
+            Users
+        </a>
+    </li>
+
+    <li class="separator">
+        <i class="icon-arrow-right"></i>
+    </li>
+
+    <li class="nav-item">
+        <a href="#">
+            Profile
+        </a>
+    </li>
+
+</ul>
+
+
+</div>
+
+<!-- ============================================================
+     PROFILE PAGE
+     ============================================================ -->
+
+<div class="profile-page">
+
+
+<div class="profile-grid">
+
+
+    <!-- ====================================================
+         LEFT PROFILE CARD
+         ==================================================== -->
+
+    <div class="profile-card">
+
+        <div class="profile-cover"></div>
+
+        <div class="profile-main">
+
+
+            <!-- ==================================================
+                 AVATAR
+                 ================================================== -->
+
+            <div class="profile-avatar-wrapper">
+
+                {% if user.photo %}
+
+                    <!-- Cloudinary URL DIRECTLY -->
+                    <img
+                        id="profileAvatar"
+                        class="profile-avatar"
+                        src="{{ user.photo }}"
+                        alt="{{ user.fullname or user.username or 'Profile' }}"
+                        loading="lazy"
+                        onerror="this.style.display='none'; document.getElementById('avatarFallback').style.display='flex';"
+                    >
+
+                    <div
+                        id="avatarFallback"
+                        class="profile-avatar-fallback"
+                        style="display:none;"
+                    >
+                        {{ (user.fullname or user.username or 'U')[0]|upper }}
+                    </div>
+
+                {% else %}
+
+                    <div
+                        id="profileAvatar"
+                        class="profile-avatar-fallback"
+                    >
+                        {{ (user.fullname or user.username or 'U')[0]|upper }}
+                    </div>
+
+                {% endif %}
+
+
+                {% if user.auth_status == "login" %}
+
+                    <span
+                        class="online-dot"
+                        title="Online"
+                    ></span>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- ==================================================
+                 NAME
+                 ================================================== -->
+
+            <h4 class="profile-name">
+                {{ user.fullname or "No Name" }}
+            </h4>
+
+            <div class="profile-username">
+                @{{ user.username or "username" }}
+            </div>
+
+
+            <!-- ==================================================
+                 BADGES
+                 ================================================== -->
+
+            <div class="profile-badges">
+
+                <span class="profile-badge badge-role">
+                    {{ user.role|replace('_', ' ')|title }}
+                </span>
+
+
+                {% if user.status %}
+
+                    <span class="profile-badge badge-active">
+                        Active
+                    </span>
+
+                {% else %}
+
+                    <span class="profile-badge badge-inactive">
+                        Inactive
+                    </span>
+
+                {% endif %}
+
+
+                {% if user.is_verified %}
+
+                    <span class="profile-badge badge-verified">
+                        Verified
+                    </span>
+
+                {% else %}
+
+                    <span class="profile-badge badge-unverified">
+                        Unverified
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- ==================================================
+                 PROFILE SUMMARY
+                 ================================================== -->
+
+            <div class="profile-summary">
+
+
+                <div class="profile-summary-row">
+
+                    <span class="summary-label">
+                        Email
+                    </span>
+
+                    <span class="summary-value">
+                        {{ user.email or "Not provided" }}
+                    </span>
+
+                </div>
+
+
+                <div class="profile-summary-row">
+
+                    <span class="summary-label">
+                        Phone
+                    </span>
+
+                    <span class="summary-value">
+                        {{ user.phone or "Not provided" }}
+                    </span>
+
+                </div>
+
+
+                <div class="profile-summary-row">
+
+                    <span class="summary-label">
+                        Country
+                    </span>
+
+                    <span class="summary-value">
+                        {{ user.country or "Not provided" }}
+                    </span>
+
+                </div>
+
+
+                <div class="profile-summary-row">
+
+                    <span class="summary-label">
+                        City
+                    </span>
+
+                    <span class="summary-value">
+                        {{ user.city or "Not provided" }}
+                    </span>
+
+                </div>
+
+
+                <div class="profile-summary-row">
+
+                    <span class="summary-label">
+                        Account
+                    </span>
+
+                    <span class="summary-value">
+
+                        {% if user.auth_status == "login" %}
+
+                            Online
+
+                        {% else %}
+
+                            Offline
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================================================
+         RIGHT FORM
+         ==================================================== -->
+
+    <div class="profile-form-card">
+
+
+        <!-- ==================================================
+             FORM HEADER
+             ================================================== -->
+
+        <div class="profile-form-header">
+
+            <h4>
+                Update Profile
+            </h4>
+
+            <p>
+                Manage your personal information and account details.
+            </p>
+
+        </div>
+
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+            id="profileForm"
+            autocomplete="off"
+        >
+
+
+            <!-- ==================================================
+                 TABS
+                 ================================================== -->
+
+            <div class="profile-tabs">
+
+                <button
+                    type="button"
+                    class="profile-tab active"
+                    data-tab="personal"
+                >
+                    Personal Info
+                </button>
+
+                <button
+                    type="button"
+                    class="profile-tab"
+                    data-tab="additional"
+                >
+                    Additional Info
+                </button>
+
+                <button
+                    type="button"
+                    class="profile-tab"
+                    data-tab="social"
+                >
+                    Social Links
+                </button>
+
+                <button
+                    type="button"
+                    class="profile-tab"
+                    data-tab="location"
+                >
+                    Location
+                </button>
+
+                <button
+                    type="button"
+                    class="profile-tab"
+                    data-tab="account"
+                >
+                    Account
+                </button>
+
+            </div>
+
+
+            <!-- ==================================================
+                 TAB CONTENT
+                 ================================================== -->
+
+            <div class="profile-tab-content">
+
+
+                <!-- ==================================================
+                     PERSONAL
+                     ================================================== -->
+
+                <div
+                    class="profile-panel active"
+                    id="tab-personal"
+                >
+
+                    <div class="form-grid">
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Full Name
+                            </label>
+
+                            <input
+                                type="text"
+                                name="fullname"
+                                class="form-control-profile"
+                                value="{{ user.fullname or '' }}"
+                                maxlength="150"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Username
+                            </label>
+
+                            <input
+                                type="text"
+                                name="username"
+                                class="form-control-profile"
+                                value="{{ user.username or '' }}"
+                                maxlength="150"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                name="email"
+                                class="form-control-profile"
+                                value="{{ user.email or '' }}"
+                                maxlength="150"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Phone
+                            </label>
+
+                            <input
+                                type="text"
+                                name="phone"
+                                class="form-control-profile"
+                                value="{{ user.phone or '' }}"
+                                maxlength="20"
+                                inputmode="tel"
+                                placeholder="Enter phone number"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group full">
+
+                            <label class="form-label">
+                                Bio
+                            </label>
+
+                            <textarea
+                                name="bio"
+                                class="form-control-profile"
+                                maxlength="2000"
+                                placeholder="Tell something about yourself..."
+                            >{{ user.bio or '' }}</textarea>
+
+                            <span class="form-help">
+                                Maximum 2000 characters.
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ADDITIONAL
+                     ================================================== -->
+
+                <div
+                    class="profile-panel"
+                    id="tab-additional"
+                >
+
+                    <div class="form-grid">
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Date of Birth
+                            </label>
+
+                            <input
+                                type="date"
+                                name="dob"
+                                class="form-control-profile"
+                                value="{{ user.dob.strftime('%Y-%m-%d') if user.dob else '' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Place of Birth
+                            </label>
+
+                            <input
+                                type="text"
+                                name="pob"
+                                class="form-control-profile"
+                                value="{{ user.pob or '' }}"
+                                maxlength="255"
+                                placeholder="Enter place of birth"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Gender
+                            </label>
+
+                            <select
+                                name="gender"
+                                class="form-select-profile"
+                            >
+
+                                <option value="">
+                                    Select Gender
+                                </option>
+
+                                <option
+                                    value="Male"
+                                    {% if user.gender == "Male" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Male
+                                </option>
+
+                                <option
+                                    value="Female"
+                                    {% if user.gender == "Female" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Female
+                                </option>
+
+                                <option
+                                    value="Other"
+                                    {% if user.gender == "Other" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Other
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- ==================================================
+                             PHOTO VISIBILITY
+                             ================================================== -->
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Profile Photo Visibility
+                            </label>
+
+                            <select
+                                name="photo_visibility"
+                                class="form-select-profile"
+                            >
+
+                                <option
+                                    value="everyone"
+                                    {% if user.photo_visibility == "everyone" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Visible to Everyone
+                                </option>
+
+                                <option
+                                    value="registered"
+                                    {% if user.photo_visibility == "registered" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Registered Users Only
+                                </option>
+
+                                <option
+                                    value="private"
+                                    {% if user.photo_visibility == "private" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Private
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- ==================================================
+                             PHOTO
+                             ================================================== -->
+
+                        <div class="form-group full">
+
+                            <label class="form-label">
+                                Profile Photo
+                            </label>
+
+                            <div class="photo-upload-box">
+
+                                <div class="photo-upload-row">
+
+
+                                    {% if user.photo %}
+
+                                        <img
+                                            id="photoPreview"
+                                            class="photo-preview"
+                                            src="{{ user.photo }}"
+                                            alt="Profile Photo"
+                                            loading="lazy"
+                                            onerror="this.style.display='none'; document.getElementById('photoPreviewFallback').style.display='flex';"
+                                        >
+
+                                        <div
+                                            id="photoPreviewFallback"
+                                            class="photo-preview-fallback"
+                                            style="display:none;"
+                                        >
+                                            {{ (user.fullname or user.username or 'U')[0]|upper }}
+                                        </div>
+
+                                    {% else %}
+
+                                        <div
+                                            id="photoPreviewFallback"
+                                            class="photo-preview-fallback"
+                                        >
+                                            {{ (user.fullname or user.username or 'U')[0]|upper }}
+                                        </div>
+
+                                        <img
+                                            id="photoPreview"
+                                            class="photo-preview"
+                                            src=""
+                                            alt="Photo Preview"
+                                            style="display:none;"
+                                        >
+
+                                    {% endif %}
+
+
+                                    <div class="photo-upload-info">
+
+                                        <strong>
+                                            Change profile photo
+                                        </strong>
+
+                                        <span>
+                                            PNG, JPG, JPEG or WEBP.
+                                            Maximum 5MB.
+                                        </span>
+
+                                        <input
+                                            type="file"
+                                            name="profile_photo"
+                                            id="profilePhoto"
+                                            class="file-input"
+                                            accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                                        >
+
+                                        <div
+                                            id="uploadStatus"
+                                            class="upload-status"
+                                        >
+                                            Image selected. Click Save Changes to upload.
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     SOCIAL
+                     ================================================== -->
+
+                <div
+                    class="profile-panel"
+                    id="tab-social"
+                >
+
+                    <div class="form-grid">
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Facebook
+                            </label>
+
+                            <div class="social-field">
+
+                                <span class="social-prefix">
+                                    f
+                                </span>
+
+                                <input
+                                    type="text"
+                                    name="facebook"
+                                    class="form-control-profile"
+                                    value="{{ user.facebook or '' }}"
+                                    maxlength="255"
+                                    placeholder="Facebook profile"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Twitter / X
+                            </label>
+
+                            <div class="social-field">
+
+                                <span class="social-prefix">
+                                    𝕏
+                                </span>
+
+                                <input
+                                    type="text"
+                                    name="twitter"
+                                    class="form-control-profile"
+                                    value="{{ user.twitter or '' }}"
+                                    maxlength="255"
+                                    placeholder="Twitter / X profile"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                WhatsApp
+                            </label>
+
+                            <div class="social-field">
+
+                                <span class="social-prefix">
+                                    W
+                                </span>
+
+                                <input
+                                    type="text"
+                                    name="whatsapp"
+                                    class="form-control-profile"
+                                    value="{{ user.whatsapp or '' }}"
+                                    maxlength="255"
+                                    placeholder="WhatsApp"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Instagram
+                            </label>
+
+                            <div class="social-field">
+
+                                <span class="social-prefix">
+                                    ◎
+                                </span>
+
+                                <input
+                                    type="text"
+                                    name="instagram"
+                                    class="form-control-profile"
+                                    value="{{ user.instagram or '' }}"
+                                    maxlength="255"
+                                    placeholder="Instagram profile"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Google
+                            </label>
+
+                            <div class="social-field">
+
+                                <span class="social-prefix">
+                                    G
+                                </span>
+
+                                <input
+                                    type="text"
+                                    name="google"
+                                    class="form-control-profile"
+                                    value="{{ user.google or '' }}"
+                                    maxlength="255"
+                                    placeholder="Google account"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                LinkedIn
+                            </label>
+
+                            <div class="social-field">
+
+                                <span class="social-prefix">
+                                    in
+                                </span>
+
+                                <input
+                                    type="text"
+                                    name="linkedin"
+                                    class="form-control-profile"
+                                    value="{{ user.linkedin or '' }}"
+                                    maxlength="255"
+                                    placeholder="LinkedIn profile"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Skype
+                            </label>
+
+                            <div class="social-field">
+
+                                <span class="social-prefix">
+                                    S
+                                </span>
+
+                                <input
+                                    type="text"
+                                    name="skype"
+                                    class="form-control-profile"
+                                    value="{{ user.skype or '' }}"
+                                    maxlength="255"
+                                    placeholder="Skype"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                GitHub
+                            </label>
+
+                            <div class="social-field">
+
+                                <span class="social-prefix">
+                                    GH
+                                </span>
+
+                                <input
+                                    type="text"
+                                    name="github"
+                                    class="form-control-profile"
+                                    value="{{ user.github or '' }}"
+                                    maxlength="255"
+                                    placeholder="GitHub profile"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     LOCATION
+                     ================================================== -->
+
+                <div
+                    class="profile-panel"
+                    id="tab-location"
+                >
+
+                    <div class="form-grid">
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Country
+                            </label>
+
+                            <input
+                                type="text"
+                                name="country"
+                                class="form-control-profile"
+                                value="{{ user.country or '' }}"
+                                maxlength="255"
+                                placeholder="Enter country"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                State / Region
+                            </label>
+
+                            <input
+                                type="text"
+                                name="state"
+                                class="form-control-profile"
+                                value="{{ user.state or '' }}"
+                                maxlength="255"
+                                placeholder="Enter state or region"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                City
+                            </label>
+
+                            <input
+                                type="text"
+                                name="city"
+                                class="form-control-profile"
+                                value="{{ user.city or '' }}"
+                                maxlength="255"
+                                placeholder="Enter city"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Address
+                            </label>
+
+                            <input
+                                type="text"
+                                name="address"
+                                class="form-control-profile"
+                                value="{{ user.address or '' }}"
+                                maxlength="255"
+                                placeholder="Enter address"
+                            >
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ACCOUNT
+                     ================================================== -->
+
+                <div
+                    class="profile-panel"
+                    id="tab-account"
+                >
+
+                    <div class="form-grid">
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                User ID
+                            </label>
+
+                            <div class="readonly-box">
+                                #{{ user.id }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Role
+                            </label>
+
+                            <div class="readonly-box">
+                                {{ user.role|replace('_', ' ')|title }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Account Status
+                            </label>
+
+                            <div class="readonly-box">
+
+                                {% if user.status %}
+                                    Active
+                                {% else %}
+                                    Inactive
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Verification
+                            </label>
+
+                            <div class="readonly-box">
+
+                                {% if user.is_verified %}
+                                    Verified
+                                {% else %}
+                                    Not Verified
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Authentication
+                            </label>
+
+                            <div class="readonly-box">
+
+                                {% if user.auth_status == "login" %}
+                                    Currently Logged In
+                                {% else %}
+                                    Logged Out
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Login Time
+                            </label>
+
+                            <div class="readonly-box">
+
+                                {% if user.login_time %}
+                                    {{ user.login_time.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Last Active
+                            </label>
+
+                            <div class="readonly-box">
+
+                                {% if user.last_active %}
+                                    {{ user.last_active.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    Not available
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Member Since
+                            </label>
+
+                            <div class="readonly-box">
+
+                                {% if user.created_at %}
+                                    {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    Not available
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="danger-zone">
+
+                        <h5>
+                            Account Information
+                        </h5>
+
+                        <p>
+                            Your role, account status and verification
+                            information are managed by the system.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ==================================================
+                 ACTIONS
+                 ================================================== -->
+
+            <div class="profile-actions">
+
+                <a
+                    href="{{ url_for('main.dashboard') }}"
+                    class="profile-btn btn-cancel-profile"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="profile-btn btn-save-profile"
+                    id="saveProfileButton"
+                >
+                    Save Changes
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+    /* ========================================================
+       TABS
+       ======================================================== */
+
+    const tabs =
+        document.querySelectorAll(".profile-tab");
+
+    const panels =
+        document.querySelectorAll(".profile-panel");
+
+
+    tabs.forEach(function (tab) {
+
+        tab.addEventListener(
+            "click",
+            function () {
+
+                const target =
+                    this.dataset.tab;
+
+
+                tabs.forEach(function (item) {
+
+                    item.classList.remove(
+                        "active"
+                    );
+
+                });
+
+
+                panels.forEach(function (panel) {
+
+                    panel.classList.remove(
+                        "active"
+                    );
+
+                });
+
+
+                this.classList.add(
+                    "active"
+                );
+
+
+                const targetPanel =
+                    document.getElementById(
+                        "tab-" + target
+                    );
+
+
+                if (targetPanel) {
+
+                    targetPanel.classList.add(
+                        "active"
+                    );
+
+                }
+
+            }
+        );
+
+    });
+
+
+    /* ========================================================
+       PHOTO PREVIEW
+       ======================================================== */
+
+    const photoInput =
+        document.getElementById(
+            "profilePhoto"
+        );
+
+    const photoPreview =
+        document.getElementById(
+            "photoPreview"
+        );
+
+    const photoFallback =
+        document.getElementById(
+            "photoPreviewFallback"
+        );
+
+    const uploadStatus =
+        document.getElementById(
+            "uploadStatus"
+        );
+
+
+    if (photoInput) {
+
+        photoInput.addEventListener(
+            "change",
+            function () {
+
+                const file =
+                    this.files[0];
+
+
+                if (!file) {
+
+                    if (uploadStatus) {
+
+                        uploadStatus.classList.remove(
+                            "show"
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                /* ---------------------------------------------
+                   ALLOWED MIME TYPES
+                   --------------------------------------------- */
+
+                const allowedTypes = [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                ];
+
+
+                if (
+                    !allowedTypes.includes(
+                        file.type
+                    )
+                ) {
+
+                    this.value = "";
+
+
+                    if (typeof Swal !== "undefined") {
+
+                        Swal.fire({
+                            icon: "error",
+                            title: "Invalid File",
+                            text:
+                                "Only PNG, JPG, JPEG and WEBP images are allowed."
+                        });
+
+                    } else {
+
+                        alert(
+                            "Only PNG, JPG, JPEG and WEBP images are allowed."
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                /* ---------------------------------------------
+                   MAX 5MB
+                   --------------------------------------------- */
+
+                const maxSize =
+                    5 * 1024 * 1024;
+
+
+                if (file.size > maxSize) {
+
+                    this.value = "";
+
+
+                    if (typeof Swal !== "undefined") {
+
+                        Swal.fire({
+                            icon: "error",
+                            title: "File Too Large",
+                            text:
+                                "Profile photo must not exceed 5MB."
+                        });
+
+                    } else {
+
+                        alert(
+                            "Profile photo must not exceed 5MB."
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                /* ---------------------------------------------
+                   IMAGE PREVIEW
+                   --------------------------------------------- */
+
+                const reader =
+                    new FileReader();
+
+
+                reader.onload =
+                    function (event) {
+
+
+                        if (photoPreview) {
+
+                            photoPreview.src =
+                                event.target.result;
+
+                            photoPreview.style.display =
+                                "block";
+
+                        }
+
+
+                        if (photoFallback) {
+
+                            photoFallback.style.display =
+                                "none";
+
+                        }
+
+
+                        if (uploadStatus) {
+
+                            uploadStatus.classList.add(
+                                "show"
+                            );
+
+                        }
+
+                    };
+
+
+                reader.readAsDataURL(file);
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FORM VALIDATION
+       ======================================================== */
+
+    const form =
+        document.getElementById(
+            "profileForm"
+        );
+
+    const saveButton =
+        document.getElementById(
+            "saveProfileButton"
+        );
+
+
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+
+                const fullname =
+                    form.querySelector(
+                        'input[name="fullname"]'
+                    );
+
+
+                const username =
+                    form.querySelector(
+                        'input[name="username"]'
+                    );
+
+
+                const email =
+                    form.querySelector(
+                        'input[name="email"]'
+                    );
+
+
+                /* ---------------------------------------------
+                   FULL NAME
+                   --------------------------------------------- */
+
+                if (
+                    !fullname ||
+                    !fullname.value.trim()
+                ) {
+
+                    event.preventDefault();
+
+
+                    if (typeof Swal !== "undefined") {
+
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Full Name Required",
+                            text:
+                                "Please enter your full name."
+                        });
+
+                    } else {
+
+                        alert(
+                            "Full name is required."
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                /* ---------------------------------------------
+                   USERNAME
+                   --------------------------------------------- */
+
+                if (
+                    !username ||
+                    !username.value.trim()
+                ) {
+
+                    event.preventDefault();
+
+
+                    if (typeof Swal !== "undefined") {
+
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Username Required",
+                            text:
+                                "Please enter your username."
+                        });
+
+                    } else {
+
+                        alert(
+                            "Username is required."
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                /* ---------------------------------------------
+                   EMAIL
+                   --------------------------------------------- */
+
+                if (
+                    !email ||
+                    !email.value.trim()
+                ) {
+
+                    event.preventDefault();
+
+
+                    if (typeof Swal !== "undefined") {
+
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Email Required",
+                            text:
+                                "Please enter your email address."
+                        });
+
+                    } else {
+
+                        alert(
+                            "Email is required."
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                /* ---------------------------------------------
+                   BUTTON STATE
+                   --------------------------------------------- */
+
+                if (saveButton) {
+
+                    saveButton.disabled = true;
+
+                    saveButton.innerHTML =
+                        "Saving...";
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       KEEP ACTIVE TAB AFTER SERVER ERROR
+       ======================================================== */
+
+    const storageKey =
+        "profile_active_tab";
+
+
+    tabs.forEach(function (tab) {
+
+        tab.addEventListener(
+            "click",
+            function () {
+
+                try {
+
+                    localStorage.setItem(
+                        storageKey,
+                        this.dataset.tab
+                    );
+
+                } catch (error) {
+
+                    /* Ignore storage errors */
+
+                }
+
+            }
+        );
+
+    });
+
+
+    try {
+
+        const savedTab =
+            localStorage.getItem(
+                storageKey
+            );
+
+
+        if (savedTab) {
+
+            const savedTabButton =
+                document.querySelector(
+                    '.profile-tab[data-tab="' +
+                    savedTab +
+                    '"]'
+                );
+
+
+            const savedPanel =
+                document.getElementById(
+                    "tab-" + savedTab
+                );
+
+
+            if (
+                savedTabButton &&
+                savedPanel
+            ) {
+
+                tabs.forEach(function (item) {
+
+                    item.classList.remove(
+                        "active"
+                    );
+
+                });
+
+
+                panels.forEach(function (panel) {
+
+                    panel.classList.remove(
+                        "active"
+                    );
+
+                });
+
+
+                savedTabButton.classList.add(
+                    "active"
+                );
+
+                savedPanel.classList.add(
+                    "active"
+                );
+
+            }
+
+        }
+
+    } catch (error) {
+
+        /* Ignore localStorage errors */
+
+    }
+
+
+});
+
+</script>
+
+{% endblock %}

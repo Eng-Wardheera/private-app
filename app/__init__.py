@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+import cloudinary
 import pytz
 from dotenv import load_dotenv
 
@@ -43,6 +44,234 @@ ALLOWED_EXTENSIONS = {
 }
 
 EAT = pytz.timezone("Africa/Nairobi")
+
+
+
+# ============================================================
+# CLOUDINARY CONFIGURATION
+# ============================================================
+
+
+cloudinary.config(
+    cloud_name="dzhairplt",
+    api_key="597738172555213",
+    api_secret="x4UXHFVqzH4Oq_MeBV4VGYoZHns",
+    secure=True
+)
+
+
+
+
+# ============================================================
+# SOMALIA REGIONS & CITIES
+# GLOBAL TEMPLATE VARIABLE
+# ============================================================
+
+SOMALIA_REGIONS = {
+
+    "Awdal": [
+        "Borama",
+        "Baki",
+        "Lughaya",
+        "Zeila",
+        "Dilla",
+        "Quljeed",
+        "Arabsiyo",
+        "Ras Kamboni"
+    ],
+
+    "Woqooyi Galbeed": [
+        "Hargeisa",
+        "Berbera",
+        "Gabiley",
+        "Burao",
+        "Sheikh",
+        "Wajaale",
+        "Baligubadle",
+        "Allaybaday"
+    ],
+
+    "Sanaag": [
+        "Erigavo",
+        "Ceerigaabo",
+        "Badhan",
+        "Dhahar",
+        "Las Qoray",
+        "Hingalol",
+        "Garadag",
+        "Maydh"
+    ],
+
+    "Sool": [
+        "Las Anod",
+        "Laascaanood",
+        "Taleex",
+        "Xudun",
+        "Caynabo",
+        "Boocame",
+        "Daraasalaam",
+        "Widhwidh"
+    ],
+
+    "Togdheer": [
+        "Burao",
+        "Oodweyne",
+        "Buhoodle",
+        "Sheikh",
+        "Duruqsi",
+        "Qoryaale"
+    ],
+
+    "Bari": [
+        "Bosaso",
+        "Qardho",
+        "Iskushuban",
+        "Caluula",
+        "Bandar Beyla",
+        "Ufeyn",
+        "Carmo",
+        "Xaafuun",
+        "Bargaal"
+    ],
+
+    "Nugaal": [
+        "Garowe",
+        "Garoowe",
+        "Eyl",
+        "Burtinle",
+        "Dangorayo",
+        "Godob Jiraan",
+        "Galkayo"
+    ],
+
+    "Mudug": [
+        "Galkayo",
+        "Gaalkacyo",
+        "Hobyo",
+        "Harardhere",
+        "Jariiban",
+        "Goldogob",
+        "Bandiiradley",
+        "Saaxo"
+    ],
+
+    "Galguduud": [
+        "Dhuusamareeb",
+        "Dhusamareb",
+        "Cadaado",
+        "Guriceel",
+        "Ceel Buur",
+        "Ceel Dheer",
+        "Balanbale",
+        "Cabudwaaq",
+        "Godinlabe"
+    ],
+
+    "Hiiraan": [
+        "Beledweyne",
+        "Bulo Burto",
+        "Jalalaqsi",
+        "Buq Aqable",
+        "Mataban",
+        "Maxaas",
+        "Halgan"
+    ],
+
+    "Shabeellaha Dhexe": [
+        "Jowhar",
+        "Balcad",
+        "Cadale",
+        "Mahadaay",
+        "Adan Yabal",
+        "Warsheikh",
+        "Runirgood"
+    ],
+
+    "Banaadir": [
+        "Mogadishu",
+        "Muqdisho",
+        "Hodan",
+        "Wadajir",
+        "Warta Nabadda",
+        "Yaqshid",
+        "Kaaraan",
+        "Dayniile",
+        "Dharkenley",
+        "Hamar Jajab",
+        "Hamar Weyne",
+        "Shibis",
+        "Boondheere",
+        "Cabdicasiis",
+        "Shangaani",
+        "Howlwadaag",
+        "Xamar Jabjab"
+    ],
+
+    "Shabeellaha Hoose": [
+        "Marka",
+        "Afgooye",
+        "Wanlaweyn",
+        "Qoryooley",
+        "Baraawe",
+        "Awdheegle",
+        "Kurtunwaarey",
+        "Sablale",
+        "Sablaale",
+        "Lafoole"
+    ],
+
+    "Bay": [
+        "Baidoa",
+        "Baydhabo",
+        "Burhakaba",
+        "Diinsoor",
+        "Qansax Dheere",
+        "Buur Hakaba",
+        "Bardaale"
+    ],
+
+    "Bakool": [
+        "Hudur",
+        "Xudur",
+        "Wajid",
+        "Tiyeglow",
+        "Rab Dhuure",
+        "Ceel Barde",
+        "Yeed"
+    ],
+
+    "Gedo": [
+        "Garbaharey",
+        "Luuq",
+        "Doolow",
+        "Bardhere",
+        "Beled Xaawo",
+        "Ceel Waaq",
+        "Doolow Ado",
+        "Buurdhuubo"
+    ],
+
+    "Jubbada Dhexe": [
+        "Bu'aale",
+        "Buaale",
+        "Jilib",
+        "Saakow",
+        "Salagle"
+    ],
+
+    "Jubbada Hoose": [
+        "Kismayo",
+        "Kismaayo",
+        "Afmadow",
+        "Jamaame",
+        "Badhaadhe",
+        "Dhobley",
+        "Tabta"
+    ]
+}
+
+
+
 
 # ============================================================
 
@@ -315,6 +544,45 @@ def create_app():
             "status": "ok",
             "application": "private-grading"
         }
+
+    # ============================================================
+    # GLOBAL CONTEXT PROCESSOR
+    # ============================================================
+
+    import pycountry
+
+
+    def get_all_countries():
+        """
+        Return all countries from pycountry as a sorted list.
+        """
+        countries = []
+
+        for country in pycountry.countries:
+            countries.append({
+                "code": country.alpha_2,
+                "alpha3": getattr(country, "alpha_3", ""),
+                "name": country.name
+            })
+
+        return sorted(
+            countries,
+            key=lambda x: x["name"].lower()
+        )
+
+
+    ALL_COUNTRIES = get_all_countries()
+
+
+    @app.context_processor
+    def inject_global_variables():
+        return {
+            "somalia_regions": SOMALIA_REGIONS,
+            "all_countries": ALL_COUNTRIES
+        }
+
+
+
 
 
     # ========================================================

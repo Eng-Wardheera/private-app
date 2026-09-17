@@ -376,7 +376,7 @@
       if (document.visibilityState === "visible") {
         console.log("🟢 Tab visible");
         startUserHeartbeat();
-        updateSingleUserStatus({{ user.id }}); // Refresh on return
+        updateSingleUserStatus({{ current_user.id }}); // Refresh on return
       } else {
         console.log("🔴 Tab hidden");
         stopUserHeartbeat();
@@ -398,7 +398,7 @@
         const users = await response.json();
 
         users.forEach(user => {
-          const el = document.getElementById(`user-status-${user.id}`);
+          const el = document.getElementById(`user-status-${current_user.id}`);
           if (el) {
             el.innerHTML = user.is_online
               ? `<span class="badge bg-success text-white">Online</span>`
@@ -439,7 +439,7 @@
     }
 
     setInterval(() => {
-      updateSingleUserStatus({{ user.id }});
+      updateSingleUserStatus({{ current_user.id }});
     }, 5000); // every 5s
   })();
 </script>

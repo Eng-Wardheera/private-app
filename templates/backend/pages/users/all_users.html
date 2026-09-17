@@ -1,0 +1,3372 @@
+
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   ALL USERS PAGE
+   ============================================================ */
+
+.all-users-page {
+    width: 100%;
+    padding: 0;
+}
+
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.users-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.users-page-title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #06245f;
+}
+
+.users-page-subtitle {
+    margin: 5px 0 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.users-page-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+
+.users-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.users-stat-card {
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e8ecf3;
+    border-radius: 14px;
+    padding: 18px;
+    min-height: 112px;
+    box-shadow: 0 4px 18px rgba(6, 36, 95, 0.06);
+}
+
+.users-stat-card::after {
+    content: "";
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    right: -30px;
+    bottom: -30px;
+    background: rgba(6, 36, 95, 0.04);
+}
+
+.users-stat-content {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.users-stat-icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 19px;
+}
+
+.users-stat-card.green .users-stat-icon {
+    background: #eaf8ec;
+    color: #32b73a;
+}
+
+.users-stat-card.red .users-stat-icon {
+    background: #fff0f0;
+    color: #dc3545;
+}
+
+.users-stat-card.purple .users-stat-icon {
+    background: #f2effb;
+    color: #33206f;
+}
+
+.users-stat-card.orange .users-stat-icon {
+    background: #fff6e8;
+    color: #e28a00;
+}
+
+.users-stat-label {
+    color: #7a8496;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.users-stat-value {
+    color: #1c2434;
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 750;
+}
+
+
+/* ============================================================
+   ROLE STATISTICS
+   ============================================================ */
+
+.role-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.role-stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #ffffff;
+    border: 1px solid #e8ecf3;
+    border-radius: 12px;
+    padding: 13px 15px;
+    box-shadow: 0 3px 12px rgba(6, 36, 95, 0.04);
+}
+
+.role-stat-name {
+    color: #687386;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.role-stat-count {
+    color: #06245f;
+    font-size: 17px;
+    font-weight: 750;
+}
+
+
+/* ============================================================
+   MAIN CARD
+   ============================================================ */
+
+.users-main-card {
+    background: #ffffff;
+    border: 1px solid #e8ecf3;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(6, 36, 95, 0.06);
+    overflow: hidden;
+}
+
+.users-card-header {
+    padding: 20px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.users-card-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.users-card-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.users-card-description {
+    margin: 4px 0 0;
+    color: #7b8494;
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   FILTERS
+   ============================================================ */
+
+.users-filter-form {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.7fr)
+                           repeat(3, minmax(150px, 1fr))
+                           auto auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.users-filter-group {
+    min-width: 0;
+}
+
+.users-filter-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #596579;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.users-filter-input,
+.users-filter-select {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #dfe4ec;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #303846;
+    font-size: 13px;
+    padding: 0 12px;
+    outline: none;
+    transition: .2s ease;
+}
+
+.users-filter-input:focus,
+.users-filter-select:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.users-filter-search {
+    position: relative;
+}
+
+.users-filter-search i {
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    color: #8b95a7;
+    font-size: 13px;
+}
+
+.users-filter-search .users-filter-input {
+    padding-left: 34px;
+}
+
+.filter-btn {
+    height: 42px;
+    border: 0;
+    border-radius: 8px;
+    padding: 0 16px;
+    background: #06245f;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: .2s ease;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    background: #041c4a;
+}
+
+.reset-btn {
+    height: 42px;
+    border: 1px solid #dfe4ec;
+    border-radius: 8px;
+    padding: 0 16px;
+    background: #ffffff;
+    color: #5f6b7d;
+    font-size: 13px;
+    font-weight: 650;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.reset-btn:hover {
+    background: #f7f9fc;
+    color: #06245f;
+}
+
+
+/* ============================================================
+   TABLE TOOLBAR
+   ============================================================ */
+
+.users-table-toolbar {
+    padding: 14px 20px;
+    background: #fafbfc;
+    border-bottom: 1px solid #edf0f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.users-result-count {
+    color: #6c7687;
+    font-size: 13px;
+}
+
+.users-result-count strong {
+    color: #06245f;
+}
+
+.per-page-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.per-page-wrapper label {
+    color: #6c7687;
+    font-size: 12px;
+    margin: 0;
+}
+
+.per-page-select {
+    height: 34px;
+    min-width: 70px;
+    border: 1px solid #dfe4ec;
+    border-radius: 7px;
+    background: #ffffff;
+    padding: 0 8px;
+    color: #303846;
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+.users-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 1250px;
+}
+
+.users-table thead th {
+    padding: 13px 14px;
+    background: #f7f9fc;
+    border-bottom: 1px solid #e7ebf1;
+    color: #657084;
+    font-size: 11px;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: .35px;
+    white-space: nowrap;
+}
+
+.users-table tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #edf0f4;
+    color: #3f4857;
+    font-size: 13px;
+    vertical-align: middle;
+    background: #ffffff;
+}
+
+.users-table tbody tr {
+    transition: background .15s ease;
+}
+
+.users-table tbody tr:hover td {
+    background: #f9fbff;
+}
+
+.users-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+
+/* ============================================================
+   USER CELL
+   ============================================================ */
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 190px;
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #eef1f6;
+    background: #f2f4f8;
+}
+
+.user-avatar-fallback {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #06245f;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.user-name {
+    color: #252d3a;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.user-location {
+    color: #8992a2;
+    font-size: 11px;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+.username-text {
+    color: #4c5667;
+    font-weight: 600;
+}
+
+.email-text {
+    color: #4c5667;
+    font-size: 12px;
+}
+
+.phone-text {
+    color: #5c6677;
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+
+.user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.role-superadmin {
+    color: #33206f;
+    background: #f0ecfa;
+}
+
+.role-school-admin {
+    color: #06245f;
+    background: #eaf0fa;
+}
+
+.role-branch-admin {
+    color: #006f7b;
+    background: #e8f7f8;
+}
+
+.role-teacher {
+    color: #2a7d32;
+    background: #eaf7eb;
+}
+
+.role-student {
+    color: #a46300;
+    background: #fff5df;
+}
+
+.role-parent {
+    color: #9b3e65;
+    background: #faedf3;
+}
+
+.auth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.auth-login {
+    color: #32b73a;
+}
+
+.auth-logout {
+    color: #8992a2;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 20px;
+    padding: 5px 9px;
+    font-size: 10px;
+    font-weight: 750;
+}
+
+.status-active {
+    background: #eaf8ec;
+    color: #23852c;
+}
+
+.status-inactive {
+    background: #fff0f0;
+    color: #c52d38;
+}
+
+.verification-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.verified {
+    color: #32b73a;
+}
+
+.unverified {
+    color: #d18a00;
+}
+
+
+/* ============================================================
+   ONLINE STATUS
+   ============================================================ */
+
+.online-status-container {
+    min-width: 90px;
+}
+
+.online-status-container .badge {
+    border-radius: 20px;
+    padding: 5px 9px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   STATUS TOGGLE
+   ============================================================ */
+
+.status-toggle-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.status-toggle {
+    width: 34px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #32b73a;
+}
+
+.status-toggle-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #7c8798;
+}
+
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.action-btn {
+    width: 33px;
+    height: 33px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: .18s ease;
+    font-size: 12px;
+}
+
+.action-btn.edit {
+    background: #eef3fb;
+    color: #06245f;
+    border-color: #dce6f6;
+}
+
+.action-btn.edit:hover {
+    background: #06245f;
+    color: #ffffff;
+}
+
+.action-btn.delete {
+    background: #fff0f0;
+    color: #d63343;
+    border-color: #f6d7da;
+}
+
+.action-btn.delete:hover {
+    background: #d63343;
+    color: #ffffff;
+}
+
+.action-btn.status {
+    background: #eaf8ec;
+    color: #23852c;
+    border-color: #d6f0d9;
+}
+
+.action-btn.status:hover {
+    background: #32b73a;
+    color: #ffffff;
+}
+
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.users-empty-state {
+    text-align: center;
+    padding: 65px 20px;
+}
+
+.users-empty-icon {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    background: #f1f4f9;
+    color: #8490a3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+}
+
+.users-empty-state h4 {
+    margin: 0 0 7px;
+    color: #303847;
+    font-size: 17px;
+}
+
+.users-empty-state p {
+    margin: 0;
+    color: #8992a2;
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+
+.users-pagination {
+    padding: 17px 20px;
+    border-top: 1px solid #edf0f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.pagination-info {
+    color: #7b8494;
+    font-size: 12px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pagination a,
+.pagination span {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 9px;
+    border: 1px solid #e1e5ec;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #5d687a;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.pagination a:hover {
+    background: #f2f5fa;
+    color: #06245f;
+    border-color: #cbd5e5;
+}
+
+.pagination .active {
+    background: #06245f;
+    color: #ffffff;
+    border-color: #06245f;
+}
+
+.pagination .disabled {
+    opacity: .45;
+    pointer-events: none;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1300px) {
+
+    .users-stat-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .role-stat-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .users-filter-form {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .users-filter-search {
+        grid-column: span 3;
+    }
+}
+
+
+@media (max-width: 900px) {
+
+    .users-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .users-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .role-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .users-filter-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .users-filter-search {
+        grid-column: span 2;
+    }
+
+    .users-pagination {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .users-stat-grid,
+    .role-stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .users-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .users-filter-search {
+        grid-column: span 1;
+    }
+
+    .users-card-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .users-table-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .users-page-title {
+        font-size: 22px;
+    }
+}
+
+</style>
+
+
+<div class="all-users-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="users-page-header">
+
+        <div>
+            <h1 class="users-page-title">
+                <i class="fas fa-users me-2"></i>
+                All Users
+            </h1>
+
+            <p class="users-page-subtitle">
+                Manage system users, roles, account status,
+                verification and activity.
+            </p>
+        </div>
+
+
+        <div class="users-page-header-right">
+
+            <a
+                href="{{ url_for('main.dashboard') }}"
+                class="reset-btn"
+            >
+                <i class="fas fa-arrow-left me-2"></i>
+                Dashboard
+            </a>
+            <a
+                href="{{ url_for('main.add_user') }}"
+                class="reset-btn"
+            >
+                <i class="fas fa-user-circle me-2"></i>
+                Add User
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN STATISTICS
+         ======================================================== -->
+
+    <div class="users-stat-grid">
+
+        <!-- Total -->
+
+        <div class="users-stat-card">
+
+            <div class="users-stat-content">
+
+                <div class="users-stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+
+                <div>
+
+                    <div class="users-stat-label">
+                        Total Users
+                    </div>
+
+                    <div class="users-stat-value">
+                        {{ total_users }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Active -->
+
+        <div class="users-stat-card green">
+
+            <div class="users-stat-content">
+
+                <div class="users-stat-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+
+                <div>
+
+                    <div class="users-stat-label">
+                        Active Users
+                    </div>
+
+                    <div class="users-stat-value">
+                        {{ active_users }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Inactive -->
+
+        <div class="users-stat-card red">
+
+            <div class="users-stat-content">
+
+                <div class="users-stat-icon">
+                    <i class="fas fa-user-slash"></i>
+                </div>
+
+                <div>
+
+                    <div class="users-stat-label">
+                        Inactive Users
+                    </div>
+
+                    <div class="users-stat-value">
+                        {{ inactive_users }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Verified -->
+
+        <div class="users-stat-card purple">
+
+            <div class="users-stat-content">
+
+                <div class="users-stat-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+
+                <div>
+
+                    <div class="users-stat-label">
+                        Verified
+                    </div>
+
+                    <div class="users-stat-value">
+                        {{ verified_users }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Online -->
+
+        <div class="users-stat-card orange">
+
+            <div class="users-stat-content">
+
+                <div class="users-stat-icon">
+                    <i class="fas fa-signal"></i>
+                </div>
+
+                <div>
+
+                    <div class="users-stat-label">
+                        Online Now
+                    </div>
+
+                    <div class="users-stat-value">
+                        {{ online_users }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         ROLE STATISTICS
+         ======================================================== -->
+
+    <div class="role-stat-grid">
+
+        <div class="role-stat-card">
+            <span class="role-stat-name">
+                Super Admin
+            </span>
+
+            <span class="role-stat-count">
+                {{ superadmin_count }}
+            </span>
+        </div>
+
+
+        <div class="role-stat-card">
+            <span class="role-stat-name">
+                School Admin
+            </span>
+
+            <span class="role-stat-count">
+                {{ school_admin_count }}
+            </span>
+        </div>
+
+
+        <div class="role-stat-card">
+            <span class="role-stat-name">
+                Branch Admin
+            </span>
+
+            <span class="role-stat-count">
+                {{ branch_admin_count }}
+            </span>
+        </div>
+
+
+        <div class="role-stat-card">
+            <span class="role-stat-name">
+                Teachers
+            </span>
+
+            <span class="role-stat-count">
+                {{ teacher_count }}
+            </span>
+        </div>
+
+
+        <div class="role-stat-card">
+            <span class="role-stat-name">
+                Students
+            </span>
+
+            <span class="role-stat-count">
+                {{ student_count }}
+            </span>
+        </div>
+
+
+        <div class="role-stat-card">
+            <span class="role-stat-name">
+                Parents
+            </span>
+
+            <span class="role-stat-count">
+                {{ parent_count }}
+            </span>
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN USERS CARD
+         ======================================================== -->
+
+    <div class="users-main-card">
+
+
+        <!-- ====================================================
+             CARD HEADER
+             ==================================================== -->
+
+        <div class="users-card-header">
+
+            <div class="users-card-header-top">
+
+                <div>
+
+                    <h2 class="users-card-title">
+                        User Management
+                    </h2>
+
+                    <p class="users-card-description">
+                        Search and manage all registered users.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FILTER FORM
+                 ================================================= -->
+
+            <form
+                method="GET"
+                action="{{ url_for('main.all_users') }}"
+                class="users-filter-form"
+            >
+
+                <!-- Search -->
+
+                <div class="users-filter-group users-filter-search">
+
+                    <label class="users-filter-label">
+                        Search
+                    </label>
+
+                    <i class="fas fa-search"></i>
+
+                    <input
+                        type="text"
+                        name="search"
+                        class="users-filter-input"
+                        placeholder="Name, username, email, phone..."
+                        value="{{ search }}"
+                    >
+
+                </div>
+
+
+                <!-- Role -->
+
+                <div class="users-filter-group">
+
+                    <label class="users-filter-label">
+                        Role
+                    </label>
+
+                    <select
+                        name="role"
+                        class="users-filter-select"
+                    >
+
+                        <option value="">
+                            All Roles
+                        </option>
+
+                        {% for role_name in roles %}
+
+                            <option
+                                value="{{ role_name }}"
+                                {% if selected_role == role_name %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ role_name|replace('_', ' ')|title }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Status -->
+
+                <div class="users-filter-group">
+
+                    <label class="users-filter-label">
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        class="users-filter-select"
+                    >
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        <option
+                            value="active"
+                            {% if selected_status == "active" %}
+                                selected
+                            {% endif %}
+                        >
+                            Active
+                        </option>
+
+                        <option
+                            value="inactive"
+                            {% if selected_status == "inactive" %}
+                                selected
+                            {% endif %}
+                        >
+                            Inactive
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Verification -->
+
+                <div class="users-filter-group">
+
+                    <label class="users-filter-label">
+                        Verification
+                    </label>
+
+                    <select
+                        name="verification"
+                        class="users-filter-select"
+                    >
+
+                        <option value="">
+                            All
+                        </option>
+
+                        <option
+                            value="verified"
+                            {% if selected_verification == "verified" %}
+                                selected
+                            {% endif %}
+                        >
+                            Verified
+                        </option>
+
+                        <option
+                            value="unverified"
+                            {% if selected_verification == "unverified" %}
+                                selected
+                            {% endif %}
+                        >
+                            Unverified
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Filter -->
+
+                <button
+                    type="submit"
+                    class="filter-btn"
+                >
+                    <i class="fas fa-filter me-1"></i>
+                    Filter
+                </button>
+
+
+                <!-- Reset -->
+
+                <a
+                    href="{{ url_for('main.all_users') }}"
+                    class="reset-btn"
+                >
+                    <i class="fas fa-rotate-left me-1"></i>
+                    Reset
+                </a>
+
+            </form>
+
+        </div>
+
+
+        <!-- ====================================================
+             TABLE TOOLBAR
+             ==================================================== -->
+
+        <div class="users-table-toolbar">
+
+            <div class="users-result-count">
+
+                Showing
+                <strong>
+                    {{ pagination.first or 0 }}
+                </strong>
+
+                -
+                <strong>
+                    {{ pagination.last or 0 }}
+                </strong>
+
+                of
+                <strong>
+                    {{ pagination.total }}
+                </strong>
+
+                users
+
+            </div>
+
+
+            <div class="per-page-wrapper">
+
+                <label for="per_page">
+                    Per page
+                </label>
+
+                <select
+                    id="per_page"
+                    name="per_page"
+                    class="per-page-select"
+                >
+
+                    <option
+                        value="10"
+                        {% if per_page == 10 %}selected{% endif %}
+                    >
+                        10
+                    </option>
+
+                    <option
+                        value="20"
+                        {% if per_page == 20 %}selected{% endif %}
+                    >
+                        20
+                    </option>
+
+                    <option
+                        value="50"
+                        {% if per_page == 50 %}selected{% endif %}
+                    >
+                        50
+                    </option>
+
+                    <option
+                        value="100"
+                        {% if per_page == 100 %}selected{% endif %}
+                    >
+                        100
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             USERS TABLE
+             ==================================================== -->
+
+        <div class="users-table-wrapper">
+
+            <table class="users-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            No.
+                        </th>
+
+                        <th>
+                            User
+                        </th>
+
+                        <th>
+                            Username
+                        </th>
+
+                        <th>
+                            Email
+                        </th>
+
+                        <th>
+                            Phone
+                        </th>
+
+                        <th>
+                            Role
+                        </th>
+
+                        <th>
+                            Online
+                        </th>
+
+                        <th>
+                            Auth
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Verification
+                        </th>
+
+                        <th>
+                            Created
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                {% if users %}
+
+
+                    {% for user in users %}
+
+                    <tr
+                        id="user-row-{{ user.id }}"
+                        data-user-row="{{ user.id }}"
+                    >
+
+
+                        <!-- ====================================
+                             NUMBER
+                             ==================================== -->
+
+                        <td>
+
+                            {{
+                                ((pagination.page - 1)
+                                * pagination.per_page)
+                                + loop.index
+                            }}
+
+                        </td>
+
+
+                        <!-- ====================================
+                             USER
+                             ==================================== -->
+
+                        <td>
+
+                            <div class="user-info">
+
+
+                                {% if user.photo %}
+
+                                    <img
+                                        src="{{ user.photo }}"
+                                        alt="{{ user.fullname or user.username or 'User' }}"
+                                        class="user-avatar"
+                                        loading="lazy"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                    >
+
+                                    <div
+                                        class="user-avatar-fallback"
+                                        style="display:none;"
+                                    >
+                                        {{
+                                            (
+                                                user.fullname
+                                                or user.username
+                                                or "U"
+                                            )[0]|upper
+                                        }}
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="user-avatar-fallback">
+
+                                        {{
+                                            (
+                                                user.fullname
+                                                or user.username
+                                                or "U"
+                                            )[0]|upper
+                                        }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <div>
+
+                                    <div class="user-name">
+
+                                        {{
+                                            user.fullname
+                                            or user.username
+                                            or "Unnamed User"
+                                        }}
+
+                                    </div>
+
+
+                                    {% if user.city or user.country %}
+
+                                        <div class="user-location">
+
+                                            <i class="fas fa-location-dot me-1"></i>
+
+                                            {% if user.city %}
+                                                {{ user.city }}
+                                            {% endif %}
+
+                                            {% if user.city and user.country %}
+                                                ,
+                                            {% endif %}
+
+                                            {% if user.country %}
+                                                {{ user.country }}
+                                            {% endif %}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             USERNAME
+                             ==================================== -->
+
+                        <td>
+
+                            <span class="username-text">
+
+                                {{ user.username or "—" }}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             EMAIL
+                             ==================================== -->
+
+                        <td>
+
+                            <span class="email-text">
+
+                                {{ user.email or "—" }}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             PHONE
+                             ==================================== -->
+
+                        <td>
+
+                            <span class="phone-text">
+
+                                {{ user.phone or "—" }}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             ROLE
+                             ==================================== -->
+
+                        <td>
+
+                            {% set role_class = {
+                                'superadmin': 'role-superadmin',
+                                'school_admin': 'role-school-admin',
+                                'branch_admin': 'role-branch-admin',
+                                'teacher': 'role-teacher',
+                                'student': 'role-student',
+                                'parent': 'role-parent'
+                            }.get(user.role, 'role-student') %}
+
+
+                            <span
+                                class="user-badge {{ role_class }}"
+                            >
+
+                                {% if user.role == "superadmin" %}
+
+                                    <i class="fas fa-shield-halved"></i>
+
+                                {% elif user.role == "school_admin" %}
+
+                                    <i class="fas fa-building"></i>
+
+                                {% elif user.role == "branch_admin" %}
+
+                                    <i class="fas fa-code-branch"></i>
+
+                                {% elif user.role == "teacher" %}
+
+                                    <i class="fas fa-chalkboard-user"></i>
+
+                                {% elif user.role == "student" %}
+
+                                    <i class="fas fa-user-graduate"></i>
+
+                                {% else %}
+
+                                    <i class="fas fa-user-group"></i>
+
+                                {% endif %}
+
+
+                                {{ user.role|replace('_', ' ')|title }}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             ONLINE STATUS
+                             ==================================== -->
+
+                        <td>
+
+                            <div
+                                id="user-status-{{ user.id }}"
+                                class="online-status-container"
+                            >
+
+                                {% if user.last_active %}
+
+                                    <small class="text-muted">
+                                        Loading...
+                                    </small>
+
+                                {% else %}
+
+                                    <small class="text-muted">
+                                        Never
+                                    </small>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             AUTH STATUS
+                             ==================================== -->
+
+                        <td>
+
+                            {% if user.auth_status == "login" %}
+
+                                <span class="auth-badge auth-login">
+
+                                    <i class="fas fa-circle"
+                                       style="font-size: 7px;"></i>
+
+                                    Login
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="auth-badge auth-logout">
+
+                                    <i class="fas fa-circle"
+                                       style="font-size: 7px;"></i>
+
+                                    Logout
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ====================================
+                             ACCOUNT STATUS
+                             ==================================== -->
+
+                        <td>
+
+                            <div class="status-toggle-wrapper">
+
+                                <input
+                                    type="checkbox"
+                                    class="status-toggle"
+                                    data-status-toggle="{{ user.id }}"
+                                    {% if user.status %}
+                                        checked
+                                    {% endif %}
+                                    {% if user.id == current_user.id %}
+                                        disabled
+                                    {% endif %}
+                                    title="
+                                    {% if user.id == current_user.id %}
+                                        You cannot change your own status
+                                    {% else %}
+                                        Toggle account status
+                                    {% endif %}
+                                    "
+                                >
+
+
+                                <span
+                                    class="status-badge
+                                    {% if user.status %}
+                                        status-active
+                                    {% else %}
+                                        status-inactive
+                                    {% endif %}"
+                                    data-user-status="{{ user.id }}"
+                                >
+
+                                    {% if user.status %}
+
+                                        <i class="fas fa-check-circle"></i>
+                                        Active
+
+                                    {% else %}
+
+                                        <i class="fas fa-times-circle"></i>
+                                        Inactive
+
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             VERIFICATION
+                             ==================================== -->
+
+                        <td>
+
+                            {% if user.is_verified %}
+
+                                <span class="verification-badge verified">
+
+                                    <i class="fas fa-circle-check"></i>
+
+                                    Verified
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="verification-badge unverified">
+
+                                    <i class="fas fa-clock"></i>
+
+                                    Unverified
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ====================================
+                             CREATED
+                             ==================================== -->
+
+                        <td>
+
+                            {% if user.created_at %}
+
+                                <span
+                                    title="{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}"
+                                >
+                                    {{ user.created_at.strftime('%Y-%m-%d') }}
+                                </span>
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ====================================
+                             ACTIONS
+                             ==================================== -->
+
+                      
+                        <td>
+
+                            <div class="user-actions">
+
+
+                                <!-- ==================================================
+                                    UPDATE USER STATUS
+                                    ================================================== -->
+
+                                <label
+                                    class="status-switch"
+                                    title="{% if user.status %}Deactivate User{% else %}Activate User{% endif %}"
+                                    aria-label="{% if user.status %}Deactivate User{% else %}Activate User{% endif %}"
+                                >
+
+                                    <input
+                                        type="checkbox"
+                                        class="status-toggle"
+                                        data-user-id="{{ user.id }}"
+                                        {% if user.status %}checked{% endif %}
+                                        {% if user.id == current_user.id %}disabled{% endif %}
+                                    >
+
+                                    <span class="status-slider"></span>
+
+                                </label>
+
+
+
+                                <!-- ==================================================
+                                    EDIT USER
+                                    ================================================== -->
+
+                                <a
+                                    href="{{ url_for('main.edit_user', user_id=user.id) }}"
+                                    class="action-btn edit"
+                                    title="Edit User"
+                                    aria-label="Edit User"
+                                >
+
+                                    <i class="fas fa-pen"></i>
+
+                                </a>
+
+
+
+                                <!-- ==================================================
+                                    DELETE USER
+                                    ================================================== -->
+
+                                {% if user.id != current_user.id %}
+
+                                    <button
+                                        type="button"
+                                        class="action-btn delete"
+                                        title="Delete User"
+                                        aria-label="Delete User"
+                                        onclick="deleteUser({{ user.id }})"
+                                    >
+
+                                        <i class="fas fa-trash"></i>
+
+                                    </button>
+
+                                {% endif %}
+
+
+
+                                <!-- ==================================================
+                                    FORCE LOGOUT
+                                    ================================================== -->
+
+                                {% if user.id != current_user.id %}
+
+                                    <button
+                                        type="button"
+                                        class="action-btn logout"
+                                        title="{% if user.auth_status == 'login' %}Force Logout{% else %}User Already Logged Out{% endif %}"
+                                        aria-label="Force Logout"
+                                        onclick="forceLogoutUser({{ user.id }})"
+                                        {% if user.auth_status != 'login' %}disabled{% endif %}
+                                    >
+
+                                        <i class="fas fa-sign-out-alt"></i>
+
+                                    </button>
+
+                                {% endif %}
+
+
+                            </div>
+
+                        </td>
+
+
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                {% else %}
+
+
+                    <tr>
+
+                        <td
+                            colspan="12"
+                        >
+
+                            <div class="users-empty-state">
+
+                                <div class="users-empty-icon">
+
+                                    <i class="fas fa-users-slash"></i>
+
+                                </div>
+
+                                <h4>
+                                    No users found
+                                </h4>
+
+                                <p>
+                                    No users match your current
+                                    search or filter criteria.
+                                </p>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+
+                {% endif %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- ====================================================
+             PAGINATION
+             ==================================================== -->
+
+        {% if pagination.pages > 0 %}
+
+        <div class="users-pagination">
+
+
+            <div class="pagination-info">
+
+                Page
+                <strong>{{ pagination.page }}</strong>
+                of
+                <strong>{{ pagination.pages }}</strong>
+
+            </div>
+
+
+            <ul class="pagination">
+
+
+                <!-- FIRST -->
+
+                {% if pagination.has_prev %}
+
+                    <li>
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_users',
+                                page=1,
+                                per_page=per_page,
+                                search=search,
+                                role=selected_role,
+                                status=selected_status,
+                                verification=selected_verification
+                            ) }}"
+                            title="First page"
+                        >
+                            <i class="fas fa-angles-left"></i>
+                        </a>
+
+                    </li>
+
+                {% else %}
+
+                    <li>
+
+                        <span class="disabled">
+                            <i class="fas fa-angles-left"></i>
+                        </span>
+
+                    </li>
+
+                {% endif %}
+
+
+                <!-- PREVIOUS -->
+
+                {% if pagination.has_prev %}
+
+                    <li>
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_users',
+                                page=pagination.prev_num,
+                                per_page=per_page,
+                                search=search,
+                                role=selected_role,
+                                status=selected_status,
+                                verification=selected_verification
+                            ) }}"
+                        >
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+
+                    </li>
+
+                {% else %}
+
+                    <li>
+
+                        <span class="disabled">
+                            <i class="fas fa-angle-left"></i>
+                        </span>
+
+                    </li>
+
+                {% endif %}
+
+
+                <!-- PAGE NUMBERS -->
+
+                {% set start_page = pagination.page - 2 %}
+                {% set end_page = pagination.page + 2 %}
+
+                {% if start_page < 1 %}
+                    {% set start_page = 1 %}
+                {% endif %}
+
+                {% if end_page > pagination.pages %}
+                    {% set end_page = pagination.pages %}
+                {% endif %}
+
+
+                {% for page_num in range(
+                    start_page,
+                    end_page + 1
+                ) %}
+
+                    <li>
+
+                        {% if page_num == pagination.page %}
+
+                            <span class="active">
+                                {{ page_num }}
+                            </span>
+
+                        {% else %}
+
+                            <a
+                                href="{{ url_for(
+                                    'main.all_users',
+                                    page=page_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    role=selected_role,
+                                    status=selected_status,
+                                    verification=selected_verification
+                                ) }}"
+                            >
+                                {{ page_num }}
+                            </a>
+
+                        {% endif %}
+
+                    </li>
+
+                {% endfor %}
+
+
+                <!-- NEXT -->
+
+                {% if pagination.has_next %}
+
+                    <li>
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_users',
+                                page=pagination.next_num,
+                                per_page=per_page,
+                                search=search,
+                                role=selected_role,
+                                status=selected_status,
+                                verification=selected_verification
+                            ) }}"
+                        >
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+
+                    </li>
+
+                {% else %}
+
+                    <li>
+
+                        <span class="disabled">
+                            <i class="fas fa-angle-right"></i>
+                        </span>
+
+                    </li>
+
+                {% endif %}
+
+
+                <!-- LAST -->
+
+                {% if pagination.has_next %}
+
+                    <li>
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_users',
+                                page=pagination.pages,
+                                per_page=per_page,
+                                search=search,
+                                role=selected_role,
+                                status=selected_status,
+                                verification=selected_verification
+                            ) }}"
+                            title="Last page"
+                        >
+                            <i class="fas fa-angles-right"></i>
+                        </a>
+
+                    </li>
+
+                {% else %}
+
+                    <li>
+
+                        <span class="disabled">
+                            <i class="fas fa-angles-right"></i>
+                        </span>
+
+                    </li>
+
+                {% endif %}
+
+
+            </ul>
+
+        </div>
+
+        {% endif %}
+
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
+<script>
+
+/* ============================================================
+   UPDATE USER ACCOUNT STATUS
+   ============================================================ */
+
+async function updateSingleUserAccountStatus(
+    userId,
+    newStatus,
+    toggleElement
+) {
+
+    if (!userId) {
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            `/update-user-status/${userId}`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+
+                credentials: "same-origin",
+
+                body: JSON.stringify({
+                    status: Boolean(newStatus)
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(
+                data.message ||
+                "Unable to update user status."
+            );
+        }
+
+
+        const statusBadge = document.querySelector(
+            `[data-user-status="${userId}"]`
+        );
+
+
+        if (statusBadge) {
+
+            if (data.status) {
+
+                statusBadge.className =
+                    "status-badge status-active";
+
+                statusBadge.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    Active
+                `;
+
+            } else {
+
+                statusBadge.className =
+                    "status-badge status-inactive";
+
+                statusBadge.innerHTML = `
+                    <i class="fas fa-times-circle"></i>
+                    Inactive
+                `;
+            }
+        }
+
+
+        if (typeof Swal !== "undefined") {
+
+            Swal.fire({
+                icon: "success",
+                title: "Status Updated",
+                text: data.message,
+                timer: 1600,
+                showConfirmButton: false
+            });
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Status update error:",
+            error
+        );
+
+
+        /*
+         * Restore toggle if request failed.
+         */
+        if (toggleElement) {
+
+            toggleElement.checked = !newStatus;
+        }
+
+
+        if (typeof Swal !== "undefined") {
+
+            Swal.fire({
+                icon: "error",
+                title: "Update Failed",
+                text: error.message ||
+                    "Unable to update user status."
+            });
+
+        } else {
+
+            alert(
+                error.message ||
+                "Unable to update user status."
+            );
+        }
+    }
+
+}
+
+
+/* ============================================================
+   STATUS TOGGLE LISTENERS
+   ============================================================ */
+
+document.addEventListener(
+    "change",
+    function (event) {
+
+        const toggle =
+            event.target.closest(
+                "[data-status-toggle]"
+            );
+
+
+        if (!toggle) {
+            return;
+        }
+
+
+        const userId =
+            toggle.dataset.statusToggle;
+
+
+        const newStatus =
+            toggle.checked;
+
+
+        updateSingleUserAccountStatus(
+            userId,
+            newStatus,
+            toggle
+        );
+
+    }
+);
+
+
+/* ============================================================
+   DELETE USER
+   ============================================================ */
+
+async function deleteUser(userId) {
+
+    if (!userId) {
+        return;
+    }
+
+
+    let confirmed = false;
+
+
+    if (typeof Swal !== "undefined") {
+
+        const result = await Swal.fire({
+
+            title: "Delete User?",
+
+            text:
+                "This user will be permanently deleted. " +
+                "This action cannot be undone.",
+
+            icon: "warning",
+
+            showCancelButton: true,
+
+            confirmButtonColor: "#d63343",
+
+            cancelButtonColor: "#6c757d",
+
+            confirmButtonText:
+                "Yes, Delete User",
+
+            cancelButtonText:
+                "Cancel"
+        });
+
+
+        confirmed = result.isConfirmed;
+
+    } else {
+
+        confirmed = confirm(
+            "Are you sure you want to delete this user?"
+        );
+    }
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            `/delete-user/${userId}`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Accept": "application/json"
+                },
+
+                credentials: "same-origin"
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(
+                data.message ||
+                "Unable to delete user."
+            );
+        }
+
+
+        const row = document.getElementById(
+            `user-row-${userId}`
+        );
+
+
+        if (row) {
+
+            row.style.transition =
+                "opacity .25s ease, transform .25s ease";
+
+            row.style.opacity = "0";
+
+            row.style.transform =
+                "translateX(15px)";
+
+
+            setTimeout(
+                function () {
+                    row.remove();
+                },
+                250
+            );
+        }
+
+
+        if (typeof Swal !== "undefined") {
+
+            Swal.fire({
+                icon: "success",
+                title: "User Deleted",
+                text: data.message,
+                timer: 1800,
+                showConfirmButton: false
+            });
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Delete user error:",
+            error
+        );
+
+
+        if (typeof Swal !== "undefined") {
+
+            Swal.fire({
+                icon: "error",
+                title: "Delete Failed",
+                text:
+                    error.message ||
+                    "Unable to delete this user."
+            });
+
+        } else {
+
+            alert(
+                error.message ||
+                "Unable to delete this user."
+            );
+        }
+
+    }
+
+}
+
+
+/* ============================================================
+   PER PAGE
+   ============================================================ */
+
+document.addEventListener(
+    "change",
+    function (event) {
+
+        if (
+            event.target.id !== "per_page"
+        ) {
+            return;
+        }
+
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        params.set(
+            "per_page",
+            event.target.value
+        );
+
+
+        params.set(
+            "page",
+            "1"
+        );
+
+
+        window.location.href =
+            `${window.location.pathname}?${params.toString()}`;
+
+    }
+);
+
+
+/* ============================================================
+   ONLINE STATUS
+   ============================================================ */
+
+async function fetchAllUsersOnlineStatus() {
+
+    try {
+
+        const response = await fetch(
+            "/api/online-status",
+            {
+                method: "GET",
+                credentials: "same-origin",
+                cache: "no-store"
+            }
+        );
+
+
+        if (!response.ok) {
+            return;
+        }
+
+
+        const users =
+            await response.json();
+
+
+        if (!Array.isArray(users)) {
+            return;
+        }
+
+
+        users.forEach(function (user) {
+
+            const element =
+                document.getElementById(
+                    `user-status-${user.id}`
+                );
+
+
+            if (!element) {
+                return;
+            }
+
+
+            if (user.is_online) {
+
+                element.innerHTML = `
+                    <span class="badge bg-success text-white">
+                        <i
+                            class="fas fa-circle me-1"
+                            style="font-size:7px;"
+                        ></i>
+                        Online
+                    </span>
+                `;
+
+            } else {
+
+                element.innerHTML = `
+                    <small class="text-muted">
+                        <i class="far fa-clock me-1"></i>
+                        Last seen: ${user.last_seen_ago}
+                    </small>
+                `;
+            }
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Online status error:",
+            error
+        );
+    }
+
+}
+
+
+/*
+ * Initial status
+ */
+if (document.readyState === "loading") {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        fetchAllUsersOnlineStatus
+    );
+
+} else {
+
+    fetchAllUsersOnlineStatus();
+}
+
+
+/*
+ * Refresh every 5 seconds.
+ */
+setInterval(
+    fetchAllUsersOnlineStatus,
+    5000
+);
+
+</script>
+
+
+<script>
+/* ============================================================
+   USER ACTIONS
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ========================================================
+       STATUS TOGGLE
+       ======================================================== */
+
+    document.querySelectorAll(".status-toggle").forEach(function (toggle) {
+
+        toggle.addEventListener("change", async function () {
+
+            const checkbox = this;
+            const userId = checkbox.dataset.userId;
+
+            if (!userId) {
+                return;
+            }
+
+            /*
+             * Save the new state in case the request fails.
+             */
+            const newStatus = checkbox.checked;
+            const oldStatus = !newStatus;
+
+            /*
+             * Prevent multiple clicks while request is running.
+             */
+            checkbox.disabled = true;
+
+            try {
+
+                const response = await fetch(
+                    `/update-user-status/${userId}`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-Requested-With": "XMLHttpRequest"
+                        },
+
+                        body: JSON.stringify({
+                            status: newStatus
+                        })
+                    }
+                );
+
+
+                const data = await response.json();
+
+
+                if (!response.ok || !data.success) {
+
+                    /*
+                     * Restore previous state.
+                     */
+                    checkbox.checked = oldStatus;
+
+                    Swal.fire({
+                        icon: "error",
+                        title: "Unable to Update",
+                        text: data.message || "Unable to update user status.",
+                        confirmButtonColor: "#06245f"
+                    });
+
+                    return;
+                }
+
+
+                /*
+                 * Update tooltip / accessibility label.
+                 */
+                const statusLabel =
+                    checkbox.closest(".status-switch");
+
+                if (statusLabel) {
+
+                    const actionText =
+                        newStatus
+                            ? "Deactivate User"
+                            : "Activate User";
+
+                    statusLabel.setAttribute(
+                        "title",
+                        actionText
+                    );
+
+                    statusLabel.setAttribute(
+                        "aria-label",
+                        actionText
+                    );
+                }
+
+
+                /*
+                 * Update the row visually if needed.
+                 */
+                const row =
+                    checkbox.closest("tr");
+
+                if (row) {
+
+                    row.classList.toggle(
+                        "user-inactive-row",
+                        !newStatus
+                    );
+
+                }
+
+
+                Swal.fire({
+                    icon: "success",
+                    title: newStatus
+                        ? "User Activated"
+                        : "User Deactivated",
+                    text: data.message || (
+                        newStatus
+                            ? "The user has been activated successfully."
+                            : "The user has been deactivated successfully."
+                    ),
+                    timer: 1800,
+                    showConfirmButton: false
+                });
+
+
+            } catch (error) {
+
+                console.error(
+                    "Update user status error:",
+                    error
+                );
+
+                /*
+                 * Restore previous state.
+                 */
+                checkbox.checked = oldStatus;
+
+                Swal.fire({
+                    icon: "error",
+                    title: "Connection Error",
+                    text: "Unable to connect to the server.",
+                    confirmButtonColor: "#06245f"
+                });
+
+            } finally {
+
+                /*
+                 * Never enable the current user's switch.
+                 */
+                if (
+                    String(userId) ===
+                    String(window.CURRENT_USER_ID || "")
+                ) {
+
+                    checkbox.disabled = true;
+
+                } else {
+
+                    checkbox.disabled = false;
+
+                }
+
+            }
+
+        });
+
+    });
+
+
+    /* ========================================================
+       DELETE USER
+       ======================================================== */
+
+    window.deleteUser = async function (userId) {
+
+        if (!userId) {
+            return;
+        }
+
+
+        /*
+         * Find the row before deleting.
+         */
+        const button =
+            document.querySelector(
+                `.action-btn.delete[onclick="deleteUser(${userId})"]`
+            );
+
+        const row =
+            button
+                ? button.closest("tr")
+                : null;
+
+
+        /*
+         * Get user name from row.
+         */
+        let userName = "this user";
+
+        if (row) {
+
+            const nameElement =
+                row.querySelector(
+                    ".user-name, .user-fullname, [data-user-name]"
+                );
+
+            if (nameElement) {
+                userName =
+                    nameElement.textContent.trim() ||
+                    "this user";
+            }
+
+        }
+
+
+        /*
+         * Confirmation
+         */
+        const result =
+            await Swal.fire({
+
+                icon: "warning",
+
+                title: "Delete User?",
+
+                html:
+                    `Are you sure you want to delete <strong>${escapeHtml(userName)}</strong>?<br><br>` +
+                    `<span style="font-size:13px;color:#8a93a2;">` +
+                    `This action cannot be undone.` +
+                    `</span>`,
+
+                showCancelButton: true,
+
+                confirmButtonText:
+                    '<i class="fas fa-trash"></i> Yes, Delete',
+
+                cancelButtonText:
+                    "Cancel",
+
+                confirmButtonColor:
+                    "#dc3545",
+
+                cancelButtonColor:
+                    "#6c757d",
+
+                reverseButtons: true,
+
+                focusCancel: true
+
+            });
+
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+
+        /*
+         * Disable button while deleting.
+         */
+        if (button) {
+
+            button.disabled = true;
+
+            button.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i>';
+
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/delete-user/${userId}`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok || !data.success) {
+
+                if (button) {
+
+                    button.disabled = false;
+
+                    button.innerHTML =
+                        '<i class="fas fa-trash"></i>';
+
+                }
+
+                Swal.fire({
+                    icon: "error",
+                    title: "Delete Failed",
+                    text:
+                        data.message ||
+                        "Unable to delete this user.",
+                    confirmButtonColor:
+                        "#06245f"
+                });
+
+                return;
+            }
+
+
+            /*
+             * Remove row with animation.
+             */
+            if (row) {
+
+                row.style.transition =
+                    "opacity .25s ease, transform .25s ease";
+
+                row.style.opacity = "0";
+
+                row.style.transform =
+                    "translateX(20px)";
+
+                setTimeout(function () {
+
+                    row.remove();
+
+                    /*
+                     * Refresh statistics if the page provides
+                     * the update function.
+                     */
+                    if (
+                        typeof window.refreshUserStatistics ===
+                        "function"
+                    ) {
+                        window.refreshUserStatistics();
+                    }
+
+                }, 280);
+
+            }
+
+
+            Swal.fire({
+                icon: "success",
+                title: "User Deleted",
+                text:
+                    data.message ||
+                    "The user has been deleted successfully.",
+                timer: 1800,
+                showConfirmButton: false
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Delete user error:",
+                error
+            );
+
+
+            if (button) {
+
+                button.disabled = false;
+
+                button.innerHTML =
+                    '<i class="fas fa-trash"></i>';
+
+            }
+
+
+            Swal.fire({
+                icon: "error",
+                title: "Connection Error",
+                text:
+                    "Unable to connect to the server.",
+                confirmButtonColor:
+                    "#06245f"
+            });
+
+        }
+
+    };
+
+
+    /* ========================================================
+       FORCE LOGOUT USER
+       ======================================================== */
+
+    window.forceLogoutUser = async function (userId) {
+
+        if (!userId) {
+            return;
+        }
+
+
+        /*
+         * Find the logout button.
+         */
+        const button =
+            document.querySelector(
+                `.action-btn.logout[onclick="forceLogoutUser(${userId})"]`
+            );
+
+
+        /*
+         * Get user name.
+         */
+        const row =
+            button
+                ? button.closest("tr")
+                : null;
+
+
+        let userName = "this user";
+
+
+        if (row) {
+
+            const nameElement =
+                row.querySelector(
+                    ".user-name, .user-fullname, [data-user-name]"
+                );
+
+            if (nameElement) {
+
+                userName =
+                    nameElement.textContent.trim() ||
+                    "this user";
+
+            }
+
+        }
+
+
+        /*
+         * Confirmation dialog.
+         */
+        const result =
+            await Swal.fire({
+
+                icon: "question",
+
+                title: "Force Logout?",
+
+                html:
+                    `Are you sure you want to force <strong>${escapeHtml(userName)}</strong> to log out?`,
+
+                showCancelButton: true,
+
+                confirmButtonText:
+                    '<i class="fas fa-sign-out-alt"></i> Force Logout',
+
+                cancelButtonText:
+                    "Cancel",
+
+                confirmButtonColor:
+                    "#06245f",
+
+                cancelButtonColor:
+                    "#6c757d",
+
+                reverseButtons: true,
+
+                focusCancel: true
+
+            });
+
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+
+        /*
+         * Disable button while request is running.
+         */
+        if (button) {
+
+            button.disabled = true;
+
+            button.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i>';
+
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/force-logout-user/${userId}`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok || !data.success) {
+
+                if (button) {
+
+                    button.disabled = false;
+
+                    button.innerHTML =
+                        '<i class="fas fa-sign-out-alt"></i>';
+
+                }
+
+                Swal.fire({
+                    icon: "error",
+                    title: "Logout Failed",
+                    text:
+                        data.message ||
+                        "Unable to force logout this user.",
+                    confirmButtonColor:
+                        "#06245f"
+                });
+
+                return;
+            }
+
+
+            /*
+             * Change button to disabled state because the user
+             * is now logged out.
+             */
+            if (button) {
+
+                button.disabled = true;
+
+                button.innerHTML =
+                    '<i class="fas fa-sign-out-alt"></i>';
+
+                button.setAttribute(
+                    "title",
+                    "User Already Logged Out"
+                );
+
+                button.setAttribute(
+                    "aria-label",
+                    "User Already Logged Out"
+                );
+
+            }
+
+
+            /*
+             * Update online/auth indicators if they exist.
+             */
+            const onlineIndicator =
+                row
+                    ? row.querySelector(
+                        `[data-user-status-id="${userId}"]`
+                    )
+                    : null;
+
+
+            if (onlineIndicator) {
+
+                onlineIndicator.classList.remove(
+                    "online"
+                );
+
+                onlineIndicator.classList.add(
+                    "offline"
+                );
+
+            }
+
+
+            Swal.fire({
+                icon: "success",
+                title: "User Logged Out",
+                text:
+                    data.message ||
+                    "The user has been logged out successfully.",
+                timer: 1800,
+                showConfirmButton: false
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Force logout error:",
+                error
+            );
+
+
+            if (button) {
+
+                button.disabled = false;
+
+                button.innerHTML =
+                    '<i class="fas fa-sign-out-alt"></i>';
+
+            }
+
+
+            Swal.fire({
+                icon: "error",
+                title: "Connection Error",
+                text:
+                    "Unable to connect to the server.",
+                confirmButtonColor:
+                    "#06245f"
+            });
+
+        }
+
+    };
+
+
+    /* ========================================================
+       ESCAPE HTML
+       ======================================================== */
+
+    window.escapeHtml = function (value) {
+
+        const div =
+            document.createElement("div");
+
+        div.textContent =
+            value == null
+                ? ""
+                : String(value);
+
+        return div.innerHTML;
+    };
+
+
+    /* ========================================================
+       INITIALIZE CURRENT USER ID
+       ======================================================== */
+
+    {% if current_user.is_authenticated %}
+
+        window.CURRENT_USER_ID =
+            {{ current_user.id }};
+
+    {% else %}
+
+        window.CURRENT_USER_ID =
+            null;
+
+    {% endif %}
+
+});
+</script>
+
+
+
+{% endblock %}
+

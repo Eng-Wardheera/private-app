@@ -1,281 +1,1300 @@
-    <div class="sidebar" data-background-color="dark">
-        <div class="sidebar-logo">
-          <!-- Logo Header -->
-          <div class="logo-header" data-background-color="dark">
-            <a href="index.html" class="logo">
-              <img
-                src="assets/img/kaiadmin/logo_light.svg"
-                alt="navbar brand"
-                class="navbar-brand"
-                height="20"
-              />
+<!-- ============================================================
+     PRIVATE INSTITUTION SIDEBAR
+     ============================================================ -->
+
+<div class="sidebar" data-background-color="dark">
+
+    <!-- ========================================================
+         SIDEBAR LOGO
+         ======================================================== -->
+
+    <div class="sidebar-logo">
+
+        <div class="logo-header" data-background-color="dark">
+
+            <a href="{{ url_for('main.dashboard') }}" class="logo">
+
+                {% if institution is defined and institution.logo %}
+                    <img
+                        src="{{ institution.logo }}"
+                        alt="{{ institution.name or 'Institution' }}"
+                        class="navbar-brand"
+                        style="height:38px; width:auto; object-fit:contain;"
+                    >
+                {% else %}
+                    <span
+                        style="
+                            color:#ffffff;
+                            font-size:18px;
+                            font-weight:800;
+                            letter-spacing:.5px;
+                            white-space:nowrap;
+                        "
+                    >
+                        {{ institution.name if institution is defined and institution.name else 'PRIVATE INSTITUTION' }}
+                    </span>
+                {% endif %}
+
             </a>
+
+
+            <!-- Sidebar Controls -->
+
             <div class="nav-toggle">
-              <button class="btn btn-toggle toggle-sidebar">
-                <i class="gg-menu-right"></i>
-              </button>
-              <button class="btn btn-toggle sidenav-toggler">
-                <i class="gg-menu-left"></i>
-              </button>
-            </div>
-            <button class="topbar-toggler more">
-              <i class="gg-more-vertical-alt"></i>
-            </button>
-          </div>
-          <!-- End Logo Header -->
-        </div>
-        <div class="sidebar-wrapper scrollbar scrollbar-inner">
-          <div class="sidebar-content">
-            <ul class="nav nav-secondary">
-              <li class="nav-item active">
-                <a
-                  data-bs-toggle="collapse"
-                  href="#dashboard"
-                  class="collapsed"
-                  aria-expanded="false"
+
+                <button
+                    class="btn btn-toggle toggle-sidebar"
+                    type="button"
                 >
-                  <i class="fas fa-home"></i>
-                  <p>Dashboard</p>
-                  <span class="caret"></span>
-                </a>
-                <div class="collapse" id="dashboard">
-                  <ul class="nav nav-collapse">
-                    <li>
-                      <a href="../demo1/index.html">
-                        <span class="sub-item">Dashboard 1</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-              <li class="nav-section">
-                <span class="sidebar-mini-icon">
-                  <i class="fa fa-ellipsis-h"></i>
-                </span>
-                <h4 class="text-section">Components</h4>
-              </li>
-              <li class="nav-item">
-                <a data-bs-toggle="collapse" href="#base">
-                  <i class="fas fa-layer-group"></i>
-                  <p>Base</p>
-                  <span class="caret"></span>
-                </a>
-                <div class="collapse" id="base">
-                  <ul class="nav nav-collapse">
-                    <li>
-                      <a href="components/avatars.html">
-                        <span class="sub-item">Avatars</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="components/buttons.html">
-                        <span class="sub-item">Buttons</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="components/gridsystem.html">
-                        <span class="sub-item">Grid System</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="components/panels.html">
-                        <span class="sub-item">Panels</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="components/notifications.html">
-                        <span class="sub-item">Notifications</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="components/sweetalert.html">
-                        <span class="sub-item">Sweet Alert</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="components/font-awesome-icons.html">
-                        <span class="sub-item">Font Awesome Icons</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="components/simple-line-icons.html">
-                        <span class="sub-item">Simple Line Icons</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="components/typography.html">
-                        <span class="sub-item">Typography</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-              <li class="nav-item">
-                <a data-bs-toggle="collapse" href="#sidebarLayouts">
-                  <i class="fas fa-th-list"></i>
-                  <p>Sidebar Layouts</p>
-                  <span class="caret"></span>
-                </a>
-                <div class="collapse" id="sidebarLayouts">
-                  <ul class="nav nav-collapse">
-                    <li>
-                      <a href="sidebar-style-2.html">
-                        <span class="sub-item">Sidebar Style 2</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="icon-menu.html">
-                        <span class="sub-item">Icon Menu</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-              <li class="nav-item">
-                <a data-bs-toggle="collapse" href="#forms">
-                  <i class="fas fa-pen-square"></i>
-                  <p>Forms</p>
-                  <span class="caret"></span>
-                </a>
-                <div class="collapse" id="forms">
-                  <ul class="nav nav-collapse">
-                    <li>
-                      <a href="forms/forms.html">
-                        <span class="sub-item">Basic Form</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-              <li class="nav-item">
-                <a data-bs-toggle="collapse" href="#tables">
-                  <i class="fas fa-table"></i>
-                  <p>Tables</p>
-                  <span class="caret"></span>
-                </a>
-                <div class="collapse" id="tables">
-                  <ul class="nav nav-collapse">
-                    <li>
-                      <a href="tables/tables.html">
-                        <span class="sub-item">Basic Table</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="tables/datatables.html">
-                        <span class="sub-item">Datatables</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-              <li class="nav-item">
-                <a data-bs-toggle="collapse" href="#maps">
-                  <i class="fas fa-map-marker-alt"></i>
-                  <p>Maps</p>
-                  <span class="caret"></span>
-                </a>
-                <div class="collapse" id="maps">
-                  <ul class="nav nav-collapse">
-                    <li>
-                      <a href="maps/googlemaps.html">
-                        <span class="sub-item">Google Maps</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="maps/jsvectormap.html">
-                        <span class="sub-item">Jsvectormap</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-              <li class="nav-item">
-                <a data-bs-toggle="collapse" href="#charts">
-                  <i class="far fa-chart-bar"></i>
-                  <p>Charts</p>
-                  <span class="caret"></span>
-                </a>
-                <div class="collapse" id="charts">
-                  <ul class="nav nav-collapse">
-                    <li>
-                      <a href="charts/charts.html">
-                        <span class="sub-item">Chart Js</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="charts/sparkline.html">
-                        <span class="sub-item">Sparkline</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-              <li class="nav-item">
-                <a href="widgets.html">
-                  <i class="fas fa-desktop"></i>
-                  <p>Widgets</p>
-                  <span class="badge badge-success">4</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="../../documentation/index.html">
-                  <i class="fas fa-file"></i>
-                  <p>Documentation</p>
-                  <span class="badge badge-secondary">1</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a data-bs-toggle="collapse" href="#submenu">
-                  <i class="fas fa-bars"></i>
-                  <p>Menu Levels</p>
-                  <span class="caret"></span>
-                </a>
-                <div class="collapse" id="submenu">
-                  <ul class="nav nav-collapse">
-                    <li>
-                      <a data-bs-toggle="collapse" href="#subnav1">
-                        <span class="sub-item">Level 1</span>
-                        <span class="caret"></span>
-                      </a>
-                      <div class="collapse" id="subnav1">
-                        <ul class="nav nav-collapse subnav">
-                          <li>
-                            <a href="#">
-                              <span class="sub-item">Level 2</span>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#">
-                              <span class="sub-item">Level 2</span>
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                    </li>
-                    <li>
-                      <a data-bs-toggle="collapse" href="#subnav2">
-                        <span class="sub-item">Level 1</span>
-                        <span class="caret"></span>
-                      </a>
-                      <div class="collapse" id="subnav2">
-                        <ul class="nav nav-collapse subnav">
-                          <li>
-                            <a href="#">
-                              <span class="sub-item">Level 2</span>
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                    </li>
-                    <li>
-                      <a href="#">
-                        <span class="sub-item">Level 1</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-          </div>
+                    <i class="gg-menu-right"></i>
+                </button>
+
+                <button
+                    class="btn btn-toggle sidenav-toggler"
+                    type="button"
+                >
+                    <i class="gg-menu-left"></i>
+                </button>
+
+            </div>
+
+
+            <button
+                class="topbar-toggler more"
+                type="button"
+            >
+                <i class="gg-more-vertical-alt"></i>
+            </button>
+
         </div>
-      </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         SIDEBAR WRAPPER
+         ======================================================== -->
+
+    <div class="sidebar-wrapper scrollbar scrollbar-inner">
+
+        <div class="sidebar-content">
+
+            <ul class="nav nav-secondary">
+
+
+                <!-- ====================================================
+                     DASHBOARD
+                     ==================================================== -->
+
+                <li class="nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+
+                    <a href="{{ url_for('main.dashboard') }}">
+
+                        <i class="fas fa-home"></i>
+
+                        <p>Dashboard</p>
+
+                    </a>
+
+                </li>
+
+
+                <!-- ====================================================
+                     INSTITUTION MANAGEMENT
+                     SUPERADMIN / SCHOOL ADMIN
+                     ==================================================== -->
+
+                {% if current_user.is_superadmin() or current_user.is_school_admin() %}
+
+                <li class="nav-section">
+
+                    <span class="sidebar-mini-icon">
+                        <i class="fas fa-building"></i>
+                    </span>
+
+                    <h4 class="text-section">
+                        Institution Management
+                    </h4>
+
+                </li>
+
+
+                <!-- Institution -->
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#institutionManagement"
+                        aria-expanded="false"
+                    >
+
+                        <i class="fas fa-school"></i>
+
+                        <p>Institution</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="institutionManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            {% if current_user.is_superadmin() %}
+
+                            <li>
+
+                                <a href="">
+
+                                    <span class="sub-item">
+                                        All Institutions
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="">
+
+                                    <span class="sub-item">
+                                        Add Institution
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% endif %}
+
+
+                            {% if current_user.is_school_admin() %}
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Institution Profile
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Institution Settings
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% endif %}
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+                <!-- Branches -->
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#branchManagement"
+                    >
+
+                        <i class="fas fa-code-branch"></i>
+
+                        <p>Branches</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="branchManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="">
+
+                                    <span class="sub-item">
+                                        All Branches
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="">
+
+                                    <span class="sub-item">
+                                        Add Branch
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+                {% endif %}
+
+
+
+                <!-- ====================================================
+                     ACADEMIC MANAGEMENT
+                     ==================================================== -->
+
+                <li class="nav-section">
+
+                    <span class="sidebar-mini-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </span>
+
+                    <h4 class="text-section">
+                        Academic Management
+                    </h4>
+
+                </li>
+
+
+                <!-- Courses -->
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#courseManagement"
+                    >
+
+                        <i class="fas fa-book-open"></i>
+
+                        <p>Courses</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="courseManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="">
+
+                                    <span class="sub-item">
+                                        All Courses
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+
+                            {% if current_user.is_superadmin() or current_user.is_school_admin() %}
+
+                            <li>
+
+                                <a href="">
+
+                                    <span class="sub-item">
+                                        Add Course
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% endif %}
+
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Course Levels
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+                <!-- Subjects -->
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#subjectManagement"
+                    >
+
+                        <i class="fas fa-book"></i>
+
+                        <p>Subjects</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="subjectManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="">
+
+                                    <span class="sub-item">
+                                        All Subjects
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+
+                            {% if current_user.is_superadmin() or current_user.is_school_admin() or current_user.is_branch_admin() %}
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Add Subject
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% endif %}
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+                <!-- Classes -->
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#classManagement"
+                    >
+
+                        <i class="fas fa-chalkboard"></i>
+
+                        <p>Classes</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="classManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="">
+
+                                    <span class="sub-item">
+                                        All Classes
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+
+                            {% if current_user.is_superadmin() or current_user.is_school_admin() or current_user.is_branch_admin() %}
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Add Class
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% endif %}
+
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Class Sections
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+
+                <!-- ====================================================
+                     PEOPLE MANAGEMENT
+                     ==================================================== -->
+
+                <li class="nav-section">
+
+                    <span class="sidebar-mini-icon">
+                        <i class="fas fa-users"></i>
+                    </span>
+
+                    <h4 class="text-section">
+                        People
+                    </h4>
+
+                </li>
+
+
+                <!-- Users -->
+
+                {% if current_user.is_superadmin() or current_user.is_school_admin() %}
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#userManagement"
+                    >
+
+                        <i class="fas fa-users-cog"></i>
+
+                        <p>Users</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="userManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            {% if current_user.is_superadmin() %}
+
+                            <li>
+
+                                <a href="{{ url_for('main.all_users') }}">
+
+                                    <span class="sub-item">
+                                        All Users
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% endif %}
+
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        School Admins
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Branch Admins
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        User Permissions
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+                {% endif %}
+
+
+                <!-- Teachers -->
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#teacherManagement"
+                    >
+
+                        <i class="fas fa-chalkboard-teacher"></i>
+
+                        <p>Teachers</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="teacherManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        All Teachers
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% if current_user.is_superadmin() or current_user.is_school_admin() or current_user.is_branch_admin() %}
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Add Teacher
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% endif %}
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+                <!-- Students -->
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#studentManagement"
+                    >
+
+                        <i class="fas fa-user-graduate"></i>
+
+                        <p>Students</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="studentManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        All Students
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Student Registration
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Enrollments
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Student Promotion
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+                <!-- Parents -->
+
+                <li class="nav-item">
+
+                    <a href="#">
+
+                        <i class="fas fa-user-friends"></i>
+
+                        <p>Parents</p>
+
+                    </a>
+
+                </li>
+
+
+
+                <!-- ====================================================
+                     ATTENDANCE
+                     ==================================================== -->
+
+                <li class="nav-section">
+
+                    <span class="sidebar-mini-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </span>
+
+                    <h4 class="text-section">
+                        Attendance
+                    </h4>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#attendanceManagement"
+                    >
+
+                        <i class="fas fa-calendar-alt"></i>
+
+                        <p>Attendance</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="attendanceManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Student Attendance
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Teacher Attendance
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Attendance Reports
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+
+                <!-- ====================================================
+                     EXAMINATIONS
+                     ==================================================== -->
+
+                <li class="nav-section">
+
+                    <span class="sidebar-mini-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </span>
+
+                    <h4 class="text-section">
+                        Examinations
+                    </h4>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#examManagement"
+                    >
+
+                        <i class="fas fa-file-signature"></i>
+
+                        <p>Examinations</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="examManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Exams
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Exam Schedule
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Exam Results
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Exam Cards
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Certificates
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+
+                <!-- ====================================================
+                     FINANCE
+                     ==================================================== -->
+
+                <li class="nav-section">
+
+                    <span class="sidebar-mini-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </span>
+
+                    <h4 class="text-section">
+                        Finance
+                    </h4>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#financeManagement"
+                    >
+
+                        <i class="fas fa-wallet"></i>
+
+                        <p>Finance</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="financeManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Student Fees
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Payments
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Expenses
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Financial Reports
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+
+                <!-- ====================================================
+                     REPORTS
+                     ==================================================== -->
+
+                <li class="nav-section">
+
+                    <span class="sidebar-mini-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </span>
+
+                    <h4 class="text-section">
+                        Reports
+                    </h4>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#reportsManagement"
+                    >
+
+                        <i class="fas fa-chart-bar"></i>
+
+                        <p>Reports</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="reportsManagement"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Student Reports
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Academic Reports
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Attendance Reports
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Financial Reports
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        User Reports
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+
+                <!-- ====================================================
+                     SETTINGS
+                     ==================================================== -->
+
+                <li class="nav-section">
+
+                    <span class="sidebar-mini-icon">
+                        <i class="fas fa-cog"></i>
+                    </span>
+
+                    <h4 class="text-section">
+                        System
+                    </h4>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        data-bs-toggle="collapse"
+                        href="#systemSettings"
+                    >
+
+                        <i class="fas fa-cogs"></i>
+
+                        <p>Settings</p>
+
+                        <span class="caret"></span>
+
+                    </a>
+
+
+                    <div
+                        class="collapse"
+                        id="systemSettings"
+                    >
+
+                        <ul class="nav nav-collapse">
+
+                            <li>
+
+                                <a href="{{ url_for('main.account_settings') }}">
+
+                                    <span class="sub-item">
+                                        Account Settings
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% if current_user.is_superadmin() or current_user.is_school_admin() %}
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Institution Settings
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        Academic Settings
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a href="#">
+
+                                    <span class="sub-item">
+                                        System Settings
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+                            {% endif %}
+
+                        </ul>
+
+                    </div>
+
+                </li>
+
+
+
+                <!-- ====================================================
+                     PROFILE
+                     ==================================================== -->
+
+                <li class="nav-item">
+
+                    <a href="{{ url_for('main.profile') }}">
+
+                        <i class="fas fa-user-circle"></i>
+
+                        <p>My Profile</p>
+
+                    </a>
+
+                </li>
+
+
+
+                <!-- ====================================================
+                     LOGOUT
+                     ==================================================== -->
+
+                <li class="nav-item">
+
+                    <a
+                        href="{{ url_for('main.logout') }}"
+                        onclick="return confirm('Are you sure you want to logout?');"
+                    >
+
+                        <i class="fas fa-sign-out-alt"></i>
+
+                        <p>Logout</p>
+
+                    </a>
+
+                </li>
+
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</div>
