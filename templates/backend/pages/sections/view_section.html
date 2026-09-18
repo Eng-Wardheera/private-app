@@ -1,0 +1,1865 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   SECTION VIEW PAGE
+   ============================================================ */
+
+.section-view-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.section-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.section-view-title {
+    min-width: 0;
+}
+
+.section-view-title h1 {
+    margin: 0;
+    color: #06245f;
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: -.4px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.section-view-title h1 i {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(6, 36, 95, .09);
+    color: #06245f;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+}
+
+.section-view-title p {
+    margin: 7px 0 0 55px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.section-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.section-header-btn {
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: 1px solid #dfe4eb;
+    background: #fff;
+    color: #374151;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    transition: all .2s ease;
+}
+
+.section-header-btn:hover {
+    color: #06245f;
+    border-color: #06245f;
+    background: #f8fafc;
+    transform: translateY(-1px);
+}
+
+.section-header-btn.primary {
+    color: #fff;
+    background: #06245f;
+    border-color: #06245f;
+}
+
+.section-header-btn.primary:hover {
+    background: #041d4e;
+    color: #fff;
+}
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+
+.section-view-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 350px;
+    gap: 24px;
+    align-items: start;
+}
+
+.section-main-column,
+.section-side-column {
+    min-width: 0;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.section-view-card {
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, .045);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.section-view-card:last-child {
+    margin-bottom: 0;
+}
+
+.section-view-card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #edf0f4;
+    background: #fbfcfe;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.section-view-card-header h2 {
+    margin: 0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.section-view-card-header h2 i {
+    color: #06245f;
+    font-size: 15px;
+}
+
+.section-view-card-header p {
+    margin: 5px 0 0;
+    color: #7a8494;
+    font-size: 11px;
+}
+
+.section-view-card-body {
+    padding: 20px;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.section-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    padding: 26px;
+    color: #fff;
+    background:
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(50, 183, 58, .22),
+            transparent 28%
+        ),
+        linear-gradient(
+            135deg,
+            #06245f 0%,
+            #33206f 100%
+        );
+    box-shadow: 0 8px 25px rgba(6, 36, 95, .16);
+}
+
+.section-hero::before {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    right: -70px;
+    bottom: -90px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.10);
+}
+
+.section-hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.section-hero-icon {
+    flex: 0 0 76px;
+    width: 76px;
+    height: 76px;
+    border-radius: 19px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 29px;
+}
+
+.section-hero-info {
+    min-width: 0;
+}
+
+.section-hero-info h2 {
+    margin: 0;
+    font-size: 25px;
+    font-weight: 850;
+    word-break: break-word;
+}
+
+.section-hero-info p {
+    margin: 6px 0 0;
+    color: rgba(255,255,255,.72);
+    font-size: 12px;
+}
+
+.section-hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 13px;
+}
+
+.section-code-tag,
+.section-status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 27px;
+    padding: 0 9px;
+    border-radius: 7px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.section-code-tag {
+    font-family: "Courier New", monospace;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.12);
+}
+
+.section-status-tag {
+    background: rgba(50,183,58,.18);
+    color: #c9ffd0;
+    border: 1px solid rgba(50,183,58,.25);
+}
+
+.section-status-tag.inactive {
+    background: rgba(255,255,255,.10);
+    color: rgba(255,255,255,.75);
+}
+
+.section-status-tag.suspended {
+    background: rgba(220,38,38,.18);
+    color: #ffd1d1;
+    border-color: rgba(220,38,38,.25);
+}
+
+/* ============================================================
+   DETAIL GRID
+   ============================================================ */
+
+.section-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.section-detail-item {
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #edf0f4;
+    background: #fbfcfe;
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+}
+
+.section-detail-icon {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(6,36,95,.08);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+.section-detail-content {
+    min-width: 0;
+}
+
+.section-detail-label {
+    display: block;
+    margin-bottom: 3px;
+    color: #8a94a4;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .45px;
+}
+
+.section-detail-value {
+    display: block;
+    color: #273244;
+    font-size: 13px;
+    font-weight: 750;
+    word-break: break-word;
+}
+
+.section-detail-value.muted {
+    color: #9aa3b1;
+    font-weight: 600;
+}
+
+/* ============================================================
+   DESCRIPTION
+   ============================================================ */
+
+.section-description {
+    padding: 15px 16px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #edf0f4;
+    color: #596579;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+
+.section-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.section-stat {
+    padding: 17px 15px;
+    border: 1px solid #e9edf2;
+    border-radius: 11px;
+    background: #fff;
+}
+
+.section-stat-icon {
+    width: 33px;
+    height: 33px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6,36,95,.08);
+    color: #06245f;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.section-stat-label {
+    color: #8a94a4;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.section-stat-value {
+    margin-top: 3px;
+    color: #172033;
+    font-size: 20px;
+    font-weight: 850;
+}
+
+/* ============================================================
+   SIDEBAR PROFILE
+   ============================================================ */
+
+.section-side-profile {
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(15,23,42,.045);
+    margin-bottom: 20px;
+}
+
+.section-side-top {
+    padding: 25px 18px;
+    text-align: center;
+    color: #fff;
+    background:
+        linear-gradient(
+            135deg,
+            #06245f,
+            #33206f
+        );
+}
+
+.section-side-icon {
+    width: 66px;
+    height: 66px;
+    margin: 0 auto 12px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+}
+
+.section-side-top h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 850;
+    word-break: break-word;
+}
+
+.section-side-top p {
+    margin: 5px 0 0;
+    color: rgba(255,255,255,.68);
+    font-size: 10px;
+}
+
+.section-side-body {
+    padding: 16px;
+}
+
+.section-side-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.section-side-row:first-child {
+    padding-top: 0;
+}
+
+.section-side-row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.section-side-label {
+    color: #8a94a4;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.section-side-value {
+    color: #273244;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* ============================================================
+   STATUS CARD
+   ============================================================ */
+
+.section-status-card {
+    padding: 18px;
+    border-radius: 14px;
+    border: 1px solid #e7eaf0;
+    background: #fff;
+    box-shadow: 0 4px 18px rgba(15,23,42,.045);
+    margin-bottom: 20px;
+}
+
+.section-status-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #172033;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+.section-status-header i {
+    color: #06245f;
+}
+
+.section-current-status {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 13px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #edf0f4;
+}
+
+.section-current-status-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-current-status-icon.active {
+    background: rgba(50,183,58,.10);
+    color: #21852a;
+}
+
+.section-current-status-icon.inactive {
+    background: rgba(107,114,128,.10);
+    color: #4b5563;
+}
+
+.section-current-status-icon.suspended {
+    background: rgba(220,38,38,.10);
+    color: #b91c1c;
+}
+
+.section-current-status strong {
+    display: block;
+    color: #273244;
+    font-size: 12px;
+}
+
+.section-current-status span {
+    display: block;
+    margin-top: 2px;
+    color: #8a94a4;
+    font-size: 10px;
+}
+
+/* ============================================================
+   ACTION CARD
+   ============================================================ */
+
+.section-actions-card {
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid #e7eaf0;
+    background: #fff;
+    box-shadow: 0 4px 18px rgba(15,23,42,.045);
+}
+
+.section-action-btn {
+    width: 100%;
+    min-height: 43px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+    transition: all .2s ease;
+    box-sizing: border-box;
+}
+
+.section-action-btn + .section-action-btn {
+    margin-top: 9px;
+}
+
+.section-action-edit {
+    background: #06245f;
+    border: 1px solid #06245f;
+    color: #fff;
+}
+
+.section-action-edit:hover {
+    background: #041d4e;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.section-action-back {
+    background: #fff;
+    border: 1px solid #dfe4eb;
+    color: #4b5563;
+}
+
+.section-action-back:hover {
+    border-color: #06245f;
+    color: #06245f;
+    background: #f8fafc;
+}
+
+/* ============================================================
+   COPY CODE
+   ============================================================ */
+
+.section-copy-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-copy-code {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    border: 1px solid #e1e6ed;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #06245f;
+    padding: 0 11px;
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    font-weight: 800;
+    outline: none;
+}
+
+.section-copy-btn {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #dfe4eb;
+    background: #fff;
+    color: #06245f;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.section-copy-btn:hover {
+    background: #06245f;
+    color: #fff;
+    border-color: #06245f;
+}
+
+/* ============================================================
+   TOOLTIP / TOAST
+   ============================================================ */
+
+.section-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 99999;
+    min-width: 220px;
+    max-width: 360px;
+    padding: 12px 15px;
+    border-radius: 9px;
+    background: #172033;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: all .25s ease;
+}
+
+.section-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+
+    .section-view-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-side-column {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        align-items: start;
+    }
+
+    .section-side-column > * {
+        margin-bottom: 0;
+    }
+
+    .section-actions-card {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .section-view-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .section-header-actions {
+        width: 100%;
+    }
+
+    .section-header-btn {
+        flex: 1;
+    }
+
+    .section-view-title h1 {
+        font-size: 23px;
+    }
+
+    .section-view-title p {
+        margin-left: 0;
+    }
+
+    .section-view-title h1 i {
+        width: 39px;
+        height: 39px;
+    }
+
+    .section-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-side-column {
+        grid-template-columns: 1fr;
+    }
+
+    .section-actions-card {
+        grid-column: auto;
+    }
+
+    .section-hero-content {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .section-hero-info h2 {
+        font-size: 21px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .section-view-card-body {
+        padding: 15px;
+    }
+
+    .section-view-card-header {
+        padding: 15px;
+    }
+
+    .section-hero {
+        padding: 20px;
+    }
+
+    .section-header-actions {
+        flex-direction: column;
+    }
+
+    .section-header-btn {
+        width: 100%;
+    }
+
+    .section-toast {
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
+        min-width: 0;
+    }
+}
+
+</style>
+
+
+<div class="section-view-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="section-view-header">
+
+        <div class="section-view-title">
+
+            <h1>
+                <i class="fas fa-layer-group"></i>
+                Section Details
+            </h1>
+
+            <p>
+                View complete information and academic assignment
+                for this section.
+            </p>
+
+        </div>
+
+
+        <div class="section-header-actions">
+
+            <a
+                href="{{ url_for('main.all_sections') }}"
+                class="section-header-btn"
+            >
+                <i class="fas fa-arrow-left"></i>
+                All Sections
+            </a>
+
+            <a
+                href="{{ url_for('main.edit_section', section_id=section.id) }}"
+                class="section-header-btn primary"
+            >
+                <i class="fas fa-edit"></i>
+                Edit Section
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN GRID
+         ======================================================== -->
+
+    <div class="section-view-grid">
+
+
+        <!-- ====================================================
+             MAIN COLUMN
+             ==================================================== -->
+
+        <main class="section-main-column">
+
+
+            <!-- ==================================================
+                 HERO
+                 ================================================== -->
+
+            <div class="section-hero">
+
+                <div class="section-hero-content">
+
+                    <div class="section-hero-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+
+
+                    <div class="section-hero-info">
+
+                        <h2>
+                            {{ section.name or 'Unnamed Section' }}
+                        </h2>
+
+                        <p>
+                            {% if section.class %}
+                                {{ section.class.name }}
+                            {% else %}
+                                Section Academic Assignment
+                            {% endif %}
+                        </p>
+
+
+                        <div class="section-hero-meta">
+
+                            <span class="section-code-tag">
+
+                                <i class="fas fa-barcode"></i>
+
+                                {{ section.code or 'NO-CODE' }}
+
+                            </span>
+
+
+                            {% set section_status =
+                                (section.status or 'active')|lower
+                            %}
+
+
+                            <span
+                                class="
+                                    section-status-tag
+                                    {% if section_status == 'inactive' %}
+                                        inactive
+                                    {% elif section_status == 'suspended' %}
+                                        suspended
+                                    {% endif %}
+                                "
+                            >
+
+                                {% if section_status == 'active' %}
+
+                                    <i class="fas fa-check-circle"></i>
+                                    Active
+
+                                {% elif section_status == 'inactive' %}
+
+                                    <i class="fas fa-pause-circle"></i>
+                                    Inactive
+
+                                {% elif section_status == 'suspended' %}
+
+                                    <i class="fas fa-ban"></i>
+                                    Suspended
+
+                                {% else %}
+
+                                    <i class="fas fa-circle"></i>
+                                    {{ section.status|capitalize }}
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 ACADEMIC ASSIGNMENT
+                 ================================================== -->
+
+            <div class="section-view-card">
+
+                <div class="section-view-card-header">
+
+                    <div>
+
+                        <h2>
+                            <i class="fas fa-graduation-cap"></i>
+                            Academic Assignment
+                        </h2>
+
+                        <p>
+                            Institution, branch, class and academic year.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-view-card-body">
+
+                    <div class="section-detail-grid">
+
+
+                        <!-- Institution -->
+
+                        <div class="section-detail-item">
+
+                            <div class="section-detail-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+
+                            <div class="section-detail-content">
+
+                                <span class="section-detail-label">
+                                    Institution
+                                </span>
+
+                                <span class="section-detail-value">
+
+                                    {% if section.institution %}
+                                        {{ section.institution.name }}
+                                    {% elif institution %}
+                                        {{ institution.name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Branch -->
+
+                        <div class="section-detail-item">
+
+                            <div class="section-detail-icon">
+                                <i class="fas fa-code-branch"></i>
+                            </div>
+
+                            <div class="section-detail-content">
+
+                                <span class="section-detail-label">
+                                    Branch
+                                </span>
+
+                                <span class="section-detail-value">
+
+                                    {% if section.branch %}
+                                        {{ section.branch.name }}
+                                    {% elif branch %}
+                                        {{ branch.name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Class -->
+
+                        <div class="section-detail-item">
+
+                            <div class="section-detail-icon">
+                                <i class="fas fa-chalkboard"></i>
+                            </div>
+
+                            <div class="section-detail-content">
+
+                                <span class="section-detail-label">
+                                    Class
+                                </span>
+
+                                <span class="section-detail-value">
+
+                                    {% if section.class %}
+                                        {{ section.class.name }}
+                                    {% elif class_obj %}
+                                        {{ class_obj.name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Academic Year -->
+
+                        <div class="section-detail-item">
+
+                            <div class="section-detail-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+
+                            <div class="section-detail-content">
+
+                                <span class="section-detail-label">
+                                    Academic Year
+                                </span>
+
+                                <span class="section-detail-value">
+
+                                    {% if section.academic_year %}
+
+                                        {% if section.academic_year.name is defined %}
+                                            {{ section.academic_year.name }}
+                                        {% elif section.academic_year.year is defined %}
+                                            {{ section.academic_year.year }}
+                                        {% else %}
+                                            {{ section.academic_year.id }}
+                                        {% endif %}
+
+                                    {% elif academic_year %}
+
+                                        {% if academic_year.name is defined %}
+                                            {{ academic_year.name }}
+                                        {% elif academic_year.year is defined %}
+                                            {{ academic_year.year }}
+                                        {% else %}
+                                            {{ academic_year.id }}
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 SECTION INFORMATION
+                 ================================================== -->
+
+            <div class="section-view-card">
+
+                <div class="section-view-card-header">
+
+                    <div>
+
+                        <h2>
+                            <i class="fas fa-info-circle"></i>
+                            Section Information
+                        </h2>
+
+                        <p>
+                            Core configuration and section details.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-view-card-body">
+
+                    <div class="section-detail-grid">
+
+
+                        <!-- Section Name -->
+
+                        <div class="section-detail-item">
+
+                            <div class="section-detail-icon">
+                                <i class="fas fa-tag"></i>
+                            </div>
+
+                            <div class="section-detail-content">
+
+                                <span class="section-detail-label">
+                                    Section Name
+                                </span>
+
+                                <span class="section-detail-value">
+                                    {{ section.name or '—' }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Code -->
+
+                        <div class="section-detail-item">
+
+                            <div class="section-detail-icon">
+                                <i class="fas fa-barcode"></i>
+                            </div>
+
+                            <div class="section-detail-content">
+
+                                <span class="section-detail-label">
+                                    Section Code
+                                </span>
+
+                                <span class="section-detail-value">
+                                    {{ section.code or '—' }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Capacity -->
+
+                        <div class="section-detail-item">
+
+                            <div class="section-detail-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+
+                            <div class="section-detail-content">
+
+                                <span class="section-detail-label">
+                                    Capacity
+                                </span>
+
+                                <span class="section-detail-value">
+
+                                    {% if section.capacity is not none %}
+                                        {{ section.capacity }} Students
+                                    {% else %}
+                                        Unlimited
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Status -->
+
+                        <div class="section-detail-item">
+
+                            <div class="section-detail-icon">
+                                <i class="fas fa-toggle-on"></i>
+                            </div>
+
+                            <div class="section-detail-content">
+
+                                <span class="section-detail-label">
+                                    Status
+                                </span>
+
+                                <span class="section-detail-value">
+
+                                    {% if section_status == 'active' %}
+                                        Active
+                                    {% elif section_status == 'inactive' %}
+                                        Inactive
+                                    {% elif section_status == 'suspended' %}
+                                        Suspended
+                                    {% else %}
+                                        {{ section.status|capitalize }}
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 DESCRIPTION
+                 ================================================== -->
+
+            {% if section.description %}
+
+            <div class="section-view-card">
+
+                <div class="section-view-card-header">
+
+                    <div>
+
+                        <h2>
+                            <i class="fas fa-align-left"></i>
+                            Description
+                        </h2>
+
+                        <p>
+                            Additional information about this section.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-view-card-body">
+
+                    <div class="section-description">
+                        {{ section.description }}
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- ==================================================
+                 SECTION STATISTICS
+                 ================================================== -->
+
+            <div class="section-view-card">
+
+                <div class="section-view-card-header">
+
+                    <div>
+
+                        <h2>
+                            <i class="fas fa-chart-bar"></i>
+                            Section Overview
+                        </h2>
+
+                        <p>
+                            Basic section capacity information.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-view-card-body">
+
+                    <div class="section-stat-grid">
+
+
+                        <!-- Capacity -->
+
+                        <div class="section-stat">
+
+                            <div class="section-stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+
+                            <div class="section-stat-label">
+                                Capacity
+                            </div>
+
+                            <div class="section-stat-value">
+
+                                {% if section.capacity is not none %}
+                                    {{ section.capacity }}
+                                {% else %}
+                                    ∞
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Status -->
+
+                        <div class="section-stat">
+
+                            <div class="section-stat-icon">
+                                <i class="fas fa-toggle-on"></i>
+                            </div>
+
+                            <div class="section-stat-label">
+                                Status
+                            </div>
+
+                            <div class="section-stat-value"
+                                 style="font-size:15px;">
+
+                                {% if section_status == 'active' %}
+                                    Active
+                                {% elif section_status == 'inactive' %}
+                                    Inactive
+                                {% elif section_status == 'suspended' %}
+                                    Suspended
+                                {% else %}
+                                    {{ section.status|capitalize }}
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Section ID -->
+
+                        <div class="section-stat">
+
+                            <div class="section-stat-icon">
+                                <i class="fas fa-hashtag"></i>
+                            </div>
+
+                            <div class="section-stat-label">
+                                Section ID
+                            </div>
+
+                            <div class="section-stat-value"
+                                 style="font-size:15px;">
+
+                                #{{ section.id }}
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </main>
+
+
+        <!-- ====================================================
+             SIDEBAR
+             ==================================================== -->
+
+        <aside class="section-side-column">
+
+
+            <!-- ==================================================
+                 SECTION PROFILE
+                 ================================================== -->
+
+            <div class="section-side-profile">
+
+                <div class="section-side-top">
+
+                    <div class="section-side-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+
+                    <h3>
+                        {{ section.name or 'Unnamed Section' }}
+                    </h3>
+
+                    <p>
+                        Section Profile
+                    </p>
+
+                </div>
+
+
+                <div class="section-side-body">
+
+
+                    <!-- Institution -->
+
+                    <div class="section-side-row">
+
+                        <span class="section-side-label">
+                            Institution
+                        </span>
+
+                        <span class="section-side-value">
+
+                            {% if section.institution %}
+                                {{ section.institution.name }}
+                            {% else %}
+                                —
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- Branch -->
+
+                    <div class="section-side-row">
+
+                        <span class="section-side-label">
+                            Branch
+                        </span>
+
+                        <span class="section-side-value">
+
+                            {% if section.branch %}
+                                {{ section.branch.name }}
+                            {% else %}
+                                —
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- Class -->
+
+                    <div class="section-side-row">
+
+                        <span class="section-side-label">
+                            Class
+                        </span>
+
+                        <span class="section-side-value">
+
+                            {% if section.class %}
+                                {{ section.class.name }}
+                            {% else %}
+                                —
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- Academic Year -->
+
+                    <div class="section-side-row">
+
+                        <span class="section-side-label">
+                            Academic Year
+                        </span>
+
+                        <span class="section-side-value">
+
+                            {% if section.academic_year %}
+
+                                {% if section.academic_year.name is defined %}
+                                    {{ section.academic_year.name }}
+                                {% elif section.academic_year.year is defined %}
+                                    {{ section.academic_year.year }}
+                                {% else %}
+                                    {{ section.academic_year.id }}
+                                {% endif %}
+
+                            {% else %}
+                                —
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- Code -->
+
+                    <div class="section-side-row">
+
+                        <span class="section-side-label">
+                            Code
+                        </span>
+
+                        <span class="section-side-value">
+                            {{ section.code or '—' }}
+                        </span>
+
+                    </div>
+
+
+                    <!-- Capacity -->
+
+                    <div class="section-side-row">
+
+                        <span class="section-side-label">
+                            Capacity
+                        </span>
+
+                        <span class="section-side-value">
+
+                            {% if section.capacity is not none %}
+                                {{ section.capacity }}
+                            {% else %}
+                                Unlimited
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 STATUS
+                 ================================================== -->
+
+            <div class="section-status-card">
+
+                <div class="section-status-header">
+
+                    <i class="fas fa-shield-alt"></i>
+
+                    Current Status
+
+                </div>
+
+
+                <div class="section-current-status">
+
+                    {% if section_status == 'active' %}
+
+                        <div class="section-current-status-icon active">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+
+                        <div>
+                            <strong>Active</strong>
+                            <span>
+                                This section is currently active.
+                            </span>
+                        </div>
+
+
+                    {% elif section_status == 'inactive' %}
+
+                        <div class="section-current-status-icon inactive">
+                            <i class="fas fa-pause-circle"></i>
+                        </div>
+
+                        <div>
+                            <strong>Inactive</strong>
+                            <span>
+                                This section is currently inactive.
+                            </span>
+                        </div>
+
+
+                    {% elif section_status == 'suspended' %}
+
+                        <div class="section-current-status-icon suspended">
+                            <i class="fas fa-ban"></i>
+                        </div>
+
+                        <div>
+                            <strong>Suspended</strong>
+                            <span>
+                                This section is currently suspended.
+                            </span>
+                        </div>
+
+
+                    {% else %}
+
+                        <div class="section-current-status-icon inactive">
+                            <i class="fas fa-circle"></i>
+                        </div>
+
+                        <div>
+                            <strong>
+                                {{ section.status|capitalize }}
+                            </strong>
+                            <span>
+                                Current section status.
+                            </span>
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 COPY CODE
+                 ================================================== -->
+
+            <div class="section-status-card">
+
+                <div class="section-status-header">
+
+                    <i class="fas fa-barcode"></i>
+
+                    Section Code
+
+                </div>
+
+
+                <div class="section-copy-row">
+
+                    <input
+                        type="text"
+                        id="sectionCode"
+                        class="section-copy-code"
+                        value="{{ section.code or '' }}"
+                        readonly
+                    >
+
+                    <button
+                        type="button"
+                        class="section-copy-btn"
+                        id="copySectionCode"
+                        title="Copy section code"
+                    >
+                        <i class="fas fa-copy"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 ACTIONS
+                 ================================================== -->
+
+            <div class="section-actions-card">
+
+                <a
+                    href="{{ url_for('main.edit_section', section_id=section.id) }}"
+                    class="section-action-btn section-action-edit"
+                >
+                    <i class="fas fa-edit"></i>
+                    Edit Section
+                </a>
+
+
+                <a
+                    href="{{ url_for('main.all_sections') }}"
+                    class="section-action-btn section-action-back"
+                >
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Sections
+                </a>
+
+            </div>
+
+
+        </aside>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     TOAST
+     ============================================================ -->
+
+<div
+    class="section-toast"
+    id="sectionToast"
+>
+    <i class="fas fa-check-circle"></i>
+    <span id="sectionToastText">
+        Section code copied.
+    </span>
+</div>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const copyButton =
+        document.getElementById("copySectionCode");
+
+    const codeInput =
+        document.getElementById("sectionCode");
+
+    const toast =
+        document.getElementById("sectionToast");
+
+    const toastText =
+        document.getElementById("sectionToastText");
+
+
+    /* ========================================================
+       SHOW TOAST
+       ======================================================== */
+
+    function showToast(message) {
+
+        toastText.textContent =
+            message;
+
+        toast.classList.add("show");
+
+        setTimeout(function () {
+
+            toast.classList.remove("show");
+
+        }, 2200);
+    }
+
+
+    /* ========================================================
+       COPY SECTION CODE
+       ======================================================== */
+
+    if (copyButton && codeInput) {
+
+        copyButton.addEventListener(
+            "click",
+            async function () {
+
+                const code =
+                    codeInput.value.trim();
+
+                if (!code) {
+
+                    showToast(
+                        "No section code available."
+                    );
+
+                    return;
+                }
+
+
+                try {
+
+                    await navigator.clipboard.writeText(
+                        code
+                    );
+
+                    showToast(
+                        "Section code copied successfully."
+                    );
+
+                } catch (error) {
+
+                    codeInput.select();
+
+                    document.execCommand(
+                        "copy"
+                    );
+
+                    showToast(
+                        "Section code copied."
+                    );
+                }
+
+            }
+        );
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

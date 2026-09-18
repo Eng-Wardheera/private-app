@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
+from decimal import Decimal, InvalidOperation
 from functools import wraps
 import os
 import re
 import secrets
+import unicodedata
 from uuid import uuid4
 import uuid
 import bcrypt
@@ -19,7 +21,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from app import ALLOWED_EXTENSIONS
-from app.model import AcademicYear, AssessmentPlan, Branch, Class, Institution, Program, Term, User, UserRole, db
+from app.model import AcademicYear, AssessmentPlan, Branch, Class, Institution, Program, Section, Subject, Teacher, Term, User, UserRole, db
 
 bp = Blueprint('main', __name__)
 
@@ -17880,7 +17882,7 @@ def edit_class(class_id):
         user=current_user
     )
 
-    
+
 # ============================================================
 # DELETE CLASS
 # ============================================================
@@ -17981,6 +17983,7071 @@ def delete_class(class_id):
                 )
             }
         ), 500
+
+
+
+# ============================================================
+# SECTION ROUTES
+# PostgreSQL / Neon
+# ============================================================
+
+# ============================================================
+# SECTION CODE GENERATOR
+# ============================================================
+
+def generate_section_code(name):
+    """
+    Generate automatic section code.
+
+    Examples:
+        A           -> A
+        B           -> B
+        Morning A   -> MORNING-A
+        Evening B   -> EVENING-B
+        Section 1   -> SECTION-1
+    """
+
+    if not name:
+        return ""
+
+    value = unicodedata.normalize(
+        "NFD",
+        name
+    ).encode(
+        "ascii",
+        "ignore"
+    ).decode("ascii")
+
+    value = value.upper()
+
+    value = value.replace(
+        "&",
+        " AND "
+    )
+
+    value = value.replace(
+        "+",
+        " PLUS "
+    )
+
+    value = re.sub(
+        r"[^A-Z0-9\s-]",
+        "",
+        value
+    )
+
+    value = re.sub(
+        r"\s+",
+        "-",
+        value.strip()
+    )
+
+    value = re.sub(
+        r"-+",
+        "-",
+        value
+    )
+
+    value = value.strip("-")
+
+    return value[:50]
+
+
+# ============================================================
+# USER INSTITUTION HELPER
+# ============================================================
+
+def _section_user_institution_id():
+    """
+    Use the existing application institution helper.
+
+    Superadmin/global users:
+        returns None
+
+    Institution-scoped users:
+        returns institution ID
+    """
+
+    return _get_user_institution_id()
+
+
+# ============================================================
+# COMMON SECTION TEMPLATE CONTEXT
+# ============================================================
+
+def _section_template_context(
+    institutions=None,
+    branches=None,
+    classes=None,
+    academic_years=None,
+):
+    """
+    Common template context.
+
+    IMPORTANT:
+        user=current_user is intentionally passed to every
+        Section template.
+    """
+
+    return {
+        "institutions": institutions or [],
+        "branches": branches or [],
+        "classes": classes or [],
+        "academic_years": academic_years or [],
+        "user": current_user,
+    }
+
+
+# ============================================================
+# GET SECTION
+# Institution scoped
+# ============================================================
+
+def _get_section_or_404(section_id):
+
+    institution_id = _section_user_institution_id()
+
+    query = Section.query
+
+    # --------------------------------------------------------
+    # Institution security
+    # --------------------------------------------------------
+
+    if institution_id is not None:
+
+        query = query.filter(
+            Section.institution_id == institution_id
+        )
+
+    return query.filter(
+        Section.id == section_id
+    ).first_or_404()
+
+
+# ============================================================
+# GET ALLOWED INSTITUTIONS
+# ============================================================
+
+def _section_allowed_institutions():
+
+    institution_id = _section_user_institution_id()
+
+    # --------------------------------------------------------
+    # Superadmin / global user
+    # --------------------------------------------------------
+
+    if institution_id is None:
+
+        return (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    # --------------------------------------------------------
+    # Institution-scoped user
+    # --------------------------------------------------------
+
+    return (
+        Institution.query
+        .filter(
+            Institution.id == institution_id
+        )
+        .order_by(
+            Institution.name.asc()
+        )
+        .all()
+    )
+
+
+# ============================================================
+# GET SECTION FORM DATA
+# ============================================================
+
+def _get_section_form_data():
+
+    user_institution_id = (
+        _section_user_institution_id()
+    )
+
+    # ========================================================
+    # INSTITUTIONS
+    # ========================================================
+
+    institutions = (
+        _section_allowed_institutions()
+    )
+
+    allowed_institution_ids = [
+        item.id
+        for item in institutions
+    ]
+
+    # ========================================================
+    # BRANCHES
+    # ========================================================
+
+    if allowed_institution_ids:
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.institution_id.in_(
+                    allowed_institution_ids
+                )
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        branches = []
+
+    # ========================================================
+    # CLASSES
+    # ========================================================
+
+    if allowed_institution_ids:
+
+        classes = (
+            Class.query
+            .filter(
+                Class.institution_id.in_(
+                    allowed_institution_ids
+                )
+            )
+            .order_by(
+                Class.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        classes = []
+
+    # ========================================================
+    # ACADEMIC YEARS
+    # ========================================================
+
+    academic_year_query = AcademicYear.query
+
+    if (
+        hasattr(
+            AcademicYear,
+            "institution_id"
+        )
+        and user_institution_id is not None
+    ):
+
+        academic_year_query = (
+            academic_year_query.filter(
+                AcademicYear.institution_id
+                == user_institution_id
+            )
+        )
+
+    academic_years = (
+        academic_year_query
+        .order_by(
+            AcademicYear.id.desc()
+        )
+        .all()
+    )
+
+    return (
+        institutions,
+        branches,
+        classes,
+        academic_years,
+    )
+
+
+# ============================================================
+# ALL SECTIONS
+# ============================================================
+
+@bp.route(
+    "/sections",
+    methods=["GET"]
+)
+@login_required
+def all_sections():
+
+    user_institution_id = (
+        _section_user_institution_id()
+    )
+
+    # ========================================================
+    # FILTERS
+    # ========================================================
+
+    search = request.args.get(
+        "search",
+        "",
+        type=str
+    ).strip()
+
+    status = request.args.get(
+        "status",
+        "",
+        type=str
+    ).strip().lower()
+
+    institution_id = request.args.get(
+        "institution_id",
+        "",
+        type=str
+    ).strip()
+
+    branch_id = request.args.get(
+        "branch_id",
+        "",
+        type=str
+    ).strip()
+
+    class_id = request.args.get(
+        "class_id",
+        "",
+        type=str
+    ).strip()
+
+    academic_year_id = request.args.get(
+        "academic_year_id",
+        "",
+        type=str
+    ).strip()
+
+    # ========================================================
+    # QUERY
+    # ========================================================
+
+    query = Section.query
+
+    # ========================================================
+    # INSTITUTION SECURITY
+    # ========================================================
+
+    if user_institution_id is not None:
+
+        query = query.filter(
+            Section.institution_id
+            == user_institution_id
+        )
+
+        # Prevent institution user from manipulating
+        # institution filter through URL.
+
+        institution_id = str(
+            user_institution_id
+        )
+
+    elif institution_id:
+
+        try:
+
+            institution_id_int = int(
+                institution_id
+            )
+
+            query = query.filter(
+                Section.institution_id
+                == institution_id_int
+            )
+
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            institution_id = ""
+
+    # ========================================================
+    # SEARCH
+    # ========================================================
+
+    if search:
+
+        pattern = f"%{search}%"
+
+        query = query.filter(
+            db.or_(
+                Section.name.ilike(pattern),
+                Section.code.ilike(pattern),
+                Section.description.ilike(pattern),
+            )
+        )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    if status in {
+        "active",
+        "inactive",
+        "suspended",
+    }:
+
+        query = query.filter(
+            Section.status == status
+        )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    if branch_id:
+
+        try:
+
+            query = query.filter(
+                Section.branch_id
+                == int(branch_id)
+            )
+
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            branch_id = ""
+
+    # ========================================================
+    # CLASS
+    # ========================================================
+
+    if class_id:
+
+        try:
+
+            query = query.filter(
+                Section.class_id
+                == int(class_id)
+            )
+
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            class_id = ""
+
+    # ========================================================
+    # ACADEMIC YEAR
+    # ========================================================
+
+    if academic_year_id:
+
+        try:
+
+            query = query.filter(
+                Section.academic_year_id
+                == int(academic_year_id)
+            )
+
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            academic_year_id = ""
+
+    # ========================================================
+    # ORDER
+    # ========================================================
+
+    query = query.order_by(
+        Section.created_at.desc(),
+        Section.id.desc()
+    )
+
+    # ========================================================
+    # PAGINATION
+    # ========================================================
+
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+    if page < 1:
+        page = 1
+
+    per_page = request.args.get(
+        "per_page",
+        20,
+        type=int
+    )
+
+    if per_page not in [
+        10,
+        20,
+        50,
+        100,
+    ]:
+
+        per_page = 20
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    sections = pagination.items
+
+    # ========================================================
+    # FORM / FILTER DATA
+    # ========================================================
+
+    (
+        institutions,
+        branches,
+        classes,
+        academic_years,
+    ) = _get_section_form_data()
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
+    return render_template(
+        "backend/pages/sections/all_sections.html",
+
+        sections=sections,
+
+        pagination=pagination,
+
+        institutions=institutions,
+
+        branches=branches,
+
+        classes=classes,
+
+        academic_years=academic_years,
+
+        search=search,
+
+        status=status,
+
+        institution_filter=institution_id,
+
+        branch_filter=branch_id,
+
+        class_filter=class_id,
+
+        academic_year_filter=academic_year_id,
+
+        per_page=per_page,
+
+        # IMPORTANT
+        user=current_user,
+    )
+
+
+# ============================================================
+# ADD SECTION
+# ============================================================
+
+# ============================================================
+# SECTION ROUTES
+# PostgreSQL / Neon
+# ============================================================
+
+# ============================================================
+# SECTION CODE GENERATOR
+# ============================================================
+
+# ============================================================
+# USER INSTITUTION HELPER
+# ============================================================
+
+def _get_user_institution_id():
+    """
+    Return institution ID for institution-scoped users.
+
+    Global users / superadmins:
+        None
+
+    Institution-scoped users:
+        their institution ID
+    """
+
+    role = getattr(current_user, "role", None)
+
+    # Global users
+    if role in [
+        "superadmin",
+        "super_admin",
+        "admin",
+        "system_admin",
+    ]:
+        return None
+
+    return getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+
+# ============================================================
+# ALLOWED INSTITUTIONS
+# ============================================================
+
+def _get_allowed_institutions():
+    """
+    Return institutions visible to current user.
+    """
+
+    institution_id = _get_user_institution_id()
+
+    query = Institution.query
+
+    if institution_id:
+        query = query.filter(
+            Institution.id == institution_id
+        )
+
+    return query.order_by(
+        Institution.name.asc()
+    ).all()
+
+
+# ============================================================
+# SECTION FORM DATA
+# ============================================================
+
+def _get_section_form_data():
+    """
+    Load all data required by add/edit section forms.
+    """
+
+    institution_id = _get_user_institution_id()
+
+    # --------------------------------------------------------
+    # Institutions
+    # --------------------------------------------------------
+
+    institution_query = Institution.query
+
+    if institution_id:
+        institution_query = institution_query.filter(
+            Institution.id == institution_id
+        )
+
+    institutions = institution_query.order_by(
+        Institution.name.asc()
+    ).all()
+
+    # --------------------------------------------------------
+    # Branches
+    # --------------------------------------------------------
+
+    branch_query = Branch.query
+
+    if institution_id:
+        branch_query = branch_query.filter(
+            Branch.institution_id == institution_id
+        )
+
+    branches = branch_query.order_by(
+        Branch.name.asc()
+    ).all()
+
+    # --------------------------------------------------------
+    # Classes
+    # --------------------------------------------------------
+
+    class_query = Class.query
+
+    if institution_id:
+        class_query = class_query.filter(
+            Class.institution_id == institution_id
+        )
+
+    classes = class_query.order_by(
+        Class.name.asc()
+    ).all()
+
+    # --------------------------------------------------------
+    # Academic Years
+    # --------------------------------------------------------
+
+    academic_year_query = AcademicYear.query
+
+    # Only apply institution filter when the model has
+    # institution_id.
+    if hasattr(AcademicYear, "institution_id"):
+        if institution_id:
+            academic_year_query = academic_year_query.filter(
+                AcademicYear.institution_id == institution_id
+            )
+
+    academic_years = academic_year_query.order_by(
+        AcademicYear.name.desc()
+    ).all()
+
+    return (
+        institutions,
+        branches,
+        classes,
+        academic_years,
+    )
+
+
+# ============================================================
+# SECTION TEMPLATE CONTEXT
+# ============================================================
+
+def _section_template_context(**kwargs):
+
+    (
+        institutions,
+        branches,
+        classes,
+        academic_years,
+    ) = _get_section_form_data()
+
+    context = {
+        "institutions": institutions,
+        "branches": branches,
+        "classes": classes,
+        "academic_years": academic_years,
+        "user": current_user,
+    }
+
+    context.update(kwargs)
+
+    return context
+
+
+# ============================================================
+# ADD SECTION
+# ============================================================
+
+@bp.route(
+    "/sections/add",
+    methods=["GET", "POST"]
+)
+@login_required
+def add_section():
+
+    # ========================================================
+    # GET FORM DATA
+    # ========================================================
+
+    (
+        institutions,
+        branches,
+        classes,
+        academic_years,
+    ) = _get_section_form_data()
+
+    # ========================================================
+    # POST
+    # ========================================================
+
+    if request.method == "POST":
+
+        # ----------------------------------------------------
+        # FORM VALUES
+        # ----------------------------------------------------
+
+        institution_id = request.form.get(
+            "institution_id",
+            type=int
+        )
+
+        branch_id = request.form.get(
+            "branch_id",
+            type=int
+        )
+
+        class_id = request.form.get(
+            "class_id",
+            type=int
+        )
+
+        academic_year_id = request.form.get(
+            "academic_year_id",
+            type=int
+        )
+
+        name = (
+            request.form.get("name", "")
+            .strip()
+        )
+
+        capacity_raw = (
+            request.form.get("capacity", "")
+            .strip()
+        )
+
+        description = (
+            request.form.get("description", "")
+            .strip()
+        )
+
+        status = (
+            request.form.get("status", "active")
+            .strip()
+            .lower()
+        )
+
+        # ----------------------------------------------------
+        # USER INSTITUTION SECURITY
+        # ----------------------------------------------------
+
+        user_institution_id = _get_user_institution_id()
+
+        if user_institution_id:
+
+            if institution_id != user_institution_id:
+
+                flash(
+                    "You are not allowed to use another institution.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/add_section.html",
+                    **_section_template_context(
+                        institution_id=user_institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    )
+                )
+
+        # ----------------------------------------------------
+        # REQUIRED FIELDS
+        # ----------------------------------------------------
+
+        if not institution_id:
+
+            flash(
+                "Please select an institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        if not branch_id:
+
+            flash(
+                "Please select a branch.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        if not class_id:
+
+            flash(
+                "Please select a class.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        if not academic_year_id:
+
+            flash(
+                "Please select an academic year.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        if not name:
+
+            flash(
+                "Section name is required.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ----------------------------------------------------
+        # NAME LENGTH
+        # ----------------------------------------------------
+
+        if len(name) > 150:
+
+            flash(
+                "Section name cannot exceed 150 characters.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ----------------------------------------------------
+        # STATUS VALIDATION
+        # ----------------------------------------------------
+
+        allowed_statuses = {
+            "active",
+            "inactive",
+            "suspended",
+        }
+
+        if status not in allowed_statuses:
+
+            flash(
+                "Invalid section status.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status="active",
+                )
+            )
+
+        # ----------------------------------------------------
+        # CAPACITY
+        # ----------------------------------------------------
+
+        capacity = None
+
+        if capacity_raw:
+
+            try:
+
+                capacity = int(capacity_raw)
+
+            except (TypeError, ValueError):
+
+                flash(
+                    "Capacity must be a valid whole number.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/add_section.html",
+                    **_section_template_context(
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    )
+                )
+
+            if capacity < 0:
+
+                flash(
+                    "Capacity cannot be negative.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/add_section.html",
+                    **_section_template_context(
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    )
+                )
+
+        # ====================================================
+        # INSTITUTION VALIDATION
+        # ====================================================
+
+        institution = Institution.query.filter(
+            Institution.id == institution_id
+        ).first()
+
+        if not institution:
+
+            flash(
+                "Selected institution was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ====================================================
+        # BRANCH VALIDATION
+        # ====================================================
+
+        branch = Branch.query.filter(
+            Branch.id == branch_id
+        ).first()
+
+        if not branch:
+
+            flash(
+                "Selected branch was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        if branch.institution_id != institution_id:
+
+            flash(
+                "Selected branch does not belong to the selected institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ====================================================
+        # CLASS VALIDATION
+        # ====================================================
+
+        class_obj = Class.query.filter(
+            Class.id == class_id
+        ).first()
+
+        if not class_obj:
+
+            flash(
+                "Selected class was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # Class institution
+        if class_obj.institution_id != institution_id:
+
+            flash(
+                "Selected class does not belong to the selected institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # Class branch
+        if class_obj.branch_id != branch_id:
+
+            flash(
+                "Selected class does not belong to the selected branch.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ====================================================
+        # ACADEMIC YEAR VALIDATION
+        # ====================================================
+
+        academic_year = AcademicYear.query.filter(
+            AcademicYear.id == academic_year_id
+        ).first()
+
+        if not academic_year:
+
+            flash(
+                "Selected academic year was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ----------------------------------------------------
+        # Academic year institution
+        # ----------------------------------------------------
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            if academic_year.institution_id != institution_id:
+
+                flash(
+                    "Selected academic year does not belong to the selected institution.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/add_section.html",
+                    **_section_template_context(
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    )
+                )
+
+        # ====================================================
+        # CLASS / ACADEMIC YEAR MATCH
+        # ====================================================
+
+        if hasattr(
+            Class,
+            "academic_year_id"
+        ):
+
+            if class_obj.academic_year_id != academic_year_id:
+
+                flash(
+                    "Selected class does not belong to the selected academic year.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/add_section.html",
+                    **_section_template_context(
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    )
+                )
+
+        # ====================================================
+        # AUTO GENERATE CODE
+        # ====================================================
+
+        code = generate_section_code(name)
+
+        if not code:
+
+            flash(
+                "Unable to generate section code from the section name.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ====================================================
+        # DUPLICATE CHECK
+        # ====================================================
+
+        duplicate_query = Section.query.filter(
+            Section.class_id == class_id,
+            Section.academic_year_id == academic_year_id,
+            func.lower(Section.name) == name.lower()
+        )
+
+        existing_section = duplicate_query.first()
+
+        if existing_section:
+
+            flash(
+                "A section with this name already exists for the selected class and academic year.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ====================================================
+        # DUPLICATE CODE CHECK
+        # ====================================================
+
+        existing_code = Section.query.filter(
+            Section.class_id == class_id,
+            Section.academic_year_id == academic_year_id,
+            func.upper(Section.code) == code.upper()
+        ).first()
+
+        if existing_code:
+
+            flash(
+                f"The generated section code '{code}' already exists for this class and academic year.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ====================================================
+        # CREATE SECTION
+        # ====================================================
+
+        section = Section(
+            institution_id=institution_id,
+            branch_id=branch_id,
+            class_id=class_id,
+            academic_year_id=academic_year_id,
+            name=name,
+            code=code,
+            capacity=capacity,
+            description=description or None,
+            status=status,
+        )
+
+        # ====================================================
+        # SAVE
+        # ====================================================
+
+        try:
+
+            db.session.add(section)
+
+            db.session.commit()
+
+        except Exception as exc:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Error creating section: %s",
+                exc
+            )
+
+            flash(
+                "An error occurred while creating the section. Please try again.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ====================================================
+        # SUCCESS
+        # ====================================================
+
+        flash(
+            f"Section '{section.name}' ({section.code}) was created successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.view_section",
+                section_id=section.id
+            )
+        )
+
+    # ========================================================
+    # GET
+    # ========================================================
+
+    default_institution_id = _get_user_institution_id()
+
+    # If user is scoped to one institution, preselect it.
+    if (
+        not default_institution_id
+        and len(institutions) == 1
+    ):
+        default_institution_id = institutions[0].id
+
+    return render_template(
+        "backend/pages/sections/add_section.html",
+        **_section_template_context(
+            institution_id=default_institution_id,
+            branch_id=None,
+            class_id=None,
+            academic_year_id=None,
+            name="",
+            capacity="",
+            description="",
+            status="active",
+        )
+    )
+
+
+
+
+# ============================================================
+# VIEW SECTION
+# ============================================================
+
+@bp.route(
+    "/sections/<int:section_id>",
+    methods=["GET"]
+)
+@login_required
+def view_section(section_id):
+
+    section = _get_section_or_404(
+        section_id
+    )
+
+    return render_template(
+        "backend/pages/sections/view_section.html",
+
+        section=section,
+
+        # IMPORTANT
+        user=current_user,
+    )
+
+
+# ============================================================
+# EDIT SECTION
+# ============================================================
+
+@bp.route(
+    "/sections/<int:section_id>/edit",
+    methods=["GET", "POST"]
+)
+@login_required
+def edit_section(section_id):
+
+    section = _get_section_or_404(
+        section_id
+    )
+
+    user_institution_id = (
+        _section_user_institution_id()
+    )
+
+    # ========================================================
+    # FORM DATA
+    # ========================================================
+
+    (
+        institutions,
+        branches,
+        classes,
+        academic_years,
+    ) = _get_section_form_data()
+
+    # ========================================================
+    # POST
+    # ========================================================
+
+    if request.method == "POST":
+
+        institution_id = request.form.get(
+            "institution_id",
+            type=int
+        )
+
+        branch_id = request.form.get(
+            "branch_id",
+            type=int
+        )
+
+        class_id = request.form.get(
+            "class_id",
+            type=int
+        )
+
+        academic_year_id = request.form.get(
+            "academic_year_id",
+            type=int
+        )
+
+        name = request.form.get(
+            "name",
+            "",
+            type=str
+        ).strip()
+
+        capacity_raw = request.form.get(
+            "capacity",
+            "",
+            type=str
+        ).strip()
+
+        description = request.form.get(
+            "description",
+            "",
+            type=str
+        ).strip()
+
+        status = request.form.get(
+            "status",
+            "active",
+            type=str
+        ).strip().lower()
+
+        # ====================================================
+        # INSTITUTION SECURITY
+        # ====================================================
+
+        if (
+            user_institution_id is not None
+            and institution_id
+            != user_institution_id
+        ):
+
+            flash(
+                "You are not allowed to move this section to another institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.view_section",
+                    section_id=section.id
+                )
+            )
+
+        # ====================================================
+        # REQUIRED
+        # ====================================================
+
+        if not institution_id:
+
+            flash(
+                "Institution is required.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        if not branch_id:
+
+            flash(
+                "Branch is required.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        if not class_id:
+
+            flash(
+                "Class is required.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        if not academic_year_id:
+
+            flash(
+                "Academic year is required.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        if not name:
+
+            flash(
+                "Section name is required.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # STATUS
+        # ====================================================
+
+        if status not in {
+            "active",
+            "inactive",
+            "suspended",
+        }:
+
+            flash(
+                "Invalid section status.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # CAPACITY
+        # ====================================================
+
+        capacity = None
+
+        if capacity_raw:
+
+            try:
+
+                capacity = int(
+                    capacity_raw
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                flash(
+                    "Capacity must be a valid number.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/edit_section.html",
+
+                    section=section,
+
+                    **_section_template_context(
+                        institutions,
+                        branches,
+                        classes,
+                        academic_years,
+                    ),
+
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+
+                    user=current_user,
+                )
+
+            if capacity < 0:
+
+                flash(
+                    "Capacity cannot be negative.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/edit_section.html",
+
+                    section=section,
+
+                    **_section_template_context(
+                        institutions,
+                        branches,
+                        classes,
+                        academic_years,
+                    ),
+
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+
+                    user=current_user,
+                )
+
+        # ====================================================
+        # INSTITUTION
+        # ====================================================
+
+        institution = (
+            Institution.query
+            .filter(
+                Institution.id
+                == institution_id
+            )
+            .first()
+        )
+
+        if not institution:
+
+            flash(
+                "Institution not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # BRANCH
+        # ====================================================
+
+        branch = (
+            Branch.query
+            .filter(
+                Branch.id == branch_id
+            )
+            .first()
+        )
+
+        if not branch:
+
+            flash(
+                "Branch not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # BRANCH → INSTITUTION
+        # ====================================================
+
+        if branch.institution_id != institution_id:
+
+            flash(
+                "Selected branch does not belong to the selected institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # CLASS
+        # ====================================================
+
+        class_obj = (
+            Class.query
+            .filter(
+                Class.id == class_id
+            )
+            .first()
+        )
+
+        if not class_obj:
+
+            flash(
+                "Class not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # CLASS → INSTITUTION
+        # ====================================================
+
+        if class_obj.institution_id != institution_id:
+
+            flash(
+                "Selected class does not belong to the selected institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # CLASS → BRANCH
+        # ====================================================
+
+        if class_obj.branch_id != branch_id:
+
+            flash(
+                "Selected class does not belong to the selected branch.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # ACADEMIC YEAR
+        # ====================================================
+
+        academic_year = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.id
+                == academic_year_id
+            )
+            .first()
+        )
+
+        if not academic_year:
+
+            flash(
+                "Academic year not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # ACADEMIC YEAR → INSTITUTION
+        # ====================================================
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            if (
+                academic_year.institution_id
+                != institution_id
+            ):
+
+                flash(
+                    "Selected academic year does not belong to the selected institution.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/edit_section.html",
+
+                    section=section,
+
+                    **_section_template_context(
+                        institutions,
+                        branches,
+                        classes,
+                        academic_years,
+                    ),
+
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+
+                    user=current_user,
+                )
+
+        # ====================================================
+        # CLASS → ACADEMIC YEAR
+        # ====================================================
+
+        if (
+            class_obj.academic_year_id
+            != academic_year_id
+        ):
+
+            flash(
+                "Selected class belongs to a different academic year.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # AUTO CODE
+        # ====================================================
+
+        code = generate_section_code(
+            name
+        )
+
+        if not code:
+
+            flash(
+                "Unable to generate section code.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # DUPLICATE NAME
+        # ====================================================
+
+        existing_name = (
+            Section.query
+            .filter(
+                Section.class_id
+                == class_id,
+
+                Section.academic_year_id
+                == academic_year_id,
+
+                db.func.lower(
+                    Section.name
+                )
+                == name.lower(),
+
+                Section.id != section.id,
+            )
+            .first()
+        )
+
+        if existing_name:
+
+            flash(
+                "Another section with this name already exists in this class and academic year.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # DUPLICATE CODE
+        # ====================================================
+
+        existing_code = (
+            Section.query
+            .filter(
+                Section.class_id
+                == class_id,
+
+                Section.academic_year_id
+                == academic_year_id,
+
+                db.func.lower(
+                    Section.code
+                )
+                == code.lower(),
+
+                Section.id != section.id,
+            )
+            .first()
+        )
+
+        if existing_code:
+
+            flash(
+                "Another section with this code already exists in this class and academic year.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # UPDATE
+        # ====================================================
+
+        section.institution_id = (
+            institution_id
+        )
+
+        section.branch_id = (
+            branch_id
+        )
+
+        section.class_id = (
+            class_id
+        )
+
+        section.academic_year_id = (
+            academic_year_id
+        )
+
+        section.name = name
+
+        section.code = code
+
+        section.capacity = capacity
+
+        section.description = (
+            description or None
+        )
+
+        section.status = status
+
+        # ====================================================
+        # COMMIT
+        # ====================================================
+
+        try:
+
+            db.session.commit()
+
+        except IntegrityError:
+
+            db.session.rollback()
+
+            flash(
+                "Unable to update section because of a duplicate or database constraint.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institutions,
+                    branches,
+                    classes,
+                    academic_years,
+                ),
+
+                institution_id=institution_id,
+                branch_id=branch_id,
+                class_id=class_id,
+                academic_year_id=academic_year_id,
+                name=name,
+                capacity=capacity_raw,
+                description=description,
+                status=status,
+
+                user=current_user,
+            )
+
+        # ====================================================
+        # SUCCESS
+        # ====================================================
+
+        flash(
+            f'Section "{section.name}" was updated successfully.',
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.view_section",
+                section_id=section.id
+            )
+        )
+
+    # ========================================================
+    # GET
+    # ========================================================
+
+    return render_template(
+        "backend/pages/sections/edit_section.html",
+
+        section=section,
+
+        **_section_template_context(
+            institutions,
+            branches,
+            classes,
+            academic_years,
+        ),
+
+        # IMPORTANT
+        user=current_user,
+    )
+
+
+# ============================================================
+# DELETE SECTION
+# ============================================================
+
+@bp.route(
+    "/sections/<int:section_id>/delete",
+    methods=["POST"]
+)
+@login_required
+def delete_section(section_id):
+
+    section = _get_section_or_404(
+        section_id
+    )
+
+    section_name = section.name
+
+    # ========================================================
+    # DELETE
+    # ========================================================
+
+    try:
+
+        db.session.delete(
+            section
+        )
+
+        db.session.commit()
+
+    except IntegrityError:
+
+        db.session.rollback()
+
+        flash(
+            (
+                f'Unable to delete section "{section_name}". '
+                "This section may already be connected to "
+                "other academic records. Please set it to "
+                "inactive instead."
+            ),
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "main.view_section",
+                section_id=section.id
+            )
+        )
+
+    # ========================================================
+    # SUCCESS
+    # ========================================================
+
+    flash(
+        f'Section "{section_name}" was deleted successfully.',
+        "success"
+    )
+
+    return redirect(
+        url_for(
+            "main.all_sections"
+        )
+    )
+
+
+
+# ============================================================
+# SUBJECT ROUTES
+# PostgreSQL / Neon
+# ============================================================
+
+
+# ============================================================
+# SUBJECT CONSTANTS
+# ============================================================
+
+SUBJECT_TYPES = [
+    "academic",
+    "practical",
+    "language",
+    "religious",
+    "vocational",
+    "elective",
+    "compulsory",
+    "skill",
+]
+
+SUBJECT_STATUSES = [
+    "active",
+    "inactive",
+    "suspended",
+]
+
+
+# ============================================================
+# USER / INSTITUTION HELPERS
+# ============================================================
+
+def _subject_is_global_user():
+    """
+    Returns True when the current user is allowed to
+    manage data across all institutions.
+    """
+
+    role = (
+        getattr(current_user, "role", None)
+        or ""
+    ).lower().strip()
+
+    return role in {
+        "superadmin",
+        "super_admin",
+        "admin",
+        "system_admin",
+    }
+
+
+def _subject_get_user_institution_id():
+    """
+    Returns the institution ID belonging to the current user.
+
+    Global users return None.
+    """
+
+    if _subject_is_global_user():
+        return None
+
+    institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    if institution_id is None:
+        return None
+
+    try:
+        return int(institution_id)
+    except (TypeError, ValueError):
+        return None
+
+
+def _subject_get_user_branch_id():
+    """
+    Returns the user's branch ID when available.
+    """
+
+    branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    if branch_id is None:
+        return None
+
+    try:
+        return int(branch_id)
+    except (TypeError, ValueError):
+        return None
+
+
+def _subject_can_manage_global():
+    """
+    Determines whether the user can see/manage subjects
+    belonging to all branches of their institution.
+
+    Institution admins generally can manage all branches.
+    Branch admins are restricted to their branch.
+    """
+
+    role = (
+        getattr(current_user, "role", None)
+        or ""
+    ).lower().strip()
+
+    return role in {
+        "superadmin",
+        "super_admin",
+        "admin",
+        "system_admin",
+        "institution_admin",
+    }
+
+
+# ============================================================
+# SUBJECT SCOPE
+# ============================================================
+
+def _subject_scope_query(query):
+    """
+    Apply institution/branch security to a Subject query.
+
+    Global users:
+        all institutions.
+
+    Institution admins:
+        only their institution.
+
+    Branch admins / teachers:
+        their institution + branch.
+
+    Other scoped users:
+        their institution and, when available, branch.
+    """
+
+    institution_id = _subject_get_user_institution_id()
+
+    # Global user
+    if institution_id is None:
+        return query
+
+    query = query.filter(
+        Subject.institution_id == institution_id
+    )
+
+    # Institution-level administrators can manage
+    # all branches inside their institution.
+    if _subject_can_manage_global():
+        return query
+
+    branch_id = _subject_get_user_branch_id()
+
+    if branch_id is not None:
+        query = query.filter(
+            Subject.branch_id == branch_id
+        )
+
+    return query
+
+
+# ============================================================
+# GET ALLOWED INSTITUTIONS
+# ============================================================
+
+def _subject_allowed_institutions():
+    """
+    Returns institutions available to current user.
+    """
+
+    institution_id = _subject_get_user_institution_id()
+
+    if institution_id is None:
+
+        return (
+            Institution.query
+            .order_by(Institution.name.asc())
+            .all()
+        )
+
+    institution = Institution.query.get(
+        institution_id
+    )
+
+    if institution:
+        return [institution]
+
+    return []
+
+
+# ============================================================
+# GET ALLOWED BRANCHES
+# ============================================================
+
+def _subject_allowed_branches(
+    institution_id=None
+):
+    """
+    Returns branches available to current user.
+
+    Optional institution_id filters branches further.
+    """
+
+    query = Branch.query
+
+    user_institution_id = (
+        _subject_get_user_institution_id()
+    )
+
+    if user_institution_id is not None:
+
+        query = query.filter(
+            Branch.institution_id ==
+            user_institution_id
+        )
+
+    elif institution_id is not None:
+
+        query = query.filter(
+            Branch.institution_id ==
+            institution_id
+        )
+
+
+    # Branch-scoped users
+    if not _subject_can_manage_global():
+
+        user_branch_id = (
+            _subject_get_user_branch_id()
+        )
+
+        if user_branch_id is not None:
+
+            query = query.filter(
+                Branch.id == user_branch_id
+            )
+
+
+    return (
+        query
+        .order_by(Branch.name.asc())
+        .all()
+    )
+
+
+# ============================================================
+# GET ALLOWED PROGRAMS
+# ============================================================
+
+def _subject_allowed_programs(
+    institution_id=None
+):
+    """
+    Returns programs available for subject assignment.
+    """
+
+    query = Program.query
+
+    user_institution_id = (
+        _subject_get_user_institution_id()
+    )
+
+    if user_institution_id is not None:
+
+        query = query.filter(
+            Program.institution_id ==
+            user_institution_id
+        )
+
+    elif institution_id is not None:
+
+        query = query.filter(
+            Program.institution_id ==
+            institution_id
+        )
+
+    return (
+        query
+        .order_by(Program.name.asc())
+        .all()
+    )
+
+
+# ============================================================
+# SUBJECT FORM CONTEXT
+# ============================================================
+
+def _subject_form_context(
+    institution_id=None
+):
+    """
+    Common context used by add/edit templates.
+    """
+
+    institutions = (
+        _subject_allowed_institutions()
+    )
+
+    branches = (
+        _subject_allowed_branches(
+            institution_id=institution_id
+        )
+    )
+
+    programs = (
+        _subject_allowed_programs(
+            institution_id=institution_id
+        )
+    )
+
+    return {
+        "institutions": institutions,
+        "branches": branches,
+        "programs": programs,
+        "subject_types": SUBJECT_TYPES,
+        "subject_statuses": SUBJECT_STATUSES,
+        "user": current_user,
+    }
+
+
+# ============================================================
+# PARSE DECIMAL
+# ============================================================
+
+def _subject_parse_decimal(
+    value,
+    field_name,
+    errors,
+    allow_empty=True
+):
+    """
+    Safely parse Decimal values.
+    """
+
+    value = (
+        str(value).strip()
+        if value is not None
+        else ""
+    )
+
+    if not value:
+
+        if allow_empty:
+            return None
+
+        errors[field_name] = (
+            f"{field_name.replace('_', ' ').title()} "
+            "is required."
+        )
+
+        return None
+
+    try:
+
+        return Decimal(value)
+
+    except (InvalidOperation, ValueError):
+
+        errors[field_name] = (
+            f"Invalid {field_name.replace('_', ' ')}."
+        )
+
+        return None
+
+
+# ============================================================
+# VALIDATE SUBJECT RELATIONSHIPS
+# ============================================================
+
+def _validate_subject_relationships(
+    institution_id,
+    branch_id,
+    program_id,
+    errors
+):
+    """
+    Validates institution, branch and program relationships.
+    """
+
+    institution = None
+    branch = None
+    program = None
+
+
+    # --------------------------------------------------------
+    # Institution
+    # --------------------------------------------------------
+
+    if not institution_id:
+
+        errors["institution_id"] = (
+            "Institution is required."
+        )
+
+    else:
+
+        try:
+            institution_id = int(institution_id)
+
+        except (TypeError, ValueError):
+
+            errors["institution_id"] = (
+                "Invalid institution."
+            )
+
+        else:
+
+            institution = Institution.query.get(
+                institution_id
+            )
+
+            if not institution:
+
+                errors["institution_id"] = (
+                    "Selected institution was not found."
+                )
+
+
+    # --------------------------------------------------------
+    # Security: institution
+    # --------------------------------------------------------
+
+    user_institution_id = (
+        _subject_get_user_institution_id()
+    )
+
+    if (
+        user_institution_id is not None
+        and institution_id is not None
+        and institution_id != user_institution_id
+    ):
+
+        errors["institution_id"] = (
+            "You are not allowed to use this institution."
+        )
+
+
+    # --------------------------------------------------------
+    # Branch
+    # --------------------------------------------------------
+
+    if branch_id:
+
+        try:
+            branch_id = int(branch_id)
+
+        except (TypeError, ValueError):
+
+            errors["branch_id"] = (
+                "Invalid branch."
+            )
+
+        else:
+
+            branch = Branch.query.get(
+                branch_id
+            )
+
+            if not branch:
+
+                errors["branch_id"] = (
+                    "Selected branch was not found."
+                )
+
+            elif (
+                institution_id is not None
+                and branch.institution_id != institution_id
+            ):
+
+                errors["branch_id"] = (
+                    "Selected branch does not belong "
+                    "to the selected institution."
+                )
+
+
+            # Branch security
+            user_branch_id = (
+                _subject_get_user_branch_id()
+            )
+
+            if (
+                not _subject_can_manage_global()
+                and user_branch_id is not None
+                and branch_id != user_branch_id
+            ):
+
+                errors["branch_id"] = (
+                    "You are not allowed to use this branch."
+                )
+
+
+    # --------------------------------------------------------
+    # Program
+    # --------------------------------------------------------
+
+    if program_id:
+
+        try:
+            program_id = int(program_id)
+
+        except (TypeError, ValueError):
+
+            errors["program_id"] = (
+                "Invalid program."
+            )
+
+        else:
+
+            program = Program.query.get(
+                program_id
+            )
+
+            if not program:
+
+                errors["program_id"] = (
+                    "Selected program was not found."
+                )
+
+            elif (
+                institution_id is not None
+                and program.institution_id != institution_id
+            ):
+
+                errors["program_id"] = (
+                    "Selected program does not belong "
+                    "to the selected institution."
+                )
+
+    return institution, branch, program
+
+
+# ============================================================
+# ALL SUBJECTS
+# ============================================================
+
+@bp.route("/subjects", methods=["GET"])
+@login_required
+def all_subjects():
+
+    # ========================================================
+    # FILTERS
+    # ========================================================
+
+    search = (
+        request.args.get("search", "")
+        .strip()
+    )
+
+    institution_filter = (
+        request.args.get(
+            "institution_id",
+            ""
+        ).strip()
+    )
+
+    branch_filter = (
+        request.args.get(
+            "branch_id",
+            ""
+        ).strip()
+    )
+
+    program_filter = (
+        request.args.get(
+            "program_id",
+            ""
+        ).strip()
+    )
+
+    subject_type_filter = (
+        request.args.get(
+            "subject_type",
+            ""
+        ).strip()
+    )
+
+    status_filter = (
+        request.args.get(
+            "status",
+            ""
+        ).strip()
+    )
+
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+    per_page = request.args.get(
+        "per_page",
+        25,
+        type=int
+    )
+
+    if page < 1:
+        page = 1
+
+    if per_page not in {
+        10,
+        25,
+        50,
+        100
+    }:
+        per_page = 25
+
+
+    # ========================================================
+    # BASE QUERY
+    # ========================================================
+
+    query = Subject.query
+
+
+    # ========================================================
+    # SECURITY SCOPE
+    # ========================================================
+
+    query = _subject_scope_query(
+        query
+    )
+
+
+    # ========================================================
+    # INSTITUTION FILTER
+    # ========================================================
+
+    if institution_filter:
+
+        try:
+            institution_id = int(
+                institution_filter
+            )
+
+            query = query.filter(
+                Subject.institution_id ==
+                institution_id
+            )
+
+        except (TypeError, ValueError):
+
+            pass
+
+
+    # ========================================================
+    # BRANCH FILTER
+    # ========================================================
+
+    if branch_filter:
+
+        try:
+            branch_id = int(
+                branch_filter
+            )
+
+            query = query.filter(
+                Subject.branch_id ==
+                branch_id
+            )
+
+        except (TypeError, ValueError):
+
+            pass
+
+
+    # ========================================================
+    # PROGRAM FILTER
+    # ========================================================
+
+    if program_filter:
+
+        try:
+            program_id = int(
+                program_filter
+            )
+
+            query = query.filter(
+                Subject.program_id ==
+                program_id
+            )
+
+        except (TypeError, ValueError):
+
+            pass
+
+
+    # ========================================================
+    # TYPE FILTER
+    # ========================================================
+
+    if subject_type_filter:
+
+        query = query.filter(
+            Subject.subject_type ==
+            subject_type_filter
+        )
+
+
+    # ========================================================
+    # STATUS FILTER
+    # ========================================================
+
+    if status_filter:
+
+        query = query.filter(
+            Subject.status ==
+            status_filter
+        )
+
+
+    # ========================================================
+    # SEARCH
+    # ========================================================
+
+    if search:
+
+        search_pattern = (
+            f"%{search}%"
+        )
+
+        query = query.filter(
+            or_(
+                Subject.name.ilike(
+                    search_pattern
+                ),
+                Subject.code.ilike(
+                    search_pattern
+                ),
+                Subject.short_name.ilike(
+                    search_pattern
+                )
+            )
+        )
+
+
+    # ========================================================
+    # ORDER
+    # ========================================================
+
+    query = query.order_by(
+        Subject.name.asc(),
+        Subject.id.desc()
+    )
+
+
+    # ========================================================
+    # PAGINATION
+    # ========================================================
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    subjects = pagination.items
+
+
+    # ========================================================
+    # FILTER DATA
+    # ========================================================
+
+    institutions = (
+        _subject_allowed_institutions()
+    )
+
+    branches = (
+        _subject_allowed_branches()
+    )
+
+    programs = (
+        _subject_allowed_programs()
+    )
+
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
+    return render_template(
+        "backend/pages/subjects/all_subjects.html",
+        subjects=subjects,
+        pagination=pagination,
+        institutions=institutions,
+        branches=branches,
+        programs=programs,
+        subject_types=SUBJECT_TYPES,
+        subject_statuses=SUBJECT_STATUSES,
+        search=search,
+        institution_filter=institution_filter,
+        branch_filter=branch_filter,
+        program_filter=program_filter,
+        subject_type_filter=subject_type_filter,
+        status_filter=status_filter,
+        user=current_user
+    )
+
+
+# ============================================================
+# ADD SUBJECT
+# ============================================================
+@bp.route("/subjects/add", methods=["GET", "POST"])
+@login_required
+def add_subject():
+
+    # ========================================================
+    # PERMISSION
+    # ========================================================
+
+    if not _subject_can_manage_global():
+
+        flash(
+            "You do not have permission to create subjects.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_subjects")
+        )
+
+    # ========================================================
+    # SELECTED INSTITUTION
+    # ========================================================
+
+    selected_institution_id = None
+
+    if request.method == "POST":
+
+        selected_institution_id = (
+            request.form.get("institution_id") or None
+        )
+
+    else:
+
+        if not _subject_is_global_user():
+
+            selected_institution_id = (
+                _subject_get_user_institution_id()
+            )
+
+    # ========================================================
+    # POST
+    # ========================================================
+
+    if request.method == "POST":
+
+        errors = {}
+
+        # ----------------------------------------------------
+        # FORM VALUES
+        # ----------------------------------------------------
+
+        institution_id = (
+            request.form.get("institution_id") or ""
+        ).strip()
+
+        branch_id = (
+            request.form.get("branch_id") or ""
+        ).strip()
+
+        program_id = (
+            request.form.get("program_id") or ""
+        ).strip()
+
+        name = (
+            request.form.get("name") or ""
+        ).strip()
+
+        code = (
+            request.form.get("code") or ""
+        ).strip()
+
+        short_name = (
+            request.form.get("short_name") or ""
+        ).strip()
+
+        subject_type = (
+            request.form.get("subject_type")
+            or "academic"
+        ).strip().lower()
+
+        weekly_hours_raw = (
+            request.form.get("weekly_hours") or ""
+        ).strip()
+
+        credit_hours_raw = (
+            request.form.get("credit_hours") or ""
+        ).strip()
+
+        max_marks_raw = (
+            request.form.get("max_marks")
+            or "100"
+        ).strip()
+
+        pass_marks_raw = (
+            request.form.get("pass_marks")
+            or "50"
+        ).strip()
+
+        description = (
+            request.form.get("description") or ""
+        ).strip()
+
+        status = (
+            request.form.get("status")
+            or "active"
+        ).strip().lower()
+
+        # ----------------------------------------------------
+        # OPTIONAL VALUES
+        # ----------------------------------------------------
+
+        branch_id = branch_id or None
+        program_id = program_id or None
+        short_name = short_name or None
+        description = description or None
+
+        selected_institution_id = institution_id or None
+
+        # ====================================================
+        # NAME
+        # ====================================================
+
+        if not name:
+
+            errors["name"] = (
+                "Subject name is required."
+            )
+
+        elif len(name) > 150:
+
+            errors["name"] = (
+                "Subject name cannot exceed 150 characters."
+            )
+
+        # ====================================================
+        # CODE
+        # ====================================================
+
+        if not code:
+
+            errors["code"] = (
+                "Subject code is required."
+            )
+
+        elif len(code) > 50:
+
+            errors["code"] = (
+                "Subject code cannot exceed 50 characters."
+            )
+
+        else:
+
+            code = code.upper()
+
+        # ====================================================
+        # SHORT NAME
+        # ====================================================
+
+        if short_name and len(short_name) > 100:
+
+            errors["short_name"] = (
+                "Short name cannot exceed 100 characters."
+            )
+
+        # ====================================================
+        # SUBJECT TYPE
+        # ====================================================
+
+        if subject_type not in SUBJECT_TYPES:
+
+            errors["subject_type"] = (
+                "Invalid subject type selected."
+            )
+
+        # ====================================================
+        # STATUS
+        # ====================================================
+
+        if status not in SUBJECT_STATUSES:
+
+            errors["status"] = (
+                "Invalid subject status selected."
+            )
+
+        # ====================================================
+        # DECIMAL VALUES
+        # ====================================================
+
+        weekly_hours = _subject_parse_decimal(
+            weekly_hours_raw,
+            "weekly_hours",
+            errors,
+            allow_empty=True
+        )
+
+        credit_hours = _subject_parse_decimal(
+            credit_hours_raw,
+            "credit_hours",
+            errors,
+            allow_empty=True
+        )
+
+        max_marks = _subject_parse_decimal(
+            max_marks_raw,
+            "max_marks",
+            errors,
+            allow_empty=False
+        )
+
+        pass_marks = _subject_parse_decimal(
+            pass_marks_raw,
+            "pass_marks",
+            errors,
+            allow_empty=False
+        )
+
+        # ====================================================
+        # HOURS VALIDATION
+        # ====================================================
+
+        if (
+            weekly_hours is not None
+            and weekly_hours < Decimal("0")
+        ):
+
+            errors["weekly_hours"] = (
+                "Weekly hours cannot be negative."
+            )
+
+        if (
+            credit_hours is not None
+            and credit_hours < Decimal("0")
+        ):
+
+            errors["credit_hours"] = (
+                "Credit hours cannot be negative."
+            )
+
+        # ====================================================
+        # MARKS VALIDATION
+        # ====================================================
+
+        if (
+            max_marks is not None
+            and max_marks <= Decimal("0")
+        ):
+
+            errors["max_marks"] = (
+                "Maximum marks must be greater than 0."
+            )
+
+        if (
+            pass_marks is not None
+            and pass_marks < Decimal("0")
+        ):
+
+            errors["pass_marks"] = (
+                "Pass marks cannot be negative."
+            )
+
+        if (
+            max_marks is not None
+            and pass_marks is not None
+            and pass_marks > max_marks
+        ):
+
+            errors["pass_marks"] = (
+                "Pass marks cannot be greater than "
+                "maximum marks."
+            )
+
+        # ====================================================
+        # RELATIONSHIPS
+        # ====================================================
+
+        institution = None
+        branch = None
+        program = None
+
+        (
+            institution,
+            branch,
+            program
+        ) = _validate_subject_relationships(
+            institution_id,
+            branch_id,
+            program_id,
+            errors
+        )
+
+        # ====================================================
+        # DUPLICATE NAME
+        # ====================================================
+
+        if (
+            institution_id
+            and name
+            and not errors.get("institution_id")
+        ):
+
+            query = Subject.query.filter(
+                Subject.institution_id == institution_id
+            )
+
+            if branch_id:
+
+                query = query.filter(
+                    Subject.branch_id == branch_id
+                )
+
+            else:
+
+                query = query.filter(
+                    Subject.branch_id.is_(None)
+                )
+
+            query = query.filter(
+                db.func.lower(Subject.name)
+                == name.lower()
+            )
+
+            if query.first():
+
+                errors["name"] = (
+                    "A subject with this name already "
+                    "exists for the selected institution "
+                    "and branch."
+                )
+
+        # ====================================================
+        # DUPLICATE CODE
+        # ====================================================
+
+        if (
+            institution_id
+            and code
+            and not errors.get("institution_id")
+        ):
+
+            query = Subject.query.filter(
+                Subject.institution_id == institution_id
+            )
+
+            if branch_id:
+
+                query = query.filter(
+                    Subject.branch_id == branch_id
+                )
+
+            else:
+
+                query = query.filter(
+                    Subject.branch_id.is_(None)
+                )
+
+            query = query.filter(
+                db.func.upper(Subject.code)
+                == code.upper()
+            )
+
+            if query.first():
+
+                errors["code"] = (
+                    "A subject with this code already "
+                    "exists for the selected institution "
+                    "and branch."
+                )
+
+        # ====================================================
+        # CREATE
+        # ====================================================
+
+        if not errors:
+
+            try:
+
+                subject = Subject(
+                    institution_id=int(
+                        institution_id
+                    ),
+
+                    branch_id=(
+                        int(branch_id)
+                        if branch_id
+                        else None
+                    ),
+
+                    program_id=(
+                        int(program_id)
+                        if program_id
+                        else None
+                    ),
+
+                    name=name,
+
+                    code=code,
+
+                    short_name=short_name,
+
+                    subject_type=subject_type,
+
+                    weekly_hours=weekly_hours,
+
+                    credit_hours=credit_hours,
+
+                    max_marks=max_marks,
+
+                    pass_marks=pass_marks,
+
+                    description=description,
+
+                    status=status,
+                )
+
+                db.session.add(subject)
+
+                db.session.commit()
+
+                flash(
+                    f'Subject "{subject.name}" '
+                    f'was created successfully.',
+                    "success"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.view_subject",
+                        subject_id=subject.id
+                    )
+                )
+
+            except IntegrityError as exc:
+
+                db.session.rollback()
+
+                current_app.logger.exception(
+                    "Subject integrity error"
+                )
+
+                error_text = str(
+                    getattr(exc, "orig", exc)
+                ).lower()
+
+                if "code" in error_text:
+
+                    flash(
+                        "A subject with this code already "
+                        "exists for the selected institution "
+                        "and branch.",
+                        "danger"
+                    )
+
+                elif "name" in error_text:
+
+                    flash(
+                        "A subject with this name already "
+                        "exists for the selected institution "
+                        "and branch.",
+                        "danger"
+                    )
+
+                else:
+
+                    flash(
+                        "Unable to create the subject because "
+                        "of a database constraint.",
+                        "danger"
+                    )
+
+            except Exception:
+
+                db.session.rollback()
+
+                current_app.logger.exception(
+                    "Unexpected error while creating subject"
+                )
+
+                flash(
+                    "An unexpected error occurred while "
+                    "creating the subject.",
+                    "danger"
+                )
+
+        # ====================================================
+        # VALIDATION ERRORS
+        # ====================================================
+
+        if errors:
+
+            for message in errors.values():
+
+                flash(
+                    message,
+                    "danger"
+                )
+
+    # ========================================================
+    # FORM CONTEXT
+    # ========================================================
+
+    context = _subject_form_context(
+        selected_institution_id
+    )
+
+    # ========================================================
+    # IMPORTANT:
+    # DO NOT PASS user=current_user HERE.
+    #
+    # _subject_form_context() ALREADY CONTAINS user.
+    # ========================================================
+
+    return render_template(
+        "backend/pages/subjects/add_subject.html",
+        **context
+    )
+
+# ============================================================
+# VIEW SUBJECT
+# ============================================================
+
+@bp.route(
+    "/subjects/<int:subject_id>",
+    methods=["GET"]
+)
+@login_required
+def view_subject(subject_id):
+
+    # ========================================================
+    # GET SUBJECT
+    # ========================================================
+
+    query = Subject.query.filter(
+        Subject.id == subject_id
+    )
+
+    query = _subject_scope_query(
+        query
+    )
+
+    subject = query.first()
+
+
+    # ========================================================
+    # NOT FOUND
+    # ========================================================
+
+    if not subject:
+
+        flash(
+            "Subject not found or you do not have permission to view it.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("main.all_subjects")
+        )
+
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
+    return render_template(
+        "backend/pages/subjects/view_subject.html",
+        subject=subject,
+        user=current_user
+    )
+
+
+# ============================================================
+# EDIT SUBJECT
+# ============================================================
+@bp.route("/subjects/<int:subject_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_subject(subject_id):
+
+    # ============================================================
+    # GET SUBJECT
+    # ============================================================
+
+    subject = Subject.query.get_or_404(subject_id)
+
+    # ============================================================
+    # PERMISSION
+    # ============================================================
+
+    if not _subject_can_manage_global():
+        flash(
+            "You do not have permission to edit subjects.",
+            "danger"
+        )
+        return redirect(
+            url_for("main.all_subjects")
+        )
+
+    # ============================================================
+    # SCOPE SECURITY
+    # ============================================================
+
+    user_institution_id = (
+        _subject_get_user_institution_id()
+    )
+
+    user_branch_id = (
+        _subject_get_user_branch_id()
+    )
+
+    is_global_user = _subject_is_global_user()
+
+    # ------------------------------------------------------------
+    # Institution scope
+    # ------------------------------------------------------------
+
+    if (
+        user_institution_id is not None
+        and subject.institution_id != user_institution_id
+    ):
+        flash(
+            "You are not authorized to edit this subject.",
+            "danger"
+        )
+        return redirect(
+            url_for("main.all_subjects")
+        )
+
+    # ------------------------------------------------------------
+    # Branch scope
+    # ------------------------------------------------------------
+
+    if (
+        not is_global_user
+        and user_branch_id is not None
+        and subject.branch_id is not None
+        and subject.branch_id != user_branch_id
+    ):
+        flash(
+            "You are not authorized to edit this subject.",
+            "danger"
+        )
+        return redirect(
+            url_for("main.all_subjects")
+        )
+
+    # ============================================================
+    # POST
+    # ============================================================
+
+    if request.method == "POST":
+
+        errors = {}
+
+        # ========================================================
+        # INSTITUTION
+        # ========================================================
+
+        institution_raw = (
+            request.form.get("institution_id") or ""
+        ).strip()
+
+        institution_id = None
+
+        if not institution_raw:
+            errors["institution_id"] = (
+                "Institution is required."
+            )
+        else:
+            try:
+                institution_id = int(
+                    institution_raw
+                )
+
+                if institution_id <= 0:
+                    raise ValueError
+
+            except (TypeError, ValueError):
+                errors["institution_id"] = (
+                    "Invalid institution."
+                )
+
+        # ========================================================
+        # BRANCH
+        # ========================================================
+
+        branch_raw = (
+            request.form.get("branch_id") or ""
+        ).strip()
+
+        branch_id = None
+
+        if branch_raw:
+            try:
+                branch_id = int(branch_raw)
+
+                if branch_id <= 0:
+                    raise ValueError
+
+            except (TypeError, ValueError):
+                errors["branch_id"] = (
+                    "Invalid branch."
+                )
+
+        # ========================================================
+        # PROGRAM
+        # ========================================================
+
+        program_raw = (
+            request.form.get("program_id") or ""
+        ).strip()
+
+        program_id = None
+
+        if program_raw:
+            try:
+                program_id = int(program_raw)
+
+                if program_id <= 0:
+                    raise ValueError
+
+            except (TypeError, ValueError):
+                errors["program_id"] = (
+                    "Invalid program."
+                )
+
+        # ========================================================
+        # SUBJECT NAME
+        # ========================================================
+
+        name = (
+            request.form.get("name") or ""
+        ).strip()
+
+        if not name:
+            errors["name"] = (
+                "Subject name is required."
+            )
+
+        elif len(name) > 150:
+            errors["name"] = (
+                "Subject name cannot exceed 150 characters."
+            )
+
+        # ========================================================
+        # IMPORTANT:
+        # CODE IS NOT TAKEN FROM USER
+        # KEEP EXISTING DATABASE CODE
+        # ========================================================
+
+        code = (
+            subject.code or ""
+        ).strip().upper()
+
+        if not code:
+            errors["code"] = (
+                "This subject does not have a valid subject code."
+            )
+
+        # ========================================================
+        # SHORT NAME
+        # ========================================================
+
+        short_name = (
+            request.form.get("short_name") or ""
+        ).strip()
+
+        if short_name:
+            if len(short_name) > 100:
+                errors["short_name"] = (
+                    "Short name cannot exceed 100 characters."
+                )
+
+        else:
+            short_name = None
+
+        # ========================================================
+        # SUBJECT TYPE
+        # ========================================================
+
+        subject_type = (
+            request.form.get("subject_type")
+            or "academic"
+        ).strip().lower()
+
+        if subject_type not in SUBJECT_TYPES:
+            errors["subject_type"] = (
+                "Invalid subject type."
+            )
+
+        # ========================================================
+        # STATUS
+        # ========================================================
+
+        status = (
+            request.form.get("status")
+            or "active"
+        ).strip().lower()
+
+        if status not in SUBJECT_STATUSES:
+            errors["status"] = (
+                "Invalid subject status."
+            )
+
+        # ========================================================
+        # WEEKLY HOURS
+        # ========================================================
+
+        weekly_hours = _subject_parse_decimal(
+            request.form.get("weekly_hours"),
+            "weekly_hours",
+            errors,
+            allow_empty=True
+        )
+
+        if (
+            weekly_hours is not None
+            and weekly_hours < Decimal("0")
+        ):
+            errors["weekly_hours"] = (
+                "Weekly hours cannot be negative."
+            )
+
+        # ========================================================
+        # CREDIT HOURS
+        # ========================================================
+
+        credit_hours = _subject_parse_decimal(
+            request.form.get("credit_hours"),
+            "credit_hours",
+            errors,
+            allow_empty=True
+        )
+
+        if (
+            credit_hours is not None
+            and credit_hours < Decimal("0")
+        ):
+            errors["credit_hours"] = (
+                "Credit hours cannot be negative."
+            )
+
+        # ========================================================
+        # MAX MARKS
+        # ========================================================
+
+        max_marks = _subject_parse_decimal(
+            request.form.get("max_marks"),
+            "max_marks",
+            errors,
+            allow_empty=False
+        )
+
+        if (
+            max_marks is not None
+            and max_marks <= Decimal("0")
+        ):
+            errors["max_marks"] = (
+                "Maximum marks must be greater than 0."
+            )
+
+        # ========================================================
+        # PASS MARKS
+        # ========================================================
+
+        pass_marks = _subject_parse_decimal(
+            request.form.get("pass_marks"),
+            "pass_marks",
+            errors,
+            allow_empty=False
+        )
+
+        if (
+            pass_marks is not None
+            and pass_marks < Decimal("0")
+        ):
+            errors["pass_marks"] = (
+                "Pass marks cannot be negative."
+            )
+
+        # ========================================================
+        # PASS <= MAX
+        # ========================================================
+
+        if (
+            max_marks is not None
+            and pass_marks is not None
+            and pass_marks > max_marks
+        ):
+            errors["pass_marks"] = (
+                "Pass marks cannot be greater than maximum marks."
+            )
+
+        # ========================================================
+        # DESCRIPTION
+        # ========================================================
+
+        description = (
+            request.form.get("description") or ""
+        ).strip()
+
+        if not description:
+            description = None
+
+        # ========================================================
+        # RELATIONSHIP VALIDATION
+        # ========================================================
+
+        if institution_id is not None:
+
+            relationship_errors = (
+                _validate_subject_relationships(
+                    institution_id,
+                    branch_id,
+                    program_id,
+                    errors
+                )
+            )
+
+        # ========================================================
+        # USER SCOPE VALIDATION
+        # ========================================================
+
+        if institution_id is not None:
+
+            if (
+                user_institution_id is not None
+                and institution_id != user_institution_id
+            ):
+                errors["institution_id"] = (
+                    "You cannot move this subject to another institution."
+                )
+
+        if (
+            not is_global_user
+            and user_branch_id is not None
+            and branch_id is not None
+            and branch_id != user_branch_id
+        ):
+            errors["branch_id"] = (
+                "You cannot move this subject to another branch."
+            )
+
+        # ========================================================
+        # DUPLICATE NAME
+        # ========================================================
+
+        if (
+            institution_id is not None
+            and name
+        ):
+
+            duplicate_name_query = Subject.query.filter(
+                Subject.id != subject.id,
+                Subject.institution_id == institution_id,
+                db.func.lower(
+                    Subject.name
+                ) == name.lower()
+            )
+
+            if branch_id is not None:
+
+                duplicate_name_query = (
+                    duplicate_name_query.filter(
+                        Subject.branch_id == branch_id
+                    )
+                )
+
+            else:
+
+                duplicate_name_query = (
+                    duplicate_name_query.filter(
+                        Subject.branch_id.is_(None)
+                    )
+                )
+
+            duplicate_name = (
+                duplicate_name_query.first()
+            )
+
+            if duplicate_name:
+                errors["name"] = (
+                    "Another subject with this name already exists "
+                    "in the selected institution and branch."
+                )
+
+        # ========================================================
+        # DUPLICATE CODE
+        #
+        # Existing code is preserved, but relationship scope
+        # may change. Therefore check code in new scope.
+        # ========================================================
+
+        if (
+            institution_id is not None
+            and code
+        ):
+
+            duplicate_code_query = Subject.query.filter(
+                Subject.id != subject.id,
+                Subject.institution_id == institution_id,
+                db.func.upper(
+                    Subject.code
+                ) == code.upper()
+            )
+
+            if branch_id is not None:
+
+                duplicate_code_query = (
+                    duplicate_code_query.filter(
+                        Subject.branch_id == branch_id
+                    )
+                )
+
+            else:
+
+                duplicate_code_query = (
+                    duplicate_code_query.filter(
+                        Subject.branch_id.is_(None)
+                    )
+                )
+
+            duplicate_code = (
+                duplicate_code_query.first()
+            )
+
+            if duplicate_code:
+                errors["code"] = (
+                    "The existing subject code is already used "
+                    "in the selected institution and branch."
+                )
+
+        # ========================================================
+        # VALIDATION FAILED
+        # ========================================================
+
+        if errors:
+
+            for message in errors.values():
+                flash(message, "danger")
+
+            context = _subject_form_context(
+                institution_id
+                if institution_id is not None
+                else subject.institution_id
+            )
+
+            return render_template(
+                "backend/pages/subjects/edit_subject.html",
+                **context,
+                subject=subject
+            )
+
+        # ========================================================
+        # UPDATE SUBJECT
+        # ========================================================
+
+        try:
+
+            # ----------------------------------------------------
+            # IMPORTANT:
+            # DO NOT CHANGE subject.code
+            # ----------------------------------------------------
+
+            subject.institution_id = (
+                institution_id
+            )
+
+            subject.branch_id = (
+                branch_id
+            )
+
+            subject.program_id = (
+                program_id
+            )
+
+            subject.name = (
+                name
+            )
+
+            subject.short_name = (
+                short_name
+            )
+
+            subject.subject_type = (
+                subject_type
+            )
+
+            subject.weekly_hours = (
+                weekly_hours
+            )
+
+            subject.credit_hours = (
+                credit_hours
+            )
+
+            subject.max_marks = (
+                max_marks
+            )
+
+            subject.pass_marks = (
+                pass_marks
+            )
+
+            subject.description = (
+                description
+            )
+
+            subject.status = (
+                status
+            )
+
+            # Explicit update timestamp
+            subject.updated_at = datetime.utcnow()
+
+            db.session.commit()
+
+            flash(
+                f'Subject "{subject.name}" updated successfully.',
+                "success"
+            )
+
+            return redirect(
+                url_for(
+                    "main.view_subject",
+                    subject_id=subject.id
+                )
+            )
+
+        # ========================================================
+        # DATABASE INTEGRITY ERROR
+        # ========================================================
+
+        except IntegrityError as exc:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "IntegrityError while editing subject ID %s",
+                subject.id
+            )
+
+            flash(
+                "Unable to update the subject because of a "
+                "database constraint conflict. Please check "
+                "the institution, branch, program, name, and code.",
+                "danger"
+            )
+
+        # ========================================================
+        # GENERAL ERROR
+        # ========================================================
+
+        except Exception as exc:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Unexpected error while editing subject ID %s: %s",
+                subject.id,
+                exc
+            )
+
+            flash(
+                "An unexpected error occurred while updating the subject.",
+                "danger"
+            )
+
+    # ============================================================
+    # GET / FAILED POST
+    # ============================================================
+
+    context = _subject_form_context(
+        subject.institution_id
+    )
+
+    return render_template(
+        "backend/pages/subjects/edit_subject.html",
+        **context,
+        subject=subject
+    )
+
+
+# ============================================================
+# DELETE SUBJECT
+# ============================================================
+
+@bp.route(
+    "/subjects/<int:subject_id>/delete",
+    methods=["POST"]
+)
+@login_required
+def delete_subject(subject_id):
+
+    # ========================================================
+    # GET SUBJECT WITH SECURITY SCOPE
+    # ========================================================
+
+    query = Subject.query.filter(
+        Subject.id == subject_id
+    )
+
+    query = _subject_scope_query(
+        query
+    )
+
+    subject = query.first()
+
+
+    # ========================================================
+    # NOT FOUND
+    # ========================================================
+
+    if not subject:
+
+        flash(
+            "Subject not found or you do not have permission to delete it.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("main.all_subjects")
+        )
+
+
+    subject_name = (
+        subject.name
+    )
+
+
+    # ========================================================
+    # DELETE
+    # ========================================================
+
+    try:
+
+        db.session.delete(
+            subject
+        )
+
+        db.session.commit()
+
+        flash(
+            f'Subject "{subject_name}" was deleted successfully.',
+            "success"
+        )
+
+
+    except IntegrityError:
+
+        db.session.rollback()
+
+        flash(
+            "This subject cannot be deleted because it is "
+            "currently referenced by other academic records.",
+            "danger"
+        )
+
+
+    except Exception:
+
+        db.session.rollback()
+
+        flash(
+            "An unexpected error occurred while deleting the subject.",
+            "danger"
+        )
+
+
+    return redirect(
+        url_for(
+            "main.all_subjects"
+        )
+    )
+
+
+# ============================================================
+# TEACHER ROUTES
+# PostgreSQL / Neon
+# ============================================================
+
+# ============================================================
+# TEACHER CONSTANTS
+# ============================================================
+
+TEACHER_GENDERS = [
+    "male",
+    "female",
+    "other",
+]
+
+TEACHER_STATUSES = [
+    "active",
+    "inactive",
+    "suspended",
+    "resigned",
+]
+
+
+# ============================================================
+# TEACHER ACCESS HELPERS
+# ============================================================
+
+def _teacher_is_global_user():
+    """
+    Global users can manage teachers across institutions.
+    """
+
+    return (
+        getattr(current_user, "role", None)
+        in {
+            "superadmin",
+            "super_admin",
+            "admin",
+            "system_admin",
+        }
+    )
+
+
+def _teacher_get_user_institution_id():
+    """
+    Return current user's institution ID.
+
+    Global users:
+        None
+
+    Institution-scoped users:
+        institution_id
+    """
+
+    if _teacher_is_global_user():
+        return None
+
+    institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    if institution_id:
+        try:
+            return int(institution_id)
+        except (TypeError, ValueError):
+            return None
+
+    return None
+
+
+def _teacher_get_user_branch_id():
+    """
+    Return current user's branch ID.
+    """
+
+    branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    if branch_id:
+        try:
+            return int(branch_id)
+        except (TypeError, ValueError):
+            return None
+
+    return None
+
+
+def _teacher_can_manage():
+    """
+    Roles allowed to manage teachers.
+    """
+
+    return (
+        getattr(current_user, "role", None)
+        in {
+            "superadmin",
+            "super_admin",
+            "admin",
+            "system_admin",
+            "institution_admin",
+            "branch_admin",
+        }
+    )
+
+
+def _teacher_scope_query(query):
+    """
+    Apply institution / branch security.
+    """
+
+    if _teacher_is_global_user():
+        return query
+
+    institution_id = _teacher_get_user_institution_id()
+
+    if institution_id is None:
+        return query.filter(
+            db.literal(False)
+        )
+
+    query = query.filter(
+        Teacher.institution_id == institution_id
+    )
+
+    # Branch admins are restricted to their branch.
+    if getattr(current_user, "role", None) == "branch_admin":
+
+        branch_id = _teacher_get_user_branch_id()
+
+        if branch_id is None:
+            return query.filter(
+                db.literal(False)
+            )
+
+        query = query.filter(
+            Teacher.branch_id == branch_id
+        )
+
+    return query
+
+
+# ============================================================
+# ALLOWED INSTITUTIONS
+# ============================================================
+
+def _teacher_allowed_institutions():
+
+    if _teacher_is_global_user():
+
+        return Institution.query.order_by(
+            Institution.name.asc()
+        ).all()
+
+    institution_id = _teacher_get_user_institution_id()
+
+    if institution_id is None:
+        return []
+
+    institution = Institution.query.filter(
+        Institution.id == institution_id
+    ).first()
+
+    return [institution] if institution else []
+
+
+# ============================================================
+# ALLOWED BRANCHES
+# ============================================================
+
+def _teacher_allowed_branches(institution_id=None):
+
+    query = Branch.query
+
+    if institution_id is not None:
+
+        query = query.filter(
+            Branch.institution_id == institution_id
+        )
+
+    if not _teacher_is_global_user():
+
+        user_institution_id = (
+            _teacher_get_user_institution_id()
+        )
+
+        if user_institution_id is None:
+            return []
+
+        query = query.filter(
+            Branch.institution_id == user_institution_id
+        )
+
+        if getattr(current_user, "role", None) == "branch_admin":
+
+            user_branch_id = (
+                _teacher_get_user_branch_id()
+            )
+
+            if user_branch_id is None:
+                return []
+
+            query = query.filter(
+                Branch.id == user_branch_id
+            )
+
+    return query.order_by(
+        Branch.name.asc()
+    ).all()
+
+
+# ============================================================
+# TEACHER FORM CONTEXT
+# ============================================================
+
+def _teacher_form_context(institution_id=None):
+
+    return {
+        "user": current_user,
+
+        "institutions":
+            _teacher_allowed_institutions(),
+
+        "branches":
+            _teacher_allowed_branches(institution_id),
+
+        "teacher_genders":
+            TEACHER_GENDERS,
+
+        "teacher_statuses":
+            TEACHER_STATUSES,
+    }
+
+
+# ============================================================
+# VALIDATE INSTITUTION / BRANCH
+# ============================================================
+
+def _validate_teacher_relationships(
+    institution_id,
+    branch_id,
+    errors
+):
+
+    if not institution_id:
+        errors.append(
+            "Institution is required."
+        )
+        return
+
+    institution = Institution.query.filter(
+        Institution.id == institution_id
+    ).first()
+
+    if not institution:
+        errors.append(
+            "Selected institution was not found."
+        )
+        return
+
+    # --------------------------------------------------------
+    # Scoped user cannot select another institution
+    # --------------------------------------------------------
+
+    if not _teacher_is_global_user():
+
+        user_institution_id = (
+            _teacher_get_user_institution_id()
+        )
+
+        if (
+            user_institution_id is None
+            or institution_id != user_institution_id
+        ):
+            errors.append(
+                "You are not allowed to use this institution."
+            )
+
+    # --------------------------------------------------------
+    # Branch required
+    # --------------------------------------------------------
+
+    if not branch_id:
+
+        errors.append(
+            "Branch is required."
+        )
+
+        return
+
+    branch = Branch.query.filter(
+        Branch.id == branch_id
+    ).first()
+
+    if not branch:
+
+        errors.append(
+            "Selected branch was not found."
+        )
+
+        return
+
+    # --------------------------------------------------------
+    # Branch must belong to institution
+    # --------------------------------------------------------
+
+    if branch.institution_id != institution_id:
+
+        errors.append(
+            "Selected branch does not belong "
+            "to the selected institution."
+        )
+
+    # --------------------------------------------------------
+    # Branch-admin restriction
+    # --------------------------------------------------------
+
+    if (
+        not _teacher_is_global_user()
+        and getattr(current_user, "role", None)
+        == "branch_admin"
+    ):
+
+        user_branch_id = (
+            _teacher_get_user_branch_id()
+        )
+
+        if (
+            user_branch_id is None
+            or branch_id != user_branch_id
+        ):
+
+            errors.append(
+                "You are not allowed to use this branch."
+            )
+
+
+# ============================================================
+# AUTO GENERATE TEACHER ROLL NUMBER
+# ============================================================
+
+def _generate_teacher_roll_no(institution_id):
+    """
+    Generate:
+
+        T001
+        T002
+        T003
+
+    Roll number is unique within institution.
+    """
+
+    prefix = "T"
+
+    teachers = Teacher.query.filter(
+        Teacher.institution_id == institution_id
+    ).all()
+
+    used_numbers = set()
+
+    for teacher in teachers:
+
+        if not teacher.roll_no:
+            continue
+
+        roll = teacher.roll_no.strip().upper()
+
+        if not roll.startswith(prefix):
+            continue
+
+        numeric_part = roll[len(prefix):]
+
+        if numeric_part.isdigit():
+
+            used_numbers.add(
+                int(numeric_part)
+            )
+
+    number = 1
+
+    while number in used_numbers:
+        number += 1
+
+    return f"{prefix}{number:03d}"
+
+
+# ============================================================
+# TEACHER DETAIL ACCESS
+# ============================================================
+
+def _teacher_can_access(teacher):
+
+    if _teacher_is_global_user():
+        return True
+
+    institution_id = (
+        _teacher_get_user_institution_id()
+    )
+
+    if (
+        institution_id is None
+        or teacher.institution_id != institution_id
+    ):
+        return False
+
+    if getattr(current_user, "role", None) == "branch_admin":
+
+        branch_id = _teacher_get_user_branch_id()
+
+        if (
+            branch_id is None
+            or teacher.branch_id != branch_id
+        ):
+            return False
+
+    return True
+
+
+# ============================================================
+# 1. ALL TEACHERS
+# ============================================================
+
+@bp.route("/teachers", methods=["GET"])
+@login_required
+def all_teachers():
+
+    if not _teacher_can_manage():
+
+        flash(
+            "You are not authorized to manage teachers.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.dashboard")
+        )
+
+    search = request.args.get(
+        "search",
+        "",
+        type=str
+    ).strip()
+
+    institution_id = request.args.get(
+        "institution_id",
+        "",
+        type=str
+    ).strip()
+
+    branch_id = request.args.get(
+        "branch_id",
+        "",
+        type=str
+    ).strip()
+
+    gender = request.args.get(
+        "gender",
+        "",
+        type=str
+    ).strip().lower()
+
+    status = request.args.get(
+        "status",
+        "",
+        type=str
+    ).strip().lower()
+
+    active = request.args.get(
+        "active",
+        "",
+        type=str
+    ).strip().lower()
+
+    verified = request.args.get(
+        "verified",
+        "",
+        type=str
+    ).strip().lower()
+
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+    per_page = request.args.get(
+        "per_page",
+        25,
+        type=int
+    )
+
+    allowed_per_page = {
+        10,
+        25,
+        50,
+        100,
+    }
+
+    if per_page not in allowed_per_page:
+        per_page = 25
+
+    if page < 1:
+        page = 1
+
+    query = _teacher_scope_query(
+        Teacher.query
+    )
+
+    # --------------------------------------------------------
+    # Institution filter
+    # --------------------------------------------------------
+
+    if institution_id:
+
+        try:
+            selected_institution_id = int(
+                institution_id
+            )
+
+            if _teacher_is_global_user():
+
+                query = query.filter(
+                    Teacher.institution_id
+                    == selected_institution_id
+                )
+
+        except ValueError:
+
+            institution_id = ""
+
+    # --------------------------------------------------------
+    # Branch filter
+    # --------------------------------------------------------
+
+    if branch_id:
+
+        try:
+
+            selected_branch_id = int(
+                branch_id
+            )
+
+            query = query.filter(
+                Teacher.branch_id
+                == selected_branch_id
+            )
+
+        except ValueError:
+
+            branch_id = ""
+
+    # --------------------------------------------------------
+    # Search
+    # --------------------------------------------------------
+
+    if search:
+
+        search_value = f"%{search}%"
+
+        query = query.filter(
+            or_(
+                Teacher.full_name.ilike(
+                    search_value
+                ),
+
+                Teacher.username.ilike(
+                    search_value
+                ),
+
+                Teacher.email.ilike(
+                    search_value
+                ),
+
+                Teacher.roll_no.ilike(
+                    search_value
+                ),
+
+                Teacher.phone.ilike(
+                    search_value
+                ),
+
+                Teacher.qualification.ilike(
+                    search_value
+                ),
+
+                Teacher.specialization.ilike(
+                    search_value
+                ),
+            )
+        )
+
+    # --------------------------------------------------------
+    # Gender
+    # --------------------------------------------------------
+
+    if gender in TEACHER_GENDERS:
+
+        query = query.filter(
+            func.lower(Teacher.gender)
+            == gender
+        )
+
+    # --------------------------------------------------------
+    # Status
+    # --------------------------------------------------------
+
+    if status in TEACHER_STATUSES:
+
+        query = query.filter(
+            Teacher.status == status
+        )
+
+    # --------------------------------------------------------
+    # Active
+    # --------------------------------------------------------
+
+    if active == "1":
+
+        query = query.filter(
+            Teacher.is_active.is_(True)
+        )
+
+    elif active == "0":
+
+        query = query.filter(
+            Teacher.is_active.is_(False)
+        )
+
+    # --------------------------------------------------------
+    # Verified
+    # --------------------------------------------------------
+
+    if verified == "1":
+
+        query = query.filter(
+            Teacher.is_verified.is_(True)
+        )
+
+    elif verified == "0":
+
+        query = query.filter(
+            Teacher.is_verified.is_(False)
+        )
+
+    # --------------------------------------------------------
+    # Ordering
+    # --------------------------------------------------------
+
+    query = query.order_by(
+        Teacher.full_name.asc(),
+        Teacher.id.desc()
+    )
+
+    # --------------------------------------------------------
+    # Pagination
+    # --------------------------------------------------------
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    teachers = pagination.items
+
+    # --------------------------------------------------------
+    # Filter dropdown data
+    # --------------------------------------------------------
+
+    selected_institution_for_branches = None
+
+    if institution_id:
+
+        try:
+
+            selected_institution_for_branches = int(
+                institution_id
+            )
+
+        except ValueError:
+            pass
+
+    elif not _teacher_is_global_user():
+
+        selected_institution_for_branches = (
+            _teacher_get_user_institution_id()
+        )
+
+    institutions = (
+        _teacher_allowed_institutions()
+    )
+
+    branches = _teacher_allowed_branches(
+        selected_institution_for_branches
+    )
+
+    # --------------------------------------------------------
+    # Statistics
+    # --------------------------------------------------------
+
+    scoped_query = _teacher_scope_query(
+        Teacher.query
+    )
+
+    total_teachers = scoped_query.count()
+
+    active_teachers = scoped_query.filter(
+        Teacher.is_active.is_(True),
+        Teacher.status == "active"
+    ).count()
+
+    inactive_teachers = scoped_query.filter(
+        Teacher.is_active.is_(False)
+    ).count()
+
+    verified_teachers = scoped_query.filter(
+        Teacher.is_verified.is_(True)
+    ).count()
+
+    suspended_teachers = scoped_query.filter(
+        Teacher.status == "suspended"
+    ).count()
+
+    resigned_teachers = scoped_query.filter(
+        Teacher.status == "resigned"
+    ).count()
+
+    return render_template(
+        "backend/pages/teachers/all_teachers.html",
+
+        teachers=teachers,
+        pagination=pagination,
+
+        institutions=institutions,
+        branches=branches,
+
+        teacher_genders=TEACHER_GENDERS,
+        teacher_statuses=TEACHER_STATUSES,
+
+        search=search,
+        institution_id=institution_id,
+        branch_id=branch_id,
+        gender=gender,
+        status=status,
+        active=active,
+        verified=verified,
+        per_page=per_page,
+
+        total_teachers=total_teachers,
+        active_teachers=active_teachers,
+        inactive_teachers=inactive_teachers,
+        verified_teachers=verified_teachers,
+        suspended_teachers=suspended_teachers,
+        resigned_teachers=resigned_teachers,
+
+        user=current_user,
+    )
+
+# ============================================================
+# ADD TEACHER
+# ============================================================
+# ============================================================
+# ADD TEACHER
+# ============================================================
+
+@bp.route("/teachers/add", methods=["GET", "POST"])
+@login_required
+def add_teacher():
+
+    # --------------------------------------------------------
+    # AUTHORIZATION
+    # --------------------------------------------------------
+    if not _teacher_can_manage():
+        flash(
+            "You are not authorized to add teachers.",
+            "danger"
+        )
+        return redirect(
+            url_for("main.all_teachers")
+        )
+
+    # --------------------------------------------------------
+    # DEFAULT INSTITUTION
+    # --------------------------------------------------------
+    default_institution_id = (
+        _teacher_get_user_institution_id()
+    )
+
+    # Current institution used by the form
+    institution_id = default_institution_id
+
+    # ========================================================
+    # POST
+    # ========================================================
+    if request.method == "POST":
+
+        errors = []
+
+        # ====================================================
+        # INSTITUTION
+        # ====================================================
+        institution_raw = request.form.get(
+            "institution_id",
+            ""
+        ).strip()
+
+        try:
+
+            institution_id = (
+                int(institution_raw)
+                if institution_raw
+                else None
+            )
+
+        except (ValueError, TypeError):
+
+            institution_id = None
+
+            errors.append(
+                "Invalid institution."
+            )
+
+        # ====================================================
+        # BRANCH
+        # ====================================================
+        branch_raw = request.form.get(
+            "branch_id",
+            ""
+        ).strip()
+
+        try:
+
+            branch_id = (
+                int(branch_raw)
+                if branch_raw
+                else None
+            )
+
+        except (ValueError, TypeError):
+
+            branch_id = None
+
+            errors.append(
+                "Invalid branch."
+            )
+
+        # ====================================================
+        # BASIC INFORMATION
+        # ====================================================
+        username = request.form.get(
+            "username",
+            ""
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        full_name = request.form.get(
+            "full_name",
+            ""
+        ).strip()
+
+        gender = request.form.get(
+            "gender",
+            ""
+        ).strip().lower()
+
+        # ====================================================
+        # PERSONAL INFORMATION
+        # ====================================================
+        date_of_birth_raw = request.form.get(
+            "date_of_birth",
+            ""
+        ).strip()
+
+        phone = request.form.get(
+            "phone",
+            ""
+        ).strip()
+
+        address = request.form.get(
+            "address",
+            ""
+        ).strip()
+
+        city = request.form.get(
+            "city",
+            ""
+        ).strip()
+
+        # ====================================================
+        # PROFESSIONAL INFORMATION
+        # ====================================================
+        qualification = request.form.get(
+            "qualification",
+            ""
+        ).strip()
+
+        specialization = request.form.get(
+            "specialization",
+            ""
+        ).strip()
+
+        experience_raw = request.form.get(
+            "experience_years",
+            ""
+        ).strip()
+
+        hire_date_raw = request.form.get(
+            "hire_date",
+            ""
+        ).strip()
+
+        # ====================================================
+        # PASSWORD
+        # ====================================================
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        confirm_password = request.form.get(
+            "confirm_password",
+            ""
+        )
+
+        # ====================================================
+        # STATUS
+        # ====================================================
+        status = request.form.get(
+            "status",
+            "active"
+        ).strip().lower()
+
+        # ====================================================
+        # CHECKBOXES
+        # ====================================================
+        is_active = (
+            request.form.get("is_active")
+            in {
+                "1",
+                "true",
+                "on",
+                "yes"
+            }
+        )
+
+        is_verified = (
+            request.form.get("is_verified")
+            in {
+                "1",
+                "true",
+                "on",
+                "yes"
+            }
+        )
+
+        # ====================================================
+        # NOTES
+        # ====================================================
+        notes = request.form.get(
+            "notes",
+            ""
+        ).strip()
+
+        # ====================================================
+        # PHOTO
+        # ====================================================
+        photo = request.files.get("photo")
+
+        if not photo:
+            photo = request.files.get(
+                "profile_image"
+            )
+
+        # ====================================================
+        # VALIDATE FULL NAME
+        # ====================================================
+        if not full_name:
+
+            errors.append(
+                "Teacher full name is required."
+            )
+
+        elif len(full_name) > 200:
+
+            errors.append(
+                "Teacher name cannot exceed "
+                "200 characters."
+            )
+
+        # ====================================================
+        # VALIDATE USERNAME
+        # ====================================================
+        if not username:
+
+            errors.append(
+                "Username is required."
+            )
+
+        elif len(username) > 150:
+
+            errors.append(
+                "Username cannot exceed "
+                "150 characters."
+            )
+
+        # ====================================================
+        # VALIDATE EMAIL
+        # ====================================================
+        if email and len(email) > 150:
+
+            errors.append(
+                "Email cannot exceed "
+                "150 characters."
+            )
+
+        # ====================================================
+        # VALIDATE GENDER
+        # ====================================================
+        if gender and gender not in TEACHER_GENDERS:
+
+            errors.append(
+                "Invalid gender selected."
+            )
+
+        # ====================================================
+        # VALIDATE STATUS
+        # ====================================================
+        if status not in TEACHER_STATUSES:
+
+            errors.append(
+                "Invalid teacher status."
+            )
+
+        # ====================================================
+        # VALIDATE PASSWORD
+        # ====================================================
+        if not password:
+
+            errors.append(
+                "Password is required."
+            )
+
+        elif len(password) < 6:
+
+            errors.append(
+                "Password must contain at least "
+                "6 characters."
+            )
+
+        if password != confirm_password:
+
+            errors.append(
+                "Password confirmation does not match."
+            )
+
+        # ====================================================
+        # DATE OF BIRTH
+        # ====================================================
+        date_of_birth = None
+
+        if date_of_birth_raw:
+
+            try:
+
+                date_of_birth = datetime.strptime(
+                    date_of_birth_raw,
+                    "%Y-%m-%d"
+                ).date()
+
+            except ValueError:
+
+                errors.append(
+                    "Invalid date of birth."
+                )
+
+        # ====================================================
+        # HIRE DATE
+        # ====================================================
+        hire_date = None
+
+        if hire_date_raw:
+
+            try:
+
+                hire_date = datetime.strptime(
+                    hire_date_raw,
+                    "%Y-%m-%d"
+                ).date()
+
+            except ValueError:
+
+                errors.append(
+                    "Invalid hire date."
+                )
+
+        # ====================================================
+        # EXPERIENCE
+        # ====================================================
+        experience_years = None
+
+        if experience_raw:
+
+            try:
+
+                experience_years = int(
+                    experience_raw
+                )
+
+                if experience_years < 0:
+
+                    errors.append(
+                        "Experience years cannot "
+                        "be negative."
+                    )
+
+            except (ValueError, TypeError):
+
+                errors.append(
+                    "Experience years must be "
+                    "a valid number."
+                )
+
+        # ====================================================
+        # INSTITUTION + BRANCH VALIDATION
+        # ====================================================
+        if not institution_id:
+
+            errors.append(
+                "Institution is required."
+            )
+
+        if not branch_id:
+
+            errors.append(
+                "Branch is required."
+            )
+
+        if institution_id and branch_id:
+
+            _validate_teacher_relationships(
+                institution_id,
+                branch_id,
+                errors
+            )
+
+        # ====================================================
+        # USERNAME DUPLICATE CHECK
+        # ====================================================
+        if username:
+
+            existing_teacher_username = (
+                Teacher.query
+                .filter(
+                    func.lower(
+                        Teacher.username
+                    ) == username.lower()
+                )
+                .first()
+            )
+
+            if existing_teacher_username:
+
+                errors.append(
+                    "This username is already in use "
+                    "by another teacher."
+                )
+
+            existing_user_username = (
+                User.query
+                .filter(
+                    func.lower(
+                        User.username
+                    ) == username.lower()
+                )
+                .first()
+            )
+
+            if existing_user_username:
+
+                errors.append(
+                    "This username is already in use "
+                    "by a user account."
+                )
+
+        # ====================================================
+        # EMAIL DUPLICATE CHECK
+        # ====================================================
+        if email:
+
+            existing_teacher_email = (
+                Teacher.query
+                .filter(
+                    func.lower(
+                        Teacher.email
+                    ) == email.lower()
+                )
+                .first()
+            )
+
+            if existing_teacher_email:
+
+                errors.append(
+                    "This email is already in use "
+                    "by another teacher."
+                )
+
+            existing_user_email = (
+                User.query
+                .filter(
+                    func.lower(
+                        User.email
+                    ) == email.lower()
+                )
+                .first()
+            )
+
+            if existing_user_email:
+
+                errors.append(
+                    "This email is already in use "
+                    "by a user account."
+                )
+
+        # ====================================================
+        # VALIDATION ERRORS
+        # ====================================================
+        if errors:
+
+            for error in errors:
+
+                flash(
+                    error,
+                    "danger"
+                )
+
+        # ====================================================
+        # CREATE TEACHER
+        # ====================================================
+        if not errors:
+
+            # ------------------------------------------------
+            # AUTO ROLL NUMBER
+            # ------------------------------------------------
+            roll_no = _generate_teacher_roll_no(
+                institution_id
+            )
+
+            # ------------------------------------------------
+            # TEACHER
+            # ------------------------------------------------
+            teacher = Teacher(
+
+                institution_id=institution_id,
+
+                branch_id=branch_id,
+
+                username=username,
+
+                email=email or None,
+
+                role="teacher",
+
+                roll_no=roll_no,
+
+                full_name=full_name,
+
+                gender=gender or None,
+
+                date_of_birth=date_of_birth,
+
+                phone=phone or None,
+
+                address=address or None,
+
+                city=city or None,
+
+                qualification=qualification or None,
+
+                specialization=specialization or None,
+
+                experience_years=experience_years,
+
+                hire_date=hire_date,
+
+                is_active=is_active,
+
+                is_verified=is_verified,
+
+                status=status,
+
+                notes=notes or None,
+
+                created_at=datetime.utcnow(),
+
+                updated_at=datetime.utcnow(),
+            )
+
+            # ------------------------------------------------
+            # PASSWORD
+            # ------------------------------------------------
+            teacher.set_password(
+                password
+            )
+
+            # =================================================
+            # CLOUDINARY
+            # =================================================
+            if photo and photo.filename:
+
+                try:
+
+                    folder_name = (
+                        f"teachers/"
+                        f"institution_{institution_id}/"
+                        f"branch_{branch_id}"
+                    )
+
+                    uploaded_photo = (
+                        cloudinary.uploader.upload(
+
+                            photo,
+
+                            folder=folder_name,
+
+                            resource_type="image",
+
+                            transformation=[
+                                {
+                                    "width": 800,
+                                    "height": 800,
+                                    "crop": "limit",
+                                    "quality": "auto",
+                                    "fetch_format": "auto",
+                                }
+                            ]
+                        )
+                    )
+
+                    teacher.profile_image = (
+                        uploaded_photo.get(
+                            "secure_url"
+                        )
+                    )
+
+                    teacher.profile_image_public_id = (
+                        uploaded_photo.get(
+                            "public_id"
+                        )
+                    )
+
+                except Exception as cloudinary_error:
+
+                    current_app.logger.exception(
+                        "Cloudinary teacher image "
+                        "upload failed: %s",
+                        cloudinary_error
+                    )
+
+                    flash(
+                        "Teacher photo could not be "
+                        "uploaded. Please try again.",
+                        "danger"
+                    )
+
+                    # ----------------------------------------
+                    # IMPORTANT:
+                    # institution_id is passed here so
+                    # _teacher_allowed_branches()
+                    # returns correct branches.
+                    # ----------------------------------------
+                    context = _teacher_form_context(
+                        institution_id
+                    )
+
+                    return render_template(
+                        "backend/pages/teachers/"
+                        "add_teacher.html",
+                        **context
+                    )
+
+            # =================================================
+            # DATABASE SAVE
+            # =================================================
+            try:
+
+                db.session.add(
+                    teacher
+                )
+
+                db.session.commit()
+
+                flash(
+                    f"Teacher {teacher.full_name} "
+                    f"was created successfully. "
+                    f"Roll No: {teacher.roll_no}",
+                    "success"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.view_teacher",
+                        teacher_id=teacher.id
+                    )
+                )
+
+            except IntegrityError as exc:
+
+                db.session.rollback()
+
+                current_app.logger.exception(
+                    "Teacher integrity error: %s",
+                    exc
+                )
+
+                flash(
+                    "Unable to create teacher. "
+                    "Username, email, roll number, "
+                    "or another unique value may "
+                    "already exist.",
+                    "danger"
+                )
+
+            except Exception as exc:
+
+                db.session.rollback()
+
+                current_app.logger.exception(
+                    "Error creating teacher: %s",
+                    exc
+                )
+
+                flash(
+                    "An unexpected error occurred "
+                    "while creating the teacher.",
+                    "danger"
+                )
+
+    # ========================================================
+    # FORM CONTEXT
+    # ========================================================
+    context = _teacher_form_context(
+        institution_id
+    )
+
+    # --------------------------------------------------------
+    # Explicit values for template
+    # --------------------------------------------------------
+    context["institution_id"] = (
+        institution_id
+    )
+
+    context["default_institution_id"] = (
+        default_institution_id
+    )
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+    return render_template(
+        "backend/pages/teachers/add_teacher.html",
+        **context
+    )
+
+
+# ============================================================
+# 3. VIEW TEACHER
+# ============================================================
+# ============================================================
+# VIEW TEACHER
+# ============================================================
+
+@bp.route("/teachers/<int:teacher_id>", methods=["GET"])
+@login_required
+def view_teacher(teacher_id):
+
+    # ========================================================
+    # AUTHORIZATION
+    # ========================================================
+
+    if not _teacher_can_manage():
+        flash(
+            "You are not authorized to view teachers.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_teachers")
+        )
+
+    # ========================================================
+    # GET TEACHER
+    # ========================================================
+
+    teacher = Teacher.query.get_or_404(teacher_id)
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    current_institution_id = (
+        _teacher_get_user_institution_id()
+    )
+
+    # ========================================================
+    # INSTITUTION SECURITY
+    # ========================================================
+
+    if current_institution_id is not None:
+
+        if teacher.institution_id != current_institution_id:
+
+            flash(
+                "You are not authorized to view this teacher.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_teachers")
+            )
+
+    # ========================================================
+    # BRANCH SECURITY
+    #
+    # If your current user has a branch_id, make sure they
+    # cannot view teachers belonging to another branch.
+    # ========================================================
+
+    current_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    current_role = (
+        getattr(current_user, "role", "") or ""
+    ).strip().lower()
+
+    branch_scoped_roles = {
+        "branch_admin",
+        "teacher"
+    }
+
+    if (
+        current_branch_id is not None
+        and current_role in branch_scoped_roles
+    ):
+
+        if teacher.branch_id != current_branch_id:
+
+            flash(
+                "You are not authorized to view "
+                "this teacher from another branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_teachers")
+            )
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
+    return render_template(
+        "backend/pages/teachers/view_teacher.html",
+        teacher=teacher,
+        user=current_user
+    )
+
+
+
+# ============================================================
+# 4. EDIT TEACHER
+# ============================================================
+# ============================================================
+# EDIT TEACHER
+# ============================================================
+
+@bp.route("/teachers/<int:teacher_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_teacher(teacher_id):
+
+    # --------------------------------------------------------
+    # AUTHORIZATION
+    # --------------------------------------------------------
+    if not _teacher_can_manage():
+        flash("You are not authorized to edit teachers.", "danger")
+        return redirect(url_for("main.all_teachers"))
+
+    # --------------------------------------------------------
+    # GET TEACHER
+    # --------------------------------------------------------
+    teacher = Teacher.query.get_or_404(teacher_id)
+
+    # --------------------------------------------------------
+    # CURRENT USER INSTITUTION
+    # --------------------------------------------------------
+    current_institution_id = _teacher_get_user_institution_id()
+
+    # --------------------------------------------------------
+    # SECURITY:
+    # Institution admins / branch admins should only edit
+    # teachers belonging to their institution.
+    # --------------------------------------------------------
+    if current_institution_id is not None:
+        if teacher.institution_id != current_institution_id:
+            flash(
+                "You are not authorized to edit this teacher.",
+                "danger"
+            )
+            return redirect(url_for("main.all_teachers"))
+
+    # --------------------------------------------------------
+    # POST
+    # --------------------------------------------------------
+    if request.method == "POST":
+
+        errors = []
+
+        # ====================================================
+        # FORM VALUES
+        # ====================================================
+
+        institution_raw = request.form.get(
+            "institution_id",
+            ""
+        ).strip()
+
+        branch_raw = request.form.get(
+            "branch_id",
+            ""
+        ).strip()
+
+        username = request.form.get(
+            "username",
+            ""
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        full_name = request.form.get(
+            "full_name",
+            ""
+        ).strip()
+
+        gender = request.form.get(
+            "gender",
+            ""
+        ).strip().lower()
+
+        date_of_birth_raw = request.form.get(
+            "date_of_birth",
+            ""
+        ).strip()
+
+        phone = request.form.get(
+            "phone",
+            ""
+        ).strip()
+
+        address = request.form.get(
+            "address",
+            ""
+        ).strip()
+
+        city = request.form.get(
+            "city",
+            ""
+        ).strip()
+
+        qualification = request.form.get(
+            "qualification",
+            ""
+        ).strip()
+
+        specialization = request.form.get(
+            "specialization",
+            ""
+        ).strip()
+
+        experience_raw = request.form.get(
+            "experience_years",
+            ""
+        ).strip()
+
+        hire_date_raw = request.form.get(
+            "hire_date",
+            ""
+        ).strip()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        confirm_password = request.form.get(
+            "confirm_password",
+            ""
+        )
+
+        status = request.form.get(
+            "status",
+            "active"
+        ).strip().lower()
+
+        is_active = request.form.get(
+            "is_active"
+        ) in {"1", "true", "on", "yes"}
+
+        is_verified = request.form.get(
+            "is_verified"
+        ) in {"1", "true", "on", "yes"}
+
+        notes = request.form.get(
+            "notes",
+            ""
+        ).strip()
+
+        # ====================================================
+        # PHOTO
+        # ====================================================
+
+        photo_file = request.files.get("photo")
+
+        # ====================================================
+        # INSTITUTION ID
+        # ====================================================
+
+        institution_id = None
+
+        try:
+            if institution_raw:
+                institution_id = int(institution_raw)
+            else:
+                errors.append("Institution is required.")
+        except (TypeError, ValueError):
+            errors.append("Invalid institution.")
+
+        # ====================================================
+        # BRANCH ID
+        # ====================================================
+
+        branch_id = None
+
+        try:
+            if branch_raw:
+                branch_id = int(branch_raw)
+            else:
+                errors.append("Branch is required.")
+        except (TypeError, ValueError):
+            errors.append("Invalid branch.")
+
+        # ====================================================
+        # REQUIRED FIELDS
+        # ====================================================
+
+        if not username:
+            errors.append("Username is required.")
+
+        if not full_name:
+            errors.append("Full name is required.")
+
+        # ====================================================
+        # USERNAME VALIDATION
+        # ====================================================
+
+        if username:
+
+            existing_teacher = (
+                Teacher.query
+                .filter(
+                    func.lower(Teacher.username) == username.lower(),
+                    Teacher.id != teacher.id
+                )
+                .first()
+            )
+
+            if existing_teacher:
+                errors.append(
+                    "This username is already used by another teacher."
+                )
+
+            # ------------------------------------------------
+            # CHECK LOGIN USERS TABLE
+            # ------------------------------------------------
+
+            existing_user = (
+                User.query
+                .filter(
+                    func.lower(User.username) == username.lower()
+                )
+                .first()
+            )
+
+            if existing_user:
+                errors.append(
+                    "This username is already used by a login user."
+                )
+
+        # ====================================================
+        # EMAIL VALIDATION
+        # ====================================================
+
+        if email:
+
+            existing_teacher_email = (
+                Teacher.query
+                .filter(
+                    func.lower(Teacher.email) == email.lower(),
+                    Teacher.id != teacher.id
+                )
+                .first()
+            )
+
+            if existing_teacher_email:
+                errors.append(
+                    "This email is already used by another teacher."
+                )
+
+            # ------------------------------------------------
+            # CHECK LOGIN USERS TABLE
+            # ------------------------------------------------
+
+            existing_user_email = (
+                User.query
+                .filter(
+                    func.lower(User.email) == email.lower()
+                )
+                .first()
+            )
+
+            if existing_user_email:
+                errors.append(
+                    "This email is already used by a login user."
+                )
+
+        # ====================================================
+        # GENDER
+        # ====================================================
+
+        if gender:
+
+            valid_genders = {
+                str(value).lower()
+                for value in TEACHER_GENDERS
+            }
+
+            if gender not in valid_genders:
+                errors.append("Invalid gender.")
+
+        # ====================================================
+        # STATUS
+        # ====================================================
+
+        if status:
+
+            valid_statuses = {
+                str(value).lower()
+                for value in TEACHER_STATUSES
+            }
+
+            if status not in valid_statuses:
+                errors.append("Invalid teacher status.")
+
+        # ====================================================
+        # DATE OF BIRTH
+        # ====================================================
+
+        date_of_birth = None
+
+        if date_of_birth_raw:
+
+            try:
+                date_of_birth = datetime.strptime(
+                    date_of_birth_raw,
+                    "%Y-%m-%d"
+                ).date()
+
+            except ValueError:
+                errors.append(
+                    "Invalid date of birth."
+                )
+
+        # ====================================================
+        # HIRE DATE
+        # ====================================================
+
+        hire_date = None
+
+        if hire_date_raw:
+
+            try:
+                hire_date = datetime.strptime(
+                    hire_date_raw,
+                    "%Y-%m-%d"
+                ).date()
+
+            except ValueError:
+                errors.append(
+                    "Invalid hire date."
+                )
+
+        # ====================================================
+        # EXPERIENCE YEARS
+        # ====================================================
+
+        experience_years = 0
+
+        if experience_raw:
+
+            try:
+                experience_years = int(
+                    experience_raw
+                )
+
+                if experience_years < 0:
+                    errors.append(
+                        "Experience years cannot be negative."
+                    )
+
+            except (TypeError, ValueError):
+
+                errors.append(
+                    "Experience years must be a valid number."
+                )
+
+        # ====================================================
+        # PASSWORD
+        # Only change password when user enters a new one.
+        # ====================================================
+
+        if password:
+
+            if len(password) < 6:
+                errors.append(
+                    "Password must be at least 6 characters."
+                )
+
+            if password != confirm_password:
+                errors.append(
+                    "Password confirmation does not match."
+                )
+
+        # ====================================================
+        # RELATIONSHIP VALIDATION
+        # ====================================================
+
+        if institution_id and branch_id:
+
+            _validate_teacher_relationships(
+                institution_id,
+                branch_id,
+                errors
+            )
+
+        # ====================================================
+        # PHOTO VALIDATION
+        # ====================================================
+
+        photo_url = teacher.photo
+        uploaded_public_id = None
+
+        if photo_file and photo_file.filename:
+
+            filename = secure_filename(
+                photo_file.filename
+            )
+
+            extension = ""
+
+            if "." in filename:
+                extension = filename.rsplit(
+                    ".",
+                    1
+                )[1].lower()
+
+            allowed_extensions = {
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            }
+
+            allowed_mimetypes = {
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            }
+
+            if extension not in allowed_extensions:
+                errors.append(
+                    "Invalid photo format. "
+                    "Allowed: JPG, JPEG, PNG and WEBP."
+                )
+
+            if (
+                photo_file.mimetype
+                and photo_file.mimetype.lower()
+                not in allowed_mimetypes
+            ):
+                errors.append(
+                    "Invalid photo file type."
+                )
+
+            # ------------------------------------------------
+            # MAX SIZE = 2 MB
+            # ------------------------------------------------
+
+            try:
+
+                photo_file.stream.seek(
+                    0,
+                    os.SEEK_END
+                )
+
+                photo_size = (
+                    photo_file.stream.tell()
+                )
+
+                photo_file.stream.seek(
+                    0
+                )
+
+                max_photo_size = (
+                    2 * 1024 * 1024
+                )
+
+                if photo_size > max_photo_size:
+                    errors.append(
+                        "Photo size must not exceed 2 MB."
+                    )
+
+            except Exception:
+                errors.append(
+                    "Unable to validate the photo."
+                )
+
+        # ====================================================
+        # IF VALIDATION FAILED
+        # ====================================================
+
+        if errors:
+
+            for error in errors:
+                flash(error, "danger")
+
+            context = _teacher_form_context(
+                institution_id
+                if institution_id
+                else current_institution_id
+            )
+
+            return render_template(
+                "backend/pages/teachers/edit_teacher.html",
+                teacher=teacher,
+                form_data=request.form,
+                **context
+            )
+
+        # ====================================================
+        # CLOUDINARY UPLOAD
+        # ====================================================
+
+        try:
+
+            if photo_file and photo_file.filename:
+
+                upload_result = (
+                    cloudinary.uploader.upload(
+                        photo_file,
+                        folder="teachers",
+                        resource_type="image",
+                        use_filename=False,
+                        unique_filename=True,
+                        overwrite=False
+                    )
+                )
+
+                photo_url = upload_result.get(
+                    "secure_url"
+                )
+
+                uploaded_public_id = (
+                    upload_result.get("public_id")
+                )
+
+                if not photo_url:
+                    raise Exception(
+                        "Cloudinary did not return a secure URL."
+                    )
+
+        except Exception as cloudinary_error:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Teacher photo upload failed: %s",
+                cloudinary_error
+            )
+
+            flash(
+                "Teacher photo upload failed. "
+                "Please try again.",
+                "danger"
+            )
+
+            context = _teacher_form_context(
+                institution_id
+                if institution_id
+                else current_institution_id
+            )
+
+            return render_template(
+                "backend/pages/teachers/edit_teacher.html",
+                teacher=teacher,
+                form_data=request.form,
+                **context
+            )
+
+        # ====================================================
+        # UPDATE TEACHER
+        # ====================================================
+
+        try:
+
+            teacher.institution_id = institution_id
+            teacher.branch_id = branch_id
+
+            teacher.username = username
+            teacher.email = email or None
+
+            teacher.full_name = full_name
+            teacher.gender = gender or None
+
+            teacher.date_of_birth = date_of_birth
+
+            teacher.phone = phone or None
+            teacher.address = address or None
+            teacher.city = city or None
+
+            teacher.qualification = (
+                qualification or None
+            )
+
+            teacher.specialization = (
+                specialization or None
+            )
+
+            teacher.experience_years = (
+                experience_years
+            )
+
+            teacher.hire_date = hire_date
+
+            teacher.status = status
+
+            teacher.is_active = is_active
+            teacher.is_verified = is_verified
+
+            teacher.notes = notes or None
+
+            # ------------------------------------------------
+            # UPDATE PHOTO ONLY IF NEW PHOTO WAS UPLOADED
+            # ------------------------------------------------
+
+            if photo_url:
+                teacher.photo = photo_url
+
+            # ------------------------------------------------
+            # PASSWORD
+            # Only update when provided.
+            # ------------------------------------------------
+
+            if password:
+                teacher.set_password(password)
+
+            # ------------------------------------------------
+            # UPDATED AT
+            # ------------------------------------------------
+
+            teacher.updated_at = datetime.utcnow()
+
+            db.session.commit()
+
+            flash(
+                f"Teacher '{teacher.full_name}' "
+                "was updated successfully.",
+                "success"
+            )
+
+            return redirect(
+                url_for(
+                    "main.view_teacher",
+                    teacher_id=teacher.id
+                )
+            )
+
+        except IntegrityError as exc:
+
+            db.session.rollback()
+
+            # ------------------------------------------------
+            # CLEAN UP NEW CLOUDINARY FILE IF DB FAILED
+            # ------------------------------------------------
+
+            if uploaded_public_id:
+
+                try:
+
+                    cloudinary.uploader.destroy(
+                        uploaded_public_id,
+                        resource_type="image"
+                    )
+
+                except Exception:
+
+                    current_app.logger.exception(
+                        "Failed to cleanup Cloudinary "
+                        "teacher image after DB error."
+                    )
+
+            current_app.logger.exception(
+                "Integrity error while updating teacher: %s",
+                exc
+            )
+
+            flash(
+                "Unable to update teacher because "
+                "some information already exists.",
+                "danger"
+            )
+
+        except Exception as exc:
+
+            db.session.rollback()
+
+            # ------------------------------------------------
+            # CLEAN UP NEW CLOUDINARY FILE
+            # ------------------------------------------------
+
+            if uploaded_public_id:
+
+                try:
+
+                    cloudinary.uploader.destroy(
+                        uploaded_public_id,
+                        resource_type="image"
+                    )
+
+                except Exception:
+
+                    current_app.logger.exception(
+                        "Failed to cleanup Cloudinary "
+                        "teacher image after update error."
+                    )
+
+            current_app.logger.exception(
+                "Unexpected error while updating teacher: %s",
+                exc
+            )
+
+            flash(
+                "An unexpected error occurred "
+                "while updating the teacher.",
+                "danger"
+            )
+
+        # ====================================================
+        # RENDER AGAIN AFTER DATABASE ERROR
+        # ====================================================
+
+        context = _teacher_form_context(
+            institution_id
+            if institution_id
+            else current_institution_id
+        )
+
+        return render_template(
+            "backend/pages/teachers/edit_teacher.html",
+            teacher=teacher,
+            form_data=request.form,
+            **context
+        )
+
+    # ========================================================
+    # GET
+    # ========================================================
+
+    context = _teacher_form_context(
+        teacher.institution_id
+        if teacher.institution_id
+        else current_institution_id
+    )
+
+    return render_template(
+        "backend/pages/teachers/edit_teacher.html",
+        teacher=teacher,
+        form_data=None,
+        **context
+    )
+
+
+# ============================================================
+# 5. DELETE TEACHER
+# ============================================================
+
+@bp.route(
+    "/teachers/<int:teacher_id>/delete",
+    methods=["POST"]
+)
+@login_required
+def delete_teacher(teacher_id):
+
+    if not _teacher_can_manage():
+
+        flash(
+            "You are not authorized to delete teachers.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_teachers")
+        )
+
+    teacher = Teacher.query.get_or_404(
+        teacher_id
+    )
+
+    if not _teacher_can_access(teacher):
+
+        flash(
+            "You are not authorized to delete this teacher.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_teachers")
+        )
+
+    teacher_name = teacher.full_name
+    teacher_roll = teacher.roll_no
+
+    try:
+
+        db.session.delete(
+            teacher
+        )
+
+        db.session.commit()
+
+        flash(
+            f"Teacher {teacher_name} "
+            f"({teacher_roll}) was deleted successfully.",
+            "success"
+        )
+
+    except IntegrityError:
+
+        db.session.rollback()
+
+        flash(
+            "This teacher cannot be deleted because "
+            "other records are linked to this teacher.",
+            "danger"
+        )
+
+    except Exception as exc:
+
+        db.session.rollback()
+
+        current_app.logger.exception(
+            "Error deleting teacher: %s",
+            exc
+        )
+
+        flash(
+            "An unexpected error occurred "
+            "while deleting the teacher.",
+            "danger"
+        )
+
+    return redirect(
+        url_for("main.all_teachers")
+    )
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,2859 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   EDIT SECTION PAGE
+   ============================================================ */
+
+.section-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.section-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.section-page-title {
+    min-width: 0;
+}
+
+.section-page-title h1 {
+    margin: 0;
+    color: #06245f;
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.section-page-title h1 i {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(6, 36, 95, 0.09);
+    color: #06245f;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+}
+
+.section-page-title p {
+    margin: 7px 0 0 55px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.section-back-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid #dfe3ea;
+    background: #fff;
+    color: #374151;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all .2s ease;
+}
+
+.section-back-btn:hover {
+    color: #06245f;
+    border-color: #06245f;
+    background: #f8fafc;
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+
+.section-edit-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 24px;
+    align-items: start;
+}
+
+.section-main-column,
+.section-sidebar {
+    min-width: 0;
+}
+
+/* ============================================================
+   CARD
+   ============================================================ */
+
+.section-card {
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.045);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.section-card:last-child {
+    margin-bottom: 0;
+}
+
+.section-card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #edf0f4;
+    background: #fbfcfe;
+}
+
+.section-card-header h2 {
+    margin: 0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.section-card-header h2 i {
+    color: #06245f;
+    font-size: 15px;
+}
+
+.section-card-header p {
+    margin: 5px 0 0;
+    color: #7a8494;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.section-card-body {
+    padding: 22px 20px;
+}
+
+/* ============================================================
+   FORM GRID
+   ============================================================ */
+
+.section-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 19px;
+}
+
+.section-form-group {
+    min-width: 0;
+}
+
+.section-form-group.full {
+    grid-column: 1 / -1;
+}
+
+.section-form-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 7px;
+    color: #293347;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.section-form-label .required {
+    color: #dc2626;
+}
+
+.section-input-wrap {
+    position: relative;
+}
+
+.section-input-wrap > i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8b95a5;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.section-input,
+.section-select,
+.section-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #dfe4eb;
+    background: #fff;
+    color: #1f2937;
+    border-radius: 9px;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background .18s ease;
+}
+
+.section-input,
+.section-select {
+    height: 44px;
+    padding: 0 13px 0 38px;
+}
+
+.section-textarea {
+    min-height: 125px;
+    resize: vertical;
+    padding: 12px 13px;
+    line-height: 1.55;
+}
+
+.section-input:focus,
+.section-select:focus,
+.section-textarea:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.section-input[readonly] {
+    background: #f6f8fb;
+    color: #526071;
+    cursor: default;
+}
+
+.section-help {
+    margin-top: 6px;
+    color: #8a94a4;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.section-error {
+    display: none;
+    margin-top: 6px;
+    color: #dc2626;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.section-form-group.has-error .section-input,
+.section-form-group.has-error .section-select,
+.section-form-group.has-error .section-textarea {
+    border-color: #dc2626;
+    background: #fffafa;
+}
+
+.section-form-group.has-error .section-error {
+    display: block;
+}
+
+/* ============================================================
+   CODE FIELD
+   ============================================================ */
+
+.section-code-box {
+    position: relative;
+}
+
+.section-code-input {
+    font-family: "Courier New", monospace;
+    font-weight: 800;
+    letter-spacing: .5px;
+    color: #06245f !important;
+}
+
+.section-code-badge {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(50, 183, 58, .10);
+    color: #21852a;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    pointer-events: none;
+}
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.status-preview {
+    margin-top: 7px;
+    min-height: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.status-pill i {
+    font-size: 7px;
+}
+
+.status-active {
+    background: rgba(50, 183, 58, .11);
+    color: #21852a;
+}
+
+.status-inactive {
+    background: rgba(107, 114, 128, .11);
+    color: #4b5563;
+}
+
+.status-suspended {
+    background: rgba(220, 38, 38, .10);
+    color: #b91c1c;
+}
+
+/* ============================================================
+   SELECT STATES
+   ============================================================ */
+
+.section-select:disabled {
+    background: #f3f5f8;
+    color: #9aa3b1;
+    cursor: not-allowed;
+}
+
+.section-select option[disabled] {
+    color: #9aa3b1;
+}
+
+/* ============================================================
+   SIDEBAR PREVIEW
+   ============================================================ */
+
+.section-preview-card {
+    border: 1px solid #e7eaf0;
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, .045);
+    margin-bottom: 20px;
+}
+
+.section-preview-top {
+    position: relative;
+    padding: 26px 20px 22px;
+    text-align: center;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(6, 36, 95, .97),
+            rgba(51, 32, 111, .96)
+        );
+    color: #fff;
+}
+
+.section-preview-icon {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 14px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.13);
+    border: 1px solid rgba(255,255,255,.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+}
+
+.section-preview-top h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.section-preview-top p {
+    margin: 6px 0 0;
+    color: rgba(255,255,255,.73);
+    font-size: 11px;
+}
+
+.section-preview-code {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 13px;
+    padding: 7px 11px;
+    border-radius: 7px;
+    background: rgba(255,255,255,.11);
+    border: 1px solid rgba(255,255,255,.13);
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .4px;
+}
+
+.section-preview-body {
+    padding: 17px 18px;
+}
+
+.section-preview-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.section-preview-item:first-child {
+    padding-top: 0;
+}
+
+.section-preview-item:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.section-preview-item-icon {
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #f1f4f8;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.section-preview-item-content {
+    min-width: 0;
+}
+
+.section-preview-item-label {
+    display: block;
+    color: #8a94a4;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    margin-bottom: 2px;
+}
+
+.section-preview-item-value {
+    display: block;
+    color: #273244;
+    font-size: 12px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+/* ============================================================
+   INFO CARD
+   ============================================================ */
+
+.section-info-card {
+    padding: 18px;
+    border: 1px solid rgba(6, 36, 95, .10);
+    border-radius: 14px;
+    background: linear-gradient(
+        135deg,
+        rgba(6, 36, 95, .045),
+        rgba(50, 183, 58, .035)
+    );
+    margin-bottom: 20px;
+}
+
+.section-info-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #06245f;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.section-info-title i {
+    width: 27px;
+    height: 27px;
+    border-radius: 7px;
+    background: rgba(6, 36, 95, .10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+}
+
+.section-info-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.section-info-list li {
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 9px;
+    color: #657084;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.section-info-list li:last-child {
+    margin-bottom: 0;
+}
+
+.section-info-list li::before {
+    content: "";
+    position: absolute;
+    left: 1px;
+    top: 7px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #32b73a;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.section-actions-card {
+    padding: 16px;
+    border: 1px solid #e7eaf0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, .045);
+}
+
+.section-submit-btn,
+.section-cancel-btn {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .2s ease;
+    box-sizing: border-box;
+}
+
+.section-submit-btn {
+    border: 1px solid #06245f;
+    background: #06245f;
+    color: #fff;
+    box-shadow: 0 5px 12px rgba(6, 36, 95, .15);
+}
+
+.section-submit-btn:hover {
+    background: #041d4e;
+    border-color: #041d4e;
+    transform: translateY(-1px);
+    box-shadow: 0 7px 15px rgba(6, 36, 95, .20);
+}
+
+.section-submit-btn:disabled {
+    opacity: .72;
+    cursor: wait;
+    transform: none;
+}
+
+.section-cancel-btn {
+    margin-top: 9px;
+    border: 1px solid #dfe4eb;
+    background: #fff;
+    color: #4b5563;
+}
+
+.section-cancel-btn:hover {
+    border-color: #bfc7d3;
+    background: #f8fafc;
+    color: #06245f;
+}
+
+.section-submit-spinner {
+    display: none;
+}
+
+/* ============================================================
+   TOP FORM NOTICE
+   ============================================================ */
+
+.section-form-notice {
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    border-radius: 9px;
+    border: 1px solid #fecaca;
+    background: #fff7f7;
+    color: #991b1b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.section-form-notice.show {
+    display: flex;
+}
+
+.section-form-notice i {
+    margin-top: 2px;
+}
+
+/* ============================================================
+   EXISTING FLASH / SERVER ERRORS
+   ============================================================ */
+
+.section-server-errors {
+    margin-bottom: 18px;
+}
+
+.section-server-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 11px 13px;
+    border-radius: 9px;
+    border: 1px solid #fecaca;
+    background: #fff7f7;
+    color: #991b1b;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.section-server-error:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================================
+   BOTTOM ACTIONS
+   ============================================================ */
+
+.section-bottom-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #edf0f4;
+}
+
+.section-bottom-cancel {
+    min-height: 42px;
+    padding: 0 17px;
+    border: 1px solid #dfe4eb;
+    background: #fff;
+    color: #4b5563;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.section-bottom-cancel:hover {
+    color: #06245f;
+    border-color: #c7ced9;
+    background: #f8fafc;
+}
+
+.section-bottom-submit {
+    min-height: 42px;
+    padding: 0 19px;
+    border: 1px solid #06245f;
+    background: #06245f;
+    color: #fff;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+    .section-edit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        align-items: start;
+    }
+
+    .section-sidebar > * {
+        margin-bottom: 0;
+    }
+
+    .section-actions-card {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .section-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .section-back-btn {
+        width: 100%;
+    }
+
+    .section-page-title h1 {
+        font-size: 23px;
+    }
+
+    .section-page-title p {
+        margin-left: 0;
+        margin-top: 7px;
+    }
+
+    .section-page-title h1 i {
+        width: 39px;
+        height: 39px;
+    }
+
+    .section-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-form-group.full {
+        grid-column: auto;
+    }
+
+    .section-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .section-actions-card {
+        grid-column: auto;
+    }
+
+    .section-bottom-actions {
+        flex-direction: column-reverse;
+    }
+
+    .section-bottom-cancel,
+    .section-bottom-submit {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-card-header,
+    .section-card-body {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .section-page-title h1 {
+        font-size: 21px;
+    }
+}
+
+</style>
+
+
+<div class="section-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+    <div class="section-page-header">
+
+        <div class="section-page-title">
+
+            <h1>
+                <i class="fas fa-layer-group"></i>
+                Edit Section
+            </h1>
+
+            <p>
+                Update the section information, academic assignment,
+                capacity, and status.
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('main.all_sections') }}"
+            class="section-back-btn"
+        >
+            <i class="fas fa-arrow-left"></i>
+            Back to Sections
+        </a>
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN GRID
+         ======================================================== -->
+    <div class="section-edit-grid">
+
+        <!-- ====================================================
+             MAIN COLUMN
+             ==================================================== -->
+        <div class="section-main-column">
+
+            <form
+                method="POST"
+                action="{{ url_for('main.edit_section', section_id=section.id) }}"
+                id="editSectionForm"
+                autocomplete="off"
+                novalidate
+            >
+
+                <!-- ==================================================
+                     FORM NOTICE
+                     ================================================== -->
+                <div
+                    class="section-form-notice"
+                    id="sectionFormNotice"
+                >
+                    <i class="fas fa-exclamation-circle"></i>
+
+                    <div id="sectionFormNoticeText">
+                        Please review the highlighted fields.
+                    </div>
+                </div>
+
+
+                <!-- ==================================================
+                     SERVER ERRORS
+                     ================================================== -->
+                {% if errors is defined and errors %}
+
+                <div class="section-server-errors">
+
+                    {% if errors is mapping %}
+
+                        {% for field, error in errors.items() %}
+
+                        <div class="section-server-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ error }}</span>
+                        </div>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        {% for error in errors %}
+
+                        <div class="section-server-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ error }}</span>
+                        </div>
+
+                        {% endfor %}
+
+                    {% endif %}
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- ==================================================
+                     ACADEMIC ASSIGNMENT
+                     ================================================== -->
+                <div class="section-card">
+
+                    <div class="section-card-header">
+
+                        <h2>
+                            <i class="fas fa-graduation-cap"></i>
+                            Academic Assignment
+                        </h2>
+
+                        <p>
+                            Update where this section belongs within
+                            the institution's academic structure.
+                        </p>
+
+                    </div>
+
+
+                    <div class="section-card-body">
+
+                        <div class="section-form-grid">
+
+                            <!-- Institution -->
+                            <div
+                                class="section-form-group"
+                                data-field="institution_id"
+                            >
+
+                                <label
+                                    class="section-form-label"
+                                    for="institution_id"
+                                >
+                                    Institution
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="section-input-wrap">
+
+                                    <i class="fas fa-building"></i>
+
+                                    <select
+                                        name="institution_id"
+                                        id="institution_id"
+                                        class="section-select"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Institution
+                                        </option>
+
+                                        {% set selected_institution =
+                                            request.form.get(
+                                                'institution_id',
+                                                section.institution_id|string
+                                                if section.institution_id is not none
+                                                else ''
+                                            )
+                                        %}
+
+                                        {% for institution in institutions %}
+
+                                        <option
+                                            value="{{ institution.id }}"
+                                            {% if selected_institution|string == institution.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ institution.name }}
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                                <div class="section-error">
+                                    Institution is required.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Branch -->
+                            <div
+                                class="section-form-group"
+                                data-field="branch_id"
+                            >
+
+                                <label
+                                    class="section-form-label"
+                                    for="branch_id"
+                                >
+                                    Branch
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="section-input-wrap">
+
+                                    <i class="fas fa-code-branch"></i>
+
+                                    <select
+                                        name="branch_id"
+                                        id="branch_id"
+                                        class="section-select"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Branch
+                                        </option>
+
+                                        {% set selected_branch =
+                                            request.form.get(
+                                                'branch_id',
+                                                section.branch_id|string
+                                                if section.branch_id is not none
+                                                else ''
+                                            )
+                                        %}
+
+                                        {% for branch in branches %}
+
+                                        <option
+                                            value="{{ branch.id }}"
+                                            data-institution-id="{{ branch.institution_id }}"
+                                            {% if selected_branch|string == branch.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ branch.name }}
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                                <div class="section-help">
+                                    Branches are filtered by the selected institution.
+                                </div>
+
+                                <div class="section-error">
+                                    Branch is required.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Class -->
+                            <div
+                                class="section-form-group"
+                                data-field="class_id"
+                            >
+
+                                <label
+                                    class="section-form-label"
+                                    for="class_id"
+                                >
+                                    Class
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="section-input-wrap">
+
+                                    <i class="fas fa-chalkboard"></i>
+
+                                    <select
+                                        name="class_id"
+                                        id="class_id"
+                                        class="section-select"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Class
+                                        </option>
+
+                                        {% set selected_class =
+                                            request.form.get(
+                                                'class_id',
+                                                section.class_id|string
+                                                if section.class_id is not none
+                                                else ''
+                                            )
+                                        %}
+
+                                        {% for cls in classes %}
+
+                                        <option
+                                            value="{{ cls.id }}"
+                                            data-institution-id="{{ cls.institution_id }}"
+                                            data-branch-id="{{ cls.branch_id }}"
+                                            data-academic-year-id="{{ cls.academic_year_id }}"
+                                            {% if selected_class|string == cls.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ cls.name }}
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                                <div class="section-help">
+                                    Only classes belonging to the selected branch and academic year are shown.
+                                </div>
+
+                                <div class="section-error">
+                                    Class is required.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Academic Year -->
+                            <div
+                                class="section-form-group"
+                                data-field="academic_year_id"
+                            >
+
+                                <label
+                                    class="section-form-label"
+                                    for="academic_year_id"
+                                >
+                                    Academic Year
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="section-input-wrap">
+
+                                    <i class="fas fa-calendar-alt"></i>
+
+                                    <select
+                                        name="academic_year_id"
+                                        id="academic_year_id"
+                                        class="section-select"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Academic Year
+                                        </option>
+
+                                        {% set selected_year =
+                                            request.form.get(
+                                                'academic_year_id',
+                                                section.academic_year_id|string
+                                                if section.academic_year_id is not none
+                                                else ''
+                                            )
+                                        %}
+
+                                        {% for year in academic_years %}
+
+                                        <option
+                                            value="{{ year.id }}"
+                                            data-institution-id="{{ year.institution_id if year.institution_id is defined else '' }}"
+                                            {% if selected_year|string == year.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {% if year.name is defined %}
+                                                {{ year.name }}
+                                            {% elif year.year is defined %}
+                                                {{ year.year }}
+                                            {% else %}
+                                                {{ year.id }}
+                                            {% endif %}
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                                <div class="section-help">
+                                    The academic year must match the selected class.
+                                </div>
+
+                                <div class="section-error">
+                                    Academic year is required.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     SECTION INFORMATION
+                     ================================================== -->
+                <div class="section-card">
+
+                    <div class="section-card-header">
+
+                        <h2>
+                            <i class="fas fa-layer-group"></i>
+                            Section Information
+                        </h2>
+
+                        <p>
+                            Update the section name, generated code,
+                            capacity, status, and description.
+                        </p>
+
+                    </div>
+
+
+                    <div class="section-card-body">
+
+                        <div class="section-form-grid">
+
+                            <!-- Section Name -->
+                            <div
+                                class="section-form-group"
+                                data-field="name"
+                            >
+
+                                <label
+                                    class="section-form-label"
+                                    for="name"
+                                >
+                                    Section Name
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="section-input-wrap">
+
+                                    <i class="fas fa-tag"></i>
+
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        id="name"
+                                        class="section-input"
+                                        maxlength="100"
+                                        placeholder="e.g. Morning A"
+                                        value="{{ request.form.get('name', section.name or '') }}"
+                                        required
+                                    >
+
+                                </div>
+
+                                <div class="section-help">
+                                    Enter the section name. The code is generated automatically.
+                                </div>
+
+                                <div class="section-error">
+                                    Section name is required.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Auto Code -->
+                            <div
+                                class="section-form-group"
+                                data-field="code"
+                            >
+
+                                <label
+                                    class="section-form-label"
+                                    for="code_preview"
+                                >
+                                    Section Code
+                                </label>
+
+                                <div class="section-code-box">
+
+                                    <div class="section-input-wrap">
+
+                                        <i class="fas fa-barcode"></i>
+
+                                        <input
+                                            type="text"
+                                            id="code_preview"
+                                            class="section-input section-code-input"
+                                            value="{{ section.code or '' }}"
+                                            readonly
+                                        >
+
+                                    </div>
+
+                                    <span class="section-code-badge">
+                                        <i class="fas fa-magic"></i>
+                                        Auto
+                                    </span>
+
+                                </div>
+
+                                <div class="section-help">
+                                    The code is generated from the section name and is not manually editable.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Capacity -->
+                            <div
+                                class="section-form-group"
+                                data-field="capacity"
+                            >
+
+                                <label
+                                    class="section-form-label"
+                                    for="capacity"
+                                >
+                                    Capacity
+                                </label>
+
+                                <div class="section-input-wrap">
+
+                                    <i class="fas fa-users"></i>
+
+                                    <input
+                                        type="number"
+                                        name="capacity"
+                                        id="capacity"
+                                        class="section-input"
+                                        min="0"
+                                        step="1"
+                                        placeholder="e.g. 40"
+                                        value="{{ request.form.get('capacity', section.capacity if section.capacity is not none else '') }}"
+                                    >
+
+                                </div>
+
+                                <div class="section-help">
+                                    Maximum number of students allowed in this section.
+                                </div>
+
+                                <div class="section-error">
+                                    Capacity must be a non-negative whole number.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Status -->
+                            <div
+                                class="section-form-group"
+                                data-field="status"
+                            >
+
+                                <label
+                                    class="section-form-label"
+                                    for="status"
+                                >
+                                    Status
+                                </label>
+
+                                <div class="section-input-wrap">
+
+                                    <i class="fas fa-toggle-on"></i>
+
+                                    {% set selected_status =
+                                        request.form.get(
+                                            'status',
+                                            section.status or 'active'
+                                        )
+                                    %}
+
+                                    <select
+                                        name="status"
+                                        id="status"
+                                        class="section-select"
+                                    >
+
+                                        <option
+                                            value="active"
+                                            {% if selected_status == 'active' %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Active
+                                        </option>
+
+                                        <option
+                                            value="inactive"
+                                            {% if selected_status == 'inactive' %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Inactive
+                                        </option>
+
+                                        <option
+                                            value="suspended"
+                                            {% if selected_status == 'suspended' %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Suspended
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                                <div
+                                    class="status-preview"
+                                    id="statusPreview"
+                                ></div>
+
+                            </div>
+
+
+                            <!-- Description -->
+                            <div
+                                class="section-form-group full"
+                                data-field="description"
+                            >
+
+                                <label
+                                    class="section-form-label"
+                                    for="description"
+                                >
+                                    Description
+                                </label>
+
+                                <div class="section-input-wrap">
+
+                                    <textarea
+                                        name="description"
+                                        id="description"
+                                        class="section-textarea"
+                                        maxlength="1000"
+                                        placeholder="Optional description about this section..."
+                                    >{{ request.form.get('description', section.description or '') }}</textarea>
+
+                                </div>
+
+                                <div class="section-help">
+                                    Add any useful information about this section.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Bottom Actions -->
+                        <div class="section-bottom-actions">
+
+                            <a
+                                href="{{ url_for('main.all_sections') }}"
+                                class="section-bottom-cancel"
+                            >
+                                <i class="fas fa-times"></i>
+                                Cancel
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="section-bottom-submit"
+                                id="bottomSubmitButton"
+                            >
+                                <i class="fas fa-save"></i>
+                                Save Changes
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+
+        <!-- ====================================================
+             SIDEBAR
+             ==================================================== -->
+        <aside class="section-sidebar">
+
+            <!-- ==================================================
+                 LIVE PREVIEW
+                 ================================================== -->
+            <div class="section-preview-card">
+
+                <div class="section-preview-top">
+
+                    <div class="section-preview-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+
+                    <h3 id="previewSectionName">
+                        {{ section.name or 'Section Name' }}
+                    </h3>
+
+                    <p id="previewSectionClass">
+                        Section Preview
+                    </p>
+
+                    <div class="section-preview-code">
+
+                        <i class="fas fa-barcode"></i>
+
+                        <span id="previewSectionCode">
+                            {{ section.code or 'SECTION-CODE' }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-preview-body">
+
+                    <!-- Institution -->
+                    <div class="section-preview-item">
+
+                        <div class="section-preview-item-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+
+                        <div class="section-preview-item-content">
+
+                            <span class="section-preview-item-label">
+                                Institution
+                            </span>
+
+                            <span
+                                class="section-preview-item-value"
+                                id="previewInstitution"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Branch -->
+                    <div class="section-preview-item">
+
+                        <div class="section-preview-item-icon">
+                            <i class="fas fa-code-branch"></i>
+                        </div>
+
+                        <div class="section-preview-item-content">
+
+                            <span class="section-preview-item-label">
+                                Branch
+                            </span>
+
+                            <span
+                                class="section-preview-item-value"
+                                id="previewBranch"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Class -->
+                    <div class="section-preview-item">
+
+                        <div class="section-preview-item-icon">
+                            <i class="fas fa-chalkboard"></i>
+                        </div>
+
+                        <div class="section-preview-item-content">
+
+                            <span class="section-preview-item-label">
+                                Class
+                            </span>
+
+                            <span
+                                class="section-preview-item-value"
+                                id="previewClass"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Academic Year -->
+                    <div class="section-preview-item">
+
+                        <div class="section-preview-item-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="section-preview-item-content">
+
+                            <span class="section-preview-item-label">
+                                Academic Year
+                            </span>
+
+                            <span
+                                class="section-preview-item-value"
+                                id="previewAcademicYear"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Capacity -->
+                    <div class="section-preview-item">
+
+                        <div class="section-preview-item-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+
+                        <div class="section-preview-item-content">
+
+                            <span class="section-preview-item-label">
+                                Capacity
+                            </span>
+
+                            <span
+                                class="section-preview-item-value"
+                                id="previewCapacity"
+                            >
+                                Unlimited
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 IMPORTANT INFORMATION
+                 ================================================== -->
+            <div class="section-info-card">
+
+                <div class="section-info-title">
+
+                    <i class="fas fa-info-circle"></i>
+
+                    Important Information
+
+                </div>
+
+                <ul class="section-info-list">
+
+                    <li>
+                        The section code is generated automatically from the section name.
+                    </li>
+
+                    <li>
+                        The selected class must belong to the selected institution and branch.
+                    </li>
+
+                    <li>
+                        The academic year must match the selected class.
+                    </li>
+
+                    <li>
+                        Changing the academic assignment may affect existing enrollments.
+                    </li>
+
+                    <li>
+                        Use <strong>Inactive</strong> when the section is temporarily not in use.
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- ==================================================
+                 ACTIONS
+                 ================================================== -->
+            <div class="section-actions-card">
+
+                <button
+                    type="submit"
+                    form="editSectionForm"
+                    class="section-submit-btn"
+                    id="sectionSubmitButton"
+                >
+                    <i
+                        class="fas fa-save"
+                        id="submitIcon"
+                    ></i>
+
+                    <span id="submitText">
+                        Save Changes
+                    </span>
+
+                    <i
+                        class="fas fa-spinner fa-spin section-submit-spinner"
+                        id="submitSpinner"
+                    ></i>
+                </button>
+
+
+                <a
+                    href="{{ url_for('main.all_sections') }}"
+                    class="section-cancel-btn"
+                >
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ========================================================
+       ELEMENTS
+       ======================================================== */
+
+    const form = document.getElementById("editSectionForm");
+
+    const institutionSelect =
+        document.getElementById("institution_id");
+
+    const branchSelect =
+        document.getElementById("branch_id");
+
+    const classSelect =
+        document.getElementById("class_id");
+
+    const academicYearSelect =
+        document.getElementById("academic_year_id");
+
+    const nameInput =
+        document.getElementById("name");
+
+    const codePreview =
+        document.getElementById("code_preview");
+
+    const capacityInput =
+        document.getElementById("capacity");
+
+    const statusSelect =
+        document.getElementById("status");
+
+    const notice =
+        document.getElementById("sectionFormNotice");
+
+    const noticeText =
+        document.getElementById("sectionFormNoticeText");
+
+    const submitButton =
+        document.getElementById("sectionSubmitButton");
+
+    const bottomSubmitButton =
+        document.getElementById("bottomSubmitButton");
+
+    const submitText =
+        document.getElementById("submitText");
+
+    const submitIcon =
+        document.getElementById("submitIcon");
+
+    const submitSpinner =
+        document.getElementById("submitSpinner");
+
+
+    /* ========================================================
+       PREVIEW ELEMENTS
+       ======================================================== */
+
+    const previewSectionName =
+        document.getElementById("previewSectionName");
+
+    const previewSectionCode =
+        document.getElementById("previewSectionCode");
+
+    const previewInstitution =
+        document.getElementById("previewInstitution");
+
+    const previewBranch =
+        document.getElementById("previewBranch");
+
+    const previewClass =
+        document.getElementById("previewClass");
+
+    const previewAcademicYear =
+        document.getElementById("previewAcademicYear");
+
+    const previewCapacity =
+        document.getElementById("previewCapacity");
+
+    const previewSectionClass =
+        document.getElementById("previewSectionClass");
+
+    const statusPreview =
+        document.getElementById("statusPreview");
+
+
+    /* ========================================================
+       ORIGINAL VALUES
+       ======================================================== */
+
+    const originalSectionCode =
+        {{ section.code|tojson }};
+
+    const originalClassId =
+        {{ section.class_id|tojson }};
+
+    const originalBranchId =
+        {{ section.branch_id|tojson }};
+
+    const originalInstitutionId =
+        {{ section.institution_id|tojson }};
+
+    const originalAcademicYearId =
+        {{ section.academic_year_id|tojson }};
+
+
+    /* ========================================================
+       GENERATE SECTION CODE
+       Mirrors backend generate_section_code()
+       ======================================================== */
+
+    function generateSectionCode(value) {
+
+        if (!value) {
+            return "";
+        }
+
+        let text = String(value);
+
+        /*
+         * Unicode normalization.
+         * Remove accents/diacritics.
+         */
+        try {
+            text = text
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+        } catch (error) {
+            // Ignore browsers without normalize support.
+        }
+
+        text = text
+            .toUpperCase()
+            .replace(/&/g, "AND")
+            .replace(/\+/g, "PLUS")
+            .replace(/[^A-Z0-9\s-]/g, "")
+            .trim()
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-");
+
+        return text.substring(0, 50);
+    }
+
+
+    /* ========================================================
+       UPDATE CODE
+       ======================================================== */
+
+    function updateSectionCode() {
+
+        const name =
+            nameInput.value.trim();
+
+        const generated =
+            generateSectionCode(name);
+
+        codePreview.value =
+            generated || originalSectionCode || "";
+
+        previewSectionCode.textContent =
+            generated || originalSectionCode || "SECTION-CODE";
+    }
+
+
+    /* ========================================================
+       UPDATE NAME PREVIEW
+       ======================================================== */
+
+    function updateNamePreview() {
+
+        const name =
+            nameInput.value.trim();
+
+        previewSectionName.textContent =
+            name || "Section Name";
+    }
+
+
+    /* ========================================================
+       GET SELECTED TEXT
+       ======================================================== */
+
+    function getSelectedText(selectElement) {
+
+        if (!selectElement || !selectElement.value) {
+            return "—";
+        }
+
+        const option =
+            selectElement.options[
+                selectElement.selectedIndex
+            ];
+
+        if (!option) {
+            return "—";
+        }
+
+        return option.textContent.trim() || "—";
+    }
+
+
+    /* ========================================================
+       UPDATE PREVIEW
+       ======================================================== */
+
+    function updatePreview() {
+
+        previewInstitution.textContent =
+            getSelectedText(institutionSelect);
+
+        previewBranch.textContent =
+            getSelectedText(branchSelect);
+
+        previewClass.textContent =
+            getSelectedText(classSelect);
+
+        previewAcademicYear.textContent =
+            getSelectedText(academicYearSelect);
+
+        const selectedClassOption =
+            classSelect.options[
+                classSelect.selectedIndex
+            ];
+
+        if (
+            selectedClassOption &&
+            selectedClassOption.value
+        ) {
+            previewSectionClass.textContent =
+                getSelectedText(classSelect);
+        } else {
+            previewSectionClass.textContent =
+                "Section Preview";
+        }
+
+        const capacity =
+            capacityInput.value.trim();
+
+        previewCapacity.textContent =
+            capacity !== ""
+                ? capacity + " students"
+                : "Unlimited";
+    }
+
+
+    /* ========================================================
+       STATUS PREVIEW
+       ======================================================== */
+
+    function updateStatusPreview() {
+
+        const status =
+            statusSelect.value;
+
+        let label = "Active";
+        let className = "status-active";
+        let icon = "fa-check-circle";
+
+        if (status === "inactive") {
+
+            label = "Inactive";
+            className = "status-inactive";
+            icon = "fa-pause-circle";
+
+        } else if (status === "suspended") {
+
+            label = "Suspended";
+            className = "status-suspended";
+            icon = "fa-ban";
+        }
+
+        statusPreview.innerHTML = `
+            <span class="status-pill ${className}">
+                <i class="fas ${icon}"></i>
+                ${label}
+            </span>
+        `;
+    }
+
+
+    /* ========================================================
+       FILTER BRANCHES
+       ======================================================== */
+
+    function filterBranches(preserveValue = true) {
+
+        const institutionId =
+            institutionSelect.value;
+
+        const currentValue =
+            branchSelect.value;
+
+        let firstVisibleValue = "";
+
+        Array.from(
+            branchSelect.options
+        ).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+            const visible =
+                institutionId &&
+                String(optionInstitution) ===
+                String(institutionId);
+
+            option.hidden = !visible;
+            option.disabled = !visible;
+
+            if (
+                visible &&
+                !firstVisibleValue
+            ) {
+                firstVisibleValue =
+                    option.value;
+            }
+        });
+
+
+        if (
+            preserveValue &&
+            currentValue
+        ) {
+
+            const currentOption =
+                Array.from(
+                    branchSelect.options
+                ).find(function (option) {
+
+                    return (
+                        option.value === currentValue &&
+                        !option.disabled
+                    );
+
+                });
+
+            if (currentOption) {
+                branchSelect.value =
+                    currentValue;
+            } else {
+                branchSelect.value = "";
+            }
+
+        } else {
+
+            branchSelect.value = "";
+        }
+
+
+        if (!institutionId) {
+            branchSelect.value = "";
+        }
+    }
+
+
+    /* ========================================================
+       FILTER ACADEMIC YEARS
+       ======================================================== */
+
+    function filterAcademicYears(
+        preserveValue = true
+    ) {
+
+        const institutionId =
+            institutionSelect.value;
+
+        const currentValue =
+            academicYearSelect.value;
+
+        Array.from(
+            academicYearSelect.options
+        ).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            /*
+             * Some AcademicYear models may not have
+             * institution_id.
+             */
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+            if (!optionInstitution) {
+
+                option.hidden = false;
+                option.disabled = false;
+
+                return;
+            }
+
+            const visible =
+                institutionId &&
+                String(optionInstitution) ===
+                String(institutionId);
+
+            option.hidden = !visible;
+            option.disabled = !visible;
+
+        });
+
+
+        if (preserveValue && currentValue) {
+
+            const currentOption =
+                Array.from(
+                    academicYearSelect.options
+                ).find(function (option) {
+
+                    return (
+                        option.value === currentValue &&
+                        !option.disabled
+                    );
+
+                });
+
+            if (currentOption) {
+                academicYearSelect.value =
+                    currentValue;
+            } else {
+                academicYearSelect.value = "";
+            }
+
+        } else {
+
+            academicYearSelect.value = "";
+        }
+    }
+
+
+    /* ========================================================
+       FILTER CLASSES
+       ======================================================== */
+
+    function filterClasses(
+        preserveValue = true
+    ) {
+
+        const institutionId =
+            institutionSelect.value;
+
+        const branchId =
+            branchSelect.value;
+
+        const academicYearId =
+            academicYearSelect.value;
+
+        const currentValue =
+            classSelect.value;
+
+
+        Array.from(
+            classSelect.options
+        ).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+            const optionBranch =
+                option.dataset.branchId || "";
+
+            const optionAcademicYear =
+                option.dataset.academicYearId || "";
+
+
+            const institutionMatch =
+                institutionId &&
+                String(optionInstitution) ===
+                String(institutionId);
+
+            const branchMatch =
+                branchId &&
+                String(optionBranch) ===
+                String(branchId);
+
+            const academicYearMatch =
+                academicYearId &&
+                String(optionAcademicYear) ===
+                String(academicYearId);
+
+
+            const visible =
+                Boolean(
+                    institutionMatch &&
+                    branchMatch &&
+                    academicYearMatch
+                );
+
+
+            option.hidden = !visible;
+            option.disabled = !visible;
+
+        });
+
+
+        if (preserveValue && currentValue) {
+
+            const currentOption =
+                Array.from(
+                    classSelect.options
+                ).find(function (option) {
+
+                    return (
+                        option.value === currentValue &&
+                        !option.disabled
+                    );
+
+                });
+
+            if (currentOption) {
+                classSelect.value =
+                    currentValue;
+            } else {
+                classSelect.value = "";
+            }
+
+        } else {
+
+            classSelect.value = "";
+        }
+    }
+
+
+    /* ========================================================
+       CLEAR FIELD ERROR
+       ======================================================== */
+
+    function clearFieldError(fieldName) {
+
+        const group =
+            document.querySelector(
+                `[data-field="${fieldName}"]`
+            );
+
+        if (group) {
+            group.classList.remove("has-error");
+        }
+    }
+
+
+    /* ========================================================
+       SET FIELD ERROR
+       ======================================================== */
+
+    function setFieldError(
+        fieldName,
+        message = null
+    ) {
+
+        const group =
+            document.querySelector(
+                `[data-field="${fieldName}"]`
+            );
+
+        if (!group) {
+            return;
+        }
+
+        group.classList.add("has-error");
+
+        if (message) {
+
+            const error =
+                group.querySelector(
+                    ".section-error"
+                );
+
+            if (error) {
+                error.textContent = message;
+            }
+        }
+    }
+
+
+    /* ========================================================
+       VALIDATION
+       ======================================================== */
+
+    function validateForm() {
+
+        let valid = true;
+
+        notice.classList.remove("show");
+
+
+        [
+            "institution_id",
+            "branch_id",
+            "class_id",
+            "academic_year_id",
+            "name",
+            "capacity"
+        ].forEach(clearFieldError);
+
+
+        /* Institution */
+
+        if (!institutionSelect.value) {
+
+            setFieldError(
+                "institution_id",
+                "Institution is required."
+            );
+
+            valid = false;
+        }
+
+
+        /* Branch */
+
+        if (!branchSelect.value) {
+
+            setFieldError(
+                "branch_id",
+                "Branch is required."
+            );
+
+            valid = false;
+        }
+
+
+        /* Academic Year */
+
+        if (!academicYearSelect.value) {
+
+            setFieldError(
+                "academic_year_id",
+                "Academic year is required."
+            );
+
+            valid = false;
+        }
+
+
+        /* Class */
+
+        if (!classSelect.value) {
+
+            setFieldError(
+                "class_id",
+                "Class is required."
+            );
+
+            valid = false;
+
+        } else {
+
+            const option =
+                classSelect.options[
+                    classSelect.selectedIndex
+                ];
+
+            const classInstitution =
+                option.dataset.institutionId;
+
+            const classBranch =
+                option.dataset.branchId;
+
+            const classAcademicYear =
+                option.dataset.academicYearId;
+
+
+            if (
+                String(classInstitution) !==
+                String(institutionSelect.value)
+            ) {
+
+                setFieldError(
+                    "class_id",
+                    "Selected class does not belong to the selected institution."
+                );
+
+                valid = false;
+            }
+
+
+            if (
+                String(classBranch) !==
+                String(branchSelect.value)
+            ) {
+
+                setFieldError(
+                    "class_id",
+                    "Selected class does not belong to the selected branch."
+                );
+
+                valid = false;
+            }
+
+
+            if (
+                String(classAcademicYear) !==
+                String(academicYearSelect.value)
+            ) {
+
+                setFieldError(
+                    "class_id",
+                    "Selected class does not belong to the selected academic year."
+                );
+
+                valid = false;
+            }
+        }
+
+
+        /* Name */
+
+        const name =
+            nameInput.value.trim();
+
+        if (!name) {
+
+            setFieldError(
+                "name",
+                "Section name is required."
+            );
+
+            valid = false;
+
+        } else if (name.length > 100) {
+
+            setFieldError(
+                "name",
+                "Section name cannot exceed 100 characters."
+            );
+
+            valid = false;
+        }
+
+
+        /* Capacity */
+
+        const capacity =
+            capacityInput.value.trim();
+
+        if (capacity !== "") {
+
+            const number =
+                Number(capacity);
+
+            if (
+                !Number.isInteger(number) ||
+                number < 0
+            ) {
+
+                setFieldError(
+                    "capacity",
+                    "Capacity must be a non-negative whole number."
+                );
+
+                valid = false;
+            }
+        }
+
+
+        /* Notice */
+
+        if (!valid) {
+
+            noticeText.textContent =
+                "Please review the highlighted fields and correct the information before saving.";
+
+            notice.classList.add("show");
+
+            const firstError =
+                document.querySelector(
+                    ".section-form-group.has-error"
+                );
+
+            if (firstError) {
+
+                firstError.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+            }
+        }
+
+
+        return valid;
+    }
+
+
+    /* ========================================================
+       EVENT: INSTITUTION CHANGE
+       ======================================================== */
+
+    institutionSelect.addEventListener(
+        "change",
+        function () {
+
+            filterBranches(false);
+
+            filterAcademicYears(false);
+
+            filterClasses(false);
+
+            updatePreview();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: BRANCH CHANGE
+       ======================================================== */
+
+    branchSelect.addEventListener(
+        "change",
+        function () {
+
+            filterClasses(false);
+
+            updatePreview();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: ACADEMIC YEAR CHANGE
+       ======================================================== */
+
+    academicYearSelect.addEventListener(
+        "change",
+        function () {
+
+            filterClasses(false);
+
+            updatePreview();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: CLASS CHANGE
+       ======================================================== */
+
+    classSelect.addEventListener(
+        "change",
+        function () {
+
+            updatePreview();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: NAME INPUT
+       ======================================================== */
+
+    nameInput.addEventListener(
+        "input",
+        function () {
+
+            clearFieldError("name");
+
+            updateSectionCode();
+
+            updateNamePreview();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: CAPACITY
+       ======================================================== */
+
+    capacityInput.addEventListener(
+        "input",
+        function () {
+
+            clearFieldError("capacity");
+
+            updatePreview();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: STATUS
+       ======================================================== */
+
+    statusSelect.addEventListener(
+        "change",
+        function () {
+
+            updateStatusPreview();
+
+        }
+    );
+
+
+    /* ========================================================
+       FORM SUBMIT
+       ======================================================== */
+
+    form.addEventListener(
+        "submit",
+        function (event) {
+
+            if (!validateForm()) {
+
+                event.preventDefault();
+
+                return;
+            }
+
+
+            /*
+             * Prevent duplicate submissions.
+             */
+
+            submitButton.disabled = true;
+
+            if (bottomSubmitButton) {
+                bottomSubmitButton.disabled = true;
+            }
+
+
+            submitText.textContent =
+                "Saving Changes...";
+
+            submitIcon.style.display =
+                "none";
+
+            submitSpinner.style.display =
+                "inline-block";
+
+        }
+    );
+
+
+    /* ========================================================
+       INITIALIZATION
+       ======================================================== */
+
+    /*
+     * IMPORTANT:
+     * We preserve the current selected values while
+     * filtering, so editing an existing section does not
+     * accidentally lose its academic assignment.
+     */
+
+    const initialInstitution =
+        institutionSelect.value;
+
+    const initialBranch =
+        branchSelect.value;
+
+    const initialClass =
+        classSelect.value;
+
+    const initialAcademicYear =
+        academicYearSelect.value;
+
+
+    filterBranches(true);
+
+    /*
+     * Restore branch after filtering.
+     */
+    if (initialBranch) {
+        branchSelect.value =
+            initialBranch;
+    }
+
+
+    filterAcademicYears(true);
+
+    /*
+     * Restore academic year after filtering.
+     */
+    if (initialAcademicYear) {
+        academicYearSelect.value =
+            initialAcademicYear;
+    }
+
+
+    filterClasses(true);
+
+    /*
+     * Restore class after all filters.
+     */
+    if (initialClass) {
+        classSelect.value =
+            initialClass;
+    }
+
+
+    /*
+     * If class was supplied by original model,
+     * make one final attempt to preserve it.
+     */
+    if (
+        originalClassId !== null &&
+        originalClassId !== undefined
+    ) {
+
+        const option =
+            Array.from(
+                classSelect.options
+            ).find(function (item) {
+
+                return String(item.value) ===
+                    String(originalClassId);
+
+            });
+
+        if (
+            option &&
+            !option.disabled
+        ) {
+            classSelect.value =
+                String(originalClassId);
+        }
+    }
+
+
+    /*
+     * Update all previews.
+     */
+
+    updateSectionCode();
+
+    updateNamePreview();
+
+    updatePreview();
+
+    updateStatusPreview();
+
+
+    /*
+     * Remove error state while user changes fields.
+     */
+
+    [
+        institutionSelect,
+        branchSelect,
+        classSelect,
+        academicYearSelect,
+        capacityInput,
+        statusSelect
+    ].forEach(function (element) {
+
+        element.addEventListener(
+            "change",
+            function () {
+
+                const name =
+                    element.name;
+
+                if (name) {
+                    clearFieldError(name);
+                }
+
+            }
+        );
+
+    });
+
+
+    /*
+     * Name validation on blur.
+     */
+
+    nameInput.addEventListener(
+        "blur",
+        function () {
+
+            if (!nameInput.value.trim()) {
+
+                setFieldError(
+                    "name",
+                    "Section name is required."
+                );
+
+            } else {
+
+                clearFieldError("name");
+            }
+
+        }
+    );
+
+
+});
+
+</script>
+
+{% endblock %}

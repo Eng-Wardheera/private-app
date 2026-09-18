@@ -1,0 +1,2374 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+/* ============================================================
+   ADD TEACHER PAGE
+   ============================================================ */
+
+.teacher-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 10px 0 40px;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.page-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: #06245f;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    box-shadow: 0 8px 20px rgba(6, 36, 95, .15);
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 25px;
+    font-weight: 800;
+    color: #162033;
+}
+
+.page-header p {
+    margin: 5px 0 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.back-btn {
+    height: 42px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid #dbe2ea;
+    background: #fff;
+    color: #344054;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    transition: .2s ease;
+}
+
+.back-btn:hover {
+    background: #f8fafc;
+    border-color: #bfc9d6;
+    color: #06245f;
+}
+
+/* ============================================================
+   FORM LAYOUT
+   ============================================================ */
+
+.teacher-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 22px;
+    align-items: start;
+}
+
+.form-card {
+    background: #fff;
+    border: 1px solid #e5eaf0;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, .05);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 20px 22px;
+    border-bottom: 1px solid #edf0f4;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-header-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #eef4ff;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #172033;
+}
+
+.card-header p {
+    margin: 3px 0 0;
+    color: #7a8699;
+    font-size: 12px;
+}
+
+.card-body {
+    padding: 22px;
+}
+
+/* ============================================================
+   SECTION
+   ============================================================ */
+
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.section-title i {
+    color: #06245f;
+    font-size: 14px;
+}
+
+.section-title span {
+    font-size: 14px;
+    font-weight: 800;
+    color: #253047;
+}
+
+/* ============================================================
+   GRID
+   ============================================================ */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.form-grid.three {
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* ============================================================
+   FORM GROUP
+   ============================================================ */
+
+.form-group {
+    min-width: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #344054;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.input-wrap {
+    position: relative;
+}
+
+.input-wrap > i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8995a7;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.input-wrap input,
+.input-wrap select,
+.input-wrap textarea {
+    width: 100%;
+    border: 1px solid #d8dee8;
+    border-radius: 10px;
+    background: #fff;
+    color: #1f2937;
+    font-size: 13px;
+    outline: none;
+    transition: .2s ease;
+    box-sizing: border-box;
+}
+
+.input-wrap input,
+.input-wrap select {
+    height: 44px;
+    padding: 0 13px 0 39px;
+}
+
+.input-wrap textarea {
+    min-height: 115px;
+    padding: 12px 13px 12px 39px;
+    resize: vertical;
+}
+
+.input-wrap input:focus,
+.input-wrap select:focus,
+.input-wrap textarea:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.input-wrap select {
+    cursor: pointer;
+    appearance: auto;
+}
+
+.input-wrap input:disabled,
+.input-wrap select:disabled {
+    background: #f3f5f8;
+    color: #98a2b3;
+    cursor: not-allowed;
+}
+
+.field-help {
+    display: block;
+    margin-top: 6px;
+    color: #7b8798;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.field-help.success-help {
+    color: #16803c;
+}
+
+.field-help.error-help {
+    color: #d92d20;
+}
+
+/* ============================================================
+   PASSWORD
+   ============================================================ */
+
+.password-wrap {
+    position: relative;
+}
+
+.password-wrap input {
+    padding-right: 45px !important;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: #7b8798;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px;
+}
+
+.password-toggle:hover {
+    color: #06245f;
+}
+
+/* ============================================================
+   RADIO
+   ============================================================ */
+
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.radio-option {
+    position: relative;
+}
+
+.radio-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.radio-option label {
+    margin: 0;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: 1px solid #d8dee8;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    color: #536174;
+    font-size: 12px;
+    font-weight: 700;
+    transition: .2s ease;
+}
+
+.radio-option input:checked + label {
+    background: #eef4ff;
+    border-color: #06245f;
+    color: #06245f;
+}
+
+.radio-option label i {
+    font-size: 12px;
+}
+
+/* ============================================================
+   CHECKBOXES
+   ============================================================ */
+
+.check-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.check-card {
+    border: 1px solid #dce2ea;
+    border-radius: 11px;
+    padding: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.check-card:hover {
+    border-color: #b9c4d2;
+    background: #fafbfc;
+}
+
+.check-card input {
+    width: 17px;
+    height: 17px;
+    accent-color: #06245f;
+    cursor: pointer;
+}
+
+.check-card-content strong {
+    display: block;
+    color: #344054;
+    font-size: 12px;
+}
+
+.check-card-content span {
+    display: block;
+    color: #8792a3;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+/* ============================================================
+   PHOTO CARD
+   ============================================================ */
+
+.photo-card {
+    background: #fff;
+    border: 1px solid #e5eaf0;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, .05);
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+}
+
+.photo-header {
+    padding: 20px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.photo-header h3 {
+    margin: 0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.photo-header p {
+    margin: 5px 0 0;
+    color: #7b8798;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.photo-body {
+    padding: 20px;
+}
+
+/* ============================================================
+   PHOTO PREVIEW
+   ============================================================ */
+
+.photo-preview {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 18px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #dfe5ed;
+    background: #f5f7fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+.photo-placeholder {
+    text-align: center;
+    color: #98a2b3;
+}
+
+.photo-placeholder i {
+    display: block;
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.photo-placeholder span {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   FILE INPUT
+   ============================================================ */
+
+.file-input {
+    position: relative;
+}
+
+.file-input input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.file-label {
+    height: 42px;
+    border: 1px solid #d8dee8;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #344054;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.file-label:hover {
+    border-color: #06245f;
+    color: #06245f;
+    background: #f8faff;
+}
+
+.file-name {
+    margin-top: 8px;
+    text-align: center;
+    color: #7b8798;
+    font-size: 11px;
+    word-break: break-word;
+}
+
+/* ============================================================
+   AUTO FIELD
+   ============================================================ */
+
+.auto-field {
+    height: 44px;
+    padding: 0 13px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.auto-field i {
+    color: #06245f;
+}
+
+/* ============================================================
+   INFORMATION BOX
+   ============================================================ */
+
+.info-box {
+    margin-top: 18px;
+    padding: 13px;
+    border-radius: 10px;
+    background: #f4f7fb;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.info-box i {
+    color: #06245f;
+    margin-top: 2px;
+}
+
+.info-box p {
+    margin: 0;
+    color: #667085;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.form-actions {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #edf0f4;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn {
+    min-height: 43px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.btn-secondary {
+    background: #fff;
+    border-color: #d8dee8;
+    color: #475467;
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+    color: #172033;
+}
+
+.btn-primary {
+    background: #06245f;
+    color: #fff;
+    border-color: #06245f;
+    box-shadow: 0 6px 15px rgba(6, 36, 95, .16);
+}
+
+.btn-primary:hover {
+    background: #041d4d;
+    border-color: #041d4d;
+    transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ============================================================
+   ERROR STATE
+   ============================================================ */
+
+.has-error input,
+.has-error select,
+.has-error textarea {
+    border-color: #dc3545;
+}
+
+.error-message {
+    margin-top: 5px;
+    color: #dc3545;
+    font-size: 11px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    .teacher-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .photo-card {
+        position: static;
+    }
+
+    .photo-body {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+    }
+
+    .photo-preview {
+        margin: 0;
+        flex-shrink: 0;
+    }
+
+    .photo-upload-area {
+        flex: 1;
+    }
+}
+
+@media (max-width: 800px) {
+
+    .form-grid,
+    .form-grid.three {
+        grid-template-columns: 1fr;
+    }
+
+    .full-width {
+        grid-column: auto;
+    }
+
+    .page-header {
+        align-items: flex-start;
+    }
+
+    .page-header h1 {
+        font-size: 21px;
+    }
+
+    .card-body {
+        padding: 17px;
+    }
+
+    .photo-body {
+        display: block;
+    }
+
+    .photo-preview {
+        margin: 0 auto 18px;
+    }
+}
+
+@media (max-width: 560px) {
+
+    .teacher-page {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .page-header {
+        flex-direction: column;
+    }
+
+    .back-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    .check-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .radio-group {
+        flex-direction: column;
+    }
+
+    .radio-option label {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+</style>
+
+
+<div class="teacher-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="page-header">
+
+        <div class="page-header-left">
+
+            <div class="page-header-icon">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+
+            <div>
+                <h1>Add Teacher</h1>
+
+                <p>
+                    Create a new teacher profile and account.
+                </p>
+            </div>
+
+        </div>
+
+        <a
+            href="{{ url_for('main.all_teachers') }}"
+            class="back-btn"
+        >
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to Teachers
+        </a>
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN LAYOUT
+         ======================================================== -->
+
+    <div class="teacher-layout">
+
+
+        <!-- ====================================================
+             FORM CARD
+             ==================================================== -->
+
+        <div class="form-card">
+
+            <div class="card-header">
+
+                <div class="card-header-icon">
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+
+                <div>
+                    <h2>Teacher Information</h2>
+
+                    <p>
+                        Enter the teacher's personal,
+                        professional and account details.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <form
+                    method="POST"
+                    action="{{ url_for('main.add_teacher') }}"
+                    enctype="multipart/form-data"
+                    id="teacherForm"
+                >
+
+                    <!-- ==================================================
+                         ORGANIZATION
+                         ================================================== -->
+
+                    <div class="form-section">
+
+                        <div class="section-title">
+
+                            <i class="fa-solid fa-building-columns"></i>
+
+                            <span>
+                                Organization
+                            </span>
+
+                        </div>
+
+
+                        <div class="form-grid">
+
+                            <!-- INSTITUTION -->
+
+                            <div class="form-group">
+
+                                <label for="institution_id">
+                                    Institution
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-building"></i>
+
+                                    <select
+                                        name="institution_id"
+                                        id="institution_id"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Institution
+                                        </option>
+
+                                        {% for institution in institutions %}
+
+                                            <option
+                                                value="{{ institution.id }}"
+                                                {% if request.form.get(
+                                                    'institution_id',
+                                                    institution_id|string
+                                                    if institution_id
+                                                    else ''
+                                                ) == institution.id|string %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                {{ institution.name }}
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                                <small class="field-help">
+                                    Select the institution where the
+                                    teacher works.
+                                </small>
+
+                            </div>
+
+
+                            <!-- BRANCH -->
+
+                            <div class="form-group">
+
+                                <label for="branch_id">
+                                    Branch
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-code-branch"></i>
+
+                                    <select
+                                        name="branch_id"
+                                        id="branch_id"
+                                        required
+                                        disabled
+                                    >
+
+                                        <option value="">
+                                            Select Branch
+                                        </option>
+
+                                        {% for branch in branches %}
+
+                                            <option
+                                                value="{{ branch.id }}"
+                                                data-institution="{{ branch.institution_id }}"
+                                                {% if request.form.get('branch_id') == branch.id|string %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                {{ branch.name }}
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                                <small
+                                    class="field-help"
+                                    id="branch-help"
+                                >
+                                    Select an institution first.
+                                </small>
+
+                            </div>
+
+
+                            <!-- ROLL NUMBER -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Teacher Roll No
+                                </label>
+
+                                <div class="auto-field">
+
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                                    <span>
+                                        Automatically generated
+                                    </span>
+
+                                </div>
+
+                                <small class="field-help">
+                                    The system will generate the teacher
+                                    roll number automatically.
+                                </small>
+
+                            </div>
+
+
+                            <!-- ROLE -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    System Role
+                                </label>
+
+                                <div class="auto-field">
+
+                                    <i class="fa-solid fa-user-shield"></i>
+
+                                    <span>
+                                        Teacher
+                                    </span>
+
+                                </div>
+
+                                <small class="field-help">
+                                    The account role is automatically
+                                    assigned as Teacher.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         BASIC INFORMATION
+                         ================================================== -->
+
+                    <div class="form-section">
+
+                        <div class="section-title">
+
+                            <i class="fa-solid fa-user"></i>
+
+                            <span>
+                                Basic Information
+                            </span>
+
+                        </div>
+
+
+                        <div class="form-grid">
+
+                            <!-- FULL NAME -->
+
+                            <div class="form-group">
+
+                                <label for="full_name">
+                                    Full Name
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-user"></i>
+
+                                    <input
+                                        type="text"
+                                        name="full_name"
+                                        id="full_name"
+                                        maxlength="200"
+                                        required
+                                        autocomplete="name"
+                                        placeholder="Enter teacher full name"
+                                        value="{{ request.form.get('full_name', '') }}"
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- GENDER -->
+
+                            <div class="form-group">
+
+                                <label for="gender">
+                                    Gender
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-venus-mars"></i>
+
+                                    <select
+                                        name="gender"
+                                        id="gender"
+                                    >
+
+                                        <option value="">
+                                            Select Gender
+                                        </option>
+
+                                        {% for gender_value in teacher_genders %}
+
+                                            <option
+                                                value="{{ gender_value }}"
+                                                {% if request.form.get('gender', '')|lower == gender_value|lower %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                {{ gender_value|replace('_', ' ')|title }}
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- DATE OF BIRTH -->
+
+                            <div class="form-group">
+
+                                <label for="date_of_birth">
+                                    Date of Birth
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-calendar"></i>
+
+                                    <input
+                                        type="date"
+                                        name="date_of_birth"
+                                        id="date_of_birth"
+                                        value="{{ request.form.get('date_of_birth', '') }}"
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- PHONE -->
+
+                            <div class="form-group">
+
+                                <label for="phone">
+                                    Phone
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-phone"></i>
+
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        id="phone"
+                                        maxlength="50"
+                                        autocomplete="tel"
+                                        placeholder="Enter phone number"
+                                        value="{{ request.form.get('phone', '') }}"
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- CITY -->
+
+                            <div class="form-group">
+
+                                <label for="city">
+                                    City
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-city"></i>
+
+                                    <input
+                                        type="text"
+                                        name="city"
+                                        id="city"
+                                        maxlength="100"
+                                        placeholder="Enter city"
+                                        value="{{ request.form.get('city', '') }}"
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ADDRESS -->
+
+                            <div class="form-group">
+
+                                <label for="address">
+                                    Address
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-location-dot"></i>
+
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        id="address"
+                                        maxlength="255"
+                                        placeholder="Enter address"
+                                        value="{{ request.form.get('address', '') }}"
+                                    >
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         PROFESSIONAL INFORMATION
+                         ================================================== -->
+
+                    <div class="form-section">
+
+                        <div class="section-title">
+
+                            <i class="fa-solid fa-graduation-cap"></i>
+
+                            <span>
+                                Professional Information
+                            </span>
+
+                        </div>
+
+
+                        <div class="form-grid three">
+
+                            <!-- QUALIFICATION -->
+
+                            <div class="form-group">
+
+                                <label for="qualification">
+                                    Qualification
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-certificate"></i>
+
+                                    <input
+                                        type="text"
+                                        name="qualification"
+                                        id="qualification"
+                                        maxlength="200"
+                                        placeholder="e.g. Bachelor's Degree"
+                                        value="{{ request.form.get('qualification', '') }}"
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- SPECIALIZATION -->
+
+                            <div class="form-group">
+
+                                <label for="specialization">
+                                    Specialization
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-book-open"></i>
+
+                                    <input
+                                        type="text"
+                                        name="specialization"
+                                        id="specialization"
+                                        maxlength="200"
+                                        placeholder="e.g. Mathematics"
+                                        value="{{ request.form.get('specialization', '') }}"
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- EXPERIENCE -->
+
+                            <div class="form-group">
+
+                                <label for="experience_years">
+                                    Experience
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-briefcase"></i>
+
+                                    <input
+                                        type="number"
+                                        name="experience_years"
+                                        id="experience_years"
+                                        min="0"
+                                        max="100"
+                                        step="1"
+                                        placeholder="Years"
+                                        value="{{ request.form.get('experience_years', '') }}"
+                                    >
+
+                                </div>
+
+                                <small class="field-help">
+                                    Number of teaching experience years.
+                                </small>
+
+                            </div>
+
+
+                            <!-- HIRE DATE -->
+
+                            <div class="form-group">
+
+                                <label for="hire_date">
+                                    Hire Date
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-calendar-check"></i>
+
+                                    <input
+                                        type="date"
+                                        name="hire_date"
+                                        id="hire_date"
+                                        value="{{ request.form.get('hire_date', '') }}"
+                                    >
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         ACCOUNT INFORMATION
+                         ================================================== -->
+
+                    <div class="form-section">
+
+                        <div class="section-title">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <span>
+                                Account Information
+                            </span>
+
+                        </div>
+
+
+                        <div class="form-grid">
+
+                            <!-- USERNAME -->
+
+                            <div class="form-group">
+
+                                <label for="username">
+                                    Username
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-at"></i>
+
+                                    <input
+                                        type="text"
+                                        name="username"
+                                        id="username"
+                                        maxlength="150"
+                                        required
+                                        autocomplete="username"
+                                        placeholder="Enter username"
+                                        value="{{ request.form.get('username', '') }}"
+                                    >
+
+                                </div>
+
+                                <small class="field-help">
+                                    Username must be unique across
+                                    teachers and user accounts.
+                                </small>
+
+                            </div>
+
+
+                            <!-- EMAIL -->
+
+                            <div class="form-group">
+
+                                <label for="email">
+                                    Email
+                                </label>
+
+                                <div class="input-wrap">
+
+                                    <i class="fa-solid fa-envelope"></i>
+
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        id="email"
+                                        maxlength="150"
+                                        autocomplete="email"
+                                        placeholder="teacher@example.com"
+                                        value="{{ request.form.get('email', '') }}"
+                                    >
+
+                                </div>
+
+                                <small class="field-help">
+                                    Email must be unique if provided.
+                                </small>
+
+                            </div>
+
+
+                            <!-- PASSWORD -->
+
+                            <div class="form-group">
+
+                                <label for="password">
+                                    Password
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="input-wrap password-wrap">
+
+                                    <i class="fa-solid fa-key"></i>
+
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        id="password"
+                                        minlength="6"
+                                        required
+                                        autocomplete="new-password"
+                                        placeholder="Enter password"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        data-target="password"
+                                        aria-label="Show password"
+                                    >
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+
+                                </div>
+
+                                <small class="field-help">
+                                    Minimum 6 characters.
+                                </small>
+
+                            </div>
+
+
+                            <!-- CONFIRM PASSWORD -->
+
+                            <div class="form-group">
+
+                                <label for="confirm_password">
+                                    Confirm Password
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="input-wrap password-wrap">
+
+                                    <i class="fa-solid fa-shield-halved"></i>
+
+                                    <input
+                                        type="password"
+                                        name="confirm_password"
+                                        id="confirm_password"
+                                        minlength="6"
+                                        required
+                                        autocomplete="new-password"
+                                        placeholder="Confirm password"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        data-target="confirm_password"
+                                        aria-label="Show password"
+                                    >
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         STATUS
+                         ================================================== -->
+
+                    <div class="form-section">
+
+                        <div class="section-title">
+
+                            <i class="fa-solid fa-toggle-on"></i>
+
+                            <span>
+                                Teacher Status
+                            </span>
+
+                        </div>
+
+
+                        <div class="form-grid">
+
+                            <!-- STATUS -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Status
+                                </label>
+
+                                <div class="radio-group">
+
+                                    {% for status_value in teacher_statuses %}
+
+                                        <div class="radio-option">
+
+                                            <input
+                                                type="radio"
+                                                name="status"
+                                                id="status_{{ loop.index }}"
+                                                value="{{ status_value }}"
+                                                {% if request.form.get('status', 'active')|lower == status_value|lower %}
+                                                    checked
+                                                {% endif %}
+                                            >
+
+                                            <label
+                                                for="status_{{ loop.index }}"
+                                            >
+                                                {% if status_value|lower == 'active' %}
+                                                    <i class="fa-solid fa-circle-check"></i>
+                                                {% elif status_value|lower == 'inactive' %}
+                                                    <i class="fa-solid fa-circle-pause"></i>
+                                                {% elif status_value|lower == 'suspended' %}
+                                                    <i class="fa-solid fa-ban"></i>
+                                                {% else %}
+                                                    <i class="fa-solid fa-circle"></i>
+                                                {% endif %}
+
+                                                {{ status_value|replace('_', ' ')|title }}
+
+                                            </label>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ACCOUNT SETTINGS -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Account Settings
+                                </label>
+
+                                <div class="check-grid">
+
+                                    <label class="check-card">
+
+                                        <input
+                                            type="checkbox"
+                                            name="is_active"
+                                            value="1"
+                                            {% if request.form.get('is_active') in ['1', 'true', 'on', 'yes'] or not request.form %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <div class="check-card-content">
+
+                                            <strong>
+                                                Active Account
+                                            </strong>
+
+                                            <span>
+                                                Teacher can access the system.
+                                            </span>
+
+                                        </div>
+
+                                    </label>
+
+
+                                    <label class="check-card">
+
+                                        <input
+                                            type="checkbox"
+                                            name="is_verified"
+                                            value="1"
+                                            {% if request.form.get('is_verified') in ['1', 'true', 'on', 'yes'] %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <div class="check-card-content">
+
+                                            <strong>
+                                                Verified
+                                            </strong>
+
+                                            <span>
+                                                Mark teacher as verified.
+                                            </span>
+
+                                        </div>
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         NOTES
+                         ================================================== -->
+
+                    <div class="form-section">
+
+                        <div class="section-title">
+
+                            <i class="fa-solid fa-note-sticky"></i>
+
+                            <span>
+                                Additional Notes
+                            </span>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="notes">
+                                Notes
+                            </label>
+
+                            <div class="input-wrap">
+
+                                <i class="fa-solid fa-pen"></i>
+
+                                <textarea
+                                    name="notes"
+                                    id="notes"
+                                    placeholder="Add any additional information about this teacher..."
+                                >{{ request.form.get('notes', '') }}</textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         FORM ACTIONS
+                         ================================================== -->
+
+                    <div class="form-actions">
+
+                        <a
+                            href="{{ url_for('main.all_teachers') }}"
+                            class="btn btn-secondary"
+                        >
+                            <i class="fa-solid fa-xmark"></i>
+                            Cancel
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            id="submitButton"
+                        >
+                            <i class="fa-solid fa-user-plus"></i>
+                            Create Teacher
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             PHOTO CARD
+             ==================================================== -->
+
+        <div class="photo-card">
+
+            <div class="photo-header">
+
+                <h3>
+                    <i class="fa-solid fa-camera"></i>
+                    Profile Photo
+                </h3>
+
+                <p>
+                    Upload a clear profile photo for the teacher.
+                </p>
+
+            </div>
+
+
+            <div class="photo-body">
+
+                <div class="photo-preview">
+
+                    <img
+                        id="photoPreview"
+                        src=""
+                        alt="Teacher photo preview"
+                    >
+
+                    <div
+                        class="photo-placeholder"
+                        id="photoPlaceholder"
+                    >
+                        <i class="fa-solid fa-user"></i>
+
+                        <span>
+                            No photo selected
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="photo-upload-area">
+
+                    <div class="file-input">
+
+                        <input
+                            type="file"
+                            name="photo"
+                            id="photo"
+                            accept="image/jpeg,image/png,image/webp"
+                        >
+
+                        <label
+                            for="photo"
+                            class="file-label"
+                        >
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            Choose Photo
+                        </label>
+
+                    </div>
+
+
+                    <div
+                        class="file-name"
+                        id="fileName"
+                    >
+                        JPG, PNG or WEBP
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <p>
+                            The image will be uploaded securely to
+                            Cloudinary. Recommended image size is
+                            square and no larger than 800 × 800 pixels.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ============================================================
+       ELEMENTS
+       ============================================================ */
+
+    const institutionSelect =
+        document.getElementById("institution_id");
+
+    const branchSelect =
+        document.getElementById("branch_id");
+
+    const branchHelp =
+        document.getElementById("branch-help");
+
+    const photoInput =
+        document.getElementById("photo");
+
+    const photoPreview =
+        document.getElementById("photoPreview");
+
+    const photoPlaceholder =
+        document.getElementById("photoPlaceholder");
+
+    const fileName =
+        document.getElementById("fileName");
+
+    const teacherForm =
+        document.getElementById("teacherForm");
+
+    const submitButton =
+        document.getElementById("submitButton");
+
+
+    /* ============================================================
+       INITIAL VALUES
+       ============================================================ */
+
+    const initialBranchId =
+        "{{ request.form.get('branch_id', '')|e }}";
+
+
+    /* ============================================================
+       SAVE ALL BRANCHES
+       ============================================================ */
+
+    const allBranches = Array.from(
+        branchSelect.querySelectorAll(
+            "option[data-institution]"
+        )
+    ).map(function (option) {
+
+        return {
+            value: option.value,
+
+            text: option.textContent.trim(),
+
+            institutionId:
+                option.getAttribute(
+                    "data-institution"
+                )
+        };
+
+    });
+
+
+    /* ============================================================
+       UPDATE BRANCHES
+       ============================================================ */
+
+    function updateBranches(
+        preserveSelected = false
+    ) {
+
+        const institutionId =
+            institutionSelect.value;
+
+        const selectedBranch =
+            preserveSelected
+                ? (
+                    branchSelect.value ||
+                    initialBranchId
+                )
+                : "";
+
+
+        /* --------------------------------------------------------
+           Clear branches
+           -------------------------------------------------------- */
+
+        branchSelect.innerHTML = "";
+
+
+        /* --------------------------------------------------------
+           Default option
+           -------------------------------------------------------- */
+
+        const defaultOption =
+            document.createElement("option");
+
+        defaultOption.value = "";
+
+        defaultOption.textContent =
+            institutionId
+                ? "Select Branch"
+                : "Select Institution First";
+
+        branchSelect.appendChild(
+            defaultOption
+        );
+
+
+        /* --------------------------------------------------------
+           No institution
+           -------------------------------------------------------- */
+
+        if (!institutionId) {
+
+            branchSelect.disabled = true;
+
+            branchHelp.textContent =
+                "Select an institution first.";
+
+            branchHelp.classList.remove(
+                "success-help"
+            );
+
+            branchHelp.classList.remove(
+                "error-help"
+            );
+
+            return;
+        }
+
+
+        /* --------------------------------------------------------
+           Find matching branches
+           -------------------------------------------------------- */
+
+        const matchingBranches =
+            allBranches.filter(
+                function (branch) {
+
+                    return String(
+                        branch.institutionId
+                    ) === String(
+                        institutionId
+                    );
+
+                }
+            );
+
+
+        /* --------------------------------------------------------
+           No branches
+           -------------------------------------------------------- */
+
+        if (
+            matchingBranches.length === 0
+        ) {
+
+            branchSelect.disabled = true;
+
+            branchHelp.textContent =
+                "No branches are available for the selected institution.";
+
+            branchHelp.classList.remove(
+                "success-help"
+            );
+
+            branchHelp.classList.add(
+                "error-help"
+            );
+
+            return;
+        }
+
+
+        /* --------------------------------------------------------
+           Add branches
+           -------------------------------------------------------- */
+
+        matchingBranches.forEach(
+            function (branch) {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    branch.value;
+
+                option.textContent =
+                    branch.text;
+
+                if (
+                    String(
+                        branch.value
+                    ) === String(
+                        selectedBranch
+                    )
+                ) {
+
+                    option.selected = true;
+
+                }
+
+                branchSelect.appendChild(
+                    option
+                );
+
+            }
+        );
+
+
+        /* --------------------------------------------------------
+           Enable
+           -------------------------------------------------------- */
+
+        branchSelect.disabled = false;
+
+        branchHelp.textContent =
+            "Branch must belong to the selected institution.";
+
+        branchHelp.classList.remove(
+            "error-help"
+        );
+
+        branchHelp.classList.add(
+            "success-help"
+        );
+
+    }
+
+
+    /* ============================================================
+       INSTITUTION CHANGE
+       ============================================================ */
+
+    institutionSelect.addEventListener(
+        "change",
+        function () {
+
+            updateBranches(
+                false
+            );
+
+        }
+    );
+
+
+    /* ============================================================
+       INITIAL BRANCH LOAD
+       ============================================================ */
+
+    updateBranches(
+        true
+    );
+
+
+    /* ============================================================
+       PHOTO PREVIEW
+       ============================================================ */
+
+    photoInput.addEventListener(
+        "change",
+        function () {
+
+            const file =
+                this.files &&
+                this.files[0];
+
+            if (!file) {
+
+                photoPreview.src = "";
+
+                photoPreview.style.display =
+                    "none";
+
+                photoPlaceholder.style.display =
+                    "block";
+
+                fileName.textContent =
+                    "JPG, PNG or WEBP";
+
+                return;
+            }
+
+
+            /* ----------------------------------------------------
+               Validate image
+               ---------------------------------------------------- */
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (
+                !allowedTypes.includes(
+                    file.type
+                )
+            ) {
+
+                alert(
+                    "Please select a JPG, PNG or WEBP image."
+                );
+
+                this.value = "";
+
+                photoPreview.src = "";
+
+                photoPreview.style.display =
+                    "none";
+
+                photoPlaceholder.style.display =
+                    "block";
+
+                fileName.textContent =
+                    "JPG, PNG or WEBP";
+
+                return;
+            }
+
+
+            /* ----------------------------------------------------
+               File size
+               ---------------------------------------------------- */
+
+            const maxSize =
+                5 * 1024 * 1024;
+
+            if (
+                file.size > maxSize
+            ) {
+
+                alert(
+                    "Image size cannot exceed 5 MB."
+                );
+
+                this.value = "";
+
+                photoPreview.src = "";
+
+                photoPreview.style.display =
+                    "none";
+
+                photoPlaceholder.style.display =
+                    "block";
+
+                fileName.textContent =
+                    "JPG, PNG or WEBP";
+
+                return;
+            }
+
+
+            /* ----------------------------------------------------
+               Preview
+               ---------------------------------------------------- */
+
+            const reader =
+                new FileReader();
+
+            reader.onload =
+                function (event) {
+
+                    photoPreview.src =
+                        event.target.result;
+
+                    photoPreview.style.display =
+                        "block";
+
+                    photoPlaceholder.style.display =
+                        "none";
+
+                };
+
+            reader.readAsDataURL(
+                file
+            );
+
+
+            fileName.textContent =
+                file.name;
+
+        }
+    );
+
+
+    /* ============================================================
+       PASSWORD TOGGLE
+       ============================================================ */
+
+    document
+        .querySelectorAll(
+            ".password-toggle"
+        )
+        .forEach(
+            function (button) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const targetId =
+                            this.getAttribute(
+                                "data-target"
+                            );
+
+                        const input =
+                            document.getElementById(
+                                targetId
+                            );
+
+                        const icon =
+                            this.querySelector(
+                                "i"
+                            );
+
+                        if (
+                            input.type ===
+                            "password"
+                        ) {
+
+                            input.type =
+                                "text";
+
+                            icon.classList.remove(
+                                "fa-eye"
+                            );
+
+                            icon.classList.add(
+                                "fa-eye-slash"
+                            );
+
+                            this.setAttribute(
+                                "aria-label",
+                                "Hide password"
+                            );
+
+                        } else {
+
+                            input.type =
+                                "password";
+
+                            icon.classList.remove(
+                                "fa-eye-slash"
+                            );
+
+                            icon.classList.add(
+                                "fa-eye"
+                            );
+
+                            this.setAttribute(
+                                "aria-label",
+                                "Show password"
+                            );
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+    /* ============================================================
+       PASSWORD MATCH
+       ============================================================ */
+
+    const password =
+        document.getElementById(
+            "password"
+        );
+
+    const confirmPassword =
+        document.getElementById(
+            "confirm_password"
+        );
+
+
+    function checkPasswords() {
+
+        if (
+            !confirmPassword.value
+        ) {
+
+            confirmPassword.setCustomValidity(
+                ""
+            );
+
+            return;
+        }
+
+
+        if (
+            password.value !==
+            confirmPassword.value
+        ) {
+
+            confirmPassword.setCustomValidity(
+                "Passwords do not match."
+            );
+
+        } else {
+
+            confirmPassword.setCustomValidity(
+                ""
+            );
+
+        }
+
+    }
+
+
+    password.addEventListener(
+        "input",
+        checkPasswords
+    );
+
+    confirmPassword.addEventListener(
+        "input",
+        checkPasswords
+    );
+
+
+    /* ============================================================
+       FORM SUBMIT
+       ============================================================ */
+
+    teacherForm.addEventListener(
+        "submit",
+        function () {
+
+            checkPasswords();
+
+            if (
+                !teacherForm.checkValidity()
+            ) {
+                return;
+            }
+
+
+            submitButton.disabled =
+                true;
+
+            submitButton.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Creating Teacher...
+            `;
+
+        }
+    );
+
+});
+</script>
+
+{% endblock %}

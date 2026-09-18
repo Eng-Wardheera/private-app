@@ -640,6 +640,18 @@ class Institution(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    subjects = db.relationship(
+        "Subject",
+        back_populates="institution",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    teachers = db.relationship(
+        "Teacher",
+        back_populates="institution",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     def __repr__(self):
 
@@ -823,6 +835,18 @@ class Branch(db.Model):
     )
     sections = db.relationship(
         "Section",
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    subjects = db.relationship(
+        "Subject",
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    teachers = db.relationship(
+        "Teacher",
         back_populates="branch",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -1389,6 +1413,12 @@ class Program(db.Model):
     )
     classes = db.relationship(
         "Class",
+        back_populates="program",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    subjects = db.relationship(
+        "Subject",
         back_populates="program",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -2142,6 +2172,657 @@ class Section(db.Model):
             f"code={self.code!r} "
             f"status={self.status!r}>"
         )
+
+
+# ============================================================
+# SUBJECT MODEL
+# PostgreSQL / Neon
+# ============================================================
+
+class Subject(db.Model):
+
+    __tablename__ = "subjects"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # INSTITUTION RELATIONSHIP
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH RELATIONSHIP
+    # ========================================================
+
+    # Nullable because a subject can be shared
+    # across multiple branches.
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="CASCADE"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # PROGRAM RELATIONSHIP
+    # ========================================================
+
+    # Example:
+    # Secondary
+    # Primary
+    # English Language
+    # Computer Science
+
+    program_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "programs.id",
+            ondelete="CASCADE"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # BASIC SUBJECT INFORMATION
+    # ========================================================
+
+    name = db.Column(
+        db.String(150),
+        nullable=False,
+        index=True
+    )
+
+    # Example:
+    # Mathematics
+    # Physics
+    # English
+    # Biology
+
+    code = db.Column(
+        db.String(50),
+        nullable=False,
+        index=True
+    )
+
+    # Example:
+    # MATH
+    # ENG
+    # PHY
+    # BIO
+
+    short_name = db.Column(
+        db.String(100),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # SUBJECT TYPE
+    # ========================================================
+
+    subject_type = db.Column(
+        db.String(50),
+        nullable=False,
+        default="academic",
+        server_default="academic",
+        index=True
+    )
+
+    # Possible values:
+    #
+    # academic
+    # practical
+    # language
+    # religious
+    # vocational
+    # elective
+    # compulsory
+
+    # ========================================================
+    # CREDIT / HOURS
+    # ========================================================
+
+    weekly_hours = db.Column(
+        db.Numeric(5, 2),
+        nullable=True
+    )
+
+    credit_hours = db.Column(
+        db.Numeric(5, 2),
+        nullable=True
+    )
+
+    # ========================================================
+    # MARK / EXAM CONFIGURATION
+    # ========================================================
+
+    max_marks = db.Column(
+        db.Numeric(6, 2),
+        nullable=False,
+        default=100,
+        server_default="100"
+    )
+
+    pass_marks = db.Column(
+        db.Numeric(6, 2),
+        nullable=False,
+        default=50,
+        server_default="50"
+    )
+
+    # ========================================================
+    # OPTIONAL DESCRIPTION
+    # ========================================================
+
+    description = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="active",
+        server_default="active",
+        index=True
+    )
+
+    # active
+    # inactive
+    # suspended
+
+    # ========================================================
+    # TIMESTAMPS
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="subjects"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="subjects"
+    )
+
+    program = db.relationship(
+        "Program",
+        back_populates="subjects"
+    )
+
+    # ========================================================
+    # TABLE CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        # Subject code must be unique inside
+        # an institution and branch.
+        db.UniqueConstraint(
+            "institution_id",
+            "branch_id",
+            "code",
+            name="uq_subject_institution_branch_code"
+        ),
+
+        # Subject name must be unique inside
+        # an institution and branch.
+        db.UniqueConstraint(
+            "institution_id",
+            "branch_id",
+            "name",
+            name="uq_subject_institution_branch_name"
+        ),
+
+        # Maximum marks must be greater than zero.
+        db.CheckConstraint(
+            "max_marks > 0",
+            name="ck_subject_max_marks"
+        ),
+
+        # Pass marks cannot be negative.
+        db.CheckConstraint(
+            "pass_marks >= 0",
+            name="ck_subject_pass_marks"
+        ),
+
+        # Pass marks cannot exceed maximum marks.
+        db.CheckConstraint(
+            "pass_marks <= max_marks",
+            name="ck_subject_pass_marks_max"
+        ),
+
+        # Weekly hours cannot be negative.
+        db.CheckConstraint(
+            "weekly_hours IS NULL OR weekly_hours >= 0",
+            name="ck_subject_weekly_hours"
+        ),
+
+        # Credit hours cannot be negative.
+        db.CheckConstraint(
+            "credit_hours IS NULL OR credit_hours >= 0",
+            name="ck_subject_credit_hours"
+        ),
+    )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<Subject "
+            f"id={self.id} "
+            f"institution_id={self.institution_id} "
+            f"branch_id={self.branch_id} "
+            f"program_id={self.program_id} "
+            f"name={self.name!r} "
+            f"code={self.code!r} "
+            f"status={self.status!r}>"
+        )
+
+
+# ============================================================
+# TEACHER MODEL
+# PostgreSQL / Neon
+# ============================================================
+
+class Teacher(db.Model):
+
+    __tablename__ = "teachers"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # INSTITUTION RELATIONSHIP
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH RELATIONSHIP
+    # ========================================================
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # LOGIN / ACCOUNT INFORMATION
+    # ========================================================
+
+    username = db.Column(
+        db.String(150),
+        nullable=False,
+        unique=True,
+        index=True
+    )
+
+    email = db.Column(
+        db.String(150),
+        nullable=True,
+        unique=True,
+        index=True
+    )
+
+    # Password is stored as a HASH.
+    # Never store plain-text passwords.
+
+    password = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    # ========================================================
+    # ROLE
+    # ========================================================
+
+    role = db.Column(
+        db.String(50),
+        nullable=False,
+        default="teacher",
+        server_default="teacher",
+        index=True
+    )
+
+    # ========================================================
+    # TEACHER ROLL NUMBER
+    # ========================================================
+
+    # Example:
+    # T001
+    # T002
+    # T003
+
+    roll_no = db.Column(
+        db.String(50),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # TEACHER NAME
+    # ========================================================
+
+    full_name = db.Column(
+        db.String(200),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # PERSONAL INFORMATION
+    # ========================================================
+
+    gender = db.Column(
+        db.String(20),
+        nullable=True,
+        index=True
+    )
+
+    date_of_birth = db.Column(
+        db.Date,
+        nullable=True
+    )
+
+    phone = db.Column(
+        db.String(30),
+        nullable=True,
+        index=True
+    )
+
+    address = db.Column(
+        db.String(255),
+        nullable=True
+    )
+
+    city = db.Column(
+        db.String(100),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # PROFESSIONAL INFORMATION
+    # ========================================================
+
+    qualification = db.Column(
+        db.String(255),
+        nullable=True
+    )
+
+    specialization = db.Column(
+        db.String(255),
+        nullable=True
+    )
+
+    experience_years = db.Column(
+        db.Integer,
+        nullable=True
+    )
+
+    hire_date = db.Column(
+        db.Date,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # PHOTO
+    # ========================================================
+
+    photo = db.Column(
+        db.String(500),
+        nullable=True
+    )
+
+    # ========================================================
+    # ACCOUNT STATUS
+    # ========================================================
+
+    is_active = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=True,
+        server_default=db.text("TRUE"),
+        index=True
+    )
+
+    is_verified = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+        server_default=db.text("FALSE"),
+        index=True
+    )
+
+    # ========================================================
+    # LOGIN TRACKING
+    # ========================================================
+
+    login_time = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    last_login = db.Column(
+        db.DateTime,
+        nullable=True,
+        index=True
+    )
+
+    last_active = db.Column(
+        db.DateTime,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="active",
+        server_default="active",
+        index=True
+    )
+
+    # active
+    # inactive
+    # suspended
+    # resigned
+
+    # ========================================================
+    # NOTES
+    # ========================================================
+
+    notes = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # TIMESTAMPS
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="teachers"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="teachers"
+    )
+
+    # ========================================================
+    # TABLE CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        # Roll number unique within institution
+        db.UniqueConstraint(
+            "institution_id",
+            "roll_no",
+            name="uq_teacher_institution_roll_no"
+        ),
+
+        # Experience cannot be negative
+        db.CheckConstraint(
+            "experience_years IS NULL OR experience_years >= 0",
+            name="ck_teacher_experience_years"
+        ),
+    )
+
+    # ========================================================
+    # PASSWORD METHODS
+    # ========================================================
+
+    def set_password(self, raw_password):
+
+        if not raw_password:
+            raise ValueError(
+                "Teacher password cannot be empty."
+            )
+
+        self.password = generate_password_hash(
+            raw_password,
+            method="pbkdf2:sha256"
+        )
+
+    def check_password(self, raw_password):
+
+        if not self.password or not raw_password:
+            return False
+
+        return check_password_hash(
+            self.password,
+            raw_password
+        )
+
+    # ========================================================
+    # ACCOUNT CHECK
+    # ========================================================
+
+    def is_account_active(self):
+
+        return (
+            self.is_active
+            and self.status == "active"
+        )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<Teacher "
+            f"id={self.id} "
+            f"institution_id={self.institution_id} "
+            f"branch_id={self.branch_id} "
+            f"roll_no={self.roll_no!r} "
+            f"username={self.username!r} "
+            f"full_name={self.full_name!r} "
+            f"role={self.role!r} "
+            f"status={self.status!r}>"
+        )
+
 
 
 

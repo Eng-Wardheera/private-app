@@ -1,0 +1,1885 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+/* ============================================================
+   EDIT TEACHER PAGE
+   ============================================================ */
+
+.teacher-page {
+    width: 100%;
+    padding: 4px 0 30px;
+}
+
+.teacher-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.teacher-page-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.teacher-page-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 36, 95, 0.10);
+    color: #06245f;
+    font-size: 21px;
+}
+
+.teacher-page-title h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: #06245f;
+}
+
+.teacher-page-title p {
+    margin: 4px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.teacher-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.teacher-btn {
+    height: 42px;
+    padding: 0 15px;
+    border: 0;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    transition: 0.2s ease;
+}
+
+.teacher-btn:hover {
+    transform: translateY(-1px);
+}
+
+.teacher-btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.teacher-btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.teacher-btn-primary {
+    background: #06245f;
+    color: #fff;
+}
+
+.teacher-btn-primary:hover {
+    background: #041b49;
+}
+
+/* ============================================================
+   MAIN GRID
+   ============================================================ */
+
+.teacher-form-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 22px;
+    align-items: start;
+}
+
+.teacher-main-column {
+    min-width: 0;
+}
+
+.teacher-side-column {
+    min-width: 0;
+}
+
+/* ============================================================
+   CARD
+   ============================================================ */
+
+.teacher-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+.teacher-card-header {
+    padding: 17px 20px;
+    border-bottom: 1px solid #edf0f4;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.teacher-card-header-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(6, 36, 95, 0.08);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
+.teacher-card-header h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.teacher-card-header p {
+    margin: 3px 0 0;
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.teacher-card-body {
+    padding: 20px;
+}
+
+/* ============================================================
+   FORM GRID
+   ============================================================ */
+
+.teacher-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px 18px;
+}
+
+.teacher-field {
+    min-width: 0;
+}
+
+.teacher-field.full {
+    grid-column: 1 / -1;
+}
+
+.teacher-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.teacher-field label .required {
+    color: #dc2626;
+    margin-left: 2px;
+}
+
+.teacher-input,
+.teacher-select,
+.teacher-textarea {
+    width: 100%;
+    border: 1px solid #d9dee7;
+    background: #fff;
+    color: #111827;
+    border-radius: 10px;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    transition: 0.2s ease;
+    box-sizing: border-box;
+}
+
+.teacher-input,
+.teacher-select {
+    height: 43px;
+    padding: 0 13px;
+}
+
+.teacher-textarea {
+    min-height: 105px;
+    resize: vertical;
+    padding: 12px 13px;
+    line-height: 1.55;
+}
+
+.teacher-input:focus,
+.teacher-select:focus,
+.teacher-textarea:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, 0.09);
+}
+
+.teacher-input::placeholder,
+.teacher-textarea::placeholder {
+    color: #a7adb8;
+}
+
+.teacher-help {
+    margin: 5px 0 0;
+    color: #9ca3af;
+    font-size: 10.5px;
+    line-height: 1.45;
+}
+
+/* ============================================================
+   READONLY ROLL NUMBER
+   ============================================================ */
+
+.teacher-readonly {
+    background: #f8fafc;
+    color: #475569;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   PASSWORD BOX
+   ============================================================ */
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper .teacher-input {
+    padding-right: 44px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border: 0;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    border-radius: 7px;
+}
+
+.password-toggle:hover {
+    background: #f3f4f6;
+    color: #06245f;
+}
+
+/* ============================================================
+   CHECKBOXES
+   ============================================================ */
+
+.teacher-check-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.teacher-check {
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+    padding: 12px 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    background: #fafbfc;
+    transition: 0.2s ease;
+}
+
+.teacher-check:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.teacher-check input {
+    width: 17px;
+    height: 17px;
+    accent-color: #06245f;
+    cursor: pointer;
+}
+
+.teacher-check-text strong {
+    display: block;
+    color: #374151;
+    font-size: 12px;
+}
+
+.teacher-check-text span {
+    display: block;
+    color: #9ca3af;
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+/* ============================================================
+   PHOTO CARD
+   ============================================================ */
+
+.teacher-photo-card {
+    text-align: center;
+}
+
+.teacher-photo-preview {
+    width: 145px;
+    height: 145px;
+    margin: 3px auto 16px;
+    border-radius: 50%;
+    border: 4px solid #f1f5f9;
+    background: #f8fafc;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    position: relative;
+}
+
+.teacher-photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.teacher-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.teacher-photo-placeholder i {
+    font-size: 38px;
+}
+
+.teacher-photo-placeholder span {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.teacher-photo-name {
+    margin: 0;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.teacher-photo-roll {
+    margin: 5px 0 15px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.teacher-file-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 9px;
+    background: #06245f;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.teacher-file-label:hover {
+    background: #041b49;
+}
+
+.teacher-file-input {
+    display: none;
+}
+
+.teacher-file-name {
+    margin: 9px 0 0;
+    color: #64748b;
+    font-size: 10.5px;
+    word-break: break-word;
+}
+
+.teacher-photo-help {
+    margin: 11px 0 0;
+    color: #9ca3af;
+    font-size: 10.5px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   TEACHER INFO SIDE
+   ============================================================ */
+
+.teacher-info-box {
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 11px;
+    background: #f8fafc;
+    border: 1px solid #e8edf3;
+    text-align: left;
+}
+
+.teacher-info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9edf2;
+}
+
+.teacher-info-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.teacher-info-row:first-child {
+    padding-top: 0;
+}
+
+.teacher-info-label {
+    color: #94a3b8;
+    font-size: 10.5px;
+}
+
+.teacher-info-value {
+    color: #334155;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* ============================================================
+   FORM FOOTER
+   ============================================================ */
+
+.teacher-form-footer {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 15px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+.teacher-form-footer-left {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.teacher-form-footer-actions {
+    display: flex;
+    gap: 9px;
+}
+
+/* ============================================================
+   FLASH MESSAGES
+   ============================================================ */
+
+.teacher-alerts {
+    margin-bottom: 18px;
+}
+
+.teacher-alert {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.teacher-alert-success {
+    background: #ecfdf3;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+.teacher-alert-danger {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.teacher-alert-warning {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+}
+
+.teacher-alert-info {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+    .teacher-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-side-column {
+        order: -1;
+    }
+
+    .teacher-photo-card {
+        text-align: center;
+    }
+
+    .teacher-info-box {
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .teacher-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .teacher-header-actions {
+        width: 100%;
+    }
+
+    .teacher-header-actions .teacher-btn {
+        flex: 1;
+    }
+
+    .teacher-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-field.full {
+        grid-column: auto;
+    }
+
+    .teacher-check-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-card-body {
+        padding: 15px;
+    }
+
+    .teacher-card-header {
+        padding: 15px;
+    }
+
+    .teacher-form-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .teacher-form-footer-actions {
+        width: 100%;
+    }
+
+    .teacher-form-footer-actions .teacher-btn {
+        flex: 1;
+    }
+}
+</style>
+
+
+<div class="teacher-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="teacher-page-header">
+
+        <div class="teacher-page-title">
+
+            <div class="teacher-page-icon">
+                <i class="fas fa-user-edit"></i>
+            </div>
+
+            <div>
+                <h1>Edit Teacher</h1>
+                <p>
+                    Update teacher profile, account and employment information.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="teacher-header-actions">
+
+            <a
+                href="{{ url_for('main.view_teacher', teacher_id=teacher.id) }}"
+                class="teacher-btn teacher-btn-secondary"
+            >
+                <i class="fas fa-eye"></i>
+                View
+            </a>
+
+            <a
+                href="{{ url_for('main.all_teachers') }}"
+                class="teacher-btn teacher-btn-secondary"
+            >
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         FLASH MESSAGES
+         ======================================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            <div class="teacher-alerts">
+
+                {% for category, message in messages %}
+
+                    <div
+                        class="teacher-alert
+                        {% if category == 'success' %}
+                            teacher-alert-success
+                        {% elif category == 'danger' %}
+                            teacher-alert-danger
+                        {% elif category == 'warning' %}
+                            teacher-alert-warning
+                        {% else %}
+                            teacher-alert-info
+                        {% endif %}"
+                    >
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- ========================================================
+         FORM
+         ======================================================== -->
+
+    <form
+        method="POST"
+        action="{{ url_for('main.edit_teacher', teacher_id=teacher.id) }}"
+        enctype="multipart/form-data"
+        id="teacherEditForm"
+        novalidate
+    >
+
+        <div class="teacher-form-grid">
+
+            <!-- ==================================================
+                 MAIN COLUMN
+                 ================================================== -->
+
+            <div class="teacher-main-column">
+
+
+                <!-- ==============================================
+                     ORGANIZATION
+                     ============================================== -->
+
+                <div class="teacher-card">
+
+                    <div class="teacher-card-header">
+
+                        <div class="teacher-card-header-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+
+                        <div>
+                            <h2>Organization</h2>
+                            <p>Institution and branch assignment</p>
+                        </div>
+
+                    </div>
+
+                    <div class="teacher-card-body">
+
+                        <div class="teacher-fields">
+
+                            <!-- Institution -->
+
+                            <div class="teacher-field">
+
+                                <label for="institution_id">
+                                    Institution
+                                    <span class="required">*</span>
+                                </label>
+
+                                <select
+                                    name="institution_id"
+                                    id="institution_id"
+                                    class="teacher-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select institution
+                                    </option>
+
+                                    {% for institution in institutions %}
+
+                                        <option
+                                            value="{{ institution.id }}"
+                                            {% if
+                                                (form_data and form_data.get('institution_id')|string == institution.id|string)
+                                                or
+                                                (not form_data and teacher.institution_id == institution.id)
+                                            %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ institution.name }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Branch -->
+
+                            <div class="teacher-field">
+
+                                <label for="branch_id">
+                                    Branch
+                                    <span class="required">*</span>
+                                </label>
+
+                                <select
+                                    name="branch_id"
+                                    id="branch_id"
+                                    class="teacher-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select branch
+                                    </option>
+
+                                    {% for branch in branches %}
+
+                                        <option
+                                            value="{{ branch.id }}"
+                                            {% if
+                                                (form_data and form_data.get('branch_id')|string == branch.id|string)
+                                                or
+                                                (not form_data and teacher.branch_id == branch.id)
+                                            %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ branch.name }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================================
+                     PERSONAL INFORMATION
+                     ============================================== -->
+
+                <div class="teacher-card">
+
+                    <div class="teacher-card-header">
+
+                        <div class="teacher-card-header-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+
+                        <div>
+                            <h2>Personal Information</h2>
+                            <p>Basic teacher profile information</p>
+                        </div>
+
+                    </div>
+
+                    <div class="teacher-card-body">
+
+                        <div class="teacher-fields">
+
+                            <!-- Full Name -->
+
+                            <div class="teacher-field full">
+
+                                <label for="full_name">
+                                    Full Name
+                                    <span class="required">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="full_name"
+                                    id="full_name"
+                                    class="teacher-input"
+                                    placeholder="Enter teacher full name"
+                                    value="{% if form_data %}{{ form_data.get('full_name', '') }}{% else %}{{ teacher.full_name or '' }}{% endif %}"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <!-- Gender -->
+
+                            <div class="teacher-field">
+
+                                <label for="gender">
+                                    Gender
+                                </label>
+
+                                <select
+                                    name="gender"
+                                    id="gender"
+                                    class="teacher-select"
+                                >
+
+                                    <option value="">
+                                        Select gender
+                                    </option>
+
+                                    {% for gender_item in teacher_genders %}
+
+                                        {% set gender_value = gender_item|string|lower %}
+
+                                        <option
+                                            value="{{ gender_value }}"
+                                            {% if
+                                                (form_data and form_data.get('gender', '')|lower == gender_value)
+                                                or
+                                                (not form_data and (teacher.gender or '')|lower == gender_value)
+                                            %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ gender_item }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Date of Birth -->
+
+                            <div class="teacher-field">
+
+                                <label for="date_of_birth">
+                                    Date of Birth
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="date_of_birth"
+                                    id="date_of_birth"
+                                    class="teacher-input"
+                                    value="{% if form_data %}{{ form_data.get('date_of_birth', '') }}{% elif teacher.date_of_birth %}{{ teacher.date_of_birth.strftime('%Y-%m-%d') }}{% endif %}"
+                                >
+
+                            </div>
+
+
+                            <!-- Phone -->
+
+                            <div class="teacher-field">
+
+                                <label for="phone">
+                                    Phone
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    id="phone"
+                                    class="teacher-input"
+                                    placeholder="e.g. +252 61 0000000"
+                                    value="{% if form_data %}{{ form_data.get('phone', '') }}{% else %}{{ teacher.phone or '' }}{% endif %}"
+                                >
+
+                            </div>
+
+
+                            <!-- City -->
+
+                            <div class="teacher-field">
+
+                                <label for="city">
+                                    City
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="city"
+                                    id="city"
+                                    class="teacher-input"
+                                    placeholder="Enter city"
+                                    value="{% if form_data %}{{ form_data.get('city', '') }}{% else %}{{ teacher.city or '' }}{% endif %}"
+                                >
+
+                            </div>
+
+
+                            <!-- Address -->
+
+                            <div class="teacher-field full">
+
+                                <label for="address">
+                                    Address
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="address"
+                                    id="address"
+                                    class="teacher-input"
+                                    placeholder="Enter full address"
+                                    value="{% if form_data %}{{ form_data.get('address', '') }}{% else %}{{ teacher.address or '' }}{% endif %}"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================================
+                     LOGIN ACCOUNT
+                     ============================================== -->
+
+                <div class="teacher-card">
+
+                    <div class="teacher-card-header">
+
+                        <div class="teacher-card-header-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+
+                        <div>
+                            <h2>Login Account</h2>
+                            <p>Teacher username, email and optional password</p>
+                        </div>
+
+                    </div>
+
+                    <div class="teacher-card-body">
+
+                        <div class="teacher-fields">
+
+                            <!-- Username -->
+
+                            <div class="teacher-field">
+
+                                <label for="username">
+                                    Username
+                                    <span class="required">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="username"
+                                    id="username"
+                                    class="teacher-input"
+                                    placeholder="Enter username"
+                                    value="{% if form_data %}{{ form_data.get('username', '') }}{% else %}{{ teacher.username or '' }}{% endif %}"
+                                    autocomplete="username"
+                                    required
+                                >
+
+                                <div class="teacher-help">
+                                    Username must be unique in Teachers and Users.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Email -->
+
+                            <div class="teacher-field">
+
+                                <label for="email">
+                                    Email
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    id="email"
+                                    class="teacher-input"
+                                    placeholder="teacher@example.com"
+                                    value="{% if form_data %}{{ form_data.get('email', '') }}{% else %}{{ teacher.email or '' }}{% endif %}"
+                                    autocomplete="email"
+                                >
+
+                                <div class="teacher-help">
+                                    Email must also be unique in Teachers and Users.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Password -->
+
+                            <div class="teacher-field">
+
+                                <label for="password">
+                                    New Password
+                                </label>
+
+                                <div class="password-wrapper">
+
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        id="password"
+                                        class="teacher-input"
+                                        placeholder="Leave empty to keep current password"
+                                        autocomplete="new-password"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        onclick="togglePassword('password', this)"
+                                        aria-label="Show password"
+                                    >
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+
+                                </div>
+
+                                <div class="teacher-help">
+                                    Leave empty if you do not want to change the password.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Confirm Password -->
+
+                            <div class="teacher-field">
+
+                                <label for="confirm_password">
+                                    Confirm New Password
+                                </label>
+
+                                <div class="password-wrapper">
+
+                                    <input
+                                        type="password"
+                                        name="confirm_password"
+                                        id="confirm_password"
+                                        class="teacher-input"
+                                        placeholder="Confirm new password"
+                                        autocomplete="new-password"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        onclick="togglePassword('confirm_password', this)"
+                                        aria-label="Show password"
+                                    >
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================================
+                     PROFESSIONAL INFORMATION
+                     ============================================== -->
+
+                <div class="teacher-card">
+
+                    <div class="teacher-card-header">
+
+                        <div class="teacher-card-header-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+
+                        <div>
+                            <h2>Professional Information</h2>
+                            <p>Qualification, specialization and experience</p>
+                        </div>
+
+                    </div>
+
+                    <div class="teacher-card-body">
+
+                        <div class="teacher-fields">
+
+                            <!-- Qualification -->
+
+                            <div class="teacher-field">
+
+                                <label for="qualification">
+                                    Qualification
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="qualification"
+                                    id="qualification"
+                                    class="teacher-input"
+                                    placeholder="e.g. Bachelor's Degree"
+                                    value="{% if form_data %}{{ form_data.get('qualification', '') }}{% else %}{{ teacher.qualification or '' }}{% endif %}"
+                                >
+
+                            </div>
+
+
+                            <!-- Specialization -->
+
+                            <div class="teacher-field">
+
+                                <label for="specialization">
+                                    Specialization
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="specialization"
+                                    id="specialization"
+                                    class="teacher-input"
+                                    placeholder="e.g. Mathematics"
+                                    value="{% if form_data %}{{ form_data.get('specialization', '') }}{% else %}{{ teacher.specialization or '' }}{% endif %}"
+                                >
+
+                            </div>
+
+
+                            <!-- Experience -->
+
+                            <div class="teacher-field">
+
+                                <label for="experience_years">
+                                    Experience Years
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="experience_years"
+                                    id="experience_years"
+                                    class="teacher-input"
+                                    min="0"
+                                    step="1"
+                                    placeholder="0"
+                                    value="{% if form_data %}{{ form_data.get('experience_years', '') }}{% else %}{{ teacher.experience_years if teacher.experience_years is not none else '' }}{% endif %}"
+                                >
+
+                            </div>
+
+
+                            <!-- Hire Date -->
+
+                            <div class="teacher-field">
+
+                                <label for="hire_date">
+                                    Hire Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="hire_date"
+                                    id="hire_date"
+                                    class="teacher-input"
+                                    value="{% if form_data %}{{ form_data.get('hire_date', '') }}{% elif teacher.hire_date %}{{ teacher.hire_date.strftime('%Y-%m-%d') }}{% endif %}"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================================
+                     EMPLOYMENT STATUS
+                     ============================================== -->
+
+                <div class="teacher-card">
+
+                    <div class="teacher-card-header">
+
+                        <div class="teacher-card-header-icon">
+                            <i class="fas fa-toggle-on"></i>
+                        </div>
+
+                        <div>
+                            <h2>Employment Status</h2>
+                            <p>Control teacher account and verification status</p>
+                        </div>
+
+                    </div>
+
+                    <div class="teacher-card-body">
+
+                        <div class="teacher-fields">
+
+                            <!-- Status -->
+
+                            <div class="teacher-field">
+
+                                <label for="status">
+                                    Status
+                                </label>
+
+                                <select
+                                    name="status"
+                                    id="status"
+                                    class="teacher-select"
+                                >
+
+                                    {% for status_item in teacher_statuses %}
+
+                                        {% set status_value = status_item|string|lower %}
+
+                                        <option
+                                            value="{{ status_value }}"
+                                            {% if
+                                                (form_data and form_data.get('status', '')|lower == status_value)
+                                                or
+                                                (not form_data and (teacher.status or 'active')|lower == status_value)
+                                            %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ status_item }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Checkboxes -->
+
+                            <div class="teacher-field">
+
+                                <label>
+                                    Account Settings
+                                </label>
+
+                                <div class="teacher-check-grid">
+
+                                    <label class="teacher-check">
+
+                                        <input
+                                            type="checkbox"
+                                            name="is_active"
+                                            value="1"
+                                            {% if
+                                                (form_data and form_data.get('is_active'))
+                                                or
+                                                (not form_data and teacher.is_active)
+                                            %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <span class="teacher-check-text">
+                                            <strong>Active</strong>
+                                            <span>Teacher account is active</span>
+                                        </span>
+
+                                    </label>
+
+
+                                    <label class="teacher-check">
+
+                                        <input
+                                            type="checkbox"
+                                            name="is_verified"
+                                            value="1"
+                                            {% if
+                                                (form_data and form_data.get('is_verified'))
+                                                or
+                                                (not form_data and teacher.is_verified)
+                                            %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <span class="teacher-check-text">
+                                            <strong>Verified</strong>
+                                            <span>Teacher is verified</span>
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================================
+                     NOTES
+                     ============================================== -->
+
+                <div class="teacher-card">
+
+                    <div class="teacher-card-header">
+
+                        <div class="teacher-card-header-icon">
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+
+                        <div>
+                            <h2>Notes</h2>
+                            <p>Additional teacher information</p>
+                        </div>
+
+                    </div>
+
+                    <div class="teacher-card-body">
+
+                        <div class="teacher-field">
+
+                            <label for="notes">
+                                Notes
+                            </label>
+
+                            <textarea
+                                name="notes"
+                                id="notes"
+                                class="teacher-textarea"
+                                placeholder="Enter any additional notes..."
+                            >{% if form_data %}{{ form_data.get('notes', '') }}{% else %}{{ teacher.notes or '' }}{% endif %}</textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================================
+                     FORM FOOTER
+                     ============================================== -->
+
+                <div class="teacher-form-footer">
+
+                    <div class="teacher-form-footer-left">
+                        Fields marked with <span style="color:#dc2626;">*</span> are required.
+                    </div>
+
+                    <div class="teacher-form-footer-actions">
+
+                        <a
+                            href="{{ url_for('main.view_teacher', teacher_id=teacher.id) }}"
+                            class="teacher-btn teacher-btn-secondary"
+                        >
+                            Cancel
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="teacher-btn teacher-btn-primary"
+                            id="saveTeacherBtn"
+                        >
+                            <i class="fas fa-save"></i>
+                            Update Teacher
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 SIDE COLUMN
+                 ================================================== -->
+
+            <div class="teacher-side-column">
+
+                <div class="teacher-card teacher-photo-card">
+
+                    <div class="teacher-card-header">
+
+                        <div class="teacher-card-header-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+
+                        <div style="text-align:left;">
+                            <h2>Teacher Photo</h2>
+                            <p>Upload a new profile photo</p>
+                        </div>
+
+                    </div>
+
+                    <div class="teacher-card-body">
+
+                        <!-- Photo Preview -->
+
+                        <div
+                            class="teacher-photo-preview"
+                            id="teacherPhotoPreview"
+                        >
+
+                            {% if teacher.photo %}
+
+                                <img
+                                    src="{{ teacher.photo }}"
+                                    alt="{{ teacher.full_name or 'Teacher' }}"
+                                    id="photoPreviewImage"
+                                >
+
+                            {% else %}
+
+                                <div
+                                    class="teacher-photo-placeholder"
+                                    id="photoPlaceholder"
+                                >
+                                    <i class="fas fa-user"></i>
+                                    <span>No Photo</span>
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Name -->
+
+                        <p class="teacher-photo-name">
+                            {{ teacher.full_name or 'Teacher' }}
+                        </p>
+
+                        <!-- Roll Number -->
+
+                        <p class="teacher-photo-roll">
+                            <i class="fas fa-id-badge"></i>
+                            {{ teacher.roll_no or 'No Roll Number' }}
+                        </p>
+
+
+                        <!-- File Upload -->
+
+                        <label
+                            for="photo"
+                            class="teacher-file-label"
+                        >
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Change Photo
+                        </label>
+
+                        <input
+                            type="file"
+                            name="photo"
+                            id="photo"
+                            class="teacher-file-input"
+                            accept="image/jpeg,image/png,image/webp"
+                        >
+
+                        <p
+                            class="teacher-file-name"
+                            id="photoFileName"
+                        >
+                            No new photo selected
+                        </p>
+
+                        <p class="teacher-photo-help">
+                            JPG, JPEG, PNG or WEBP.<br>
+                            Maximum size: 2 MB.<br>
+                            New photo will be uploaded to Cloudinary.
+                        </p>
+
+
+                        <!-- Teacher Information -->
+
+                        <div class="teacher-info-box">
+
+                            <div class="teacher-info-row">
+
+                                <span class="teacher-info-label">
+                                    Roll Number
+                                </span>
+
+                                <span class="teacher-info-value">
+                                    {{ teacher.roll_no or '-' }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="teacher-info-row">
+
+                                <span class="teacher-info-label">
+                                    Role
+                                </span>
+
+                                <span class="teacher-info-value">
+                                    {{ teacher.role or 'teacher' }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="teacher-info-row">
+
+                                <span class="teacher-info-label">
+                                    Created
+                                </span>
+
+                                <span class="teacher-info-value">
+
+                                    {% if teacher.created_at %}
+                                        {{ teacher.created_at.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="teacher-info-row">
+
+                                <span class="teacher-info-label">
+                                    Updated
+                                </span>
+
+                                <span class="teacher-info-value">
+
+                                    {% if teacher.updated_at %}
+                                        {{ teacher.updated_at.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+/* ============================================================
+   PASSWORD TOGGLE
+   ============================================================ */
+
+function togglePassword(inputId, button) {
+
+    const input = document.getElementById(inputId);
+
+    if (!input) {
+        return;
+    }
+
+    const icon = button.querySelector("i");
+
+    if (input.type === "password") {
+
+        input.type = "text";
+
+        if (icon) {
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+
+        button.setAttribute(
+            "aria-label",
+            "Hide password"
+        );
+
+    } else {
+
+        input.type = "password";
+
+        if (icon) {
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+
+        button.setAttribute(
+            "aria-label",
+            "Show password"
+        );
+    }
+}
+
+
+/* ============================================================
+   PHOTO PREVIEW
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const photoInput =
+            document.getElementById("photo");
+
+        const photoPreview =
+            document.getElementById("teacherPhotoPreview");
+
+        const photoFileName =
+            document.getElementById("photoFileName");
+
+        if (!photoInput) {
+            return;
+        }
+
+        photoInput.addEventListener(
+            "change",
+            function () {
+
+                const file = this.files[0];
+
+                if (!file) {
+
+                    photoFileName.textContent =
+                        "No new photo selected";
+
+                    return;
+                }
+
+                /* --------------------------------------------
+                   FILE SIZE
+                   -------------------------------------------- */
+
+                const maxSize =
+                    2 * 1024 * 1024;
+
+                if (file.size > maxSize) {
+
+                    alert(
+                        "Photo size must not exceed 2 MB."
+                    );
+
+                    this.value = "";
+
+                    photoFileName.textContent =
+                        "No new photo selected";
+
+                    return;
+                }
+
+
+                /* --------------------------------------------
+                   FILE TYPE
+                   -------------------------------------------- */
+
+                const allowedTypes = [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                ];
+
+                if (
+                    !allowedTypes.includes(
+                        file.type
+                    )
+                ) {
+
+                    alert(
+                        "Only JPG, JPEG, PNG and WEBP images are allowed."
+                    );
+
+                    this.value = "";
+
+                    photoFileName.textContent =
+                        "No new photo selected";
+
+                    return;
+                }
+
+
+                /* --------------------------------------------
+                   FILE NAME
+                   -------------------------------------------- */
+
+                photoFileName.textContent =
+                    file.name;
+
+
+                /* --------------------------------------------
+                   PREVIEW
+                   -------------------------------------------- */
+
+                const reader =
+                    new FileReader();
+
+                reader.onload =
+                    function (event) {
+
+                        photoPreview.innerHTML = `
+                            <img
+                                src="${event.target.result}"
+                                alt="New teacher photo"
+                                id="photoPreviewImage"
+                            >
+                        `;
+                    };
+
+                reader.readAsDataURL(file);
+
+            }
+        );
+
+
+        /* ====================================================
+           PASSWORD VALIDATION
+           ==================================================== */
+
+        const form =
+            document.getElementById(
+                "teacherEditForm"
+            );
+
+        if (!form) {
+            return;
+        }
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+                const password =
+                    document.getElementById(
+                        "password"
+                    );
+
+                const confirmPassword =
+                    document.getElementById(
+                        "confirm_password"
+                    );
+
+                if (
+                    password &&
+                    confirmPassword &&
+                    password.value
+                ) {
+
+                    if (password.value.length < 6) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "New password must be at least 6 characters."
+                        );
+
+                        password.focus();
+
+                        return;
+                    }
+
+                    if (
+                        password.value !==
+                        confirmPassword.value
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Password confirmation does not match."
+                        );
+
+                        confirmPassword.focus();
+
+                        return;
+                    }
+                }
+
+            }
+        );
+
+    }
+);
+</script>
+
+{% endblock %}

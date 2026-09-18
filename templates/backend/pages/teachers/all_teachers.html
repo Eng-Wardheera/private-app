@@ -1,0 +1,2765 @@
+
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+/* ============================================================
+   TEACHERS PAGE
+   ============================================================ */
+
+.teachers-page {
+    width: 100%;
+    padding: 4px 0 30px;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.teachers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.teachers-header-left {
+    min-width: 0;
+}
+
+.teachers-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 27px;
+    font-weight: 900;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.teachers-title-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #123b88
+    );
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 7px 18px rgba(6, 36, 95, .16);
+    flex: 0 0 auto;
+}
+
+.teachers-subtitle {
+    margin: 7px 0 0 57px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.add-teacher-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 43px;
+    padding: 0 17px;
+    border-radius: 10px;
+    background: #06245f;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 800;
+    border: 1px solid #06245f;
+    box-shadow: 0 7px 16px rgba(6, 36, 95, .14);
+    transition: .2s ease;
+    white-space: nowrap;
+}
+
+.add-teacher-btn:hover {
+    background: #041b49;
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   FLASH MESSAGES
+   ============================================================ */
+
+.teacher-flashes {
+    margin-bottom: 18px;
+}
+
+.teacher-flash {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 9px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.teacher-flash.success {
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+.teacher-flash.danger {
+    color: #991b1b;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+.teacher-flash.warning {
+    color: #92400e;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+}
+
+.teacher-flash.info {
+    color: #075985;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+}
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+
+.teacher-stats {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 13px;
+    margin-bottom: 20px;
+}
+
+.teacher-stat-card {
+    background: #fff;
+    border: 1px solid #e5eaf2;
+    border-radius: 13px;
+    padding: 15px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .035);
+}
+
+.teacher-stat-icon {
+    width: 41px;
+    height: 41px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    font-size: 16px;
+}
+
+.stat-blue {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.stat-green {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.stat-orange {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.stat-purple {
+    background: #faf5ff;
+    color: #9333ea;
+}
+
+.stat-red {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.stat-dark {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.teacher-stat-info {
+    min-width: 0;
+}
+
+.teacher-stat-value {
+    display: block;
+    color: #0f172a;
+    font-size: 21px;
+    line-height: 1.1;
+    font-weight: 900;
+}
+
+.teacher-stat-label {
+    display: block;
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   FILTER CARD
+   ============================================================ */
+
+.teacher-filter-card {
+    background: #fff;
+    border: 1px solid #e5eaf2;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .035);
+}
+
+.filter-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.filter-heading-left {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #06245f;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.filter-heading-left i {
+    font-size: 14px;
+}
+
+.clear-filters-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.clear-filters-btn:hover {
+    color: #dc2626;
+}
+
+.teacher-filter-grid {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 1.8fr)
+        minmax(150px, 1fr)
+        minmax(150px, 1fr)
+        minmax(130px, .8fr)
+        minmax(130px, .8fr)
+        minmax(120px, .7fr);
+    gap: 11px;
+}
+
+.filter-field {
+    min-width: 0;
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #dbe2ea;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
+    padding: 0 11px;
+    outline: none;
+    font-size: 12px;
+    font-family: inherit;
+    transition: .2s ease;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .07);
+}
+
+.search-wrapper {
+    position: relative;
+}
+
+.search-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.search-wrapper .filter-input {
+    padding-left: 34px;
+}
+
+/* ============================================================
+   EXTRA FILTER ROW
+   ============================================================ */
+
+.teacher-filter-extra {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 11px;
+    margin-top: 12px;
+}
+
+.filter-check-box {
+    min-height: 40px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+}
+
+.custom-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.custom-check input {
+    width: 15px;
+    height: 15px;
+    accent-color: #06245f;
+}
+
+/* ============================================================
+   FILTER ACTIONS
+   ============================================================ */
+
+.filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.filter-submit-btn,
+.filter-reset-btn {
+    min-height: 39px;
+    padding: 0 14px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.filter-submit-btn {
+    border: 1px solid #06245f;
+    background: #06245f;
+    color: #fff;
+}
+
+.filter-submit-btn:hover {
+    background: #041b49;
+}
+
+.filter-reset-btn {
+    border: 1px solid #dbe2ea;
+    background: #fff;
+    color: #475569;
+}
+
+.filter-reset-btn:hover {
+    background: #f8fafc;
+}
+
+/* ============================================================
+   TABLE CARD
+   ============================================================ */
+
+.teacher-table-card {
+    background: #fff;
+    border: 1px solid #e5eaf2;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .035);
+}
+
+.table-topbar {
+    min-height: 60px;
+    padding: 13px 17px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-bottom: 1px solid #e8edf3;
+}
+
+.table-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.table-title i {
+    color: #06245f;
+}
+
+.table-count {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.per-page-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.per-page-wrapper label {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.per-page-select {
+    height: 34px;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    padding: 0 8px;
+    color: #334155;
+    background: #fff;
+    font-size: 11px;
+    outline: none;
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+.teacher-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.teacher-table {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+}
+
+.teacher-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .45px;
+    white-space: nowrap;
+    text-align: left;
+    padding: 12px 13px;
+    border-bottom: 1px solid #e5eaf2;
+}
+
+.teacher-table td {
+    padding: 12px 13px;
+    border-bottom: 1px solid #edf1f5;
+    vertical-align: middle;
+    color: #334155;
+    font-size: 12px;
+}
+
+.teacher-table tbody tr {
+    transition: background .15s ease;
+}
+
+.teacher-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+.teacher-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+/* ============================================================
+   TEACHER PROFILE
+   ============================================================ */
+
+.teacher-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 220px;
+}
+
+.teacher-avatar {
+    width: 39px;
+    height: 39px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex: 0 0 auto;
+    border: 2px solid #e5eaf2;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #315ea8
+    );
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.teacher-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.teacher-profile-info {
+    min-width: 0;
+}
+
+.teacher-name {
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 190px;
+}
+
+.teacher-username {
+    margin-top: 3px;
+    color: #94a3b8;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.roll-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 7px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .3px;
+}
+
+/* ============================================================
+   CONTACT
+   ============================================================ */
+
+.contact-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.contact-item i {
+    width: 13px;
+    color: #94a3b8;
+    text-align: center;
+    font-size: 10px;
+}
+
+.contact-item span {
+    color: #475569;
+    font-size: 10px;
+}
+
+/* ============================================================
+   BRANCH
+   ============================================================ */
+
+.branch-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.branch-name {
+    color: #334155;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.institution-name {
+    color: #94a3b8;
+    font-size: 10px;
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+
+.status-badge,
+.active-badge,
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 25px;
+    padding: 0 8px;
+    border-radius: 7px;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    white-space: nowrap;
+}
+
+.status-active {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.status-inactive {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+.status-suspended {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.status-resigned {
+    color: #92400e;
+    background: #ffedd5;
+}
+
+.active-yes {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.active-no {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.verified-yes {
+    color: #075985;
+    background: #e0f2fe;
+}
+
+.verified-no {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+/* ============================================================
+   GENDER
+   ============================================================ */
+
+.gender-badge {
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.gender-badge i {
+    margin-right: 5px;
+    color: #94a3b8;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.teacher-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.teacher-action {
+    width: 31px;
+    height: 31px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    font-size: 11px;
+    transition: .18s ease;
+}
+
+.teacher-action.view {
+    color: #2563eb;
+}
+
+.teacher-action.view:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.teacher-action.edit {
+    color: #7c3aed;
+}
+
+.teacher-action.edit:hover {
+    background: #f5f3ff;
+    border-color: #ddd6fe;
+}
+
+.teacher-action.delete {
+    color: #dc2626;
+    cursor: pointer;
+}
+
+.teacher-action.delete:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.teacher-empty {
+    padding: 65px 20px;
+    text-align: center;
+}
+
+.teacher-empty-icon {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 13px;
+    border-radius: 18px;
+    background: #f1f5f9;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+}
+
+.teacher-empty h3 {
+    margin: 0;
+    color: #334155;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.teacher-empty p {
+    margin: 7px 0 16px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.teacher-empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 37px;
+    padding: 0 13px;
+    border-radius: 8px;
+    background: #06245f;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+
+.teacher-pagination {
+    padding: 14px 17px;
+    border-top: 1px solid #e8edf3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.pagination-info {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pagination-info strong {
+    color: #334155;
+}
+
+.pagination-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.page-link {
+    min-width: 31px;
+    height: 31px;
+    padding: 0 8px;
+    border-radius: 7px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    transition: .15s ease;
+}
+
+.page-link:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.page-link.active {
+    background: #06245f;
+    border-color: #06245f;
+    color: #fff;
+}
+
+.page-link.disabled {
+    opacity: .45;
+    pointer-events: none;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1450px) {
+
+    .teacher-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .teacher-filter-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1000px) {
+
+    .teachers-header {
+        flex-direction: column;
+    }
+
+    .add-teacher-btn {
+        align-self: flex-start;
+    }
+
+    .teacher-filter-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .teacher-filter-extra {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+
+    .teachers-page {
+        padding-top: 0;
+    }
+
+    .teachers-title {
+        font-size: 22px;
+    }
+
+    .teachers-title-icon {
+        width: 41px;
+        height: 41px;
+        border-radius: 11px;
+    }
+
+    .teachers-subtitle {
+        margin-left: 52px;
+    }
+
+    .teacher-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .teacher-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-filter-extra {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-actions {
+        justify-content: stretch;
+    }
+
+    .filter-submit-btn,
+    .filter-reset-btn {
+        flex: 1;
+    }
+
+    .table-topbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .teacher-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pagination-links {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 430px) {
+
+    .teacher-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-stat-card {
+        padding: 13px;
+    }
+
+    .teachers-title {
+        font-size: 20px;
+    }
+
+    .add-teacher-btn {
+        width: 100%;
+    }
+}
+</style>
+
+
+<div class="teachers-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="teachers-header">
+
+        <div class="teachers-header-left">
+
+            <h1 class="teachers-title">
+
+                <span class="teachers-title-icon">
+                    <i class="fas fa-chalkboard-user"></i>
+                </span>
+
+                Teachers
+
+            </h1>
+
+            <p class="teachers-subtitle">
+                Manage teachers, accounts, professional information,
+                branch assignments and teacher status.
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('main.add_teacher') }}"
+            class="add-teacher-btn"
+        >
+            <i class="fas fa-plus"></i>
+            Add Teacher
+        </a>
+
+    </div>
+
+
+    <!-- ========================================================
+         FLASH MESSAGES
+         ======================================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            <div class="teacher-flashes">
+
+                {% for category, message in messages %}
+
+                    <div class="teacher-flash {{ category }}">
+
+                        {% if category == 'success' %}
+                            <i class="fas fa-circle-check"></i>
+                        {% elif category == 'danger' %}
+                            <i class="fas fa-circle-exclamation"></i>
+                        {% elif category == 'warning' %}
+                            <i class="fas fa-triangle-exclamation"></i>
+                        {% else %}
+                            <i class="fas fa-circle-info"></i>
+                        {% endif %}
+
+                        <span>{{ message }}</span>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- ========================================================
+         STATISTICS
+         ======================================================== -->
+
+    <div class="teacher-stats">
+
+        <div class="teacher-stat-card">
+
+            <div class="teacher-stat-icon stat-blue">
+                <i class="fas fa-users"></i>
+            </div>
+
+            <div class="teacher-stat-info">
+                <span class="teacher-stat-value">
+                    {{ total_teachers|default(0) }}
+                </span>
+
+                <span class="teacher-stat-label">
+                    Total Teachers
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="teacher-stat-card">
+
+            <div class="teacher-stat-icon stat-green">
+                <i class="fas fa-user-check"></i>
+            </div>
+
+            <div class="teacher-stat-info">
+                <span class="teacher-stat-value">
+                    {{ active_teachers|default(0) }}
+                </span>
+
+                <span class="teacher-stat-label">
+                    Active
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="teacher-stat-card">
+
+            <div class="teacher-stat-icon stat-orange">
+                <i class="fas fa-user-slash"></i>
+            </div>
+
+            <div class="teacher-stat-info">
+                <span class="teacher-stat-value">
+                    {{ inactive_teachers|default(0) }}
+                </span>
+
+                <span class="teacher-stat-label">
+                    Inactive
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="teacher-stat-card">
+
+            <div class="teacher-stat-icon stat-purple">
+                <i class="fas fa-badge-check"></i>
+            </div>
+
+            <div class="teacher-stat-info">
+                <span class="teacher-stat-value">
+                    {{ verified_teachers|default(0) }}
+                </span>
+
+                <span class="teacher-stat-label">
+                    Verified
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="teacher-stat-card">
+
+            <div class="teacher-stat-icon stat-red">
+                <i class="fas fa-user-lock"></i>
+            </div>
+
+            <div class="teacher-stat-info">
+                <span class="teacher-stat-value">
+                    {{ suspended_teachers|default(0) }}
+                </span>
+
+                <span class="teacher-stat-label">
+                    Suspended
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="teacher-stat-card">
+
+            <div class="teacher-stat-icon stat-dark">
+                <i class="fas fa-user-minus"></i>
+            </div>
+
+            <div class="teacher-stat-info">
+                <span class="teacher-stat-value">
+                    {{ resigned_teachers|default(0) }}
+                </span>
+
+                <span class="teacher-stat-label">
+                    Resigned
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         FILTERS
+         ======================================================== -->
+
+    <div class="teacher-filter-card">
+
+        <div class="filter-heading">
+
+            <div class="filter-heading-left">
+                <i class="fas fa-filter"></i>
+                Filter Teachers
+            </div>
+
+            <a
+                href="{{ url_for('main.all_teachers') }}"
+                class="clear-filters-btn"
+            >
+                <i class="fas fa-rotate-left"></i>
+                Clear Filters
+            </a>
+
+        </div>
+
+
+        <form
+            method="GET"
+            action="{{ url_for('main.all_teachers') }}"
+            id="teacherFilterForm"
+        >
+
+            <div class="teacher-filter-grid">
+
+                <!-- Search -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Search
+                    </label>
+
+                    <div class="search-wrapper">
+
+                        <i class="fas fa-search"></i>
+
+                        <input
+                            type="text"
+                            name="search"
+                            class="filter-input"
+                            value="{{ search|default('') }}"
+                            placeholder="Name, username, email, roll no..."
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- Institution -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Institution
+                    </label>
+
+                    <select
+                        name="institution_id"
+                        id="institutionFilter"
+                        class="filter-select"
+                    >
+
+                        {% if user.role in [
+                            'superadmin',
+                            'super_admin',
+                            'admin',
+                            'system_admin'
+                        ] %}
+
+                            <option value="">
+                                All Institutions
+                            </option>
+
+                        {% endif %}
+
+                        {% for institution in institutions %}
+
+                            <option
+                                value="{{ institution.id }}"
+                                {% if institution_id|string == institution.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ institution.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Branch -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Branch
+                    </label>
+
+                    <select
+                        name="branch_id"
+                        id="branchFilter"
+                        class="filter-select"
+                    >
+
+                        <option value="">
+                            All Branches
+                        </option>
+
+                        {% for branch in branches %}
+
+                            <option
+                                value="{{ branch.id }}"
+                                data-institution="{{ branch.institution_id }}"
+                                {% if branch_id|string == branch.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ branch.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Gender -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Gender
+                    </label>
+
+                    <select
+                        name="gender"
+                        class="filter-select"
+                    >
+
+                        <option value="">
+                            All Genders
+                        </option>
+
+                        {% for item in teacher_genders %}
+
+                            <option
+                                value="{{ item }}"
+                                {% if gender == item %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ item|title }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Status -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        class="filter-select"
+                    >
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        {% for item in teacher_statuses %}
+
+                            <option
+                                value="{{ item }}"
+                                {% if status == item %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ item|title }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Per Page -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Per Page
+                    </label>
+
+                    <select
+                        name="per_page"
+                        class="filter-select"
+                    >
+
+                        {% for size in [10, 25, 50, 100] %}
+
+                            <option
+                                value="{{ size }}"
+                                {% if per_page == size %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ size }} Teachers
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 EXTRA FILTERS
+                 ================================================== -->
+
+            <div class="teacher-filter-extra">
+
+                <div class="filter-check-box">
+
+                    <label class="custom-check">
+
+                        <input
+                            type="checkbox"
+                            name="active"
+                            value="1"
+                            {% if active == '1' %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <span>
+                            Active Only
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <div class="filter-check-box">
+
+                    <label class="custom-check">
+
+                        <input
+                            type="checkbox"
+                            name="active"
+                            value="0"
+                            {% if active == '0' %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <span>
+                            Inactive Only
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <div class="filter-check-box">
+
+                    <label class="custom-check">
+
+                        <input
+                            type="checkbox"
+                            name="verified"
+                            value="1"
+                            {% if verified == '1' %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <span>
+                            Verified Only
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <div class="filter-check-box">
+
+                    <label class="custom-check">
+
+                        <input
+                            type="checkbox"
+                            name="verified"
+                            value="0"
+                            {% if verified == '0' %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <span>
+                            Unverified Only
+                        </span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 FILTER ACTIONS
+                 ================================================== -->
+
+            <div class="filter-actions">
+
+                <a
+                    href="{{ url_for('main.all_teachers') }}"
+                    class="filter-reset-btn"
+                >
+                    <i class="fas fa-xmark"></i>
+                    Reset
+                </a>
+
+                <button
+                    type="submit"
+                    class="filter-submit-btn"
+                >
+                    <i class="fas fa-filter"></i>
+                    Apply Filters
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ========================================================
+         TABLE
+         ======================================================== -->
+
+    <div class="teacher-table-card">
+
+        <div class="table-topbar">
+
+            <div>
+
+                <div class="table-title">
+
+                    <i class="fas fa-chalkboard-user"></i>
+
+                    Teacher Directory
+
+                    <span class="table-count">
+                        {{ pagination.total|default(0) }}
+                        result{{ '' if pagination.total|default(0) == 1 else 's' }}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="per-page-wrapper">
+
+                <label>
+                    Showing
+                </label>
+
+                <select
+                    class="per-page-select"
+                    id="quickPerPage"
+                >
+
+                    {% for size in [10, 25, 50, 100] %}
+
+                        <option
+                            value="{{ size }}"
+                            {% if per_page == size %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ size }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        {% if teachers %}
+
+            <div class="teacher-table-wrapper">
+
+                <table class="teacher-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Teacher
+                            </th>
+
+                            <th>
+                                Roll No
+                            </th>
+
+                            <th>
+                                Branch
+                            </th>
+
+                            <th>
+                                Contact
+                            </th>
+
+                            <th>
+                                Gender
+                            </th>
+
+                            <th>
+                                Qualification
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Account
+                            </th>
+
+                            <th>
+                                Verified
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for teacher in teachers %}
+
+                            <tr>
+
+                                <!-- =================================
+                                     TEACHER
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="teacher-profile">
+
+                                        <div class="teacher-avatar">
+
+                                            {% if teacher.photo %}
+
+                                                <img
+                                                    src="{{ teacher.photo }}"
+                                                    alt="{{ teacher.full_name }}"
+                                                    onerror="this.style.display='none'; this.parentElement.innerHTML='<span>{{ teacher.full_name[:1]|upper }}</span>';"
+                                                >
+
+                                            {% else %}
+
+                                                {{ teacher.full_name[:1]|upper }}
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="teacher-profile-info">
+
+                                            <div
+                                                class="teacher-name"
+                                                title="{{ teacher.full_name }}"
+                                            >
+                                                {{ teacher.full_name }}
+                                            </div>
+
+                                            <div class="teacher-username">
+                                                <i class="fas fa-at"></i>
+                                                {{ teacher.username }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     ROLL NO
+                                     ================================= -->
+
+                                <td>
+
+                                    <span class="roll-badge">
+
+                                        <i class="fas fa-id-badge"></i>
+
+                                        {{ teacher.roll_no }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     BRANCH
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="branch-cell">
+
+                                        <span class="branch-name">
+
+                                            {% if teacher.branch %}
+
+                                                {{ teacher.branch.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </span>
+
+
+                                        <span class="institution-name">
+
+                                            {% if teacher.institution %}
+
+                                                {{ teacher.institution.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     CONTACT
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="contact-cell">
+
+                                        {% if teacher.email %}
+
+                                            <div class="contact-item">
+
+                                                <i class="fas fa-envelope"></i>
+
+                                                <span>
+                                                    {{ teacher.email }}
+                                                </span>
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        {% if teacher.phone %}
+
+                                            <div class="contact-item">
+
+                                                <i class="fas fa-phone"></i>
+
+                                                <span>
+                                                    {{ teacher.phone }}
+                                                </span>
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        {% if not teacher.email and not teacher.phone %}
+
+                                            <span style="color:#94a3b8;">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     GENDER
+                                     ================================= -->
+
+                                <td>
+
+                                    {% if teacher.gender %}
+
+                                        <span class="gender-badge">
+
+                                            {% if teacher.gender == 'male' %}
+
+                                                <i class="fas fa-mars"></i>
+
+                                            {% elif teacher.gender == 'female' %}
+
+                                                <i class="fas fa-venus"></i>
+
+                                            {% else %}
+
+                                                <i class="fas fa-user"></i>
+
+                                            {% endif %}
+
+                                            {{ teacher.gender|title }}
+
+                                        </span>
+
+                                    {% else %}
+
+                                        <span style="color:#94a3b8;">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- =================================
+                                     QUALIFICATION
+                                     ================================= -->
+
+                                <td>
+
+                                    {% if teacher.qualification %}
+
+                                        <span
+                                            title="{{ teacher.qualification }}"
+                                            style="
+                                                display:block;
+                                                max-width:150px;
+                                                overflow:hidden;
+                                                text-overflow:ellipsis;
+                                                white-space:nowrap;
+                                                font-size:11px;
+                                                font-weight:700;
+                                            "
+                                        >
+                                            {{ teacher.qualification }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span style="color:#94a3b8;">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- =================================
+                                     STATUS
+                                     ================================= -->
+
+                                <td>
+
+                                    {% if teacher.status == 'active' %}
+
+                                        <span class="status-badge status-active">
+                                            <i class="fas fa-circle"></i>
+                                            Active
+                                        </span>
+
+                                    {% elif teacher.status == 'inactive' %}
+
+                                        <span class="status-badge status-inactive">
+                                            <i class="fas fa-circle"></i>
+                                            Inactive
+                                        </span>
+
+                                    {% elif teacher.status == 'suspended' %}
+
+                                        <span class="status-badge status-suspended">
+                                            <i class="fas fa-ban"></i>
+                                            Suspended
+                                        </span>
+
+                                    {% elif teacher.status == 'resigned' %}
+
+                                        <span class="status-badge status-resigned">
+                                            <i class="fas fa-user-minus"></i>
+                                            Resigned
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status-badge status-inactive">
+                                            {{ teacher.status|default('Unknown')|title }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- =================================
+                                     ACCOUNT
+                                     ================================= -->
+
+                                <td>
+
+                                    {% if teacher.is_active %}
+
+                                        <span class="active-badge active-yes">
+                                            <i class="fas fa-check"></i>
+                                            Active
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="active-badge active-no">
+                                            <i class="fas fa-xmark"></i>
+                                            Disabled
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- =================================
+                                     VERIFIED
+                                     ================================= -->
+
+                                <td>
+
+                                    {% if teacher.is_verified %}
+
+                                        <span class="verified-badge verified-yes">
+                                            <i class="fas fa-circle-check"></i>
+                                            Verified
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="verified-badge verified-no">
+                                            <i class="fas fa-clock"></i>
+                                            Pending
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- =================================
+                                     ACTIONS
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="teacher-actions">
+
+                                        <a
+                                            href="{{ url_for('main.view_teacher', teacher_id=teacher.id) }}"
+                                            class="teacher-action view"
+                                            title="View Teacher"
+                                        >
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
+
+                                        <a
+                                            href="{{ url_for('main.edit_teacher', teacher_id=teacher.id) }}"
+                                            class="teacher-action edit"
+                                            title="Edit Teacher"
+                                        >
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+
+
+                                        <button
+                                            type="button"
+                                            class="teacher-action delete delete-teacher-btn"
+                                            title="Delete Teacher"
+                                            data-id="{{ teacher.id }}"
+                                            data-name="{{ teacher.full_name }}"
+                                            data-roll="{{ teacher.roll_no }}"
+                                        >
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+
+                                        <form
+                                            id="delete-form-{{ teacher.id }}"
+                                            method="POST"
+                                            action="{{ url_for('main.delete_teacher', teacher_id=teacher.id) }}"
+                                            style="display:none;"
+                                        ></form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- ====================================================
+                 PAGINATION
+                 ==================================================== -->
+
+            <div class="teacher-pagination">
+
+                <div class="pagination-info">
+
+                    Showing
+
+                    <strong>
+                        {% if pagination.total > 0 %}
+                            {{ ((pagination.page - 1) * pagination.per_page) + 1 }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </strong>
+
+                    to
+
+                    <strong>
+                        {% if pagination.total > 0 %}
+                            {{ [
+                                pagination.page * pagination.per_page,
+                                pagination.total
+                            ]|min }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </strong>
+
+                    of
+
+                    <strong>
+                        {{ pagination.total }}
+                    </strong>
+
+                    teachers
+
+                </div>
+
+
+                {% if pagination.pages > 1 %}
+
+                    <div class="pagination-links">
+
+                        <!-- Previous -->
+
+                        {% if pagination.has_prev %}
+
+                            <a
+                                class="page-link"
+                                href="{{ url_for(
+                                    'main.all_teachers',
+                                    page=pagination.prev_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=institution_id,
+                                    branch_id=branch_id,
+                                    gender=gender,
+                                    status=status,
+                                    active=active,
+                                    verified=verified
+                                ) }}"
+                                title="Previous"
+                            >
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+
+                        {% else %}
+
+                            <span class="page-link disabled">
+                                <i class="fas fa-chevron-left"></i>
+                            </span>
+
+                        {% endif %}
+
+
+                        <!-- Page Numbers -->
+
+                        {% set start_page = pagination.page - 2 %}
+                        {% set end_page = pagination.page + 2 %}
+
+                        {% if start_page < 1 %}
+                            {% set start_page = 1 %}
+                            {% set end_page = 5 %}
+                        {% endif %}
+
+                        {% if end_page > pagination.pages %}
+                            {% set end_page = pagination.pages %}
+                            {% set start_page = pagination.pages - 4 %}
+                        {% endif %}
+
+                        {% if start_page < 1 %}
+                            {% set start_page = 1 %}
+                        {% endif %}
+
+
+                        {% if start_page > 1 %}
+
+                            <a
+                                class="page-link"
+                                href="{{ url_for(
+                                    'main.all_teachers',
+                                    page=1,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=institution_id,
+                                    branch_id=branch_id,
+                                    gender=gender,
+                                    status=status,
+                                    active=active,
+                                    verified=verified
+                                ) }}"
+                            >
+                                1
+                            </a>
+
+                            {% if start_page > 2 %}
+                                <span class="page-link disabled">...</span>
+                            {% endif %}
+
+                        {% endif %}
+
+
+                        {% for page_num in range(
+                            start_page,
+                            end_page + 1
+                        ) %}
+
+                            <a
+                                class="page-link {% if page_num == pagination.page %}active{% endif %}"
+                                href="{{ url_for(
+                                    'main.all_teachers',
+                                    page=page_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=institution_id,
+                                    branch_id=branch_id,
+                                    gender=gender,
+                                    status=status,
+                                    active=active,
+                                    verified=verified
+                                ) }}"
+                            >
+                                {{ page_num }}
+                            </a>
+
+                        {% endfor %}
+
+
+                        {% if end_page < pagination.pages %}
+
+                            {% if end_page < pagination.pages - 1 %}
+                                <span class="page-link disabled">...</span>
+                            {% endif %}
+
+                            <a
+                                class="page-link"
+                                href="{{ url_for(
+                                    'main.all_teachers',
+                                    page=pagination.pages,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=institution_id,
+                                    branch_id=branch_id,
+                                    gender=gender,
+                                    status=status,
+                                    active=active,
+                                    verified=verified
+                                ) }}"
+                            >
+                                {{ pagination.pages }}
+                            </a>
+
+                        {% endif %}
+
+
+                        <!-- Next -->
+
+                        {% if pagination.has_next %}
+
+                            <a
+                                class="page-link"
+                                href="{{ url_for(
+                                    'main.all_teachers',
+                                    page=pagination.next_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=institution_id,
+                                    branch_id=branch_id,
+                                    gender=gender,
+                                    status=status,
+                                    active=active,
+                                    verified=verified
+                                ) }}"
+                                title="Next"
+                            >
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+
+                        {% else %}
+
+                            <span class="page-link disabled">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        {% else %}
+
+            <!-- ====================================================
+                 EMPTY STATE
+                 ==================================================== -->
+
+            <div class="teacher-empty">
+
+                <div class="teacher-empty-icon">
+                    <i class="fas fa-chalkboard-user"></i>
+                </div>
+
+                <h3>
+                    No Teachers Found
+                </h3>
+
+                <p>
+                    No teachers match your current search or filters.
+                </p>
+
+                <a
+                    href="{{ url_for('main.add_teacher') }}"
+                    class="teacher-empty-btn"
+                >
+                    <i class="fas fa-plus"></i>
+                    Add First Teacher
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* =========================================================
+       INSTITUTION → BRANCH FILTER
+       ========================================================= */
+
+    const institutionFilter =
+        document.getElementById("institutionFilter");
+
+    const branchFilter =
+        document.getElementById("branchFilter");
+
+    if (institutionFilter && branchFilter) {
+
+        const originalBranchOptions =
+            Array.from(
+                branchFilter.options
+            ).map(option => ({
+                value: option.value,
+                text: option.text,
+                institution:
+                    option.dataset.institution || "",
+                selected:
+                    option.selected
+            }));
+
+
+        function updateBranchOptions() {
+
+            const selectedInstitution =
+                institutionFilter.value;
+
+            const currentBranch =
+                branchFilter.value;
+
+            branchFilter.innerHTML = "";
+
+            const allOption =
+                document.createElement("option");
+
+            allOption.value = "";
+            allOption.textContent =
+                "All Branches";
+
+            branchFilter.appendChild(
+                allOption
+            );
+
+
+            originalBranchOptions.forEach(
+                function (item) {
+
+                    if (!item.value) {
+                        return;
+                    }
+
+                    if (
+                        !selectedInstitution ||
+                        item.institution === selectedInstitution
+                    ) {
+
+                        const option =
+                            document.createElement("option");
+
+                        option.value =
+                            item.value;
+
+                        option.textContent =
+                            item.text;
+
+                        option.dataset.institution =
+                            item.institution;
+
+                        branchFilter.appendChild(
+                            option
+                        );
+                    }
+                }
+            );
+
+
+            if (
+                Array.from(
+                    branchFilter.options
+                ).some(
+                    option =>
+                        option.value === currentBranch
+                )
+            ) {
+
+                branchFilter.value =
+                    currentBranch;
+
+            } else {
+
+                branchFilter.value = "";
+            }
+        }
+
+
+        institutionFilter.addEventListener(
+            "change",
+            function () {
+
+                branchFilter.value = "";
+
+                updateBranchOptions();
+
+            }
+        );
+
+        updateBranchOptions();
+    }
+
+
+    /* =========================================================
+       QUICK PER PAGE
+       ========================================================= */
+
+    const quickPerPage =
+        document.getElementById("quickPerPage");
+
+    if (quickPerPage) {
+
+        quickPerPage.addEventListener(
+            "change",
+            function () {
+
+                const url =
+                    new URL(
+                        window.location.href
+                    );
+
+                url.searchParams.set(
+                    "per_page",
+                    this.value
+                );
+
+                url.searchParams.set(
+                    "page",
+                    "1"
+                );
+
+                window.location.href =
+                    url.toString();
+            }
+        );
+    }
+
+
+    /* =========================================================
+       PREVENT BOTH ACTIVE CHECKBOXES
+       ========================================================= */
+
+    const activeCheckboxes =
+        document.querySelectorAll(
+            'input[name="active"]'
+        );
+
+    activeCheckboxes.forEach(
+        function (checkbox) {
+
+            checkbox.addEventListener(
+                "change",
+                function () {
+
+                    if (this.checked) {
+
+                        activeCheckboxes.forEach(
+                            function (other) {
+
+                                if (
+                                    other !== checkbox
+                                ) {
+                                    other.checked =
+                                        false;
+                                }
+
+                            }
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    /* =========================================================
+       PREVENT BOTH VERIFIED CHECKBOXES
+       ========================================================= */
+
+    const verifiedCheckboxes =
+        document.querySelectorAll(
+            'input[name="verified"]'
+        );
+
+    verifiedCheckboxes.forEach(
+        function (checkbox) {
+
+            checkbox.addEventListener(
+                "change",
+                function () {
+
+                    if (this.checked) {
+
+                        verifiedCheckboxes.forEach(
+                            function (other) {
+
+                                if (
+                                    other !== checkbox
+                                ) {
+                                    other.checked =
+                                        false;
+                                }
+
+                            }
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    /* =========================================================
+       DELETE TEACHER
+       ========================================================= */
+
+    const deleteButtons =
+        document.querySelectorAll(
+            ".delete-teacher-btn"
+        );
+
+
+    deleteButtons.forEach(
+        function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    const teacherId =
+                        this.dataset.id;
+
+                    const teacherName =
+                        this.dataset.name;
+
+                    const rollNo =
+                        this.dataset.roll;
+
+
+                    if (
+                        typeof Swal !== "undefined"
+                    ) {
+
+                        Swal.fire({
+
+                            title: "Delete Teacher?",
+
+                            html:
+                                `
+                                <div style="
+                                    font-size:13px;
+                                    color:#64748b;
+                                    line-height:1.7;
+                                ">
+                                    Are you sure you want to delete
+                                    <strong style="color:#0f172a;">
+                                        ${escapeHtml(teacherName)}
+                                    </strong>
+                                    ?
+
+                                    <br>
+
+                                    <span style="
+                                        display:inline-flex;
+                                        margin-top:7px;
+                                        padding:4px 8px;
+                                        border-radius:6px;
+                                        background:#eff6ff;
+                                        color:#1d4ed8;
+                                        font-weight:800;
+                                        font-size:11px;
+                                    ">
+                                        ${escapeHtml(rollNo)}
+                                    </span>
+
+                                    <br><br>
+
+                                    This action cannot be undone.
+                                </div>
+                                `,
+
+                            icon: "warning",
+
+                            showCancelButton: true,
+
+                            confirmButtonText:
+                                "Yes, Delete",
+
+                            cancelButtonText:
+                                "Cancel",
+
+                            reverseButtons: true,
+
+                            confirmButtonColor:
+                                "#dc2626",
+
+                            cancelButtonColor:
+                                "#64748b",
+
+                            focusCancel: true
+
+                        }).then(
+                            function (result) {
+
+                                if (
+                                    result.isConfirmed
+                                ) {
+
+                                    const form =
+                                        document.getElementById(
+                                            "delete-form-" +
+                                            teacherId
+                                        );
+
+                                    if (form) {
+                                        form.submit();
+                                    }
+
+                                }
+
+                            }
+                        );
+
+                    } else {
+
+                        const confirmed =
+                            window.confirm(
+                                "Delete teacher " +
+                                teacherName +
+                                " (" +
+                                rollNo +
+                                ")?"
+                            );
+
+                        if (confirmed) {
+
+                            const form =
+                                document.getElementById(
+                                    "delete-form-" +
+                                    teacherId
+                                );
+
+                            if (form) {
+                                form.submit();
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    /* =========================================================
+       HTML ESCAPE
+       ========================================================= */
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+    }
+
+
+    /* =========================================================
+       AUTO HIDE FLASH MESSAGES
+       ========================================================= */
+
+    setTimeout(
+        function () {
+
+            document
+                .querySelectorAll(
+                    ".teacher-flash"
+                )
+                .forEach(
+                    function (item) {
+
+                        item.style.transition =
+                            "opacity .3s ease";
+
+                        item.style.opacity = "0";
+
+                        setTimeout(
+                            function () {
+                                item.remove();
+                            },
+                            350
+                        );
+
+                    }
+                );
+
+        },
+        5000
+    );
+
+});
+</script>
+
+{% endblock %}

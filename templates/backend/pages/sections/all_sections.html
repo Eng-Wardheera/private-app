@@ -1,0 +1,2318 @@
+
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   SECTION PAGE
+   ============================================================ */
+
+.sections-page {
+    width: 100%;
+    padding: 0;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.sections-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.sections-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.sections-header-icon {
+    width: 50px;
+    height: 50px;
+    flex: 0 0 50px;
+    border-radius: 14px;
+    background: #06245f;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    box-shadow: 0 7px 18px rgba(6, 36, 95, .15);
+}
+
+.sections-title-wrap {
+    min-width: 0;
+}
+
+.sections-title {
+    margin: 0;
+    color: #172033;
+    font-size: 24px;
+    font-weight: 750;
+    line-height: 1.25;
+}
+
+.sections-subtitle {
+    margin: 5px 0 0;
+    color: #778197;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.btn-add-section {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 43px;
+    padding: 0 17px;
+    border-radius: 10px;
+    background: #06245f;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid #06245f;
+    transition: .2s ease;
+    white-space: nowrap;
+}
+
+.btn-add-section:hover {
+    background: #041b49;
+    border-color: #041b49;
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+
+.section-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 14px;
+    padding: 17px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+}
+
+.stat-icon {
+    width: 43px;
+    height: 43px;
+    flex: 0 0 43px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5fb;
+    color: #06245f;
+    font-size: 17px;
+}
+
+.stat-card:nth-child(2) .stat-icon {
+    color: #32b73a;
+    background: #edf9ef;
+}
+
+.stat-card:nth-child(3) .stat-icon {
+    color: #33206f;
+    background: #f1eefb;
+}
+
+.stat-card:nth-child(4) .stat-icon {
+    color: #d28a00;
+    background: #fff7e7;
+}
+
+.stat-content {
+    min-width: 0;
+}
+
+.stat-label {
+    margin: 0 0 3px;
+    color: #7c8597;
+    font-size: 11px;
+    font-weight: 650;
+    text-transform: uppercase;
+    letter-spacing: .35px;
+}
+
+.stat-value {
+    margin: 0;
+    color: #172033;
+    font-size: 21px;
+    font-weight: 750;
+}
+
+/* ============================================================
+   FILTER CARD
+   ============================================================ */
+
+.filter-card {
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.filter-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.filter-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #172033;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.filter-title i {
+    color: #06245f;
+}
+
+.clear-filters {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #687286;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.clear-filters:hover {
+    color: #06245f;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.6fr) repeat(4, minmax(145px, 1fr));
+    gap: 12px;
+}
+
+.filter-field {
+    min-width: 0;
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #596378;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.filter-control {
+    width: 100%;
+    height: 40px;
+    padding: 0 11px;
+    border: 1px solid #dfe3ea;
+    border-radius: 9px;
+    background: #fff;
+    color: #263044;
+    font-size: 12px;
+    outline: none;
+    transition: .2s ease;
+}
+
+.filter-control:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .07);
+}
+
+.search-control {
+    position: relative;
+}
+
+.search-control input {
+    padding-left: 34px;
+}
+
+.search-control i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8992a4;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.filter-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.btn-filter {
+    height: 40px;
+    border: 1px solid #06245f;
+    background: #06245f;
+    color: #fff;
+    border-radius: 9px;
+    padding: 0 15px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+}
+
+.btn-filter:hover {
+    background: #041b49;
+}
+
+/* ============================================================
+   TABLE CARD
+   ============================================================ */
+
+.table-card {
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.table-card-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid #edf0f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.table-heading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #172033;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.table-heading i {
+    color: #06245f;
+}
+
+.result-count {
+    color: #7d8798;
+    font-size: 12px;
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+.table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.sections-table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: collapse;
+}
+
+.sections-table thead th {
+    padding: 12px 14px;
+    background: #f8f9fb;
+    color: #6d7688;
+    font-size: 10px;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: .45px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid #e9ecf1;
+}
+
+.sections-table tbody td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #eef0f4;
+    color: #344055;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.sections-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.sections-table tbody tr {
+    transition: background .15s ease;
+}
+
+.sections-table tbody tr:hover {
+    background: #fafbfd;
+}
+
+/* ============================================================
+   SECTION NAME
+   ============================================================ */
+
+.section-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 190px;
+}
+
+.section-avatar {
+    width: 37px;
+    height: 37px;
+    flex: 0 0 37px;
+    border-radius: 10px;
+    background: #edf2fa;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.section-name-wrap {
+    min-width: 0;
+}
+
+.section-name {
+    color: #172033;
+    font-size: 12px;
+    font-weight: 750;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+.section-code {
+    margin-top: 3px;
+    color: #8992a3;
+    font-size: 10px;
+    font-family: monospace;
+}
+
+/* ============================================================
+   CLASS
+   ============================================================ */
+
+.class-cell {
+    min-width: 145px;
+}
+
+.class-name {
+    color: #263044;
+    font-weight: 700;
+}
+
+.class-code {
+    margin-top: 3px;
+    color: #8b94a5;
+    font-size: 10px;
+}
+
+/* ============================================================
+   ORGANIZATION
+   ============================================================ */
+
+.organization-cell {
+    min-width: 150px;
+}
+
+.org-name {
+    color: #374258;
+    font-weight: 650;
+}
+
+.org-sub {
+    margin-top: 3px;
+    color: #929aaa;
+    font-size: 10px;
+}
+
+/* ============================================================
+   CAPACITY
+   ============================================================ */
+
+.capacity-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #374258;
+    font-weight: 650;
+}
+
+.capacity-value i {
+    color: #8993a4;
+    font-size: 11px;
+}
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 25px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 750;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status-active {
+    color: #23832b;
+    background: #edf9ef;
+}
+
+.status-inactive {
+    color: #737b89;
+    background: #f1f3f5;
+}
+
+.status-suspended {
+    color: #b06d00;
+    background: #fff6e5;
+}
+
+/* ============================================================
+   ACADEMIC YEAR
+   ============================================================ */
+
+.year-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #4e596d;
+    white-space: nowrap;
+}
+
+.year-badge i {
+    color: #33206f;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.actions-cell {
+    text-align: right !important;
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #e0e4ea;
+    background: #fff;
+    color: #647086;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.action-btn:hover {
+    border-color: #06245f;
+    color: #06245f;
+    background: #f5f7fb;
+}
+
+.action-btn.edit:hover {
+    color: #33206f;
+    border-color: #dcd5f1;
+    background: #f7f5fc;
+}
+
+.action-btn.delete:hover {
+    color: #c53a3a;
+    border-color: #f0d2d2;
+    background: #fff7f7;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.empty-state {
+    padding: 65px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 15px;
+    border-radius: 17px;
+    background: #f1f4f8;
+    color: #8993a3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+}
+
+.empty-title {
+    margin: 0;
+    color: #293247;
+    font-size: 15px;
+    font-weight: 750;
+}
+
+.empty-text {
+    margin: 7px auto 18px;
+    max-width: 430px;
+    color: #8a93a3;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.empty-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 9px;
+    background: #06245f;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+
+.table-footer {
+    padding: 14px 18px;
+    border-top: 1px solid #edf0f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    color: #7b8597;
+    font-size: 11px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.page-link {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 9px;
+    border: 1px solid #e0e4ea;
+    border-radius: 8px;
+    background: #fff;
+    color: #596477;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.page-link:hover {
+    color: #06245f;
+    border-color: #bfc8d8;
+    background: #f7f9fc;
+}
+
+.page-link.active {
+    background: #06245f;
+    border-color: #06245f;
+    color: #fff;
+}
+
+.page-link.disabled {
+    opacity: .45;
+    pointer-events: none;
+}
+
+/* ============================================================
+   PER PAGE
+   ============================================================ */
+
+.per-page-box {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #7b8597;
+    font-size: 11px;
+}
+
+.per-page-select {
+    height: 32px;
+    padding: 0 25px 0 9px;
+    border: 1px solid #e0e4ea;
+    border-radius: 8px;
+    background: #fff;
+    color: #465166;
+    font-size: 11px;
+    outline: none;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1200px) {
+
+    .filter-grid {
+        grid-template-columns:
+            repeat(3, minmax(150px, 1fr));
+    }
+
+    .search-field {
+        grid-column: span 3;
+    }
+
+}
+
+@media (max-width: 900px) {
+
+    .section-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .filter-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .search-field {
+        grid-column: span 2;
+    }
+
+}
+
+@media (max-width: 650px) {
+
+    .sections-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .btn-add-section {
+        width: 100%;
+    }
+
+    .section-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-field {
+        grid-column: span 1;
+    }
+
+    .filter-actions {
+        width: 100%;
+    }
+
+    .btn-filter {
+        width: 100%;
+    }
+
+    .table-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pagination {
+        width: 100%;
+    }
+
+}
+
+/* ============================================================
+   DARK MODE SUPPORT
+   ============================================================ */
+
+body.dark-mode .sections-title,
+body.dark-mode .stat-value,
+body.dark-mode .filter-title,
+body.dark-mode .table-heading,
+body.dark-mode .section-name,
+body.dark-mode .class-name {
+    color: #f1f4f9;
+}
+
+body.dark-mode .stat-card,
+body.dark-mode .filter-card,
+body.dark-mode .table-card {
+    background: #111827;
+    border-color: #263044;
+}
+
+body.dark-mode .filter-control,
+body.dark-mode .per-page-select,
+body.dark-mode .action-btn,
+body.dark-mode .page-link {
+    background: #151e2d;
+    border-color: #2b3548;
+    color: #e4e8ef;
+}
+
+body.dark-mode .sections-table thead th {
+    background: #151e2d;
+    color: #9da7b8;
+    border-color: #293448;
+}
+
+body.dark-mode .sections-table tbody td {
+    border-color: #293448;
+    color: #c7ceda;
+}
+
+body.dark-mode .sections-table tbody tr:hover {
+    background: #151e2d;
+}
+
+body.dark-mode .stat-label,
+body.dark-mode .sections-subtitle,
+body.dark-mode .result-count,
+body.dark-mode .pagination-info,
+body.dark-mode .per-page-box {
+    color: #929daf;
+}
+
+</style>
+
+
+<div class="sections-page">
+
+    <!-- ========================================================
+         HEADER
+         ======================================================== -->
+
+    <div class="sections-header">
+
+        <div class="sections-header-left">
+
+            <div class="sections-header-icon">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+
+            <div class="sections-title-wrap">
+
+                <h1 class="sections-title">
+                    Sections
+                </h1>
+
+                <p class="sections-subtitle">
+                    Manage class sections, capacity, academic year and status.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('main.add_section') }}"
+            class="btn-add-section"
+        >
+            <i class="fa-solid fa-plus"></i>
+            Add Section
+        </a>
+
+    </div>
+
+
+    <!-- ========================================================
+         STATISTICS
+         ======================================================== -->
+
+    {% set total_sections = pagination.total if pagination else (sections|length) %}
+
+    {% set active_count = sections|selectattr('status', 'equalto', 'active')|list|length %}
+    {% set inactive_count = sections|selectattr('status', 'equalto', 'inactive')|list|length %}
+    {% set suspended_count = sections|selectattr('status', 'equalto', 'suspended')|list|length %}
+
+    <div class="section-stats">
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+
+            <div class="stat-content">
+                <p class="stat-label">
+                    Total Sections
+                </p>
+
+                <p class="stat-value">
+                    {{ total_sections }}
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div class="stat-content">
+                <p class="stat-label">
+                    Active
+                </p>
+
+                <p class="stat-value">
+                    {{ active_count }}
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-circle-pause"></i>
+            </div>
+
+            <div class="stat-content">
+                <p class="stat-label">
+                    Inactive
+                </p>
+
+                <p class="stat-value">
+                    {{ inactive_count }}
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+
+            <div class="stat-content">
+                <p class="stat-label">
+                    Suspended
+                </p>
+
+                <p class="stat-value">
+                    {{ suspended_count }}
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         FILTERS
+         ======================================================== -->
+
+    <div class="filter-card">
+
+        <div class="filter-top">
+
+            <div class="filter-title">
+                <i class="fa-solid fa-filter"></i>
+                Filter Sections
+            </div>
+
+            <a
+                href="{{ url_for('main.all_sections') }}"
+                class="clear-filters"
+            >
+                <i class="fa-solid fa-rotate-left"></i>
+                Clear Filters
+            </a>
+
+        </div>
+
+
+        <form
+            method="GET"
+            action="{{ url_for('main.all_sections') }}"
+        >
+
+            <div class="filter-grid">
+
+                <!-- SEARCH -->
+
+                <div class="filter-field search-field">
+
+                    <label class="filter-label">
+                        Search
+                    </label>
+
+                    <div class="search-control">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="text"
+                            name="search"
+                            class="filter-control"
+                            value="{{ search or '' }}"
+                            placeholder="Search section name, code or description..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- INSTITUTION -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Institution
+                    </label>
+
+                    <select
+                        name="institution_id"
+                        id="institutionFilter"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Institutions
+                        </option>
+
+                        {% for institution in institutions %}
+
+                            <option
+                                value="{{ institution.id }}"
+                                {% if institution_filter|string == institution.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ institution.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- BRANCH -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Branch
+                    </label>
+
+                    <select
+                        name="branch_id"
+                        id="branchFilter"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Branches
+                        </option>
+
+                        {% for branch in branches %}
+
+                            <option
+                                value="{{ branch.id }}"
+                                data-institution-id="{{ branch.institution_id }}"
+                                {% if branch_filter|string == branch.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ branch.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- CLASS -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Class
+                    </label>
+
+                    <select
+                        name="class_id"
+                        id="classFilter"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Classes
+                        </option>
+
+                        {% for class_obj in classes %}
+
+                            <option
+                                value="{{ class_obj.id }}"
+                                data-institution-id="{{ class_obj.institution_id }}"
+                                data-branch-id="{{ class_obj.branch_id }}"
+                                {% if class_filter|string == class_obj.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ class_obj.name }}
+                                {% if class_obj.code %}
+                                    — {{ class_obj.code }}
+                                {% endif %}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- ACADEMIC YEAR -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Academic Year
+                    </label>
+
+                    <select
+                        name="academic_year_id"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Academic Years
+                        </option>
+
+                        {% for year in academic_years %}
+
+                            <option
+                                value="{{ year.id }}"
+                                {% if academic_year_filter|string == year.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {% if year.name is defined %}
+                                    {{ year.name }}
+                                {% elif year.year is defined %}
+                                    {{ year.year }}
+                                {% elif year.academic_year is defined %}
+                                    {{ year.academic_year }}
+                                {% else %}
+                                    {{ year.id }}
+                                {% endif %}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="filter-field">
+
+                    <label class="filter-label">
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option
+                            value="active"
+                            {% if status == 'active' %}
+                                selected
+                            {% endif %}
+                        >
+                            Active
+                        </option>
+
+                        <option
+                            value="inactive"
+                            {% if status == 'inactive' %}
+                                selected
+                            {% endif %}
+                        >
+                            Inactive
+                        </option>
+
+                        <option
+                            value="suspended"
+                            {% if status == 'suspended' %}
+                                selected
+                            {% endif %}
+                        >
+                            Suspended
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- FILTER BUTTON -->
+
+                <div class="filter-field filter-actions">
+
+                    <button
+                        type="submit"
+                        class="btn-filter"
+                    >
+                        <i class="fa-solid fa-filter"></i>
+                        Apply Filters
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ========================================================
+         TABLE
+         ======================================================== -->
+
+    <div class="table-card">
+
+        <div class="table-card-header">
+
+            <div class="table-heading">
+                <i class="fa-solid fa-table-list"></i>
+                Section List
+            </div>
+
+            <div class="result-count">
+
+                {% if pagination %}
+
+                    Showing
+                    {{ pagination.first if pagination.total else 0 }}
+                    –
+                    {{ pagination.last if pagination.total else 0 }}
+                    of
+                    {{ pagination.total }}
+
+                {% else %}
+
+                    {{ sections|length }} sections
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        {% if sections %}
+
+            <div class="table-scroll">
+
+                <table class="sections-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Section
+                            </th>
+
+                            <th>
+                                Institution
+                            </th>
+
+                            <th>
+                                Branch
+                            </th>
+
+                            <th>
+                                Class
+                            </th>
+
+                            <th>
+                                Academic Year
+                            </th>
+
+                            <th>
+                                Capacity
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th style="text-align:right;">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for section in sections %}
+
+                            <tr>
+
+                                <!-- SECTION -->
+
+                                <td>
+
+                                    <div class="section-main">
+
+                                        <div class="section-avatar">
+
+                                            {{ section.name[:1]|upper
+                                                if section.name
+                                                else 'S'
+                                            }}
+
+                                        </div>
+
+
+                                        <div class="section-name-wrap">
+
+                                            <div
+                                                class="section-name"
+                                                title="{{ section.name }}"
+                                            >
+                                                {{ section.name }}
+                                            </div>
+
+                                            <div class="section-code">
+                                                {{ section.code or '—' }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- INSTITUTION -->
+
+                                <td>
+
+                                    <div class="organization-cell">
+
+                                        {% if section.institution %}
+
+                                            <div class="org-name">
+                                                {{ section.institution.name }}
+                                            </div>
+
+                                            <div class="org-sub">
+                                                Institution
+                                            </div>
+
+                                        {% else %}
+
+                                            <span class="org-sub">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- BRANCH -->
+
+                                <td>
+
+                                    <div class="organization-cell">
+
+                                        {% if section.branch %}
+
+                                            <div class="org-name">
+                                                {{ section.branch.name }}
+                                            </div>
+
+                                            <div class="org-sub">
+                                                Branch
+                                            </div>
+
+                                        {% else %}
+
+                                            <span class="org-sub">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- CLASS -->
+
+                                <td>
+
+                                    <div class="class-cell">
+
+                                        {% if section.class_ %}
+
+                                            <div class="class-name">
+                                                {{ section.class_.name }}
+                                            </div>
+
+                                            {% if section.class_.code %}
+
+                                                <div class="class-code">
+                                                    {{ section.class_.code }}
+                                                </div>
+
+                                            {% endif %}
+
+                                        {% else %}
+
+                                            <span class="class-code">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ACADEMIC YEAR -->
+
+                                <td>
+
+                                    <span class="year-badge">
+
+                                        <i class="fa-regular fa-calendar"></i>
+
+                                        {% if section.academic_year %}
+
+                                            {% if section.academic_year.name is defined %}
+
+                                                {{ section.academic_year.name }}
+
+                                            {% elif section.academic_year.year is defined %}
+
+                                                {{ section.academic_year.year }}
+
+                                            {% elif section.academic_year.academic_year is defined %}
+
+                                                {{ section.academic_year.academic_year }}
+
+                                            {% else %}
+
+                                                {{ section.academic_year_id }}
+
+                                            {% endif %}
+
+                                        {% else %}
+
+                                            {{ section.academic_year_id }}
+
+                                        {% endif %}
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- CAPACITY -->
+
+                                <td>
+
+                                    <span class="capacity-value">
+
+                                        <i class="fa-solid fa-users"></i>
+
+                                        {% if section.capacity is not none %}
+
+                                            {{ section.capacity }}
+
+                                        {% else %}
+
+                                            Unlimited
+
+                                        {% endif %}
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    {% set section_status = section.status|lower if section.status else 'inactive' %}
+
+                                    <span
+                                        class="status-badge
+                                        {% if section_status == 'active' %}
+                                            status-active
+                                        {% elif section_status == 'suspended' %}
+                                            status-suspended
+                                        {% else %}
+                                            status-inactive
+                                        {% endif %}"
+                                    >
+
+                                        <span class="status-dot"></span>
+
+                                        {{ section_status }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td class="actions-cell">
+
+                                    <div class="action-buttons">
+
+                                        <!-- VIEW -->
+
+                                        <a
+                                            href="{{ url_for(
+                                                'main.view_section',
+                                                section_id=section.id
+                                            ) }}"
+                                            class="action-btn"
+                                            title="View Section"
+                                        >
+                                            <i class="fa-regular fa-eye"></i>
+                                        </a>
+
+
+                                        <!-- EDIT -->
+
+                                        <a
+                                            href="{{ url_for(
+                                                'main.edit_section',
+                                                section_id=section.id
+                                            ) }}"
+                                            class="action-btn edit"
+                                            title="Edit Section"
+                                        >
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+
+
+                                        <!-- DELETE -->
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'main.delete_section',
+                                                section_id=section.id
+                                            ) }}"
+                                            class="delete-form"
+                                            style="display:inline;"
+                                        >
+
+                                            <button
+                                                type="button"
+                                                class="action-btn delete delete-section-btn"
+                                                title="Delete Section"
+                                                data-section-name="{{ section.name }}"
+                                            >
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- ====================================================
+                 TABLE FOOTER
+                 ==================================================== -->
+
+            {% if pagination %}
+
+                <div class="table-footer">
+
+                    <div class="pagination-info">
+
+                        {% if pagination.total > 0 %}
+
+                            Showing
+                            <strong>
+                                {{ pagination.first }}
+                            </strong>
+                            –
+                            <strong>
+                                {{ pagination.last }}
+                            </strong>
+                            of
+                            <strong>
+                                {{ pagination.total }}
+                            </strong>
+                            sections
+
+                        {% else %}
+
+                            No sections found.
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="pagination">
+
+                        <!-- PREVIOUS -->
+
+                        {% if pagination.has_prev %}
+
+                            <a
+                                class="page-link"
+                                href="{{ url_for(
+                                    'main.all_sections',
+                                    page=pagination.prev_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    status=status,
+                                    institution_id=institution_filter,
+                                    branch_id=branch_filter,
+                                    class_id=class_filter,
+                                    academic_year_id=academic_year_filter
+                                ) }}"
+                                title="Previous"
+                            >
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </a>
+
+                        {% else %}
+
+                            <span class="page-link disabled">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </span>
+
+                        {% endif %}
+
+
+                        <!-- PAGE NUMBERS -->
+
+                        {% set start_page = pagination.page - 2 %}
+                        {% set end_page = pagination.page + 2 %}
+
+                        {% if start_page < 1 %}
+                            {% set start_page = 1 %}
+                        {% endif %}
+
+                        {% if end_page > pagination.pages %}
+                            {% set end_page = pagination.pages %}
+                        {% endif %}
+
+
+                        {% if start_page > 1 %}
+
+                            <a
+                                class="page-link"
+                                href="{{ url_for(
+                                    'main.all_sections',
+                                    page=1,
+                                    per_page=per_page,
+                                    search=search,
+                                    status=status,
+                                    institution_id=institution_filter,
+                                    branch_id=branch_filter,
+                                    class_id=class_filter,
+                                    academic_year_id=academic_year_filter
+                                ) }}"
+                            >
+                                1
+                            </a>
+
+                            {% if start_page > 2 %}
+                                <span class="page-link disabled">
+                                    …
+                                </span>
+                            {% endif %}
+
+                        {% endif %}
+
+
+                        {% for page_num in range(start_page, end_page + 1) %}
+
+                            {% if page_num == pagination.page %}
+
+                                <span class="page-link active">
+                                    {{ page_num }}
+                                </span>
+
+                            {% else %}
+
+                                <a
+                                    class="page-link"
+                                    href="{{ url_for(
+                                        'main.all_sections',
+                                        page=page_num,
+                                        per_page=per_page,
+                                        search=search,
+                                        status=status,
+                                        institution_id=institution_filter,
+                                        branch_id=branch_filter,
+                                        class_id=class_filter,
+                                        academic_year_id=academic_year_filter
+                                    ) }}"
+                                >
+                                    {{ page_num }}
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        {% if end_page < pagination.pages %}
+
+                            {% if end_page < pagination.pages - 1 %}
+
+                                <span class="page-link disabled">
+                                    …
+                                </span>
+
+                            {% endif %}
+
+                            <a
+                                class="page-link"
+                                href="{{ url_for(
+                                    'main.all_sections',
+                                    page=pagination.pages,
+                                    per_page=per_page,
+                                    search=search,
+                                    status=status,
+                                    institution_id=institution_filter,
+                                    branch_id=branch_filter,
+                                    class_id=class_filter,
+                                    academic_year_id=academic_year_filter
+                                ) }}"
+                            >
+                                {{ pagination.pages }}
+                            </a>
+
+                        {% endif %}
+
+
+                        <!-- NEXT -->
+
+                        {% if pagination.has_next %}
+
+                            <a
+                                class="page-link"
+                                href="{{ url_for(
+                                    'main.all_sections',
+                                    page=pagination.next_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    status=status,
+                                    institution_id=institution_filter,
+                                    branch_id=branch_filter,
+                                    class_id=class_filter,
+                                    academic_year_id=academic_year_filter
+                                ) }}"
+                                title="Next"
+                            >
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </a>
+
+                        {% else %}
+
+                            <span class="page-link disabled">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- PER PAGE -->
+
+                    <form
+                        method="GET"
+                        action="{{ url_for('main.all_sections') }}"
+                        class="per-page-box"
+                    >
+
+                        <input
+                            type="hidden"
+                            name="search"
+                            value="{{ search or '' }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="status"
+                            value="{{ status or '' }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="institution_id"
+                            value="{{ institution_filter or '' }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="branch_id"
+                            value="{{ branch_filter or '' }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="class_id"
+                            value="{{ class_filter or '' }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="academic_year_id"
+                            value="{{ academic_year_filter or '' }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="page"
+                            value="1"
+                        >
+
+                        <span>
+                            Per page
+                        </span>
+
+                        <select
+                            name="per_page"
+                            class="per-page-select"
+                            onchange="this.form.submit()"
+                        >
+
+                            {% for amount in [10, 20, 50, 100] %}
+
+                                <option
+                                    value="{{ amount }}"
+                                    {% if per_page == amount %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ amount }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </form>
+
+                </div>
+
+            {% endif %}
+
+
+        {% else %}
+
+            <!-- ====================================================
+                 EMPTY STATE
+                 ==================================================== -->
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+
+                <h3 class="empty-title">
+                    No Sections Found
+                </h3>
+
+                <p class="empty-text">
+
+                    {% if search or status or institution_filter or branch_filter or class_filter or academic_year_filter %}
+
+                        No sections match your current filters.
+                        Try changing the filters or clear them
+                        and search again.
+
+                    {% else %}
+
+                        There are currently no sections in the system.
+                        Create your first section to get started.
+
+                    {% endif %}
+
+                </p>
+
+
+                {% if search or status or institution_filter or branch_filter or class_filter or academic_year_filter %}
+
+                    <a
+                        href="{{ url_for('main.all_sections') }}"
+                        class="empty-add"
+                    >
+                        <i class="fa-solid fa-rotate-left"></i>
+                        Clear Filters
+                    </a>
+
+                {% else %}
+
+                    <a
+                        href="{{ url_for('main.add_section') }}"
+                        class="empty-add"
+                    >
+                        <i class="fa-solid fa-plus"></i>
+                        Add First Section
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        /* ========================================================
+           INSTITUTION → BRANCH
+           ======================================================== */
+
+        const institutionFilter =
+            document.getElementById(
+                "institutionFilter"
+            );
+
+        const branchFilter =
+            document.getElementById(
+                "branchFilter"
+            );
+
+        const classFilter =
+            document.getElementById(
+                "classFilter"
+            );
+
+
+        function filterBranches() {
+
+            if (!institutionFilter || !branchFilter) {
+                return;
+            }
+
+            const institutionId =
+                institutionFilter.value;
+
+            Array.from(
+                branchFilter.options
+            ).forEach(
+                function (option, index) {
+
+                    if (index === 0) {
+                        option.hidden = false;
+                        return;
+                    }
+
+                    const optionInstitution =
+                        option.dataset.institutionId;
+
+                    if (
+                        !institutionId ||
+                        optionInstitution === institutionId
+                    ) {
+
+                        option.hidden = false;
+
+                    } else {
+
+                        option.hidden = true;
+
+                    }
+
+                }
+            );
+
+
+            if (
+                branchFilter.value &&
+                branchFilter.selectedOptions.length &&
+                branchFilter.selectedOptions[0].hidden
+            ) {
+
+                branchFilter.value = "";
+
+            }
+
+        }
+
+
+        /* ========================================================
+           INSTITUTION + BRANCH → CLASS
+           ======================================================== */
+
+        function filterClasses() {
+
+            if (!classFilter) {
+                return;
+            }
+
+            const institutionId =
+                institutionFilter
+                    ? institutionFilter.value
+                    : "";
+
+            const branchId =
+                branchFilter
+                    ? branchFilter.value
+                    : "";
+
+
+            Array.from(
+                classFilter.options
+            ).forEach(
+                function (option, index) {
+
+                    if (index === 0) {
+                        option.hidden = false;
+                        return;
+                    }
+
+                    const optionInstitution =
+                        option.dataset.institutionId;
+
+                    const optionBranch =
+                        option.dataset.branchId;
+
+
+                    const institutionMatches =
+                        !institutionId ||
+                        optionInstitution === institutionId;
+
+                    const branchMatches =
+                        !branchId ||
+                        optionBranch === branchId;
+
+
+                    if (
+                        institutionMatches &&
+                        branchMatches
+                    ) {
+
+                        option.hidden = false;
+
+                    } else {
+
+                        option.hidden = true;
+
+                    }
+
+                }
+            );
+
+
+            if (
+                classFilter.value &&
+                classFilter.selectedOptions.length &&
+                classFilter.selectedOptions[0].hidden
+            ) {
+
+                classFilter.value = "";
+
+            }
+
+        }
+
+
+        if (institutionFilter) {
+
+            institutionFilter.addEventListener(
+                "change",
+                function () {
+
+                    filterBranches();
+                    filterClasses();
+
+                }
+            );
+
+        }
+
+
+        if (branchFilter) {
+
+            branchFilter.addEventListener(
+                "change",
+                function () {
+
+                    filterClasses();
+
+                }
+            );
+
+        }
+
+
+        filterBranches();
+        filterClasses();
+
+
+        /* ========================================================
+           DELETE CONFIRMATION
+           ======================================================== */
+
+        document
+            .querySelectorAll(
+                ".delete-section-btn"
+            )
+            .forEach(
+                function (button) {
+
+                    button.addEventListener(
+                        "click",
+                        function () {
+
+                            const form =
+                                button.closest(
+                                    ".delete-form"
+                                );
+
+                            const sectionName =
+                                button.dataset.sectionName ||
+                                "this section";
+
+
+                            /* ------------------------------------
+                               SweetAlert2 if available
+                               ------------------------------------ */
+
+                            if (
+                                typeof Swal !==
+                                "undefined"
+                            ) {
+
+                                Swal.fire({
+
+                                    title:
+                                        "Delete Section?",
+
+                                    html:
+                                        "Are you sure you want to delete " +
+                                        "<strong>" +
+                                        escapeHtml(
+                                            sectionName
+                                        ) +
+                                        "</strong>?" +
+                                        "<br><br>" +
+                                        "<small>" +
+                                        "This action cannot be undone." +
+                                        "</small>",
+
+                                    icon:
+                                        "warning",
+
+                                    showCancelButton:
+                                        true,
+
+                                    confirmButtonText:
+                                        "Yes, Delete",
+
+                                    cancelButtonText:
+                                        "Cancel",
+
+                                    confirmButtonColor:
+                                        "#c53a3a",
+
+                                    cancelButtonColor:
+                                        "#6c7483",
+
+                                    reverseButtons:
+                                        true
+
+                                }).then(
+                                    function (result) {
+
+                                        if (
+                                            result.isConfirmed
+                                        ) {
+
+                                            form.submit();
+
+                                        }
+
+                                    }
+                                );
+
+                                return;
+                            }
+
+
+                            /* ------------------------------------
+                               Native fallback
+                               ------------------------------------ */
+
+                            const confirmed =
+                                window.confirm(
+                                    "Are you sure you want to delete " +
+                                    sectionName +
+                                    "?"
+                                );
+
+                            if (confirmed) {
+
+                                form.submit();
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+
+        /* ========================================================
+           HTML ESCAPE
+           ======================================================== */
+
+        function escapeHtml(value) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            div.textContent =
+                value;
+
+            return div.innerHTML;
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}
+

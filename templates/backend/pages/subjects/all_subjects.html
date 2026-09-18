@@ -1,0 +1,3456 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   ALL SUBJECTS PAGE
+   ============================================================ */
+
+.all-subjects-page {
+    width: 100%;
+    padding: 0;
+}
+
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.subjects-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.subjects-page-title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #06245f;
+}
+
+.subjects-page-subtitle {
+    margin: 5px 0 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.subjects-page-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* ============================================================
+   HEADER BUTTONS
+   ============================================================ */
+
+.subject-header-btn {
+    height: 40px;
+    border-radius: 8px;
+    padding: 0 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 650;
+    transition: .2s ease;
+    white-space: nowrap;
+}
+
+.subject-header-btn.back {
+    background: #ffffff;
+    color: #5f6b7d;
+    border: 1px solid #dfe4ec;
+}
+
+.subject-header-btn.back:hover {
+    background: #f7f9fc;
+    color: #06245f;
+}
+
+.subject-header-btn.add {
+    background: #06245f;
+    color: #ffffff;
+    border: 1px solid #06245f;
+}
+
+.subject-header-btn.add:hover {
+    background: #041c4a;
+}
+
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+
+.subject-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.subject-stat-card {
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e8ecf3;
+    border-radius: 14px;
+    padding: 18px;
+    min-height: 112px;
+    box-shadow: 0 4px 18px rgba(6, 36, 95, 0.06);
+}
+
+.subject-stat-card::after {
+    content: "";
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    right: -30px;
+    bottom: -30px;
+    background: rgba(6, 36, 95, 0.04);
+}
+
+.subject-stat-content {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.subject-stat-icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 19px;
+}
+
+.subject-stat-card.green .subject-stat-icon {
+    background: #eaf8ec;
+    color: #32b73a;
+}
+
+.subject-stat-card.red .subject-stat-icon {
+    background: #fff0f0;
+    color: #dc3545;
+}
+
+.subject-stat-card.purple .subject-stat-icon {
+    background: #f2effb;
+    color: #33206f;
+}
+
+.subject-stat-card.orange .subject-stat-icon {
+    background: #fff6e8;
+    color: #e28a00;
+}
+
+.subject-stat-label {
+    color: #7a8496;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.subject-stat-value {
+    color: #1c2434;
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 750;
+}
+
+
+/* ============================================================
+   TYPE STATISTICS
+   ============================================================ */
+
+.subject-type-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.subject-type-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid #e8ecf3;
+    border-radius: 11px;
+    padding: 12px 14px;
+    box-shadow: 0 3px 12px rgba(6, 36, 95, 0.04);
+}
+
+.subject-type-name {
+    color: #687386;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.subject-type-count {
+    color: #06245f;
+    font-size: 16px;
+    font-weight: 750;
+}
+
+
+/* ============================================================
+   MAIN CARD
+   ============================================================ */
+
+.subjects-main-card {
+    background: #ffffff;
+    border: 1px solid #e8ecf3;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(6, 36, 95, 0.06);
+    overflow: hidden;
+}
+
+
+/* ============================================================
+   CARD HEADER
+   ============================================================ */
+
+.subjects-card-header {
+    padding: 20px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.subjects-card-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.subjects-card-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.subjects-card-description {
+    margin: 4px 0 0;
+    color: #7b8494;
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   FILTERS
+   ============================================================ */
+
+.subjects-filter-form {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 1.7fr)
+        repeat(5, minmax(135px, 1fr))
+        auto auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.subject-filter-group {
+    min-width: 0;
+}
+
+.subject-filter-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #596579;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.subject-filter-input,
+.subject-filter-select {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #dfe4ec;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #303846;
+    font-size: 13px;
+    padding: 0 12px;
+    outline: none;
+    transition: .2s ease;
+}
+
+.subject-filter-input:focus,
+.subject-filter-select:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.subject-filter-select:disabled {
+    background: #f4f6f9;
+    color: #9aa3b2;
+    cursor: not-allowed;
+}
+
+.subject-filter-search {
+    position: relative;
+}
+
+.subject-filter-search i {
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    color: #8b95a7;
+    font-size: 13px;
+}
+
+.subject-filter-search .subject-filter-input {
+    padding-left: 34px;
+}
+
+.subject-filter-btn {
+    height: 42px;
+    border: 0;
+    border-radius: 8px;
+    padding: 0 16px;
+    background: #06245f;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: .2s ease;
+    white-space: nowrap;
+}
+
+.subject-filter-btn:hover {
+    background: #041c4a;
+}
+
+.subject-reset-btn {
+    height: 42px;
+    border: 1px solid #dfe4ec;
+    border-radius: 8px;
+    padding: 0 16px;
+    background: #ffffff;
+    color: #5f6b7d;
+    font-size: 13px;
+    font-weight: 650;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.subject-reset-btn:hover {
+    background: #f7f9fc;
+    color: #06245f;
+}
+
+
+/* ============================================================
+   TABLE TOOLBAR
+   ============================================================ */
+
+.subjects-table-toolbar {
+    padding: 14px 20px;
+    background: #fafbfc;
+    border-bottom: 1px solid #edf0f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.subject-result-count {
+    color: #6c7687;
+    font-size: 13px;
+}
+
+.subject-result-count strong {
+    color: #06245f;
+}
+
+.subject-per-page-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.subject-per-page-wrapper label {
+    color: #6c7687;
+    font-size: 12px;
+    margin: 0;
+}
+
+.subject-per-page-select {
+    height: 34px;
+    min-width: 70px;
+    border: 1px solid #dfe4ec;
+    border-radius: 7px;
+    background: #ffffff;
+    padding: 0 8px;
+    color: #303846;
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+.subjects-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.subjects-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 1500px;
+}
+
+.subjects-table thead th {
+    padding: 13px 14px;
+    background: #f7f9fc;
+    border-bottom: 1px solid #e7ebf1;
+    color: #657084;
+    font-size: 11px;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: .35px;
+    white-space: nowrap;
+}
+
+.subjects-table tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #edf0f4;
+    color: #3f4857;
+    font-size: 13px;
+    vertical-align: middle;
+    background: #ffffff;
+}
+
+.subjects-table tbody tr {
+    transition: background .15s ease;
+}
+
+.subjects-table tbody tr:hover td {
+    background: #f9fbff;
+}
+
+.subjects-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+
+/* ============================================================
+   SUBJECT CELL
+   ============================================================ */
+
+.subject-info {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 230px;
+}
+
+.subject-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 17px;
+}
+
+.subject-name {
+    color: #252d3a;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.subject-short-name {
+    color: #8992a2;
+    font-size: 11px;
+    margin-top: 3px;
+    white-space: nowrap;
+}
+
+.subject-code {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #06245f;
+    background: #eef3fb;
+    border: 1px solid #dce6f6;
+    padding: 5px 9px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: .3px;
+}
+
+
+/* ============================================================
+   ORGANIZATION CELLS
+   ============================================================ */
+
+.subject-organization {
+    min-width: 170px;
+}
+
+.subject-institution-name {
+    color: #273247;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+
+.subject-institution-name i {
+    color: #06245f;
+    margin-right: 5px;
+}
+
+.subject-branch-name {
+    color: #657084;
+    font-size: 11px;
+    margin-top: 4px;
+    white-space: nowrap;
+}
+
+.subject-branch-name i {
+    color: #32b73a;
+    margin-right: 5px;
+}
+
+.shared-branch {
+    color: #33206f;
+    background: #f2effb;
+    border-radius: 15px;
+    padding: 4px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   PROGRAM
+   ============================================================ */
+
+.program-cell {
+    min-width: 150px;
+}
+
+.program-name {
+    color: #344054;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.program-code {
+    color: #8992a2;
+    font-size: 10px;
+    margin-top: 3px;
+}
+
+.no-data {
+    color: #9aa3b2;
+}
+
+
+/* ============================================================
+   TYPE BADGES
+   ============================================================ */
+
+.subject-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.type-academic {
+    color: #06245f;
+    background: #eaf0fa;
+}
+
+.type-practical {
+    color: #006f7b;
+    background: #e8f7f8;
+}
+
+.type-language {
+    color: #2a7d32;
+    background: #eaf7eb;
+}
+
+.type-religious {
+    color: #6d4a00;
+    background: #fff5df;
+}
+
+.type-vocational {
+    color: #7a3e00;
+    background: #fff0e2;
+}
+
+.type-elective {
+    color: #33206f;
+    background: #f0ecfa;
+}
+
+.type-compulsory {
+    color: #9b3e65;
+    background: #faedf3;
+}
+
+
+/* ============================================================
+   HOURS / MARKS
+   ============================================================ */
+
+.numeric-cell {
+    white-space: nowrap;
+}
+
+.numeric-value {
+    color: #303846;
+    font-weight: 700;
+}
+
+.numeric-label {
+    color: #8a94a5;
+    font-size: 10px;
+    margin-left: 2px;
+}
+
+.marks-box {
+    min-width: 115px;
+}
+
+.marks-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.marks-max {
+    color: #344054;
+    font-weight: 700;
+}
+
+.marks-pass {
+    color: #32b73a;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.marks-progress {
+    height: 5px;
+    width: 100%;
+    border-radius: 20px;
+    background: #edf0f5;
+    overflow: hidden;
+}
+
+.marks-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: #32b73a;
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.subject-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 20px;
+    padding: 5px 9px;
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.subject-status-active {
+    background: #eaf8ec;
+    color: #23852c;
+}
+
+.subject-status-inactive {
+    background: #fff0f0;
+    color: #c52d38;
+}
+
+.subject-status-suspended {
+    background: #fff6e8;
+    color: #d18a00;
+}
+
+
+/* ============================================================
+   DATE
+   ============================================================ */
+
+.subject-date {
+    color: #687386;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.subject-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.subject-action-btn {
+    width: 33px;
+    height: 33px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: .18s ease;
+    font-size: 12px;
+}
+
+.subject-action-btn.view {
+    background: #eef7f8;
+    color: #006f7b;
+    border-color: #d7eef0;
+}
+
+.subject-action-btn.view:hover {
+    background: #006f7b;
+    color: #ffffff;
+}
+
+.subject-action-btn.edit {
+    background: #eef3fb;
+    color: #06245f;
+    border-color: #dce6f6;
+}
+
+.subject-action-btn.edit:hover {
+    background: #06245f;
+    color: #ffffff;
+}
+
+.subject-action-btn.delete {
+    background: #fff0f0;
+    color: #d63343;
+    border-color: #f6d7da;
+}
+
+.subject-action-btn.delete:hover {
+    background: #d63343;
+    color: #ffffff;
+}
+
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.subjects-empty-state {
+    text-align: center;
+    padding: 65px 20px;
+}
+
+.subjects-empty-icon {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    background: #f1f4f9;
+    color: #8490a3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+}
+
+.subjects-empty-state h4 {
+    margin: 0 0 7px;
+    color: #303847;
+    font-size: 17px;
+}
+
+.subjects-empty-state p {
+    margin: 0 0 18px;
+    color: #8992a2;
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+
+.subjects-pagination {
+    padding: 17px 20px;
+    border-top: 1px solid #edf0f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.subject-pagination-info {
+    color: #7b8494;
+    font-size: 12px;
+}
+
+.subject-pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.subject-pagination a,
+.subject-pagination span {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 9px;
+    border: 1px solid #e1e5ec;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #5d687a;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.subject-pagination a:hover {
+    background: #f2f5fa;
+    color: #06245f;
+    border-color: #cbd5e5;
+}
+
+.subject-pagination .active {
+    background: #06245f;
+    color: #ffffff;
+    border-color: #06245f;
+}
+
+.subject-pagination .disabled {
+    opacity: .45;
+    pointer-events: none;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1550px) {
+
+    .subjects-filter-form {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .subject-filter-search {
+        grid-column: span 2;
+    }
+
+    .subject-type-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 1300px) {
+
+    .subject-stat-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .subject-type-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .subjects-filter-form {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .subject-filter-search {
+        grid-column: span 3;
+    }
+
+}
+
+
+@media (max-width: 900px) {
+
+    .subjects-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .subject-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .subject-type-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .subjects-filter-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .subject-filter-search {
+        grid-column: span 2;
+    }
+
+    .subjects-pagination {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .subject-stat-grid,
+    .subject-type-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .subjects-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .subject-filter-search {
+        grid-column: span 1;
+    }
+
+    .subjects-card-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .subjects-table-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .subjects-page-title {
+        font-size: 22px;
+    }
+
+    .subjects-page-header-right {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    .subjects-page-header-right,
+    .subjects-filter-form,
+    .subjects-table-toolbar,
+    .subjects-pagination,
+    .subject-actions {
+        display: none !important;
+    }
+
+    .subjects-main-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+
+    .subject-stat-grid,
+    .subject-type-grid {
+        display: none;
+    }
+
+    .subjects-table {
+        min-width: 100%;
+    }
+
+}
+
+</style>
+
+
+<div class="all-subjects-page">
+
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="subjects-page-header">
+
+        <div>
+
+            <h1 class="subjects-page-title">
+
+                <i class="fas fa-book-open me-2"></i>
+
+                All Subjects
+
+            </h1>
+
+            <p class="subjects-page-subtitle">
+
+                Manage academic subjects, programs, branches,
+                marks, credit hours, subject types and status.
+
+            </p>
+
+        </div>
+
+
+        <div class="subjects-page-header-right">
+
+            <a
+                href="{{ url_for('main.dashboard') }}"
+                class="subject-header-btn back"
+            >
+
+                <i class="fas fa-arrow-left"></i>
+
+                Dashboard
+
+            </a>
+
+
+            <a
+                href="{{ url_for('main.add_subject') }}"
+                class="subject-header-btn add"
+            >
+
+                <i class="fas fa-plus"></i>
+
+                Add Subject
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN STATISTICS
+         ======================================================== -->
+
+    <div class="subject-stat-grid">
+
+
+        <!-- TOTAL -->
+
+        <div class="subject-stat-card">
+
+            <div class="subject-stat-content">
+
+                <div class="subject-stat-icon">
+
+                    <i class="fas fa-book-open"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="subject-stat-label">
+                        Total Subjects
+                    </div>
+
+                    <div class="subject-stat-value">
+                        {{ pagination.total }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE -->
+
+        <div class="subject-stat-card green">
+
+            <div class="subject-stat-content">
+
+                <div class="subject-stat-icon">
+
+                    <i class="fas fa-circle-check"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="subject-stat-label">
+                        Active
+                    </div>
+
+                    <div class="subject-stat-value">
+
+                        {% if subjects is defined %}
+
+                            {{
+                                subjects
+                                |selectattr("status", "equalto", "active")
+                                |list
+                                |length
+                            }}
+
+                        {% else %}
+
+                            0
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- INACTIVE -->
+
+        <div class="subject-stat-card red">
+
+            <div class="subject-stat-content">
+
+                <div class="subject-stat-icon">
+
+                    <i class="fas fa-circle-xmark"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="subject-stat-label">
+                        Inactive
+                    </div>
+
+                    <div class="subject-stat-value">
+
+                        {% if subjects is defined %}
+
+                            {{
+                                subjects
+                                |selectattr("status", "equalto", "inactive")
+                                |list
+                                |length
+                            }}
+
+                        {% else %}
+
+                            0
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SUSPENDED -->
+
+        <div class="subject-stat-card purple">
+
+            <div class="subject-stat-content">
+
+                <div class="subject-stat-icon">
+
+                    <i class="fas fa-ban"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="subject-stat-label">
+                        Suspended
+                    </div>
+
+                    <div class="subject-stat-value">
+
+                        {% if subjects is defined %}
+
+                            {{
+                                subjects
+                                |selectattr("status", "equalto", "suspended")
+                                |list
+                                |length
+                            }}
+
+                        {% else %}
+
+                            0
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SHARED -->
+
+        <div class="subject-stat-card orange">
+
+            <div class="subject-stat-content">
+
+                <div class="subject-stat-icon">
+
+                    <i class="fas fa-code-branch"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="subject-stat-label">
+                        Shared Subjects
+                    </div>
+
+                    <div class="subject-stat-value">
+
+                        {% if subjects is defined %}
+
+                            {{
+                                subjects
+                                |selectattr("branch_id", "none")
+                                |list
+                                |length
+                            }}
+
+                        {% else %}
+
+                            0
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         SUBJECT TYPE STATISTICS
+         ======================================================== -->
+
+    <div class="subject-type-grid">
+
+        {% for subject_type in subject_types|default([]) %}
+
+            <div class="subject-type-card">
+
+                <span class="subject-type-name">
+
+                    {{ subject_type|replace('_', ' ')|title }}
+
+                </span>
+
+                <span class="subject-type-count">
+
+                    {{
+                        subjects
+                        |selectattr(
+                            "subject_type",
+                            "equalto",
+                            subject_type
+                        )
+                        |list
+                        |length
+                    }}
+
+                </span>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN SUBJECT CARD
+         ======================================================== -->
+
+    <div class="subjects-main-card">
+
+
+        <!-- ====================================================
+             CARD HEADER
+             ==================================================== -->
+
+        <div class="subjects-card-header">
+
+            <div class="subjects-card-header-top">
+
+                <div>
+
+                    <h2 class="subjects-card-title">
+
+                        <i class="fas fa-layer-group me-1"></i>
+
+                        Subject Management
+
+                    </h2>
+
+                    <p class="subjects-card-description">
+
+                        Search and filter subjects by institution,
+                        branch, program, type and status.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FILTER FORM
+                 ================================================= -->
+
+            <form
+                method="GET"
+                action="{{ url_for('main.all_subjects') }}"
+                class="subjects-filter-form"
+                id="subjectFilterForm"
+            >
+
+
+                <!-- SEARCH -->
+
+                <div class="subject-filter-group subject-filter-search">
+
+                    <label class="subject-filter-label">
+
+                        Search
+
+                    </label>
+
+                    <i class="fas fa-search"></i>
+
+                    <input
+                        type="text"
+                        name="search"
+                        class="subject-filter-input"
+                        placeholder="Subject name, code, short name..."
+                        value="{{ search or '' }}"
+                    >
+
+                </div>
+
+
+                <!-- INSTITUTION -->
+
+                <div class="subject-filter-group">
+
+                    <label
+                        for="filter_institution"
+                        class="subject-filter-label"
+                    >
+
+                        Institution
+
+                    </label>
+
+                    <select
+                        id="filter_institution"
+                        name="institution_id"
+                        class="subject-filter-select"
+                    >
+
+                        <option value="">
+                            All Institutions
+                        </option>
+
+                        {% for institution in institutions|default([]) %}
+
+                            <option
+                                value="{{ institution.id }}"
+                                {% if selected_institution_id|string == institution.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ institution.name }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- BRANCH -->
+
+                <div class="subject-filter-group">
+
+                    <label
+                        for="filter_branch"
+                        class="subject-filter-label"
+                    >
+
+                        Branch
+
+                    </label>
+
+                    <select
+                        id="filter_branch"
+                        name="branch_id"
+                        class="subject-filter-select"
+                    >
+
+                        <option value="">
+                            All Branches
+                        </option>
+
+                        {% for branch in branches|default([]) %}
+
+                            <option
+                                value="{{ branch.id }}"
+                                data-institution-id="{{ branch.institution_id }}"
+                                {% if selected_branch_id|string == branch.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ branch.name }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- PROGRAM -->
+
+                <div class="subject-filter-group">
+
+                    <label
+                        for="filter_program"
+                        class="subject-filter-label"
+                    >
+
+                        Program
+
+                    </label>
+
+                    <select
+                        id="filter_program"
+                        name="program_id"
+                        class="subject-filter-select"
+                    >
+
+                        <option value="">
+                            All Programs
+                        </option>
+
+                        {% for program in programs|default([]) %}
+
+                            <option
+                                value="{{ program.id }}"
+                                data-institution-id="{{ program.institution_id }}"
+                                {% if selected_program_id|string == program.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ program.name }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- SUBJECT TYPE -->
+
+                <div class="subject-filter-group">
+
+                    <label class="subject-filter-label">
+
+                        Subject Type
+
+                    </label>
+
+                    <select
+                        name="subject_type"
+                        class="subject-filter-select"
+                    >
+
+                        <option value="">
+                            All Types
+                        </option>
+
+                        {% for subject_type in subject_types|default([]) %}
+
+                            <option
+                                value="{{ subject_type }}"
+                                {% if selected_subject_type == subject_type %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ subject_type|replace('_', ' ')|title }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="subject-filter-group">
+
+                    <label class="subject-filter-label">
+
+                        Status
+
+                    </label>
+
+                    <select
+                        name="status"
+                        class="subject-filter-select"
+                    >
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        {% for subject_status in subject_statuses|default([]) %}
+
+                            <option
+                                value="{{ subject_status }}"
+                                {% if selected_status == subject_status %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ subject_status|replace('_', ' ')|title }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- FILTER -->
+
+                <button
+                    type="submit"
+                    class="subject-filter-btn"
+                >
+
+                    <i class="fas fa-filter me-1"></i>
+
+                    Filter
+
+                </button>
+
+
+                <!-- RESET -->
+
+                <a
+                    href="{{ url_for('main.all_subjects') }}"
+                    class="subject-reset-btn"
+                >
+
+                    <i class="fas fa-rotate-left me-1"></i>
+
+                    Reset
+
+                </a>
+
+            </form>
+
+        </div>
+
+
+        <!-- ====================================================
+             TABLE TOOLBAR
+             ==================================================== -->
+
+        <div class="subjects-table-toolbar">
+
+            <div class="subject-result-count">
+
+                Showing
+
+                <strong>
+                    {{ pagination.first or 0 }}
+                </strong>
+
+                -
+
+                <strong>
+                    {{ pagination.last or 0 }}
+                </strong>
+
+                of
+
+                <strong>
+                    {{ pagination.total }}
+                </strong>
+
+                subjects
+
+            </div>
+
+
+            <div class="subject-per-page-wrapper">
+
+                <label for="subject_per_page">
+
+                    Per page
+
+                </label>
+
+                <select
+                    id="subject_per_page"
+                    class="subject-per-page-select"
+                >
+
+                    <option
+                        value="10"
+                        {% if per_page == 10 %}selected{% endif %}
+                    >
+                        10
+                    </option>
+
+                    <option
+                        value="25"
+                        {% if per_page == 25 %}selected{% endif %}
+                    >
+                        25
+                    </option>
+
+                    <option
+                        value="50"
+                        {% if per_page == 50 %}selected{% endif %}
+                    >
+                        50
+                    </option>
+
+                    <option
+                        value="100"
+                        {% if per_page == 100 %}selected{% endif %}
+                    >
+                        100
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             SUBJECT TABLE
+             ==================================================== -->
+
+        <div class="subjects-table-wrapper">
+
+            <table class="subjects-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            No.
+                        </th>
+
+                        <th>
+                            Subject
+                        </th>
+
+                        <th>
+                            Code
+                        </th>
+
+                        <th>
+                            Institution
+                        </th>
+
+                        <th>
+                            Branch
+                        </th>
+
+                        <th>
+                            Program
+                        </th>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Weekly Hours
+                        </th>
+
+                        <th>
+                            Credits
+                        </th>
+
+                        <th>
+                            Marks
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Created
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                {% if subjects %}
+
+
+                    {% for subject in subjects %}
+
+                    <tr
+                        id="subject-row-{{ subject.id }}"
+                        data-subject-row="{{ subject.id }}"
+                    >
+
+
+                        <!-- ====================================
+                             NUMBER
+                             ==================================== -->
+
+                        <td>
+
+                            {{
+                                ((pagination.page - 1)
+                                * pagination.per_page)
+                                + loop.index
+                            }}
+
+                        </td>
+
+
+                        <!-- ====================================
+                             SUBJECT
+                             ==================================== -->
+
+                        <td>
+
+                            <div class="subject-info">
+
+                                <div class="subject-icon">
+
+                                    {% if subject.subject_type == "practical" %}
+
+                                        <i class="fas fa-flask"></i>
+
+                                    {% elif subject.subject_type == "language" %}
+
+                                        <i class="fas fa-language"></i>
+
+                                    {% elif subject.subject_type == "religious" %}
+
+                                        <i class="fas fa-mosque"></i>
+
+                                    {% elif subject.subject_type == "vocational" %}
+
+                                        <i class="fas fa-screwdriver-wrench"></i>
+
+                                    {% elif subject.subject_type == "elective" %}
+
+                                        <i class="fas fa-list-check"></i>
+
+                                    {% else %}
+
+                                        <i class="fas fa-book"></i>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div>
+
+                                    <div class="subject-name">
+
+                                        {{ subject.name }}
+
+                                    </div>
+
+
+                                    {% if subject.short_name %}
+
+                                        <div class="subject-short-name">
+
+                                            {{ subject.short_name }}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             CODE
+                             ==================================== -->
+
+                        <td>
+
+                            <span class="subject-code">
+
+                                <i class="fas fa-hashtag"></i>
+
+                                {{ subject.code }}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             INSTITUTION
+                             ==================================== -->
+
+                        <td>
+
+                            <div class="subject-organization">
+
+                                {% if subject.institution %}
+
+                                    <div class="subject-institution-name">
+
+                                        <i class="fas fa-building"></i>
+
+                                        {{ subject.institution.name }}
+
+                                    </div>
+
+                                {% elif subject.institution_id %}
+
+                                    <div class="subject-institution-name">
+
+                                        <i class="fas fa-building"></i>
+
+                                        Institution #{{ subject.institution_id }}
+
+                                    </div>
+
+                                {% else %}
+
+                                    <span class="no-data">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             BRANCH
+                             ==================================== -->
+
+                        <td>
+
+                            {% if subject.branch %}
+
+                                <div class="subject-branch-name">
+
+                                    <i class="fas fa-code-branch"></i>
+
+                                    {{ subject.branch.name }}
+
+                                </div>
+
+                            {% elif subject.branch_id %}
+
+                                <div class="subject-branch-name">
+
+                                    <i class="fas fa-code-branch"></i>
+
+                                    Branch #{{ subject.branch_id }}
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="shared-branch">
+
+                                    <i class="fas fa-globe"></i>
+
+                                    Shared
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ====================================
+                             PROGRAM
+                             ==================================== -->
+
+                        <td>
+
+                            <div class="program-cell">
+
+                                {% if subject.program %}
+
+                                    <div class="program-name">
+
+                                        <i class="fas fa-graduation-cap me-1"></i>
+
+                                        {{ subject.program.name }}
+
+                                    </div>
+
+
+                                    {% if subject.program.code %}
+
+                                        <div class="program-code">
+
+                                            {{ subject.program.code }}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                {% elif subject.program_id %}
+
+                                    <span class="no-data">
+
+                                        Program #{{ subject.program_id }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="no-data">
+
+                                        <i class="fas fa-minus"></i>
+
+                                        No Program
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             TYPE
+                             ==================================== -->
+
+                        <td>
+
+                            {% set type_class = {
+                                "academic": "type-academic",
+                                "practical": "type-practical",
+                                "language": "type-language",
+                                "religious": "type-religious",
+                                "vocational": "type-vocational",
+                                "elective": "type-elective",
+                                "compulsory": "type-compulsory"
+                            }.get(
+                                subject.subject_type,
+                                "type-academic"
+                            ) %}
+
+
+                            <span
+                                class="subject-type-badge {{ type_class }}"
+                            >
+
+                                {% if subject.subject_type == "academic" %}
+
+                                    <i class="fas fa-book"></i>
+
+                                {% elif subject.subject_type == "practical" %}
+
+                                    <i class="fas fa-flask"></i>
+
+                                {% elif subject.subject_type == "language" %}
+
+                                    <i class="fas fa-language"></i>
+
+                                {% elif subject.subject_type == "religious" %}
+
+                                    <i class="fas fa-mosque"></i>
+
+                                {% elif subject.subject_type == "vocational" %}
+
+                                    <i class="fas fa-screwdriver-wrench"></i>
+
+                                {% elif subject.subject_type == "elective" %}
+
+                                    <i class="fas fa-list-check"></i>
+
+                                {% else %}
+
+                                    <i class="fas fa-star"></i>
+
+                                {% endif %}
+
+                                {{ subject.subject_type|replace('_', ' ')|title }}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             WEEKLY HOURS
+                             ==================================== -->
+
+                        <td>
+
+                            <div class="numeric-cell">
+
+                                {% if subject.weekly_hours is not none %}
+
+                                    <span class="numeric-value">
+
+                                        {{ subject.weekly_hours }}
+
+                                    </span>
+
+                                    <span class="numeric-label">
+                                        hrs
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="no-data">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             CREDIT HOURS
+                             ==================================== -->
+
+                        <td>
+
+                            <div class="numeric-cell">
+
+                                {% if subject.credit_hours is not none %}
+
+                                    <span class="numeric-value">
+
+                                        {{ subject.credit_hours }}
+
+                                    </span>
+
+                                    <span class="numeric-label">
+                                        credits
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="no-data">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             MARKS
+                             ==================================== -->
+
+                        <td>
+
+                            <div class="marks-box">
+
+                                <div class="marks-line">
+
+                                    <span class="marks-max">
+
+                                        Max:
+                                        {{ subject.max_marks }}
+
+                                    </span>
+
+                                    <span class="marks-pass">
+
+                                        Pass:
+                                        {{ subject.pass_marks }}
+
+                                    </span>
+
+                                </div>
+
+
+                                {% set max_marks =
+                                    subject.max_marks|float
+                                %}
+
+                                {% set pass_marks =
+                                    subject.pass_marks|float
+                                %}
+
+
+                                <div
+                                    class="marks-progress"
+                                    title="Pass mark: {{ subject.pass_marks }} / {{ subject.max_marks }}"
+                                >
+
+                                    <div
+                                        class="marks-progress-fill"
+                                        style="
+                                            width:
+                                            {% if max_marks > 0 %}
+                                                {{ (pass_marks / max_marks * 100)|round(2) }}
+                                            {% else %}
+                                                0
+                                            {% endif %}%;
+                                        "
+                                    ></div>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ====================================
+                             STATUS
+                             ==================================== -->
+
+                        <td>
+
+                            {% if subject.status == "active" %}
+
+                                <span
+                                    class="subject-status-badge subject-status-active"
+                                >
+
+                                    <i class="fas fa-check-circle"></i>
+
+                                    Active
+
+                                </span>
+
+                            {% elif subject.status == "inactive" %}
+
+                                <span
+                                    class="subject-status-badge subject-status-inactive"
+                                >
+
+                                    <i class="fas fa-times-circle"></i>
+
+                                    Inactive
+
+                                </span>
+
+                            {% else %}
+
+                                <span
+                                    class="subject-status-badge subject-status-suspended"
+                                >
+
+                                    <i class="fas fa-ban"></i>
+
+                                    {{ subject.status|replace('_', ' ')|title }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ====================================
+                             CREATED
+                             ==================================== -->
+
+                        <td>
+
+                            {% if subject.created_at %}
+
+                                <span
+                                    class="subject-date"
+                                    title="{{ subject.created_at.strftime('%Y-%m-%d %H:%M:%S') }}"
+                                >
+
+                                    {{ subject.created_at.strftime('%Y-%m-%d') }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="no-data">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ====================================
+                             ACTIONS
+                             ==================================== -->
+
+                        <td>
+
+                            <div class="subject-actions">
+
+
+                                <!-- VIEW -->
+
+                                <a
+                                    href="{{ url_for(
+                                        'main.view_subject',
+                                        subject_id=subject.id
+                                    ) }}"
+                                    class="subject-action-btn view"
+                                    title="View Subject"
+                                    aria-label="View Subject"
+                                >
+
+                                    <i class="fas fa-eye"></i>
+
+                                </a>
+
+
+                                <!-- EDIT -->
+
+                                <a
+                                    href="{{ url_for(
+                                        'main.edit_subject',
+                                        subject_id=subject.id
+                                    ) }}"
+                                    class="subject-action-btn edit"
+                                    title="Edit Subject"
+                                    aria-label="Edit Subject"
+                                >
+
+                                    <i class="fas fa-pen"></i>
+
+                                </a>
+
+
+                                <!-- DELETE -->
+
+                                <button
+                                    type="button"
+                                    class="subject-action-btn delete"
+                                    title="Delete Subject"
+                                    aria-label="Delete Subject"
+                                    onclick="deleteSubject({{ subject.id }}, this)"
+                                >
+
+                                    <i class="fas fa-trash"></i>
+
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                {% else %}
+
+
+                    <tr>
+
+                        <td colspan="13">
+
+                            <div class="subjects-empty-state">
+
+                                <div class="subjects-empty-icon">
+
+                                    <i class="fas fa-book-open"></i>
+
+                                </div>
+
+                                <h4>
+                                    No subjects found
+                                </h4>
+
+                                <p>
+                                    No subjects match your current
+                                    search or filter criteria.
+                                </p>
+
+
+                                <a
+                                    href="{{ url_for('main.add_subject') }}"
+                                    class="subject-header-btn add"
+                                >
+
+                                    <i class="fas fa-plus"></i>
+
+                                    Add First Subject
+
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- ====================================================
+             PAGINATION
+             ==================================================== -->
+
+        {% if pagination.pages > 0 %}
+
+        <div class="subjects-pagination">
+
+
+            <div class="subject-pagination-info">
+
+                Page
+
+                <strong>
+                    {{ pagination.page }}
+                </strong>
+
+                of
+
+                <strong>
+                    {{ pagination.pages }}
+                </strong>
+
+            </div>
+
+
+            <ul class="subject-pagination">
+
+
+                <!-- FIRST -->
+
+                {% if pagination.has_prev %}
+
+                    <li>
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_subjects',
+                                page=1,
+                                per_page=per_page,
+                                search=search,
+                                institution_id=selected_institution_id,
+                                branch_id=selected_branch_id,
+                                program_id=selected_program_id,
+                                subject_type=selected_subject_type,
+                                status=selected_status
+                            ) }}"
+                            title="First page"
+                        >
+
+                            <i class="fas fa-angles-left"></i>
+
+                        </a>
+
+                    </li>
+
+                {% else %}
+
+                    <li>
+
+                        <span class="disabled">
+
+                            <i class="fas fa-angles-left"></i>
+
+                        </span>
+
+                    </li>
+
+                {% endif %}
+
+
+                <!-- PREVIOUS -->
+
+                {% if pagination.has_prev %}
+
+                    <li>
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_subjects',
+                                page=pagination.prev_num,
+                                per_page=per_page,
+                                search=search,
+                                institution_id=selected_institution_id,
+                                branch_id=selected_branch_id,
+                                program_id=selected_program_id,
+                                subject_type=selected_subject_type,
+                                status=selected_status
+                            ) }}"
+                        >
+
+                            <i class="fas fa-angle-left"></i>
+
+                        </a>
+
+                    </li>
+
+                {% else %}
+
+                    <li>
+
+                        <span class="disabled">
+
+                            <i class="fas fa-angle-left"></i>
+
+                        </span>
+
+                    </li>
+
+                {% endif %}
+
+
+                <!-- PAGE NUMBERS -->
+
+                {% set start_page = pagination.page - 2 %}
+                {% set end_page = pagination.page + 2 %}
+
+                {% if start_page < 1 %}
+
+                    {% set start_page = 1 %}
+
+                {% endif %}
+
+                {% if end_page > pagination.pages %}
+
+                    {% set end_page = pagination.pages %}
+
+                {% endif %}
+
+
+                {% for page_num in range(
+                    start_page,
+                    end_page + 1
+                ) %}
+
+                    <li>
+
+                        {% if page_num == pagination.page %}
+
+                            <span class="active">
+                                {{ page_num }}
+                            </span>
+
+                        {% else %}
+
+                            <a
+                                href="{{ url_for(
+                                    'main.all_subjects',
+                                    page=page_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id,
+                                    program_id=selected_program_id,
+                                    subject_type=selected_subject_type,
+                                    status=selected_status
+                                ) }}"
+                            >
+
+                                {{ page_num }}
+
+                            </a>
+
+                        {% endif %}
+
+                    </li>
+
+                {% endfor %}
+
+
+                <!-- NEXT -->
+
+                {% if pagination.has_next %}
+
+                    <li>
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_subjects',
+                                page=pagination.next_num,
+                                per_page=per_page,
+                                search=search,
+                                institution_id=selected_institution_id,
+                                branch_id=selected_branch_id,
+                                program_id=selected_program_id,
+                                subject_type=selected_subject_type,
+                                status=selected_status
+                            ) }}"
+                        >
+
+                            <i class="fas fa-angle-right"></i>
+
+                        </a>
+
+                    </li>
+
+                {% else %}
+
+                    <li>
+
+                        <span class="disabled">
+
+                            <i class="fas fa-angle-right"></i>
+
+                        </span>
+
+                    </li>
+
+                {% endif %}
+
+
+                <!-- LAST -->
+
+                {% if pagination.has_next %}
+
+                    <li>
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_subjects',
+                                page=pagination.pages,
+                                per_page=per_page,
+                                search=search,
+                                institution_id=selected_institution_id,
+                                branch_id=selected_branch_id,
+                                program_id=selected_program_id,
+                                subject_type=selected_subject_type,
+                                status=selected_status
+                            ) }}"
+                            title="Last page"
+                        >
+
+                            <i class="fas fa-angles-right"></i>
+
+                        </a>
+
+                    </li>
+
+                {% else %}
+
+                    <li>
+
+                        <span class="disabled">
+
+                            <i class="fas fa-angles-right"></i>
+
+                        </span>
+
+                    </li>
+
+                {% endif %}
+
+            </ul>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
+<script>
+
+/* ============================================================
+   INSTITUTION → BRANCH + PROGRAM FILTERS
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const institutionFilter =
+            document.getElementById(
+                "filter_institution"
+            );
+
+        const branchFilter =
+            document.getElementById(
+                "filter_branch"
+            );
+
+        const programFilter =
+            document.getElementById(
+                "filter_program"
+            );
+
+
+        if (!institutionFilter) {
+            return;
+        }
+
+
+        /* ------------------------------------------------------
+           STORE BRANCHES
+           ------------------------------------------------------ */
+
+        const allBranchOptions =
+            branchFilter
+                ? Array.from(
+                    branchFilter.querySelectorAll(
+                        "option[data-institution-id]"
+                    )
+                ).map(function (option) {
+
+                    return {
+                        value: option.value,
+                        text: option.textContent.trim(),
+                        institutionId:
+                            String(
+                                option.dataset.institutionId
+                            )
+                    };
+
+                })
+                : [];
+
+
+        /* ------------------------------------------------------
+           STORE PROGRAMS
+           ------------------------------------------------------ */
+
+        const allProgramOptions =
+            programFilter
+                ? Array.from(
+                    programFilter.querySelectorAll(
+                        "option[data-institution-id]"
+                    )
+                ).map(function (option) {
+
+                    return {
+                        value: option.value,
+                        text: option.textContent.trim(),
+                        institutionId:
+                            String(
+                                option.dataset.institutionId
+                            )
+                    };
+
+                })
+                : [];
+
+
+        /* ------------------------------------------------------
+           UPDATE BRANCHES
+           ------------------------------------------------------ */
+
+        function updateBranchFilter(
+            preserveSelected = true
+        ) {
+
+            if (!branchFilter) {
+                return;
+            }
+
+
+            const institutionId =
+                String(
+                    institutionFilter.value || ""
+                );
+
+
+            const currentBranchId =
+                preserveSelected
+                    ? String(
+                        branchFilter.value || ""
+                    )
+                    : "";
+
+
+            branchFilter.innerHTML = "";
+
+
+            const allOption =
+                document.createElement(
+                    "option"
+                );
+
+            allOption.value = "";
+
+            allOption.textContent =
+                "All Branches";
+
+            branchFilter.appendChild(
+                allOption
+            );
+
+
+            let matchingBranches;
+
+
+            if (!institutionId) {
+
+                matchingBranches =
+                    allBranchOptions;
+
+            } else {
+
+                matchingBranches =
+                    allBranchOptions.filter(
+                        function (branch) {
+
+                            return (
+                                String(
+                                    branch.institutionId
+                                ) === institutionId
+                            );
+
+                        }
+                    );
+
+            }
+
+
+            matchingBranches.forEach(
+                function (branch) {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        branch.value;
+
+                    option.textContent =
+                        branch.text;
+
+
+                    if (
+                        preserveSelected &&
+                        String(branch.value) ===
+                        currentBranchId
+                    ) {
+
+                        option.selected =
+                            true;
+
+                    }
+
+
+                    branchFilter.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* ------------------------------------------------------
+           UPDATE PROGRAMS
+           ------------------------------------------------------ */
+
+        function updateProgramFilter(
+            preserveSelected = true
+        ) {
+
+            if (!programFilter) {
+                return;
+            }
+
+
+            const institutionId =
+                String(
+                    institutionFilter.value || ""
+                );
+
+
+            const currentProgramId =
+                preserveSelected
+                    ? String(
+                        programFilter.value || ""
+                    )
+                    : "";
+
+
+            programFilter.innerHTML = "";
+
+
+            const allOption =
+                document.createElement(
+                    "option"
+                );
+
+            allOption.value = "";
+
+            allOption.textContent =
+                "All Programs";
+
+            programFilter.appendChild(
+                allOption
+            );
+
+
+            let matchingPrograms;
+
+
+            if (!institutionId) {
+
+                matchingPrograms =
+                    allProgramOptions;
+
+            } else {
+
+                matchingPrograms =
+                    allProgramOptions.filter(
+                        function (program) {
+
+                            return (
+                                String(
+                                    program.institutionId
+                                ) === institutionId
+                            );
+
+                        }
+                    );
+
+            }
+
+
+            matchingPrograms.forEach(
+                function (program) {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        program.value;
+
+                    option.textContent =
+                        program.text;
+
+
+                    if (
+                        preserveSelected &&
+                        String(program.value) ===
+                        currentProgramId
+                    ) {
+
+                        option.selected =
+                            true;
+
+                    }
+
+
+                    programFilter.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* ------------------------------------------------------
+           INITIAL LOAD
+           ------------------------------------------------------ */
+
+        updateBranchFilter(true);
+
+        updateProgramFilter(true);
+
+
+        /* ------------------------------------------------------
+           INSTITUTION CHANGE
+           ------------------------------------------------------ */
+
+        institutionFilter.addEventListener(
+            "change",
+            function () {
+
+                updateBranchFilter(false);
+
+                updateProgramFilter(false);
+
+            }
+        );
+
+    }
+);
+
+
+/* ============================================================
+   DELETE SUBJECT
+   ============================================================ */
+
+window.deleteSubject =
+async function (
+    subjectId,
+    button
+) {
+
+    if (!subjectId) {
+        return;
+    }
+
+
+    const row =
+        button
+            ? button.closest("tr")
+            : document.getElementById(
+                `subject-row-${subjectId}`
+            );
+
+
+    let subjectName =
+        "this subject";
+
+
+    if (row) {
+
+        const nameElement =
+            row.querySelector(
+                ".subject-name"
+            );
+
+
+        if (nameElement) {
+
+            subjectName =
+                nameElement.textContent.trim() ||
+                "this subject";
+
+        }
+
+    }
+
+
+    let confirmed =
+        false;
+
+
+    /* ----------------------------------------------------------
+       SWEETALERT
+       ---------------------------------------------------------- */
+
+    if (
+        typeof Swal !== "undefined"
+    ) {
+
+        const result =
+            await Swal.fire({
+
+                icon: "warning",
+
+                title: "Delete Subject?",
+
+                html:
+                    `Are you sure you want to delete ` +
+                    `<strong>${escapeHtml(subjectName)}</strong>?` +
+                    `<br><br>` +
+                    `<span style="font-size:13px;color:#8a93a2;">` +
+                    `This action cannot be undone.` +
+                    `</span>`,
+
+                showCancelButton: true,
+
+                confirmButtonText:
+                    '<i class="fas fa-trash"></i> Yes, Delete',
+
+                cancelButtonText:
+                    "Cancel",
+
+                confirmButtonColor:
+                    "#dc3545",
+
+                cancelButtonColor:
+                    "#6c757d",
+
+                reverseButtons:
+                    true,
+
+                focusCancel:
+                    true
+
+            });
+
+
+        confirmed =
+            result.isConfirmed;
+
+    } else {
+
+        confirmed =
+            confirm(
+                "Are you sure you want to delete this subject?"
+            );
+
+    }
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    /* ----------------------------------------------------------
+       DISABLE BUTTON
+       ---------------------------------------------------------- */
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+        button.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i>';
+
+    }
+
+
+    /* ----------------------------------------------------------
+       DELETE REQUEST
+       ---------------------------------------------------------- */
+
+    try {
+
+        const response =
+            await fetch(
+                `/subjects/${subjectId}/delete`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Accept":
+                            "application/json",
+
+                        "X-Requested-With":
+                            "XMLHttpRequest"
+                    },
+
+                    credentials:
+                        "same-origin"
+                }
+            );
+
+
+        /*
+         * The route may return JSON for AJAX
+         * or redirect for normal requests.
+         */
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
+
+
+        let data =
+            null;
+
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            data =
+                await response.json();
+
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data?.message ||
+                "Unable to delete this subject."
+            );
+
+        }
+
+
+        if (
+            data &&
+            data.success === false
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Unable to delete this subject."
+            );
+
+        }
+
+
+        /* ------------------------------------------------------
+           REMOVE ROW
+           ------------------------------------------------------ */
+
+        if (row) {
+
+            row.style.transition =
+                "opacity .25s ease, transform .25s ease";
+
+            row.style.opacity =
+                "0";
+
+            row.style.transform =
+                "translateX(20px)";
+
+
+            setTimeout(
+                function () {
+
+                    row.remove();
+
+                },
+                280
+            );
+
+        }
+
+
+        /* ------------------------------------------------------
+           SUCCESS MESSAGE
+           ------------------------------------------------------ */
+
+        if (
+            typeof Swal !== "undefined"
+        ) {
+
+            await Swal.fire({
+
+                icon: "success",
+
+                title: "Subject Deleted",
+
+                text:
+                    data?.message ||
+                    "The subject has been deleted successfully.",
+
+                timer: 1800,
+
+                showConfirmButton:
+                    false
+
+            });
+
+
+            /*
+             * Refresh the page after success so
+             * pagination/statistics remain correct.
+             */
+
+            window.location.reload();
+
+        } else {
+
+            window.location.reload();
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Delete subject error:",
+            error
+        );
+
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+            button.innerHTML =
+                '<i class="fas fa-trash"></i>';
+
+        }
+
+
+        if (
+            typeof Swal !== "undefined"
+        ) {
+
+            Swal.fire({
+
+                icon: "error",
+
+                title: "Delete Failed",
+
+                text:
+                    error.message ||
+                    "Unable to delete this subject.",
+
+                confirmButtonColor:
+                    "#06245f"
+
+            });
+
+        } else {
+
+            alert(
+                error.message ||
+                "Unable to delete this subject."
+            );
+
+        }
+
+    }
+
+};
+
+
+/* ============================================================
+   ESCAPE HTML
+   ============================================================ */
+
+window.escapeHtml =
+function (value) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        value == null
+            ? ""
+            : String(value);
+
+
+    return div.innerHTML;
+
+};
+
+
+/* ============================================================
+   PER PAGE
+   ============================================================ */
+
+document.addEventListener(
+    "change",
+    function (event) {
+
+        if (
+            event.target.id !==
+            "subject_per_page"
+        ) {
+
+            return;
+
+        }
+
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        params.set(
+            "per_page",
+            event.target.value
+        );
+
+
+        params.set(
+            "page",
+            "1"
+        );
+
+
+        window.location.href =
+            `${window.location.pathname}?${params.toString()}`;
+
+    }
+);
+
+
+/* ============================================================
+   KEYBOARD SHORTCUT
+   Ctrl + K → Search
+   ============================================================ */
+
+document.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (
+            (event.ctrlKey || event.metaKey) &&
+            event.key.toLowerCase() === "k"
+        ) {
+
+            const searchInput =
+                document.querySelector(
+                    'input[name="search"]'
+                );
+
+
+            if (searchInput) {
+
+                event.preventDefault();
+
+                searchInput.focus();
+
+                searchInput.select();
+
+            }
+
+        }
+
+    }
+);
+
+</script>
+
+
+{% endblock %}
