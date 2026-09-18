@@ -1,0 +1,1668 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   VIEW ACADEMIC YEAR PAGE
+   ============================================================ */
+
+.ay-view-page {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 5px 0 40px;
+}
+
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.ay-view-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.ay-view-title-wrap {
+    min-width: 0;
+}
+
+.ay-view-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -.4px;
+}
+
+.ay-view-subtitle {
+    margin: 7px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.ay-view-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-shrink: 0;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.ay-view-btn {
+    min-height: 41px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        transform .18s ease,
+        box-shadow .18s ease;
+}
+
+.ay-view-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.ay-view-btn:hover {
+    transform: translateY(-1px);
+}
+
+.ay-view-btn-light {
+    background: #fff;
+    color: #374151;
+    border-color: #e1e5eb;
+}
+
+.ay-view-btn-light:hover {
+    background: #f8fafc;
+    border-color: #cfd5dd;
+}
+
+.ay-view-btn-primary {
+    background: #06245f;
+    color: #fff;
+    box-shadow: 0 6px 17px rgba(6, 36, 95, .14);
+}
+
+.ay-view-btn-primary:hover {
+    background: #041b49;
+    box-shadow: 0 9px 22px rgba(6, 36, 95, .2);
+}
+
+
+/* ============================================================
+   HERO CARD
+   ============================================================ */
+
+.ay-hero-card {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 25px;
+    align-items: center;
+    padding: 27px;
+    margin-bottom: 18px;
+    border: 1px solid #e4e9f0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 5px 22px rgba(15, 23, 42, .055);
+}
+
+.ay-hero-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: #06245f;
+}
+
+.ay-hero-card::after {
+    content: "";
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    right: -90px;
+    top: -100px;
+    border-radius: 50%;
+    background: rgba(6, 36, 95, .035);
+    pointer-events: none;
+}
+
+.ay-hero-content {
+    min-width: 0;
+}
+
+.ay-hero-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 9px;
+    color: #8b93a1;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.ay-hero-label svg {
+    width: 14px;
+    height: 14px;
+    color: #06245f;
+}
+
+.ay-hero-name {
+    margin: 0;
+    color: #111827;
+    font-size: 31px;
+    font-weight: 850;
+    line-height: 1.2;
+    letter-spacing: -.5px;
+    word-break: break-word;
+}
+
+.ay-hero-code {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 9px;
+    padding: 6px 10px;
+    border-radius: 7px;
+    background: #f3f6fa;
+    color: #596273;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ay-hero-code svg {
+    width: 13px;
+    height: 13px;
+}
+
+.ay-hero-status {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 150px;
+}
+
+.ay-status-badge {
+    min-height: 31px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.ay-status-badge svg {
+    width: 14px;
+    height: 14px;
+}
+
+.ay-status-active {
+    background: #eaf8ee;
+    color: #15803d;
+}
+
+.ay-status-inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.ay-status-closed {
+    background: #fff1f2;
+    color: #be123c;
+}
+
+.ay-current-badge {
+    min-height: 31px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.ay-current-badge svg {
+    width: 14px;
+    height: 14px;
+}
+
+.ay-not-current {
+    background: #f5f6f8;
+    color: #737b88;
+}
+
+
+/* ============================================================
+   STATS
+   ============================================================ */
+
+.ay-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.ay-stat-card {
+    background: #fff;
+    border: 1px solid #e5e9ef;
+    border-radius: 13px;
+    padding: 17px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .045);
+}
+
+.ay-stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ay-stat-icon {
+    width: 39px;
+    height: 39px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+}
+
+.ay-stat-icon svg {
+    width: 19px;
+    height: 19px;
+}
+
+.ay-stat-number {
+    margin-top: 13px;
+    color: #111827;
+    font-size: 23px;
+    font-weight: 850;
+    line-height: 1;
+}
+
+.ay-stat-label {
+    margin-top: 6px;
+    color: #7b8492;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+
+/* ============================================================
+   MAIN GRID
+   ============================================================ */
+
+.ay-content-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+    gap: 18px;
+    align-items: start;
+}
+
+
+/* ============================================================
+   INFORMATION CARD
+   ============================================================ */
+
+.ay-info-card {
+    background: #fff;
+    border: 1px solid #e5e9ef;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .045);
+}
+
+.ay-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 17px 20px;
+    border-bottom: 1px solid #edf0f4;
+    background: #fbfcfe;
+}
+
+.ay-card-header-icon {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #eef3fb;
+    color: #06245f;
+}
+
+.ay-card-header-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.ay-card-header-title {
+    margin: 0;
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.ay-card-header-subtitle {
+    margin: 3px 0 0;
+    color: #9299a5;
+    font-size: 11px;
+}
+
+.ay-info-body {
+    padding: 20px;
+}
+
+
+/* ============================================================
+   INFORMATION ROW
+   ============================================================ */
+
+.ay-info-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.ay-info-row {
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+    padding: 14px 0;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.ay-info-row:first-child {
+    padding-top: 0;
+}
+
+.ay-info-row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.ay-info-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #7a8391;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.ay-info-label svg {
+    width: 15px;
+    height: 15px;
+    color: #06245f;
+}
+
+.ay-info-value {
+    color: #273142;
+    font-size: 13px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.ay-info-value.muted {
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+
+/* ============================================================
+   INSTITUTION CARD
+   ============================================================ */
+
+.ay-institution-card {
+    background: #fff;
+    border: 1px solid #e5e9ef;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .045);
+    margin-bottom: 18px;
+}
+
+.ay-institution-body {
+    padding: 20px;
+}
+
+.ay-institution-box {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px;
+    border: 1px solid #e7ebf0;
+    border-radius: 11px;
+    background: #fafbfd;
+}
+
+.ay-institution-icon {
+    width: 43px;
+    height: 43px;
+    flex: 0 0 43px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+}
+
+.ay-institution-icon svg {
+    width: 21px;
+    height: 21px;
+}
+
+.ay-institution-info {
+    min-width: 0;
+}
+
+.ay-institution-name {
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.ay-institution-meta {
+    margin-top: 4px;
+    color: #8b93a1;
+    font-size: 10px;
+}
+
+
+/* ============================================================
+   CURRENT YEAR CARD
+   ============================================================ */
+
+.ay-current-card {
+    background: #fff;
+    border: 1px solid #e5e9ef;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .045);
+}
+
+.ay-current-body {
+    padding: 20px;
+}
+
+.ay-current-panel {
+    padding: 17px;
+    border: 1px solid #e1e8f3;
+    border-radius: 11px;
+    background: #f8faff;
+}
+
+.ay-current-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ay-current-panel-icon {
+    width: 37px;
+    height: 37px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #eef3fb;
+    color: #06245f;
+}
+
+.ay-current-panel-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.ay-current-panel-title {
+    color: #1f2937;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ay-current-panel-text {
+    margin-top: 4px;
+    color: #7b8492;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.ay-current-value {
+    margin-top: 15px;
+    color: #06245f;
+    font-size: 17px;
+    font-weight: 850;
+}
+
+.ay-current-code {
+    margin-top: 4px;
+    color: #8b93a1;
+    font-family: monospace;
+    font-size: 10px;
+}
+
+
+/* ============================================================
+   DESCRIPTION
+   ============================================================ */
+
+.ay-description {
+    padding: 14px;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+
+/* ============================================================
+   TIMESTAMPS
+   ============================================================ */
+
+.ay-timestamps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.ay-time-box {
+    padding: 13px;
+    border: 1px solid #e7ebf0;
+    border-radius: 9px;
+    background: #fafbfd;
+}
+
+.ay-time-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #8b93a1;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.ay-time-label svg {
+    width: 13px;
+    height: 13px;
+    color: #06245f;
+}
+
+.ay-time-value {
+    margin-top: 7px;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   DELETE WARNING
+   ============================================================ */
+
+.ay-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 13px;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    background: #fffbeb;
+    color: #92400e;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.ay-warning svg {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+    margin-top: 1px;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1000px) {
+
+    .ay-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ay-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .ay-view-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ay-view-actions {
+        width: 100%;
+    }
+
+    .ay-view-actions .ay-view-btn {
+        flex: 1;
+    }
+
+    .ay-hero-card {
+        grid-template-columns: 1fr;
+        padding: 21px;
+    }
+
+    .ay-hero-status {
+        align-items: flex-start;
+        flex-direction: row;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .ay-info-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+}
+
+@media (max-width: 520px) {
+
+    .ay-view-page {
+        padding-bottom: 20px;
+    }
+
+    .ay-view-title {
+        font-size: 23px;
+    }
+
+    .ay-view-subtitle {
+        font-size: 12px;
+    }
+
+    .ay-view-actions {
+        flex-direction: column;
+    }
+
+    .ay-view-actions .ay-view-btn {
+        width: 100%;
+    }
+
+    .ay-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ay-hero-name {
+        font-size: 25px;
+    }
+
+    .ay-hero-status {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ay-info-body,
+    .ay-institution-body,
+    .ay-current-body {
+        padding: 16px;
+    }
+
+    .ay-timestamps {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+</style>
+
+
+<div class="ay-view-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+    ========================================================= -->
+
+    <div class="ay-view-header">
+
+        <div class="ay-view-title-wrap">
+
+            <h1 class="ay-view-title">
+                Academic Year Details
+            </h1>
+
+            <p class="ay-view-subtitle">
+                View complete information about this academic year.
+            </p>
+
+        </div>
+
+
+        <div class="ay-view-actions">
+
+            <a
+                href="{{ url_for('main.all_academic_years') }}"
+                class="ay-view-btn ay-view-btn-light"
+            >
+                <i data-feather="arrow-left"></i>
+                Back
+            </a>
+
+            <a
+                href="{{ url_for(
+                    'main.edit_academic_year',
+                    academic_year_id=academic_year.id
+                ) }}"
+                class="ay-view-btn ay-view-btn-primary"
+            >
+                <i data-feather="edit-3"></i>
+                Edit Academic Year
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         HERO
+    ========================================================= -->
+
+    <div class="ay-hero-card">
+
+        <div class="ay-hero-content">
+
+            <div class="ay-hero-label">
+
+                <i data-feather="calendar"></i>
+
+                Academic Year
+
+            </div>
+
+
+            <h2 class="ay-hero-name">
+                {{ academic_year.name }}
+            </h2>
+
+
+            <div class="ay-hero-code">
+
+                <i data-feather="hash"></i>
+
+                {{ academic_year.code }}
+
+            </div>
+
+        </div>
+
+
+        <div class="ay-hero-status">
+
+            <!-- STATUS -->
+
+            {% if academic_year.status == "active" %}
+
+                <span class="ay-status-badge ay-status-active">
+
+                    <i data-feather="check-circle"></i>
+
+                    Active
+
+                </span>
+
+            {% elif academic_year.status == "inactive" %}
+
+                <span class="ay-status-badge ay-status-inactive">
+
+                    <i data-feather="pause-circle"></i>
+
+                    Inactive
+
+                </span>
+
+            {% elif academic_year.status == "closed" %}
+
+                <span class="ay-status-badge ay-status-closed">
+
+                    <i data-feather="lock"></i>
+
+                    Closed
+
+                </span>
+
+            {% else %}
+
+                <span class="ay-status-badge ay-status-inactive">
+
+                    {{ academic_year.status|capitalize }}
+
+                </span>
+
+            {% endif %}
+
+
+            <!-- CURRENT -->
+
+            {% if academic_year.is_current %}
+
+                <span class="ay-current-badge">
+
+                    <i data-feather="star"></i>
+
+                    Current Academic Year
+
+                </span>
+
+            {% else %}
+
+                <span class="ay-current-badge ay-not-current">
+
+                    <i data-feather="circle"></i>
+
+                    Not Current
+
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         STATISTICS
+    ========================================================= -->
+
+    <div class="ay-stats-grid">
+
+        <!-- TOTAL YEARS -->
+
+        <div class="ay-stat-card">
+
+            <div class="ay-stat-top">
+
+                <div class="ay-stat-icon">
+                    <i data-feather="calendar"></i>
+                </div>
+
+            </div>
+
+            <div class="ay-stat-number">
+                {{ institution_years_count }}
+            </div>
+
+            <div class="ay-stat-label">
+                Institution Academic Years
+            </div>
+
+        </div>
+
+
+        <!-- START -->
+
+        <div class="ay-stat-card">
+
+            <div class="ay-stat-top">
+
+                <div class="ay-stat-icon">
+                    <i data-feather="play-circle"></i>
+                </div>
+
+            </div>
+
+            <div class="ay-stat-number">
+                {{ academic_year.start_date.strftime('%d %b') }}
+            </div>
+
+            <div class="ay-stat-label">
+                Academic Year Start
+            </div>
+
+        </div>
+
+
+        <!-- END -->
+
+        <div class="ay-stat-card">
+
+            <div class="ay-stat-top">
+
+                <div class="ay-stat-icon">
+                    <i data-feather="stop-circle"></i>
+                </div>
+
+            </div>
+
+            <div class="ay-stat-number">
+                {{ academic_year.end_date.strftime('%d %b') }}
+            </div>
+
+            <div class="ay-stat-label">
+                Academic Year End
+            </div>
+
+        </div>
+
+
+        <!-- CURRENT YEAR -->
+
+        <div class="ay-stat-card">
+
+            <div class="ay-stat-top">
+
+                <div class="ay-stat-icon">
+                    <i data-feather="star"></i>
+                </div>
+
+            </div>
+
+            <div class="ay-stat-number">
+
+                {% if academic_year.is_current %}
+                    Yes
+                {% else %}
+                    No
+                {% endif %}
+
+            </div>
+
+            <div class="ay-stat-label">
+                Current Academic Year
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         CONTENT GRID
+    ========================================================= -->
+
+    <div class="ay-content-grid">
+
+
+        <!-- ====================================================
+             LEFT COLUMN
+        ===================================================== -->
+
+        <div>
+
+
+            <!-- ==================================================
+                 BASIC INFORMATION
+            =================================================== -->
+
+            <div class="ay-info-card">
+
+                <div class="ay-card-header">
+
+                    <div class="ay-card-header-icon">
+                        <i data-feather="info"></i>
+                    </div>
+
+                    <div>
+
+                        <h3 class="ay-card-header-title">
+                            Academic Year Information
+                        </h3>
+
+                        <p class="ay-card-header-subtitle">
+                            Complete academic year details
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="ay-info-body">
+
+                    <div class="ay-info-list">
+
+
+                        <!-- NAME -->
+
+                        <div class="ay-info-row">
+
+                            <div class="ay-info-label">
+
+                                <i data-feather="type"></i>
+
+                                Academic Year Name
+
+                            </div>
+
+                            <div class="ay-info-value">
+                                {{ academic_year.name }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- CODE -->
+
+                        <div class="ay-info-row">
+
+                            <div class="ay-info-label">
+
+                                <i data-feather="hash"></i>
+
+                                Academic Year Code
+
+                            </div>
+
+                            <div class="ay-info-value">
+                                {{ academic_year.code }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- START DATE -->
+
+                        <div class="ay-info-row">
+
+                            <div class="ay-info-label">
+
+                                <i data-feather="calendar"></i>
+
+                                Start Date
+
+                            </div>
+
+                            <div class="ay-info-value">
+
+                                {{ academic_year.start_date.strftime('%d %B %Y') }}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- END DATE -->
+
+                        <div class="ay-info-row">
+
+                            <div class="ay-info-label">
+
+                                <i data-feather="calendar"></i>
+
+                                End Date
+
+                            </div>
+
+                            <div class="ay-info-value">
+
+                                {{ academic_year.end_date.strftime('%d %B %Y') }}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- STATUS -->
+
+                        <div class="ay-info-row">
+
+                            <div class="ay-info-label">
+
+                                <i data-feather="activity"></i>
+
+                                Status
+
+                            </div>
+
+                            <div class="ay-info-value">
+
+                                {% if academic_year.status == "active" %}
+
+                                    <span class="ay-status-badge ay-status-active">
+
+                                        <i data-feather="check-circle"></i>
+
+                                        Active
+
+                                    </span>
+
+                                {% elif academic_year.status == "inactive" %}
+
+                                    <span class="ay-status-badge ay-status-inactive">
+
+                                        <i data-feather="pause-circle"></i>
+
+                                        Inactive
+
+                                    </span>
+
+                                {% elif academic_year.status == "closed" %}
+
+                                    <span class="ay-status-badge ay-status-closed">
+
+                                        <i data-feather="lock"></i>
+
+                                        Closed
+
+                                    </span>
+
+                                {% else %}
+
+                                    {{ academic_year.status|capitalize }}
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CURRENT -->
+
+                        <div class="ay-info-row">
+
+                            <div class="ay-info-label">
+
+                                <i data-feather="star"></i>
+
+                                Current Academic Year
+
+                            </div>
+
+                            <div class="ay-info-value">
+
+                                {% if academic_year.is_current %}
+
+                                    <span class="ay-current-badge">
+
+                                        <i data-feather="check"></i>
+
+                                        Yes — Current
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="ay-current-badge ay-not-current">
+
+                                        <i data-feather="minus"></i>
+
+                                        No
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- DESCRIPTION -->
+
+                        <div class="ay-info-row">
+
+                            <div class="ay-info-label">
+
+                                <i data-feather="file-text"></i>
+
+                                Description
+
+                            </div>
+
+                            <div>
+
+                                {% if academic_year.description %}
+
+                                    <div class="ay-description">
+                                        {{ academic_year.description }}
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="ay-info-value muted">
+                                        No description provided.
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 TIMESTAMPS
+            =================================================== -->
+
+            <div class="ay-info-card" style="margin-top:18px;">
+
+                <div class="ay-card-header">
+
+                    <div class="ay-card-header-icon">
+                        <i data-feather="clock"></i>
+                    </div>
+
+                    <div>
+
+                        <h3 class="ay-card-header-title">
+                            System Information
+                        </h3>
+
+                        <p class="ay-card-header-subtitle">
+                            Record creation and update information
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="ay-info-body">
+
+                    <div class="ay-timestamps">
+
+
+                        <!-- CREATED -->
+
+                        <div class="ay-time-box">
+
+                            <div class="ay-time-label">
+
+                                <i data-feather="plus-circle"></i>
+
+                                Created At
+
+                            </div>
+
+                            <div class="ay-time-value">
+
+                                {% if academic_year.created_at %}
+
+                                    {{ academic_year.created_at.strftime(
+                                        '%d %B %Y, %I:%M %p'
+                                    ) }}
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- UPDATED -->
+
+                        <div class="ay-time-box">
+
+                            <div class="ay-time-label">
+
+                                <i data-feather="refresh-cw"></i>
+
+                                Last Updated
+
+                            </div>
+
+                            <div class="ay-time-value">
+
+                                {% if academic_year.updated_at %}
+
+                                    {{ academic_year.updated_at.strftime(
+                                        '%d %B %Y, %I:%M %p'
+                                    ) }}
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             RIGHT COLUMN
+        ===================================================== -->
+
+        <div>
+
+
+            <!-- ==================================================
+                 INSTITUTION
+            =================================================== -->
+
+            <div class="ay-institution-card">
+
+                <div class="ay-card-header">
+
+                    <div class="ay-card-header-icon">
+                        <i data-feather="home"></i>
+                    </div>
+
+                    <div>
+
+                        <h3 class="ay-card-header-title">
+                            Institution
+                        </h3>
+
+                        <p class="ay-card-header-subtitle">
+                            Owning institution
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="ay-institution-body">
+
+                    <div class="ay-institution-box">
+
+                        <div class="ay-institution-icon">
+                            <i data-feather="home"></i>
+                        </div>
+
+                        <div class="ay-institution-info">
+
+                            {% if institution %}
+
+                                <div class="ay-institution-name">
+                                    {{ institution.name }}
+                                </div>
+
+                                <div class="ay-institution-meta">
+
+                                    Institution ID:
+                                    {{ institution.id }}
+
+                                    {% if institution.code %}
+                                        · {{ institution.code }}
+                                    {% endif %}
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="ay-institution-name">
+                                    Institution Not Found
+                                </div>
+
+                                <div class="ay-institution-meta">
+                                    ID: {{ academic_year.institution_id }}
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 CURRENT YEAR
+            =================================================== -->
+
+            <div class="ay-current-card">
+
+                <div class="ay-card-header">
+
+                    <div class="ay-card-header-icon">
+                        <i data-feather="star"></i>
+                    </div>
+
+                    <div>
+
+                        <h3 class="ay-card-header-title">
+                            Current Year
+                        </h3>
+
+                        <p class="ay-card-header-subtitle">
+                            Institution current academic year
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="ay-current-body">
+
+                    {% if academic_year.is_current %}
+
+                        <div class="ay-current-panel">
+
+                            <div class="ay-current-panel-header">
+
+                                <div class="ay-current-panel-icon">
+                                    <i data-feather="check-circle"></i>
+                                </div>
+
+                                <div>
+
+                                    <div class="ay-current-panel-title">
+                                        This is the Current Year
+                                    </div>
+
+                                    <div class="ay-current-panel-text">
+                                        This academic year is currently
+                                        selected for the institution.
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="ay-current-value">
+                                {{ academic_year.name }}
+                            </div>
+
+                            <div class="ay-current-code">
+                                {{ academic_year.code }}
+                            </div>
+
+                        </div>
+
+                    {% elif institution_current_year %}
+
+                        <div class="ay-current-panel">
+
+                            <div class="ay-current-panel-header">
+
+                                <div class="ay-current-panel-icon">
+                                    <i data-feather="calendar"></i>
+                                </div>
+
+                                <div>
+
+                                    <div class="ay-current-panel-title">
+                                        Institution Current Year
+                                    </div>
+
+                                    <div class="ay-current-panel-text">
+                                        Another academic year is currently
+                                        active as the institution's current year.
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="ay-current-value">
+
+                                {{ institution_current_year.name }}
+
+                            </div>
+
+
+                            <div class="ay-current-code">
+
+                                {{ institution_current_year.code }}
+
+                            </div>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="ay-current-panel">
+
+                            <div class="ay-current-panel-header">
+
+                                <div class="ay-current-panel-icon">
+                                    <i data-feather="alert-circle"></i>
+                                </div>
+
+                                <div>
+
+                                    <div class="ay-current-panel-title">
+                                        No Current Year
+                                    </div>
+
+                                    <div class="ay-current-panel-text">
+                                        This institution does not currently
+                                        have an academic year marked as current.
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 WARNING
+            =================================================== -->
+
+            {% if academic_year.is_current %}
+
+                <div class="ay-warning">
+
+                    <i data-feather="shield"></i>
+
+                    <div>
+
+                        <strong>Current Academic Year</strong><br>
+
+                        This academic year cannot be deleted while it is
+                        marked as current. Set another academic year as
+                        current before deleting it.
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   FEATHER ICONS
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        if (
+            typeof feather !== "undefined"
+        ) {
+            feather.replace();
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

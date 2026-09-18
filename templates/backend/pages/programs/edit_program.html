@@ -1,0 +1,2701 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+/* ============================================================
+   EDIT PROGRAM PAGE
+   ============================================================ */
+
+.edit-program-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 4px 0 40px;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.edit-program-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.edit-program-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.edit-program-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 36, 95, 0.09);
+    color: #06245f;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.edit-program-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1c2434;
+    line-height: 1.2;
+}
+
+.edit-program-subtitle {
+    margin: 5px 0 0;
+    color: #7b8495;
+    font-size: 13px;
+}
+
+.edit-program-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-programs-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 15px;
+    border-radius: 9px;
+    border: 1px solid #e1e5eb;
+    background: #fff;
+    color: #4e5868;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.back-programs-btn:hover {
+    color: #06245f;
+    border-color: #cbd4e0;
+    background: #f8fafc;
+}
+
+/* ============================================================
+   FORM LAYOUT
+   ============================================================ */
+
+.edit-program-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 22px;
+    align-items: start;
+}
+
+.edit-program-main,
+.edit-program-sidebar {
+    min-width: 0;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.form-card,
+.sidebar-card {
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 9px rgba(20, 30, 50, 0.025);
+}
+
+.form-card {
+    margin-bottom: 20px;
+}
+
+.form-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 17px 20px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.form-card-header-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 36, 95, .08);
+    color: #06245f;
+    flex-shrink: 0;
+}
+
+.form-card-header h3 {
+    margin: 0;
+    color: #1d2636;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.form-card-header p {
+    margin: 3px 0 0;
+    color: #8a93a2;
+    font-size: 12px;
+}
+
+.form-card-body {
+    padding: 20px;
+}
+
+/* ============================================================
+   FIELDS
+   ============================================================ */
+
+.fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.field-full {
+    grid-column: 1 / -1;
+}
+
+.form-group {
+    min-width: 0;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.required {
+    color: #e5484d;
+    margin-left: 2px;
+}
+
+.form-control-custom,
+.form-select-custom,
+.form-textarea-custom {
+    width: 100%;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #fff;
+    color: #252d3b;
+    font-size: 13px;
+    outline: none;
+    transition: .2s ease;
+    box-sizing: border-box;
+}
+
+.form-control-custom,
+.form-select-custom {
+    height: 42px;
+    padding: 0 12px;
+}
+
+.form-textarea-custom {
+    min-height: 130px;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.55;
+}
+
+.form-control-custom:focus,
+.form-select-custom:focus,
+.form-textarea-custom:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.form-control-custom:disabled,
+.form-select-custom:disabled {
+    background: #f5f7fa;
+    color: #9aa2af;
+    cursor: not-allowed;
+}
+
+.form-help {
+    margin-top: 6px;
+    color: #9299a7;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+/* ============================================================
+   EDIT NOTICE
+   ============================================================ */
+
+.edit-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 11px 12px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(6, 36, 95, .10);
+    border-radius: 9px;
+    background: rgba(6, 36, 95, .035);
+    color: #687284;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.edit-notice i {
+    color: #06245f;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   INSTITUTION / BRANCH
+   ============================================================ */
+
+.assignment-box {
+    padding: 14px;
+    border: 1px solid #e7eaf0;
+    border-radius: 11px;
+    background: #fafbfd;
+}
+
+.assignment-box-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 14px;
+}
+
+.assignment-box-header-icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 8px;
+    background: rgba(6, 36, 95, .08);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.assignment-box-header strong {
+    display: block;
+    color: #303948;
+    font-size: 12px;
+}
+
+.assignment-box-header span {
+    display: block;
+    margin-top: 2px;
+    color: #9299a7;
+    font-size: 10px;
+}
+
+.assignment-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    background: rgba(6, 36, 95, .045);
+    color: #6f7887;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.assignment-note i {
+    color: #06245f;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   CODE FIELD
+   ============================================================ */
+
+.code-wrapper {
+    position: relative;
+}
+
+.code-wrapper .form-control-custom {
+    padding-right: 42px;
+}
+
+.code-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8c95a4;
+    pointer-events: none;
+}
+
+.code-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    color: #687284;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* ============================================================
+   RADIO OPTIONS
+   ============================================================ */
+
+.option-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.option-item {
+    position: relative;
+}
+
+.option-item input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.option-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid #dfe4eb;
+    border-radius: 8px;
+    background: #fff;
+    color: #596273;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.option-label i {
+    font-size: 12px;
+}
+
+.option-item input:checked + .option-label {
+    border-color: #06245f;
+    background: rgba(6, 36, 95, .06);
+    color: #06245f;
+}
+
+.option-item input:checked + .option-label.active-green {
+    border-color: #32b73a;
+    background: rgba(50, 183, 58, .08);
+    color: #24952d;
+}
+
+/* ============================================================
+   DURATION
+   ============================================================ */
+
+.duration-wrapper {
+    position: relative;
+}
+
+.duration-wrapper .form-control-custom {
+    padding-right: 75px;
+}
+
+.duration-unit {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 42px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    color: #8a93a2;
+    font-size: 11px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.sidebar-card {
+    margin-bottom: 20px;
+}
+
+.sidebar-card:last-child {
+    margin-bottom: 0;
+}
+
+.sidebar-card-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.sidebar-card-header h3 {
+    margin: 0;
+    color: #1d2636;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sidebar-card-body {
+    padding: 18px;
+}
+
+/* ============================================================
+   PREVIEW
+   ============================================================ */
+
+.program-preview {
+    border: 1px solid #e5e9ef;
+    border-radius: 11px;
+    overflow: hidden;
+    background: #fafbfd;
+}
+
+.program-preview-top {
+    padding: 17px;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #0a327d
+    );
+    color: #fff;
+}
+
+.program-preview-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: rgba(255,255,255,.13);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.program-preview-name {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.program-preview-code {
+    margin-top: 5px;
+    color: rgba(255,255,255,.72);
+    font-size: 11px;
+}
+
+.program-preview-body {
+    padding: 14px 15px;
+}
+
+.preview-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 8px 0;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.preview-row:last-child {
+    border-bottom: 0;
+}
+
+.preview-icon {
+    width: 27px;
+    height: 27px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6,36,95,.07);
+    color: #06245f;
+    font-size: 10px;
+    flex-shrink: 0;
+}
+
+.preview-content {
+    min-width: 0;
+}
+
+.preview-content strong {
+    display: block;
+    color: #424b5a;
+    font-size: 10px;
+    margin-bottom: 2px;
+}
+
+.preview-content span {
+    display: block;
+    color: #8a93a2;
+    font-size: 10px;
+    word-break: break-word;
+}
+
+/* ============================================================
+   INFO
+   ============================================================ */
+
+.info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.info-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-row:first-child {
+    padding-top: 0;
+}
+
+.info-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(6,36,95,.07);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.info-content strong {
+    display: block;
+    color: #394252;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.info-content span {
+    color: #8a93a2;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+/* ============================================================
+   CURRENT PROGRAM META
+   ============================================================ */
+
+.program-meta {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.program-meta-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 10px;
+    border: 1px solid #edf0f4;
+    border-radius: 8px;
+    background: #fafbfd;
+}
+
+.program-meta-label {
+    color: #8a93a2;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.program-meta-value {
+    color: #394252;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.update-program-btn {
+    width: 100%;
+    height: 45px;
+    border: 0;
+    border-radius: 9px;
+    background: #06245f;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: .2s ease;
+}
+
+.update-program-btn:hover {
+    background: #041b48;
+}
+
+.update-program-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
+.cancel-program-btn {
+    width: 100%;
+    height: 43px;
+    margin-top: 9px;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #fff;
+    color: #626b79;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancel-program-btn:hover {
+    background: #f8fafc;
+    color: #06245f;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+
+    .edit-program-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-program-sidebar {
+        order: -1;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .edit-program-page {
+        padding-bottom: 25px;
+    }
+
+    .edit-program-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .edit-program-header-actions {
+        width: 100%;
+    }
+
+    .back-programs-btn {
+        width: 100%;
+    }
+
+    .fields-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .field-full {
+        grid-column: auto;
+    }
+
+    .form-card-body {
+        padding: 15px;
+    }
+
+    .option-group {
+        width: 100%;
+    }
+}
+</style>
+
+
+<div class="edit-program-page">
+
+    <!-- ========================================================
+         HEADER
+    ========================================================= -->
+
+    <div class="edit-program-header">
+
+        <div class="edit-program-header-left">
+
+            <div class="edit-program-header-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+
+            <div>
+
+                <h1 class="edit-program-title">
+                    Edit Program
+                </h1>
+
+                <p class="edit-program-subtitle">
+                    Update the program information, institution, branch, duration, and status.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="edit-program-header-actions">
+
+            <a
+                href="{{ url_for('main.all_programs') }}"
+                class="back-programs-btn"
+            >
+                <i class="fas fa-arrow-left"></i>
+                Back to Programs
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         FORM
+    ========================================================= -->
+
+    <form
+        id="edit-program-form"
+        method="POST"
+        action="{{ url_for('main.edit_program', program_id=program.id) }}"
+        autocomplete="off"
+        novalidate
+    >
+
+        <div class="edit-program-grid">
+
+            <!-- ==================================================
+                 MAIN
+            =================================================== -->
+
+            <div class="edit-program-main">
+
+
+                <!-- ==================================================
+                     PROGRAM INFORMATION
+                =================================================== -->
+
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div class="form-card-header-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Program Information
+                            </h3>
+
+                            <p>
+                                Update the main information for this academic program.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card-body">
+
+                        <div class="edit-notice">
+
+                            <i class="fas fa-info-circle"></i>
+
+                            <span>
+                                You are editing an existing program.
+                                Changes will update the current program record.
+                            </span>
+
+                        </div>
+
+
+                        <div class="fields-grid">
+
+
+                            <!-- PROGRAM NAME -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="name"
+                                >
+                                    Program Name
+                                    <span class="required">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    class="form-control-custom"
+                                    placeholder="e.g. Bachelor of Computer Science"
+                                    value="{{ request.form.get('name', program.name or '') }}"
+                                    maxlength="255"
+                                    required
+                                >
+
+                                <div class="form-help">
+                                    Official name of the academic program.
+                                </div>
+
+                            </div>
+
+
+                            <!-- SHORT NAME -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="short_name"
+                                >
+                                    Short Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="short_name"
+                                    name="short_name"
+                                    class="form-control-custom"
+                                    placeholder="e.g. BCS"
+                                    value="{{ request.form.get('short_name', program.short_name or '') }}"
+                                    maxlength="100"
+                                >
+
+                                <div class="form-help">
+                                    Optional abbreviation or short display name.
+                                </div>
+
+                            </div>
+
+
+                            <!-- PROGRAM CODE -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="code"
+                                >
+                                    Program Code
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="code-wrapper">
+
+                                    <input
+                                        type="text"
+                                        id="code"
+                                        name="code"
+                                        class="form-control-custom"
+                                        placeholder="e.g. BCS"
+                                        value="{{ request.form.get('code', program.code or '') }}"
+                                        maxlength="100"
+                                        required
+                                    >
+
+                                    <div class="code-icon">
+                                        <i class="fas fa-barcode"></i>
+                                    </div>
+
+                                </div>
+
+                                <div class="code-status">
+                                    <i class="fas fa-fingerprint"></i>
+                                    Current program code can be updated.
+                                </div>
+
+                                <div class="form-help">
+                                    Must remain unique within the selected institution.
+                                </div>
+
+                            </div>
+
+
+                            <!-- PROGRAM TYPE -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="program_type"
+                                >
+                                    Program Type
+                                    <span class="required">*</span>
+                                </label>
+
+                                {% set selected_program_type = request.form.get(
+                                    'program_type',
+                                    program.program_type or ''
+                                ) %}
+
+                                <select
+                                    id="program_type"
+                                    name="program_type"
+                                    class="form-select-custom"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select Program Type
+                                    </option>
+
+
+                                    {% set default_program_types = [
+                                        'certificate',
+                                        'diploma',
+                                        'undergraduate',
+                                        'postgraduate',
+                                        'masters',
+                                        'phd',
+                                        'short_course',
+                                        'professional',
+                                        'vocational',
+                                        'other'
+                                    ] %}
+
+
+                                    {% for program_type in program_types|default(default_program_types) %}
+
+                                        {% set type_value =
+                                            program_type.value
+                                            if program_type.value is defined
+                                            else program_type
+                                        %}
+
+                                        <option
+                                            value="{{ type_value }}"
+                                            {% if selected_program_type|string == type_value|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ type_value.replace('_', ' ')|title }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- DURATION -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="duration_months"
+                                >
+                                    Duration
+                                </label>
+
+                                <div class="duration-wrapper">
+
+                                    <input
+                                        type="number"
+                                        id="duration_months"
+                                        name="duration_months"
+                                        class="form-control-custom"
+                                        placeholder="e.g. 48"
+                                        value="{{ request.form.get(
+                                            'duration_months',
+                                            program.duration_months if program.duration_months is not none else ''
+                                        ) }}"
+                                        min="1"
+                                        max="1200"
+                                        step="1"
+                                    >
+
+                                    <span class="duration-unit">
+                                        Months
+                                    </span>
+
+                                </div>
+
+                                <div class="form-help">
+                                    Total program duration in months.
+                                </div>
+
+                            </div>
+
+
+                            <!-- STATUS -->
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Program Status
+                                </label>
+
+                                {% set selected_status = request.form.get(
+                                    'status',
+                                    program.status or 'active'
+                                ) %}
+
+
+                                <div class="option-group">
+
+                                    <div class="option-item">
+
+                                        <input
+                                            type="radio"
+                                            id="status_active"
+                                            name="status"
+                                            value="active"
+                                            {% if selected_status == 'active' %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <label
+                                            for="status_active"
+                                            class="option-label active-green"
+                                        >
+                                            <i class="fas fa-check-circle"></i>
+                                            Active
+                                        </label>
+
+                                    </div>
+
+
+                                    <div class="option-item">
+
+                                        <input
+                                            type="radio"
+                                            id="status_inactive"
+                                            name="status"
+                                            value="inactive"
+                                            {% if selected_status == 'inactive' %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <label
+                                            for="status_inactive"
+                                            class="option-label"
+                                        >
+                                            <i class="fas fa-ban"></i>
+                                            Inactive
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- DESCRIPTION -->
+
+                            <div class="form-group field-full">
+
+                                <label
+                                    class="form-label"
+                                    for="description"
+                                >
+                                    Description
+                                </label>
+
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    class="form-textarea-custom"
+                                    placeholder="Write a description of this academic program..."
+                                    maxlength="5000"
+                                >{{ request.form.get('description', program.description or '') }}</textarea>
+
+                                <div class="form-help">
+                                    Optional description, objectives, specialization, or other program information.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     INSTITUTION & BRANCH
+                =================================================== -->
+
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div class="form-card-header-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Institution & Branch
+                            </h3>
+
+                            <p>
+                                Update the institution and optional branch assignment.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card-body">
+
+                        <div class="fields-grid">
+
+
+                            <!-- INSTITUTION -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="institution_id"
+                                >
+                                    Institution
+                                    <span class="required">*</span>
+                                </label>
+
+
+                                {% set selected_institution_id = request.form.get(
+                                    'institution_id',
+                                    program.institution_id|string
+                                )|string %}
+
+
+                                <select
+                                    id="institution_id"
+                                    name="institution_id"
+                                    class="form-select-custom"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select Institution
+                                    </option>
+
+
+                                    {% for institution in institutions|default([]) %}
+
+                                        {% set institution_id =
+                                            institution.id|string
+                                        %}
+
+                                        <option
+                                            value="{{ institution.id }}"
+                                            {% if selected_institution_id == institution_id %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {{ institution.name }}
+
+                                            {% if institution.short_name %}
+                                                — {{ institution.short_name }}
+                                            {% endif %}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+
+                                <div class="form-help">
+                                    Every program must belong to an institution.
+                                </div>
+
+                            </div>
+
+
+                            <!-- BRANCH -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="branch_id"
+                                >
+                                    Branch
+                                </label>
+
+
+                                {% set selected_branch_id = request.form.get(
+                                    'branch_id',
+                                    program.branch_id|string if program.branch_id is not none else ''
+                                )|string %}
+
+
+                                <select
+                                    id="branch_id"
+                                    name="branch_id"
+                                    class="form-select-custom"
+                                >
+
+                                    <option value="">
+                                        Select Branch
+                                    </option>
+
+
+                                    {% for branch in branches|default([]) %}
+
+                                        {% set branch_id =
+                                            branch.id|string
+                                        %}
+
+                                        <option
+                                            value="{{ branch.id }}"
+                                            data-institution-id="{{ branch.institution_id }}"
+                                            {% if selected_branch_id == branch_id %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {{ branch.name }}
+
+                                            {% if branch.code %}
+                                                — {{ branch.code }}
+                                            {% endif %}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+
+                                <div class="form-help">
+                                    Optional. Branches are filtered according to the selected institution.
+                                </div>
+
+                            </div>
+
+
+                            <!-- ASSIGNMENT NOTE -->
+
+                            <div class="form-group field-full">
+
+                                <div class="assignment-box">
+
+                                    <div class="assignment-box-header">
+
+                                        <div class="assignment-box-header-icon">
+                                            <i class="fas fa-sitemap"></i>
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Program Assignment
+                                            </strong>
+
+                                            <span>
+                                                Institution → Branch → Program
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="assignment-note">
+
+                                        <i class="fas fa-info-circle"></i>
+
+                                        <span>
+                                            The program belongs to the selected institution.
+                                            If a branch is selected, the program is associated
+                                            with that branch. Leave the branch empty when the
+                                            program is institution-wide.
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 SIDEBAR
+            =================================================== -->
+
+            <div class="edit-program-sidebar">
+
+
+                <!-- ==================================================
+                     PROGRAM PREVIEW
+                =================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <h3>
+                            Program Preview
+                        </h3>
+
+                    </div>
+
+
+                    <div class="sidebar-card-body">
+
+                        <div class="program-preview">
+
+                            <div class="program-preview-top">
+
+                                <div class="program-preview-icon">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </div>
+
+
+                                <h3
+                                    class="program-preview-name"
+                                    id="preview-name"
+                                >
+                                    {{ program.name or 'Program' }}
+                                </h3>
+
+
+                                <div
+                                    class="program-preview-code"
+                                    id="preview-code"
+                                >
+                                    {{ program.code or 'PROGRAM CODE' }}
+                                </div>
+
+                            </div>
+
+
+                            <div class="program-preview-body">
+
+
+                                <!-- INSTITUTION -->
+
+                                <div class="preview-row">
+
+                                    <div class="preview-icon">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+
+                                    <div class="preview-content">
+
+                                        <strong>
+                                            Institution
+                                        </strong>
+
+                                        <span id="preview-institution">
+
+                                            {% if program.institution %}
+                                                {{ program.institution.name }}
+
+                                                {% if program.institution.short_name %}
+                                                    — {{ program.institution.short_name }}
+                                                {% endif %}
+                                            {% else %}
+                                                Not selected
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- BRANCH -->
+
+                                <div class="preview-row">
+
+                                    <div class="preview-icon">
+                                        <i class="fas fa-code-branch"></i>
+                                    </div>
+
+                                    <div class="preview-content">
+
+                                        <strong>
+                                            Branch
+                                        </strong>
+
+                                        <span id="preview-branch">
+
+                                            {% if program.branch %}
+                                                {{ program.branch.name }}
+
+                                                {% if program.branch.code %}
+                                                    — {{ program.branch.code }}
+                                                {% endif %}
+                                            {% else %}
+                                                Institution level
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- PROGRAM TYPE -->
+
+                                <div class="preview-row">
+
+                                    <div class="preview-icon">
+                                        <i class="fas fa-layer-group"></i>
+                                    </div>
+
+                                    <div class="preview-content">
+
+                                        <strong>
+                                            Program Type
+                                        </strong>
+
+                                        <span id="preview-type">
+
+                                            {% if program.program_type %}
+                                                {{ program.program_type|replace('_', ' ')|title }}
+                                            {% else %}
+                                                Not selected
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- DURATION -->
+
+                                <div class="preview-row">
+
+                                    <div class="preview-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+
+                                    <div class="preview-content">
+
+                                        <strong>
+                                            Duration
+                                        </strong>
+
+                                        <span id="preview-duration">
+
+                                            {% if program.duration_months is not none %}
+                                                {{ program.duration_months }}
+                                                month{% if program.duration_months != 1 %}s{% endif %}
+                                            {% else %}
+                                                Not specified
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- STATUS -->
+
+                                <div class="preview-row">
+
+                                    <div class="preview-icon">
+                                        <i class="fas fa-circle"></i>
+                                    </div>
+
+                                    <div class="preview-content">
+
+                                        <strong>
+                                            Status
+                                        </strong>
+
+                                        <span id="preview-status">
+
+                                            {% if program.status == 'inactive' %}
+                                                Inactive
+                                            {% else %}
+                                                Active
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     PROGRAM META
+                =================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <h3>
+                            Program Details
+                        </h3>
+
+                    </div>
+
+
+                    <div class="sidebar-card-body">
+
+                        <div class="program-meta">
+
+
+                            <div class="program-meta-item">
+
+                                <span class="program-meta-label">
+                                    Program ID
+                                </span>
+
+                                <span class="program-meta-value">
+                                    #{{ program.id }}
+                                </span>
+
+                            </div>
+
+
+                            {% if program.created_at %}
+
+                            <div class="program-meta-item">
+
+                                <span class="program-meta-label">
+                                    Created
+                                </span>
+
+                                <span class="program-meta-value">
+
+                                    {{ program.created_at.strftime('%Y-%m-%d') }}
+
+                                </span>
+
+                            </div>
+
+                            {% endif %}
+
+
+                            {% if program.updated_at %}
+
+                            <div class="program-meta-item">
+
+                                <span class="program-meta-label">
+                                    Updated
+                                </span>
+
+                                <span class="program-meta-value">
+
+                                    {{ program.updated_at.strftime('%Y-%m-%d') }}
+
+                                </span>
+
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     PROGRAM INFORMATION
+                =================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <h3>
+                            Program Information
+                        </h3>
+
+                    </div>
+
+
+                    <div class="sidebar-card-body">
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-fingerprint"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Program Code
+                                </strong>
+
+                                <span>
+                                    The code must be unique within the selected institution.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Institution
+                                </strong>
+
+                                <span>
+                                    Every program is associated with an institution.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-code-branch"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Branch
+                                </strong>
+
+                                <span>
+                                    A branch is optional when the program is institution-wide.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Duration
+                                </strong>
+
+                                <span>
+                                    Duration is stored in months.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-toggle-on"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Status
+                                </strong>
+
+                                <span>
+                                    Use inactive when the program should remain in the system but not be active.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ACTIONS
+                =================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-body">
+
+                        <button
+                            type="submit"
+                            id="update-program-btn"
+                            class="update-program-btn"
+                        >
+
+                            <i class="fas fa-save"></i>
+
+                            <span>
+                                Update Program
+                            </span>
+
+                        </button>
+
+
+                        <a
+                            href="{{ url_for('main.all_programs') }}"
+                            class="cancel-program-btn"
+                        >
+                            Cancel
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+/* ============================================================
+   DOM ELEMENTS
+   ============================================================ */
+
+const editProgramForm =
+    document.getElementById("edit-program-form");
+
+const institutionSelect =
+    document.getElementById("institution_id");
+
+const branchSelect =
+    document.getElementById("branch_id");
+
+const programNameInput =
+    document.getElementById("name");
+
+const shortNameInput =
+    document.getElementById("short_name");
+
+const programCodeInput =
+    document.getElementById("code");
+
+const programTypeSelect =
+    document.getElementById("program_type");
+
+const durationInput =
+    document.getElementById("duration_months");
+
+const updateProgramButton =
+    document.getElementById("update-program-btn");
+
+
+/* ============================================================
+   CURRENT VALUES
+   ============================================================ */
+
+const CURRENT_INSTITUTION_ID =
+    {{ program.institution_id | tojson }};
+
+const CURRENT_BRANCH_ID =
+    {{ program.branch_id | tojson }};
+
+
+/* ============================================================
+   FORM VALUES
+   ============================================================ */
+
+const FORM_INSTITUTION_ID =
+    {{ request.form.get('institution_id', '') | tojson }};
+
+const FORM_BRANCH_ID =
+    {{ request.form.get('branch_id', '') | tojson }};
+
+
+/* ============================================================
+   BRANCH DATA
+   ============================================================ */
+
+const PROGRAM_BRANCHES = [
+
+    {% for branch in branches|default([]) %}
+
+    {
+        id: {{ branch.id | tojson }},
+        name: {{ branch.name | tojson }},
+        code: {{ branch.code | default('', true) | tojson }},
+        institution_id: {{ branch.institution_id | tojson }}
+    }
+
+    {% if not loop.last %},{% endif %}
+
+    {% endfor %}
+
+];
+
+
+/* ============================================================
+   FILTER BRANCHES
+   ============================================================ */
+
+function filterBranches(
+    preserveSelected = true
+) {
+
+    if (
+        !institutionSelect ||
+        !branchSelect
+    ) {
+        return;
+    }
+
+
+    const institutionId =
+        institutionSelect.value.trim();
+
+
+    let previousBranch = "";
+
+    if (preserveSelected) {
+
+        previousBranch =
+            FORM_BRANCH_ID ||
+            CURRENT_BRANCH_ID ||
+            branchSelect.dataset.currentValue ||
+            branchSelect.value ||
+            "";
+
+    }
+
+
+    branchSelect.innerHTML =
+        '<option value="">Select Branch</option>';
+
+
+    if (!institutionId) {
+
+        branchSelect.disabled = true;
+
+        return;
+    }
+
+
+    PROGRAM_BRANCHES.forEach(function(branch) {
+
+        if (
+            String(branch.institution_id) !==
+            String(institutionId)
+        ) {
+            return;
+        }
+
+
+        const option =
+            document.createElement("option");
+
+
+        option.value =
+            branch.id;
+
+
+        option.dataset.institutionId =
+            branch.institution_id;
+
+
+        option.textContent =
+            branch.code
+                ? `${branch.name} — ${branch.code}`
+                : branch.name;
+
+
+        if (
+            previousBranch &&
+            String(previousBranch) ===
+            String(branch.id)
+        ) {
+
+            option.selected = true;
+
+        }
+
+
+        branchSelect.appendChild(option);
+
+    });
+
+
+    branchSelect.disabled = false;
+
+
+    branchSelect.dataset.currentValue =
+        branchSelect.value || "";
+
+}
+
+
+/* ============================================================
+   INSTITUTION CHANGE
+   ============================================================ */
+
+if (institutionSelect) {
+
+    institutionSelect.addEventListener(
+        "change",
+        function() {
+
+            /*
+             * When changing institution, the old branch
+             * may no longer be valid.
+             */
+
+            branchSelect.dataset.currentValue =
+                "";
+
+            filterBranches(false);
+
+            updatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   BRANCH CHANGE
+   ============================================================ */
+
+if (branchSelect) {
+
+    branchSelect.addEventListener(
+        "change",
+        function() {
+
+            branchSelect.dataset.currentValue =
+                branchSelect.value || "";
+
+            updatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   PROGRAM NAME
+   ============================================================ */
+
+if (programNameInput) {
+
+    programNameInput.addEventListener(
+        "input",
+        function() {
+
+            updatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   SHORT NAME
+   ============================================================ */
+
+if (shortNameInput) {
+
+    shortNameInput.addEventListener(
+        "input",
+        function() {
+
+            updatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   PROGRAM CODE
+   ============================================================ */
+
+if (programCodeInput) {
+
+    programCodeInput.addEventListener(
+        "input",
+        function() {
+
+            /*
+             * Keep program code clean.
+             * Spaces and unsupported symbols are removed.
+             */
+
+            let value =
+                programCodeInput.value
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9_-]/g, "");
+
+            programCodeInput.value =
+                value;
+
+            updatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   PROGRAM TYPE
+   ============================================================ */
+
+if (programTypeSelect) {
+
+    programTypeSelect.addEventListener(
+        "change",
+        function() {
+
+            updatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   DURATION
+   ============================================================ */
+
+if (durationInput) {
+
+    durationInput.addEventListener(
+        "input",
+        function() {
+
+            /*
+             * Only whole numbers.
+             */
+
+            durationInput.value =
+                durationInput.value.replace(
+                    /[^0-9]/g,
+                    ""
+                );
+
+            updatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+document
+    .querySelectorAll(
+        'input[name="status"]'
+    )
+    .forEach(function(input) {
+
+        input.addEventListener(
+            "change",
+            function() {
+
+                updatePreview();
+
+            }
+        );
+
+    });
+
+
+/* ============================================================
+   UPDATE PREVIEW
+   ============================================================ */
+
+function updatePreview() {
+
+    const previewName =
+        document.getElementById(
+            "preview-name"
+        );
+
+    const previewCode =
+        document.getElementById(
+            "preview-code"
+        );
+
+    const previewInstitution =
+        document.getElementById(
+            "preview-institution"
+        );
+
+    const previewBranch =
+        document.getElementById(
+            "preview-branch"
+        );
+
+    const previewType =
+        document.getElementById(
+            "preview-type"
+        );
+
+    const previewDuration =
+        document.getElementById(
+            "preview-duration"
+        );
+
+    const previewStatus =
+        document.getElementById(
+            "preview-status"
+        );
+
+
+    /* --------------------------------------------------------
+       NAME
+    -------------------------------------------------------- */
+
+    const name =
+        programNameInput
+            ? programNameInput.value.trim()
+            : "";
+
+
+    if (previewName) {
+
+        previewName.textContent =
+            name || "Program";
+
+    }
+
+
+    /* --------------------------------------------------------
+       CODE
+    -------------------------------------------------------- */
+
+    const code =
+        programCodeInput
+            ? programCodeInput.value.trim()
+            : "";
+
+
+    if (previewCode) {
+
+        previewCode.textContent =
+            code || "PROGRAM CODE";
+
+    }
+
+
+    /* --------------------------------------------------------
+       INSTITUTION
+    -------------------------------------------------------- */
+
+    if (previewInstitution) {
+
+        if (
+            institutionSelect &&
+            institutionSelect.selectedIndex > 0
+        ) {
+
+            previewInstitution.textContent =
+                institutionSelect.options[
+                    institutionSelect.selectedIndex
+                ].textContent.trim();
+
+        } else {
+
+            previewInstitution.textContent =
+                "Not selected";
+
+        }
+
+    }
+
+
+    /* --------------------------------------------------------
+       BRANCH
+    -------------------------------------------------------- */
+
+    if (previewBranch) {
+
+        if (
+            branchSelect &&
+            branchSelect.selectedIndex > 0 &&
+            !branchSelect.disabled
+        ) {
+
+            previewBranch.textContent =
+                branchSelect.options[
+                    branchSelect.selectedIndex
+                ].textContent.trim();
+
+        } else {
+
+            previewBranch.textContent =
+                "Institution level";
+
+        }
+
+    }
+
+
+    /* --------------------------------------------------------
+       TYPE
+    -------------------------------------------------------- */
+
+    if (previewType) {
+
+        if (
+            programTypeSelect &&
+            programTypeSelect.value
+        ) {
+
+            previewType.textContent =
+                programTypeSelect
+                    .options[
+                        programTypeSelect.selectedIndex
+                    ]
+                    .textContent
+                    .trim();
+
+        } else {
+
+            previewType.textContent =
+                "Not selected";
+
+        }
+
+    }
+
+
+    /* --------------------------------------------------------
+       DURATION
+    -------------------------------------------------------- */
+
+    if (previewDuration) {
+
+        const duration =
+            durationInput
+                ? durationInput.value.trim()
+                : "";
+
+
+        previewDuration.textContent =
+            duration
+                ? `${duration} month${duration === "1" ? "" : "s"}`
+                : "Not specified";
+
+    }
+
+
+    /* --------------------------------------------------------
+       STATUS
+    -------------------------------------------------------- */
+
+    if (previewStatus) {
+
+        const statusInput =
+            document.querySelector(
+                'input[name="status"]:checked'
+            );
+
+
+        const status =
+            statusInput
+                ? statusInput.value
+                : "active";
+
+
+        previewStatus.textContent =
+            status === "active"
+                ? "Active"
+                : "Inactive";
+
+    }
+
+}
+
+
+/* ============================================================
+   FORM VALIDATION
+   ============================================================ */
+
+if (editProgramForm) {
+
+    editProgramForm.addEventListener(
+        "submit",
+        function(event) {
+
+            const name =
+                programNameInput
+                    ? programNameInput.value.trim()
+                    : "";
+
+
+            const code =
+                programCodeInput
+                    ? programCodeInput.value.trim()
+                    : "";
+
+
+            const institutionId =
+                institutionSelect
+                    ? institutionSelect.value.trim()
+                    : "";
+
+
+            const branchId =
+                branchSelect
+                    ? branchSelect.value.trim()
+                    : "";
+
+
+            const duration =
+                durationInput
+                    ? durationInput.value.trim()
+                    : "";
+
+
+            /* ------------------------------------------------
+               PROGRAM NAME
+            ------------------------------------------------ */
+
+            if (!name) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please enter the program name."
+                );
+
+                programNameInput.focus();
+
+                return;
+
+            }
+
+
+            /* ------------------------------------------------
+               PROGRAM CODE
+            ------------------------------------------------ */
+
+            if (!code) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please enter the program code."
+                );
+
+                programCodeInput.focus();
+
+                return;
+
+            }
+
+
+            /* ------------------------------------------------
+               PROGRAM CODE FORMAT
+            ------------------------------------------------ */
+
+            if (
+                !/^[A-Z0-9_-]+$/i.test(code)
+            ) {
+
+                event.preventDefault();
+
+                alert(
+                    "Program code may contain only letters, numbers, hyphens, and underscores."
+                );
+
+                programCodeInput.focus();
+
+                return;
+
+            }
+
+
+            /* ------------------------------------------------
+               INSTITUTION
+            ------------------------------------------------ */
+
+            if (!institutionId) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please select an institution."
+                );
+
+                institutionSelect.focus();
+
+                return;
+
+            }
+
+
+            /* ------------------------------------------------
+               BRANCH VALIDATION
+            ------------------------------------------------ */
+
+            if (
+                institutionId &&
+                branchId
+            ) {
+
+                const selectedBranch =
+                    branchSelect.options[
+                        branchSelect.selectedIndex
+                    ];
+
+
+                if (
+                    selectedBranch &&
+                    selectedBranch.dataset
+                        .institutionId &&
+                    String(
+                        selectedBranch.dataset
+                            .institutionId
+                    ) !==
+                    String(institutionId)
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "The selected branch does not belong to the selected institution."
+                    );
+
+                    branchSelect.focus();
+
+                    return;
+
+                }
+
+            }
+
+
+            /* ------------------------------------------------
+               PROGRAM TYPE
+            ------------------------------------------------ */
+
+            if (
+                !programTypeSelect ||
+                !programTypeSelect.value.trim()
+            ) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please select a program type."
+                );
+
+                programTypeSelect.focus();
+
+                return;
+
+            }
+
+
+            /* ------------------------------------------------
+               DURATION
+            ------------------------------------------------ */
+
+            if (duration) {
+
+                const durationNumber =
+                    Number(duration);
+
+
+                if (
+                    !Number.isInteger(
+                        durationNumber
+                    ) ||
+                    durationNumber < 1 ||
+                    durationNumber > 1200
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Duration must be a whole number between 1 and 1200 months."
+                    );
+
+                    durationInput.focus();
+
+                    return;
+
+                }
+
+            }
+
+
+            /* ------------------------------------------------
+               NORMALIZE CODE
+            ------------------------------------------------ */
+
+            programCodeInput.value =
+                code
+                    .toUpperCase()
+                    .trim();
+
+
+            /* ------------------------------------------------
+               PREVENT DOUBLE SUBMIT
+            ------------------------------------------------ */
+
+            updateProgramButton.disabled =
+                true;
+
+
+            updateProgramButton.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i><span>Updating Program...</span>';
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        /*
+         * Select the current institution.
+         */
+
+        if (
+            institutionSelect &&
+            FORM_INSTITUTION_ID
+        ) {
+
+            institutionSelect.value =
+                FORM_INSTITUTION_ID;
+
+        }
+
+
+        /*
+         * If there was no form submission,
+         * use the program's original institution.
+         */
+
+        if (
+            institutionSelect &&
+            !institutionSelect.value &&
+            CURRENT_INSTITUTION_ID
+        ) {
+
+            institutionSelect.value =
+                CURRENT_INSTITUTION_ID;
+
+        }
+
+
+        /*
+         * Filter branches.
+         */
+
+        filterBranches(true);
+
+
+        /*
+         * Initial preview.
+         */
+
+        updatePreview();
+
+    }
+);
+</script>
+
+{% endblock %}

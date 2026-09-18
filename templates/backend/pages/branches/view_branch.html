@@ -1,0 +1,1577 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* =========================================================
+   VIEW BRANCH PAGE
+   ========================================================= */
+
+.view-branch-page {
+    width: 100%;
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 10px 0 40px;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.branch-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.branch-page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.branch-header-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 14px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.branch-page-header h1 {
+    margin: 0;
+    color: #06245f;
+    font-size: 27px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.branch-page-header p {
+    margin: 6px 0 0;
+    color: #718096;
+    font-size: 13px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.branch-btn {
+    min-height: 41px;
+    padding: 0 15px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: .2s ease;
+}
+
+.branch-btn-back {
+    background: #fff;
+    color: #475467;
+    border-color: #dce3ee;
+}
+
+.branch-btn-back:hover {
+    border-color: #06245f;
+    color: #06245f;
+    background: #f8faff;
+}
+
+.branch-btn-edit {
+    background: #06245f;
+    color: #fff;
+    border-color: #06245f;
+}
+
+.branch-btn-edit:hover {
+    background: #041b49;
+    border-color: #041b49;
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   MAIN GRID
+   ========================================================= */
+
+.branch-content-grid {
+    display: grid;
+    grid-template-columns: 350px minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.branch-card {
+    background: #fff;
+    border: 1px solid #e6ebf2;
+    border-radius: 16px;
+    box-shadow: 0 5px 22px rgba(6, 36, 95, .055);
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   PROFILE CARD
+   ========================================================= */
+
+.branch-profile-card {
+    padding: 25px;
+}
+
+.branch-profile-top {
+    text-align: center;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.branch-logo-wrapper {
+    width: 125px;
+    height: 125px;
+    margin: 0 auto 17px;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.branch-main-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.branch-logo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #98a2b3;
+}
+
+.branch-logo-placeholder svg {
+    width: 38px;
+    height: 38px;
+    margin-bottom: 7px;
+}
+
+.branch-logo-placeholder span {
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.branch-name {
+    margin: 0;
+    color: #1a202c;
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.branch-code {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .3px;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 6px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-active {
+    background: #ecfdf3;
+    color: #027a48;
+}
+
+.status-active .status-dot {
+    background: #12b76a;
+}
+
+.status-inactive {
+    background: #f2f4f7;
+    color: #475467;
+}
+
+.status-inactive .status-dot {
+    background: #98a2b3;
+}
+
+.status-suspended {
+    background: #fef3f2;
+    color: #b42318;
+}
+
+.status-suspended .status-dot {
+    background: #f04438;
+}
+
+
+/* =========================================================
+   INSTITUTION
+   ========================================================= */
+
+.institution-box {
+    margin-top: 20px;
+    padding: 13px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #edf1f6;
+    text-align: left;
+}
+
+.institution-label {
+    color: #98a2b3;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.institution-name {
+    margin-top: 5px;
+    color: #344054;
+    font-size: 13px;
+    font-weight: 800;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+.branch-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.branch-stat {
+    padding: 12px 6px;
+    border: 1px solid #edf1f6;
+    border-radius: 10px;
+    background: #fff;
+    text-align: center;
+}
+
+.branch-stat-value {
+    color: #06245f;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.branch-stat-label {
+    margin-top: 4px;
+    color: #98a2b3;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   RIGHT CONTENT
+   ========================================================= */
+
+.branch-main-card {
+    padding: 25px;
+}
+
+.section {
+    padding-bottom: 25px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.section:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin-bottom: 19px;
+}
+
+.section-heading-icon {
+    width: 39px;
+    height: 39px;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.section-heading h2 {
+    margin: 0;
+    color: #1a202c;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.section-heading p {
+    margin: 4px 0 0;
+    color: #98a2b3;
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   INFORMATION GRID
+   ========================================================= */
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.info-item {
+    padding: 14px;
+    border: 1px solid #edf1f6;
+    border-radius: 10px;
+    background: #fbfcfe;
+    min-width: 0;
+}
+
+.info-item.full {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #98a2b3;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .35px;
+}
+
+.info-value {
+    color: #344054;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.info-value.empty {
+    color: #b0b8c4;
+    font-weight: 500;
+    font-style: italic;
+}
+
+
+/* =========================================================
+   CLOUDINARY BRANDING
+   ========================================================= */
+
+.cloudinary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.brand-card {
+    border: 1px solid #e5eaf1;
+    border-radius: 12px;
+    background: #fbfcfe;
+    padding: 14px;
+}
+
+.brand-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 11px;
+}
+
+.brand-title-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-title span {
+    color: #344054;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.brand-image-box {
+    height: 145px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.brand-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.brand-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #98a2b3;
+    text-align: center;
+    padding: 15px;
+}
+
+.brand-placeholder svg {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 7px;
+}
+
+.brand-placeholder span {
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   IMAGE ERROR FALLBACK
+   ========================================================= */
+
+.cloudinary-error {
+    display: none;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.description-box {
+    padding: 15px;
+    border: 1px solid #edf1f6;
+    border-radius: 10px;
+    background: #fbfcfe;
+}
+
+.description-text {
+    margin: 0;
+    color: #475467;
+    font-size: 13px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.description-empty {
+    color: #98a2b3;
+    font-size: 12px;
+    font-style: italic;
+}
+
+
+/* =========================================================
+   META
+   ========================================================= */
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.meta-item {
+    padding: 13px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #edf1f6;
+}
+
+.meta-label {
+    color: #98a2b3;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.meta-value {
+    margin-top: 5px;
+    color: #475467;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .branch-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cloudinary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 750px) {
+
+    .cloudinary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-grid,
+    .meta-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-item.full {
+        grid-column: auto;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .branch-page-header {
+        align-items: stretch;
+    }
+
+    .branch-page-header-left {
+        align-items: flex-start;
+    }
+
+    .branch-page-header h1 {
+        font-size: 23px;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-actions .branch-btn {
+        flex: 1;
+    }
+
+    .branch-profile-card,
+    .branch-main-card {
+        padding: 20px;
+    }
+
+}
+
+
+@media (max-width: 450px) {
+
+    .branch-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .branch-btn {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+
+<div class="view-branch-page">
+
+    <!-- =====================================================
+         HEADER
+         ====================================================== -->
+
+    <div class="branch-page-header">
+
+        <div class="branch-page-header-left">
+
+            <div class="branch-header-icon">
+                <i data-feather="git-branch"></i>
+            </div>
+
+            <div>
+
+                <h1>Branch Details</h1>
+
+                <p>
+                    View complete information and branding for this branch.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <a
+                href="{{ url_for('main.all_branches') }}"
+                class="branch-btn branch-btn-back"
+            >
+                <i data-feather="arrow-left"></i>
+                Back
+            </a>
+
+
+            <a
+                href="{{ url_for('main.edit_branch', branch_id=branch.id) }}"
+                class="branch-btn branch-btn-edit"
+            >
+                <i data-feather="edit-3"></i>
+                Edit Branch
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CONTENT
+         ====================================================== -->
+
+    <div class="branch-content-grid">
+
+
+        <!-- =================================================
+             LEFT PROFILE
+             ================================================== -->
+
+        <div class="branch-card branch-profile-card">
+
+            <div class="branch-profile-top">
+
+                <div class="branch-logo-wrapper">
+
+                    {% if branch.main_logo %}
+
+                        <img
+                            src="{{ branch.main_logo }}"
+                            alt="{{ branch.name }} Main Logo"
+                            class="branch-main-logo"
+                            loading="lazy"
+                            referrerpolicy="no-referrer"
+                            onerror="
+                                this.style.display='none';
+                                document.getElementById('mainLogoFallback').style.display='flex';
+                            "
+                        >
+
+                        <div
+                            id="mainLogoFallback"
+                            class="branch-logo-placeholder"
+                            style="display:none;"
+                        >
+                            <i data-feather="git-branch"></i>
+                            <span>No Logo</span>
+                        </div>
+
+                    {% else %}
+
+                        <div class="branch-logo-placeholder">
+
+                            <i data-feather="git-branch"></i>
+
+                            <span>
+                                No Logo
+                            </span>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <h2 class="branch-name">
+                    {{ branch.name }}
+                </h2>
+
+
+                {% if branch.code %}
+
+                    <div class="branch-code">
+                        {{ branch.code }}
+                    </div>
+
+                {% endif %}
+
+
+                {% set branch_status = branch.status|default('active')|lower %}
+
+                <div
+                    class="
+                        status-badge
+                        {% if branch_status == 'active' %}
+                            status-active
+                        {% elif branch_status == 'suspended' %}
+                            status-suspended
+                        {% else %}
+                            status-inactive
+                        {% endif %}
+                    "
+                >
+
+                    <span class="status-dot"></span>
+
+                    {{ branch_status }}
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 INSTITUTION
+                 ================================================== -->
+
+            <div class="institution-box">
+
+                <div class="institution-label">
+                    Institution
+                </div>
+
+                <div class="institution-name">
+
+                    {% if institution %}
+
+                        {{ institution.name }}
+
+                    {% else %}
+
+                        <span style="color:#98a2b3;">
+                            Institution not found
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 STATISTICS
+                 ================================================== -->
+
+            <div class="branch-stats">
+
+                <div class="branch-stat">
+
+                    <div class="branch-stat-value">
+                        {{ total_users|default(0) }}
+                    </div>
+
+                    <div class="branch-stat-label">
+                        Total Users
+                    </div>
+
+                </div>
+
+
+                <div class="branch-stat">
+
+                    <div class="branch-stat-value">
+                        {{ active_users|default(0) }}
+                    </div>
+
+                    <div class="branch-stat-label">
+                        Active
+                    </div>
+
+                </div>
+
+
+                <div class="branch-stat">
+
+                    <div class="branch-stat-value">
+                        {{ inactive_users|default(0) }}
+                    </div>
+
+                    <div class="branch-stat-label">
+                        Inactive
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             RIGHT MAIN
+             ================================================== -->
+
+        <div class="branch-card branch-main-card">
+
+
+            <!-- =================================================
+                 BASIC INFORMATION
+                 ================================================== -->
+
+            <div class="section">
+
+                <div class="section-heading">
+
+                    <div class="section-heading-icon">
+                        <i data-feather="info"></i>
+                    </div>
+
+                    <div>
+
+                        <h2>Basic Information</h2>
+
+                        <p>
+                            Branch identity and institution assignment
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-grid">
+
+
+                    <!-- Branch Name -->
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+                            Branch Name
+                        </span>
+
+                        {% if branch.name %}
+
+                            <div class="info-value">
+                                {{ branch.name }}
+                            </div>
+
+                        {% else %}
+
+                            <div class="info-value empty">
+                                Not provided
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Branch Code -->
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+                            Branch Code
+                        </span>
+
+                        {% if branch.code %}
+
+                            <div class="info-value">
+                                {{ branch.code }}
+                            </div>
+
+                        {% else %}
+
+                            <div class="info-value empty">
+                                Not provided
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Institution -->
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+                            Institution
+                        </span>
+
+                        {% if institution %}
+
+                            <div class="info-value">
+                                {{ institution.name }}
+                            </div>
+
+                        {% else %}
+
+                            <div class="info-value empty">
+                                Not available
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Status -->
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+                            Status
+                        </span>
+
+                        <div class="info-value">
+
+                            {% if branch_status == 'active' %}
+                                Active
+                            {% elif branch_status == 'inactive' %}
+                                Inactive
+                            {% elif branch_status == 'suspended' %}
+                                Suspended
+                            {% else %}
+                                {{ branch.status }}
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CONTACT INFORMATION
+                 ================================================== -->
+
+            <div class="section">
+
+                <div class="section-heading">
+
+                    <div class="section-heading-icon">
+                        <i data-feather="phone"></i>
+                    </div>
+
+                    <div>
+
+                        <h2>Contact Information</h2>
+
+                        <p>
+                            Branch contact and location details
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-grid">
+
+
+                    <!-- Phone -->
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+                            Phone
+                        </span>
+
+                        {% if branch.phone %}
+
+                            <div class="info-value">
+                                {{ branch.phone }}
+                            </div>
+
+                        {% else %}
+
+                            <div class="info-value empty">
+                                Not provided
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Email -->
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+                            Email
+                        </span>
+
+                        {% if branch.email %}
+
+                            <div class="info-value">
+                                {{ branch.email }}
+                            </div>
+
+                        {% else %}
+
+                            <div class="info-value empty">
+                                Not provided
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- City -->
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+                            City
+                        </span>
+
+                        {% if branch.city %}
+
+                            <div class="info-value">
+                                {{ branch.city }}
+                            </div>
+
+                        {% else %}
+
+                            <div class="info-value empty">
+                                Not provided
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Address -->
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+                            Address
+                        </span>
+
+                        {% if branch.address %}
+
+                            <div class="info-value">
+                                {{ branch.address }}
+                            </div>
+
+                        {% else %}
+
+                            <div class="info-value empty">
+                                Not provided
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CLOUDINARY BRANDING
+                 ================================================== -->
+
+            <div class="section">
+
+                <div class="section-heading">
+
+                    <div class="section-heading-icon">
+                        <i data-feather="cloud"></i>
+                    </div>
+
+                    <div>
+
+                        <h2>Branch Branding</h2>
+
+                        <p>
+                            Images stored using Cloudinary or external image URLs
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="cloudinary-grid">
+
+
+                    <!-- =================================================
+                         MAIN LOGO
+                         ================================================== -->
+
+                    <div class="brand-card">
+
+                        <div class="brand-title">
+
+                            <div class="brand-title-icon">
+                                <i data-feather="image"></i>
+                            </div>
+
+                            <span>
+                                Main Logo
+                            </span>
+
+                        </div>
+
+
+                        <div class="brand-image-box">
+
+                            {% if branch.main_logo %}
+
+                                <img
+                                    src="{{ branch.main_logo }}"
+                                    alt="Main Logo"
+                                    class="brand-image"
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer"
+                                    onerror="
+                                        this.style.display='none';
+                                        this.nextElementSibling.style.display='flex';
+                                    "
+                                >
+
+                                <div
+                                    class="brand-placeholder"
+                                    style="display:none;"
+                                >
+
+                                    <i data-feather="image"></i>
+
+                                    <span>
+                                        Image unavailable
+                                    </span>
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="brand-placeholder">
+
+                                    <i data-feather="image"></i>
+
+                                    <span>
+                                        No main logo
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         SUB LOGO
+                         ================================================== -->
+
+                    <div class="brand-card">
+
+                        <div class="brand-title">
+
+                            <div class="brand-title-icon">
+                                <i data-feather="layers"></i>
+                            </div>
+
+                            <span>
+                                Sub Logo
+                            </span>
+
+                        </div>
+
+
+                        <div class="brand-image-box">
+
+                            {% if branch.sub_logo %}
+
+                                <img
+                                    src="{{ branch.sub_logo }}"
+                                    alt="Sub Logo"
+                                    class="brand-image"
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer"
+                                    onerror="
+                                        this.style.display='none';
+                                        this.nextElementSibling.style.display='flex';
+                                    "
+                                >
+
+                                <div
+                                    class="brand-placeholder"
+                                    style="display:none;"
+                                >
+
+                                    <i data-feather="layers"></i>
+
+                                    <span>
+                                        Image unavailable
+                                    </span>
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="brand-placeholder">
+
+                                    <i data-feather="layers"></i>
+
+                                    <span>
+                                        No sub logo
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         SIGNATURE
+                         ================================================== -->
+
+                    <div class="brand-card">
+
+                        <div class="brand-title">
+
+                            <div class="brand-title-icon">
+                                <i data-feather="edit-3"></i>
+                            </div>
+
+                            <span>
+                                Signature Photo
+                            </span>
+
+                        </div>
+
+
+                        <div class="brand-image-box">
+
+                            {% if branch.signature_photo %}
+
+                                <img
+                                    src="{{ branch.signature_photo }}"
+                                    alt="Signature Photo"
+                                    class="brand-image"
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer"
+                                    onerror="
+                                        this.style.display='none';
+                                        this.nextElementSibling.style.display='flex';
+                                    "
+                                >
+
+                                <div
+                                    class="brand-placeholder"
+                                    style="display:none;"
+                                >
+
+                                    <i data-feather="edit-3"></i>
+
+                                    <span>
+                                        Image unavailable
+                                    </span>
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="brand-placeholder">
+
+                                    <i data-feather="edit-3"></i>
+
+                                    <span>
+                                        No signature
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 DESCRIPTION
+                 ================================================== -->
+
+            <div class="section">
+
+                <div class="section-heading">
+
+                    <div class="section-heading-icon">
+                        <i data-feather="file-text"></i>
+                    </div>
+
+                    <div>
+
+                        <h2>Description</h2>
+
+                        <p>
+                            Additional branch information
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="description-box">
+
+                    {% if branch.description %}
+
+                        <p class="description-text">
+                            {{ branch.description }}
+                        </p>
+
+                    {% else %}
+
+                        <div class="description-empty">
+                            No description has been added for this branch.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 SYSTEM INFORMATION
+                 ================================================== -->
+
+            <div class="section">
+
+                <div class="section-heading">
+
+                    <div class="section-heading-icon">
+                        <i data-feather="clock"></i>
+                    </div>
+
+                    <div>
+
+                        <h2>System Information</h2>
+
+                        <p>
+                            Branch record timestamps
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="meta-grid">
+
+
+                    <!-- Created -->
+
+                    <div class="meta-item">
+
+                        <div class="meta-label">
+                            Created At
+                        </div>
+
+                        <div class="meta-value">
+
+                            {% if branch.created_at %}
+
+                                {{ branch.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+
+                            {% else %}
+
+                                Not available
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Updated -->
+
+                    <div class="meta-item">
+
+                        <div class="meta-label">
+                            Updated At
+                        </div>
+
+                        <div class="meta-value">
+
+                            {% if branch.updated_at %}
+
+                                {{ branch.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}
+
+                            {% else %}
+
+                                Not available
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Branch ID -->
+
+                    <div class="meta-item">
+
+                        <div class="meta-label">
+                            Branch ID
+                        </div>
+
+                        <div class="meta-value">
+                            #{{ branch.id }}
+                        </div>
+
+                    </div>
+
+
+                    <!-- Institution ID -->
+
+                    <div class="meta-item">
+
+                        <div class="meta-label">
+                            Institution ID
+                        </div>
+
+                        <div class="meta-value">
+                            #{{ branch.institution_id }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (typeof feather !== "undefined") {
+        feather.replace();
+    }
+
+});
+
+</script>
+
+{% endblock %}

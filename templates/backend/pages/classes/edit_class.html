@@ -1,0 +1,2764 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   EDIT CLASS PAGE
+   ============================================================ */
+
+.edit-class-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 4px 0 40px;
+}
+
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.edit-class-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.edit-class-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.edit-class-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 36, 95, 0.09);
+    color: #06245f;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.edit-class-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1c2434;
+    line-height: 1.2;
+}
+
+.edit-class-subtitle {
+    margin: 5px 0 0;
+    color: #7b8495;
+    font-size: 13px;
+}
+
+.edit-class-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* ============================================================
+   HEADER BUTTONS
+   ============================================================ */
+
+.header-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 15px;
+    border-radius: 9px;
+    border: 1px solid #e1e5eb;
+    background: #fff;
+    color: #4e5868;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.header-action-btn:hover {
+    color: #06245f;
+    border-color: #cbd4e0;
+    background: #f8fafc;
+}
+
+.header-action-btn.primary {
+    border-color: #06245f;
+    background: #06245f;
+    color: #fff;
+}
+
+.header-action-btn.primary:hover {
+    background: #041b48;
+    color: #fff;
+}
+
+
+/* ============================================================
+   FORM LAYOUT
+   ============================================================ */
+
+.edit-class-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 22px;
+    align-items: start;
+}
+
+.edit-class-main,
+.edit-class-sidebar {
+    min-width: 0;
+}
+
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.form-card,
+.sidebar-card {
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 9px rgba(20, 30, 50, 0.025);
+}
+
+.form-card {
+    margin-bottom: 20px;
+}
+
+.sidebar-card {
+    margin-bottom: 20px;
+}
+
+.sidebar-card:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ============================================================
+   CARD HEADER
+   ============================================================ */
+
+.form-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 17px 20px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.form-card-header-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 36, 95, .08);
+    color: #06245f;
+    flex-shrink: 0;
+}
+
+.form-card-header h3 {
+    margin: 0;
+    color: #1d2636;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.form-card-header p {
+    margin: 3px 0 0;
+    color: #8a93a2;
+    font-size: 12px;
+}
+
+.form-card-body {
+    padding: 20px;
+}
+
+
+/* ============================================================
+   SIDEBAR HEADER
+   ============================================================ */
+
+.sidebar-card-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.sidebar-card-header h3 {
+    margin: 0;
+    color: #1d2636;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sidebar-card-body {
+    padding: 18px;
+}
+
+
+/* ============================================================
+   FIELDS
+   ============================================================ */
+
+.fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.field-full {
+    grid-column: 1 / -1;
+}
+
+.form-group {
+    min-width: 0;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.required {
+    color: #e5484d;
+    margin-left: 2px;
+}
+
+.form-control-custom,
+.form-select-custom,
+.form-textarea-custom {
+    width: 100%;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #fff;
+    color: #252d3b;
+    font-size: 13px;
+    outline: none;
+    transition: .2s ease;
+    box-sizing: border-box;
+}
+
+.form-control-custom,
+.form-select-custom {
+    height: 42px;
+    padding: 0 12px;
+}
+
+.form-textarea-custom {
+    min-height: 120px;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.55;
+}
+
+.form-control-custom:focus,
+.form-select-custom:focus,
+.form-textarea-custom:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.form-control-custom:disabled,
+.form-select-custom:disabled {
+    background: #f5f7fa;
+    color: #9aa2af;
+    cursor: not-allowed;
+}
+
+.form-help {
+    margin-top: 6px;
+    color: #9299a7;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+
+/* ============================================================
+   CODE FIELD
+   ============================================================ */
+
+.code-wrapper {
+    position: relative;
+}
+
+.code-wrapper .form-control-custom {
+    padding-right: 42px;
+    background: #f8fafc;
+    color: #06245f;
+    font-weight: 700;
+    letter-spacing: .4px;
+}
+
+.code-icon {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8c96a5;
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   ASSIGNMENT BOX
+   ============================================================ */
+
+.assignment-box {
+    padding: 14px;
+    border: 1px solid #e7eaf0;
+    border-radius: 11px;
+    background: #fafbfd;
+}
+
+.assignment-box-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 14px;
+}
+
+.assignment-box-header-icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 8px;
+    background: rgba(6, 36, 95, .08);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.assignment-box-header strong {
+    display: block;
+    color: #303948;
+    font-size: 12px;
+}
+
+.assignment-box-header span {
+    display: block;
+    margin-top: 2px;
+    color: #9299a7;
+    font-size: 10px;
+}
+
+.assignment-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.assignment-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 11px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    background: rgba(6, 36, 95, .045);
+    color: #6f7887;
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.assignment-note i {
+    color: #06245f;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+
+/* ============================================================
+   RADIO OPTIONS
+   ============================================================ */
+
+.option-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.option-item {
+    position: relative;
+}
+
+.option-item input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.option-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid #dfe4eb;
+    border-radius: 8px;
+    background: #fff;
+    color: #596273;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.option-label i {
+    font-size: 12px;
+}
+
+.option-item input:checked + .option-label {
+    border-color: #06245f;
+    background: rgba(6, 36, 95, .06);
+    color: #06245f;
+}
+
+.option-item input:checked + .option-label.active-green {
+    border-color: #32b73a;
+    background: rgba(50, 183, 58, .08);
+    color: #24952d;
+}
+
+
+/* ============================================================
+   CLASS PREVIEW
+   ============================================================ */
+
+.class-preview {
+    border: 1px solid #e5e9ef;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.class-preview-top {
+    padding: 18px;
+    background: linear-gradient(
+        135deg,
+        #06245f 0%,
+        #173d83 100%
+    );
+    color: #fff;
+}
+
+.class-preview-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    opacity: .72;
+    margin-bottom: 6px;
+}
+
+.class-preview-name {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.class-preview-code {
+    margin-top: 5px;
+    font-size: 11px;
+    opacity: .78;
+    font-family: monospace;
+}
+
+.class-preview-body {
+    padding: 14px;
+}
+
+.preview-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.preview-row:last-child {
+    border-bottom: 0;
+}
+
+.preview-icon {
+    width: 29px;
+    height: 29px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6,36,95,.07);
+    color: #06245f;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.preview-content {
+    min-width: 0;
+}
+
+.preview-content small {
+    display: block;
+    color: #9299a7;
+    font-size: 10px;
+    margin-bottom: 2px;
+}
+
+.preview-content strong {
+    display: block;
+    color: #343d4d;
+    font-size: 11px;
+    word-break: break-word;
+}
+
+
+/* ============================================================
+   CURRENT CLASS BADGE
+   ============================================================ */
+
+.current-class-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e7eaf0;
+}
+
+.current-class-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(6,36,95,.08);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.current-class-info {
+    min-width: 0;
+}
+
+.current-class-info strong {
+    display: block;
+    color: #303948;
+    font-size: 12px;
+    word-break: break-word;
+}
+
+.current-class-info span {
+    display: block;
+    margin-top: 3px;
+    color: #8b94a3;
+    font-size: 10px;
+}
+
+
+/* ============================================================
+   INFO ROW
+   ============================================================ */
+
+.info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.info-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-row:first-child {
+    padding-top: 0;
+}
+
+.info-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(6,36,95,.07);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.info-content {
+    min-width: 0;
+}
+
+.info-content strong {
+    display: block;
+    color: #394252;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.info-content span {
+    color: #8a93a2;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.update-class-btn {
+    width: 100%;
+    height: 45px;
+    border: 0;
+    border-radius: 9px;
+    background: #06245f;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: .2s ease;
+}
+
+.update-class-btn:hover {
+    background: #041b48;
+}
+
+.update-class-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
+.cancel-class-btn {
+    width: 100%;
+    height: 43px;
+    margin-top: 9px;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #fff;
+    color: #626b79;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancel-class-btn:hover {
+    background: #f8fafc;
+    color: #06245f;
+}
+
+.view-class-btn {
+    width: 100%;
+    height: 43px;
+    margin-top: 9px;
+    border: 1px solid rgba(6,36,95,.18);
+    border-radius: 9px;
+    background: rgba(6,36,95,.045);
+    color: #06245f;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+}
+
+.view-class-btn:hover {
+    background: rgba(6,36,95,.09);
+}
+
+
+/* ============================================================
+   CAPACITY
+   ============================================================ */
+
+.capacity-wrapper {
+    position: relative;
+}
+
+.capacity-wrapper .form-control-custom {
+    padding-right: 75px;
+}
+
+.capacity-unit {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9299a7;
+    font-size: 10px;
+    pointer-events: none;
+}
+
+
+/* ============================================================
+   STATUS BADGE
+   ============================================================ */
+
+.status-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.status-display.active {
+    background: rgba(50,183,58,.09);
+    color: #24952d;
+}
+
+.status-display.inactive {
+    background: rgba(229,72,77,.08);
+    color: #c73439;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+
+    .edit-class-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-class-sidebar {
+        order: -1;
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .edit-class-page {
+        padding-bottom: 25px;
+    }
+
+    .edit-class-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .edit-class-header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .header-action-btn {
+        flex: 1;
+    }
+
+    .fields-grid,
+    .assignment-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .field-full {
+        grid-column: auto;
+    }
+
+    .form-card-body {
+        padding: 15px;
+    }
+
+    .form-card-header {
+        padding: 15px;
+    }
+
+    .edit-class-title {
+        font-size: 21px;
+    }
+}
+
+
+@media (max-width: 450px) {
+
+    .edit-class-header-actions {
+        flex-direction: column;
+    }
+
+    .header-action-btn {
+        width: 100%;
+        flex: none;
+    }
+
+    .option-group {
+        flex-direction: column;
+    }
+
+    .option-label {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+</style>
+
+
+<div class="edit-class-page">
+
+
+    <!-- ========================================================
+         HEADER
+    ========================================================= -->
+
+    <div class="edit-class-header">
+
+        <div class="edit-class-header-left">
+
+            <div class="edit-class-header-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+
+            <div>
+
+                <h1 class="edit-class-title">
+                    Edit Class
+                </h1>
+
+                <p class="edit-class-subtitle">
+                    Update class information, academic assignment and settings.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="edit-class-header-actions">
+
+            <a
+                href="{{ url_for('main.view_class', class_id=class_obj.id) }}"
+                class="header-action-btn primary"
+            >
+                <i class="fas fa-eye"></i>
+                View Class
+            </a>
+
+            <a
+                href="{{ url_for('main.all_classes') }}"
+                class="header-action-btn"
+            >
+                <i class="fas fa-arrow-left"></i>
+                Back to Classes
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         FORM
+    ========================================================= -->
+
+    <form
+        id="edit-class-form"
+        method="POST"
+        action="{{ url_for('main.edit_class', class_id=class_obj.id) }}"
+        autocomplete="off"
+        novalidate
+    >
+
+        <div class="edit-class-grid">
+
+
+            <!-- ==================================================
+                 MAIN
+            ================================================== -->
+
+            <div class="edit-class-main">
+
+
+                <!-- ==================================================
+                     CLASS INFORMATION
+                ================================================== -->
+
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div class="form-card-header-icon">
+                            <i class="fas fa-chalkboard"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Class Information
+                            </h3>
+
+                            <p>
+                                Update the basic information of this class.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card-body">
+
+                        <div class="fields-grid">
+
+
+                            <!-- CLASS NAME -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="name"
+                                >
+                                    Class Name
+                                    <span class="required">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    class="form-control-custom"
+                                    placeholder="Example: Grade 8 A"
+                                    maxlength="150"
+                                    required
+                                    value="{{ request.form.get('name', class_obj.name or '') }}"
+                                >
+
+                                <div class="form-help">
+                                    Enter the official name of the class.
+                                </div>
+
+                            </div>
+
+
+                            <!-- CLASS CODE -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="code"
+                                >
+                                    Class Code
+                                    <span class="required">*</span>
+                                </label>
+
+                                <div class="code-wrapper">
+
+                                    <input
+                                        type="text"
+                                        id="code"
+                                        name="code"
+                                        class="form-control-custom"
+                                        maxlength="50"
+                                        readonly
+                                        value="{{ request.form.get('code', class_obj.code or '') }}"
+                                    >
+
+                                    <i class="fas fa-lock code-icon"></i>
+
+                                </div>
+
+                                <div class="form-help">
+                                    Automatically generated from the class name.
+                                </div>
+
+                            </div>
+
+
+                            <!-- LEVEL -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="level"
+                                >
+                                    Level
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="level"
+                                    name="level"
+                                    class="form-control-custom"
+                                    placeholder="Example: Primary, Secondary, Grade 8"
+                                    maxlength="100"
+                                    value="{{ request.form.get('level', class_obj.level or '') }}"
+                                >
+
+                                <div class="form-help">
+                                    Optional academic level or grade.
+                                </div>
+
+                            </div>
+
+
+                            <!-- CAPACITY -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="capacity"
+                                >
+                                    Capacity
+                                </label>
+
+                                <div class="capacity-wrapper">
+
+                                    <input
+                                        type="number"
+                                        id="capacity"
+                                        name="capacity"
+                                        class="form-control-custom"
+                                        placeholder="Example: 40"
+                                        min="0"
+                                        max="100000"
+                                        step="1"
+                                        value="{{ request.form.get('capacity', class_obj.capacity if class_obj.capacity is not none else '') }}"
+                                    >
+
+                                    <span class="capacity-unit">
+                                        Students
+                                    </span>
+
+                                </div>
+
+                                <div class="form-help">
+                                    Maximum number of students allowed in this class.
+                                </div>
+
+                            </div>
+
+
+                            <!-- DESCRIPTION -->
+
+                            <div class="form-group field-full">
+
+                                <label
+                                    class="form-label"
+                                    for="description"
+                                >
+                                    Description
+                                </label>
+
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    class="form-textarea-custom"
+                                    placeholder="Write a short description about this class..."
+                                    maxlength="5000"
+                                >{{ request.form.get('description', class_obj.description or '') }}</textarea>
+
+                                <div class="form-help">
+                                    Optional notes or additional information about this class.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ACADEMIC ASSIGNMENT
+                ================================================== -->
+
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div class="form-card-header-icon">
+                            <i class="fas fa-sitemap"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Academic Assignment
+                            </h3>
+
+                            <p>
+                                Assign this class to its institution, branch, program and academic year.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card-body">
+
+                        <div class="assignment-box">
+
+
+                            <div class="assignment-box-header">
+
+                                <div class="assignment-box-header-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+
+                                <div>
+
+                                    <strong>
+                                        Institution & Academic Structure
+                                    </strong>
+
+                                    <span>
+                                        Select the academic ownership of this class.
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="assignment-fields">
+
+
+                                <!-- INSTITUTION -->
+
+                                <div class="form-group">
+
+                                    <label
+                                        class="form-label"
+                                        for="institution_id"
+                                    >
+                                        Institution
+                                        <span class="required">*</span>
+                                    </label>
+
+                                    {% set selected_institution_id = request.form.get(
+                                        'institution_id',
+                                        class_obj.institution_id
+                                    ) | string %}
+
+                                    <select
+                                        id="institution_id"
+                                        name="institution_id"
+                                        class="form-select-custom"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Institution
+                                        </option>
+
+                                        {% for institution in institutions %}
+
+                                            <option
+                                                value="{{ institution.id }}"
+                                                {% if selected_institution_id == institution.id|string %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                {{ institution.name }}
+
+                                                {% if institution.short_name %}
+                                                    — {{ institution.short_name }}
+                                                {% endif %}
+
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- BRANCH -->
+
+                                <div class="form-group">
+
+                                    <label
+                                        class="form-label"
+                                        for="branch_id"
+                                    >
+                                        Branch
+                                        <span class="required">*</span>
+                                    </label>
+
+                                    {% set selected_branch_id = request.form.get(
+                                        'branch_id',
+                                        class_obj.branch_id
+                                    ) | string %}
+
+                                    <select
+                                        id="branch_id"
+                                        name="branch_id"
+                                        class="form-select-custom"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Branch
+                                        </option>
+
+                                        {% for branch in branches %}
+
+                                            <option
+                                                value="{{ branch.id }}"
+                                                data-institution-id="{{ branch.institution_id }}"
+                                                {% if selected_branch_id == branch.id|string %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                {{ branch.name }}
+
+                                                {% if branch.code %}
+                                                    — {{ branch.code }}
+                                                {% endif %}
+
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- PROGRAM -->
+
+                                <div class="form-group">
+
+                                    <label
+                                        class="form-label"
+                                        for="program_id"
+                                    >
+                                        Program
+                                        <span class="required">*</span>
+                                    </label>
+
+                                    {% set selected_program_id = request.form.get(
+                                        'program_id',
+                                        class_obj.program_id
+                                    ) | string %}
+
+                                    <select
+                                        id="program_id"
+                                        name="program_id"
+                                        class="form-select-custom"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Program
+                                        </option>
+
+                                        {% for program in programs %}
+
+                                            <option
+                                                value="{{ program.id }}"
+                                                data-institution-id="{{ program.institution_id }}"
+                                                {% if selected_program_id == program.id|string %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                {{ program.name }}
+
+                                                {% if program.code %}
+                                                    — {{ program.code }}
+                                                {% endif %}
+
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- ACADEMIC YEAR -->
+
+                                <div class="form-group">
+
+                                    <label
+                                        class="form-label"
+                                        for="academic_year_id"
+                                    >
+                                        Academic Year
+                                        <span class="required">*</span>
+                                    </label>
+
+                                    {% set selected_academic_year_id = request.form.get(
+                                        'academic_year_id',
+                                        class_obj.academic_year_id
+                                    ) | string %}
+
+                                    <select
+                                        id="academic_year_id"
+                                        name="academic_year_id"
+                                        class="form-select-custom"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Academic Year
+                                        </option>
+
+                                        {% for year in academic_years %}
+
+                                            <option
+                                                value="{{ year.id }}"
+                                                {% if selected_academic_year_id == year.id|string %}
+                                                    selected
+                                                {% endif %}
+                                            >
+
+                                                {% if year.name is defined and year.name %}
+                                                    {{ year.name }}
+                                                {% elif year.year is defined and year.year %}
+                                                    {{ year.year }}
+                                                {% elif year.academic_year is defined and year.academic_year %}
+                                                    {{ year.academic_year }}
+                                                {% else %}
+                                                    Academic Year {{ year.id }}
+                                                {% endif %}
+
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+
+                            </div>
+
+
+                            <div class="assignment-note">
+
+                                <i class="fas fa-info-circle"></i>
+
+                                <span>
+                                    The selected branch must belong to the selected institution.
+                                    The class will also be linked to the selected program and academic year.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     STATUS & SETTINGS
+                ================================================== -->
+
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div class="form-card-header-icon">
+                            <i class="fas fa-sliders-h"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Status & Settings
+                            </h3>
+
+                            <p>
+                                Control the current status of this class.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card-body">
+
+                        {% set selected_status = request.form.get(
+                            'status',
+                            class_obj.status or 'active'
+                        ) %}
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Class Status
+                            </label>
+
+                            <div class="option-group">
+
+
+                                <!-- ACTIVE -->
+
+                                <div class="option-item">
+
+                                    <input
+                                        type="radio"
+                                        id="status_active"
+                                        name="status"
+                                        value="active"
+                                        {% if selected_status == 'active' %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <label
+                                        for="status_active"
+                                        class="option-label active-green"
+                                    >
+
+                                        <i class="fas fa-check-circle"></i>
+
+                                        Active
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- INACTIVE -->
+
+                                <div class="option-item">
+
+                                    <input
+                                        type="radio"
+                                        id="status_inactive"
+                                        name="status"
+                                        value="inactive"
+                                        {% if selected_status == 'inactive' %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <label
+                                        for="status_inactive"
+                                        class="option-label"
+                                    >
+
+                                        <i class="fas fa-ban"></i>
+
+                                        Inactive
+
+                                    </label>
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ==================================================
+                 SIDEBAR
+            ================================================== -->
+
+            <div class="edit-class-sidebar">
+
+
+                <!-- ==================================================
+                     CURRENT CLASS
+                ================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <h3>
+                            Current Class
+                        </h3>
+
+                    </div>
+
+
+                    <div class="sidebar-card-body">
+
+                        <div class="current-class-box">
+
+                            <div class="current-class-icon">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+
+                            <div class="current-class-info">
+
+                                <strong>
+                                    {{ class_obj.name }}
+                                </strong>
+
+                                <span>
+                                    Code: {{ class_obj.code }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     LIVE PREVIEW
+                ================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <h3>
+                            Class Preview
+                        </h3>
+
+                    </div>
+
+
+                    <div class="sidebar-card-body">
+
+                        <div class="class-preview">
+
+
+                            <div class="class-preview-top">
+
+                                <div class="class-preview-label">
+                                    Class
+                                </div>
+
+                                <h3
+                                    class="class-preview-name"
+                                    id="preview-name"
+                                >
+                                    {{ class_obj.name }}
+                                </h3>
+
+                                <div
+                                    class="class-preview-code"
+                                    id="preview-code"
+                                >
+                                    {{ class_obj.code }}
+                                </div>
+
+                            </div>
+
+
+                            <div class="class-preview-body">
+
+
+                                <!-- LEVEL -->
+
+                                <div class="preview-row">
+
+                                    <div class="preview-icon">
+                                        <i class="fas fa-layer-group"></i>
+                                    </div>
+
+                                    <div class="preview-content">
+
+                                        <small>
+                                            Level
+                                        </small>
+
+                                        <strong id="preview-level">
+                                            {{ class_obj.level or 'Not specified' }}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- CAPACITY -->
+
+                                <div class="preview-row">
+
+                                    <div class="preview-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+
+                                    <div class="preview-content">
+
+                                        <small>
+                                            Capacity
+                                        </small>
+
+                                        <strong id="preview-capacity">
+                                            {% if class_obj.capacity is not none %}
+                                                {{ class_obj.capacity }} Students
+                                            {% else %}
+                                                Not specified
+                                            {% endif %}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- STATUS -->
+
+                                <div class="preview-row">
+
+                                    <div class="preview-icon">
+                                        <i class="fas fa-toggle-on"></i>
+                                    </div>
+
+                                    <div class="preview-content">
+
+                                        <small>
+                                            Status
+                                        </small>
+
+                                        <strong id="preview-status">
+                                            {{ class_obj.status|title }}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     IMPORTANT INFORMATION
+                ================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <h3>
+                            Important Information
+                        </h3>
+
+                    </div>
+
+
+                    <div class="sidebar-card-body">
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Class Code
+                                </strong>
+
+                                <span>
+                                    The code is generated automatically from the class name.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Institution & Branch
+                                </strong>
+
+                                <span>
+                                    The branch must belong to the selected institution.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Program
+                                </strong>
+
+                                <span>
+                                    The class is associated with one academic program.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Academic Year
+                                </strong>
+
+                                <span>
+                                    The academic year determines the period in which this class operates.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Capacity
+                                </strong>
+
+                                <span>
+                                    Capacity must be zero or greater.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ACTIONS
+                ================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-body">
+
+                        <button
+                            type="submit"
+                            id="update-class-btn"
+                            class="update-class-btn"
+                        >
+
+                            <i class="fas fa-save"></i>
+
+                            <span>
+                                Update Class
+                            </span>
+
+                        </button>
+
+
+                        <a
+                            href="{{ url_for('main.view_class', class_id=class_obj.id) }}"
+                            class="view-class-btn"
+                        >
+
+                            <i class="fas fa-eye"></i>
+
+                            View Class
+
+                        </a>
+
+
+                        <a
+                            href="{{ url_for('main.all_classes') }}"
+                            class="cancel-class-btn"
+                        >
+                            Cancel
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   DOM ELEMENTS
+   ============================================================ */
+
+const editClassForm =
+    document.getElementById("edit-class-form");
+
+const institutionSelect =
+    document.getElementById("institution_id");
+
+const branchSelect =
+    document.getElementById("branch_id");
+
+const programSelect =
+    document.getElementById("program_id");
+
+const nameInput =
+    document.getElementById("name");
+
+const codeInput =
+    document.getElementById("code");
+
+const levelInput =
+    document.getElementById("level");
+
+const capacityInput =
+    document.getElementById("capacity");
+
+const updateClassButton =
+    document.getElementById("update-class-btn");
+
+const previewName =
+    document.getElementById("preview-name");
+
+const previewCode =
+    document.getElementById("preview-code");
+
+const previewLevel =
+    document.getElementById("preview-level");
+
+const previewCapacity =
+    document.getElementById("preview-capacity");
+
+const previewStatus =
+    document.getElementById("preview-status");
+
+
+/* ============================================================
+   SERVER DATA
+   ============================================================ */
+
+const INITIAL_CLASS_NAME =
+    {{ class_obj.name | default('', true) | tojson }};
+
+const INITIAL_CLASS_CODE =
+    {{ class_obj.code | default('', true) | tojson }};
+
+const OLD_INSTITUTION_ID =
+    {{ request.form.get(
+        'institution_id',
+        class_obj.institution_id
+    ) | string | tojson }};
+
+const OLD_BRANCH_ID =
+    {{ request.form.get(
+        'branch_id',
+        class_obj.branch_id
+    ) | string | tojson }};
+
+
+/* ============================================================
+   BRANCH DATA
+   ============================================================ */
+
+const BRANCHES = [
+
+    {% for branch in branches %}
+
+    {
+        id: {{ branch.id | tojson }},
+        name: {{ branch.name | default('', true) | tojson }},
+        code: {{ branch.code | default('', true) | tojson }},
+        institution_id: {{ branch.institution_id | tojson }}
+    }
+
+    {% if not loop.last %},{% endif %}
+
+    {% endfor %}
+
+];
+
+
+/* ============================================================
+   PROGRAM DATA
+   ============================================================ */
+
+const PROGRAMS = [
+
+    {% for program in programs %}
+
+    {
+        id: {{ program.id | tojson }},
+        name: {{ program.name | default('', true) | tojson }},
+        code: {{ program.code | default('', true) | tojson }},
+        institution_id: {{ program.institution_id | tojson }}
+    }
+
+    {% if not loop.last %},{% endif %}
+
+    {% endfor %}
+
+];
+
+
+/* ============================================================
+   GENERATE CLASS CODE
+   ============================================================ */
+
+function generateClassCode(name) {
+
+    if (!name) {
+        return "";
+    }
+
+    let value = name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    value = value
+        .toUpperCase()
+        .replace(/&/g, " AND ")
+        .replace(/\+/g, " PLUS ");
+
+    value = value
+        .replace(/[^A-Z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+
+    return value.substring(0, 50);
+}
+
+
+/* ============================================================
+   UPDATE CODE
+   ============================================================ */
+
+function updateClassCode() {
+
+    if (!nameInput || !codeInput) {
+        return;
+    }
+
+    const name =
+        nameInput.value.trim();
+
+    /*
+     * Empty name = empty code.
+     */
+
+    if (!name) {
+
+        codeInput.value = "";
+
+        return;
+    }
+
+    /*
+     * Generate code from name.
+     */
+
+    const generated =
+        generateClassCode(name);
+
+    codeInput.value =
+        generated;
+
+    if (previewCode) {
+
+        previewCode.textContent =
+            generated || "No code";
+
+    }
+}
+
+
+/* ============================================================
+   UPDATE LIVE PREVIEW
+   ============================================================ */
+
+function updatePreview() {
+
+    if (previewName) {
+
+        previewName.textContent =
+            nameInput.value.trim() ||
+            "Class Name";
+
+    }
+
+
+    if (previewCode) {
+
+        previewCode.textContent =
+            codeInput.value.trim() ||
+            "CLASS-CODE";
+
+    }
+
+
+    if (previewLevel) {
+
+        previewLevel.textContent =
+            levelInput.value.trim() ||
+            "Not specified";
+
+    }
+
+
+    if (previewCapacity) {
+
+        const capacity =
+            capacityInput.value.trim();
+
+        previewCapacity.textContent =
+            capacity
+                ? `${capacity} Students`
+                : "Not specified";
+
+    }
+
+
+    const selectedStatus =
+        document.querySelector(
+            'input[name="status"]:checked'
+        );
+
+    if (
+        selectedStatus &&
+        previewStatus
+    ) {
+
+        previewStatus.textContent =
+            selectedStatus.value
+                .charAt(0)
+                .toUpperCase() +
+            selectedStatus.value
+                .slice(1);
+
+    }
+}
+
+
+/* ============================================================
+   NAME CHANGE
+   ============================================================ */
+
+if (nameInput) {
+
+    nameInput.addEventListener(
+        "input",
+        function() {
+
+            updateClassCode();
+
+            updatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   LEVEL CHANGE
+   ============================================================ */
+
+if (levelInput) {
+
+    levelInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+}
+
+
+/* ============================================================
+   CAPACITY CHANGE
+   ============================================================ */
+
+if (capacityInput) {
+
+    capacityInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+}
+
+
+/* ============================================================
+   STATUS CHANGE
+   ============================================================ */
+
+document
+    .querySelectorAll(
+        'input[name="status"]'
+    )
+    .forEach(function(input) {
+
+        input.addEventListener(
+            "change",
+            updatePreview
+        );
+
+    });
+
+
+/* ============================================================
+   FILTER BRANCHES
+   ============================================================ */
+
+function filterBranches(
+    preserveSelected = true
+) {
+
+    if (
+        !institutionSelect ||
+        !branchSelect
+    ) {
+        return;
+    }
+
+
+    const institutionId =
+        institutionSelect.value.trim();
+
+
+    const previousBranch =
+        preserveSelected
+            ? (
+                branchSelect.dataset.currentValue ||
+                OLD_BRANCH_ID ||
+                ""
+            )
+            : "";
+
+
+    branchSelect.innerHTML = "";
+
+
+    const placeholder =
+        document.createElement("option");
+
+    placeholder.value = "";
+
+    placeholder.textContent =
+        institutionId
+            ? "Select Branch"
+            : "Select Institution First";
+
+    branchSelect.appendChild(
+        placeholder
+    );
+
+
+    if (!institutionId) {
+
+        branchSelect.disabled =
+            true;
+
+        return;
+    }
+
+
+    BRANCHES.forEach(
+        function(branch) {
+
+            if (
+                String(
+                    branch.institution_id
+                ) !==
+                String(institutionId)
+            ) {
+                return;
+            }
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                branch.id;
+
+            option.dataset.institutionId =
+                branch.institution_id;
+
+            option.textContent =
+                branch.code
+                    ? `${branch.name} — ${branch.code}`
+                    : branch.name;
+
+
+            if (
+                previousBranch &&
+                String(previousBranch) ===
+                String(branch.id)
+            ) {
+
+                option.selected =
+                    true;
+
+            }
+
+
+            branchSelect.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    branchSelect.disabled =
+        false;
+
+    branchSelect.dataset.currentValue =
+        branchSelect.value || "";
+
+}
+
+
+/* ============================================================
+   FILTER PROGRAMS
+   ============================================================ */
+
+function filterPrograms(
+    preserveSelected = true
+) {
+
+    if (
+        !institutionSelect ||
+        !programSelect
+    ) {
+        return;
+    }
+
+
+    const institutionId =
+        institutionSelect.value.trim();
+
+
+    const currentProgram =
+        preserveSelected
+            ? programSelect.value
+            : "";
+
+
+    programSelect.innerHTML = "";
+
+
+    const placeholder =
+        document.createElement("option");
+
+    placeholder.value = "";
+
+    placeholder.textContent =
+        institutionId
+            ? "Select Program"
+            : "Select Institution First";
+
+    programSelect.appendChild(
+        placeholder
+    );
+
+
+    if (!institutionId) {
+
+        programSelect.disabled =
+            true;
+
+        return;
+    }
+
+
+    PROGRAMS.forEach(
+        function(program) {
+
+            if (
+                String(
+                    program.institution_id
+                ) !==
+                String(institutionId)
+            ) {
+                return;
+            }
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                program.id;
+
+            option.dataset.institutionId =
+                program.institution_id;
+
+            option.textContent =
+                program.code
+                    ? `${program.name} — ${program.code}`
+                    : program.name;
+
+
+            if (
+                currentProgram &&
+                String(currentProgram) ===
+                String(program.id)
+            ) {
+
+                option.selected =
+                    true;
+
+            }
+
+
+            programSelect.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    programSelect.disabled =
+        false;
+
+}
+
+
+/* ============================================================
+   INSTITUTION CHANGE
+   ============================================================ */
+
+if (institutionSelect) {
+
+    institutionSelect.addEventListener(
+        "change",
+        function() {
+
+            branchSelect.dataset.currentValue =
+                "";
+
+            filterBranches(false);
+
+            filterPrograms(false);
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   BRANCH CHANGE
+   ============================================================ */
+
+if (branchSelect) {
+
+    branchSelect.addEventListener(
+        "change",
+        function() {
+
+            branchSelect.dataset.currentValue =
+                branchSelect.value || "";
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   FORM VALIDATION
+   ============================================================ */
+
+if (editClassForm) {
+
+    editClassForm.addEventListener(
+        "submit",
+        function(event) {
+
+            const institutionId =
+                institutionSelect
+                    ? institutionSelect.value.trim()
+                    : "";
+
+
+            const branchId =
+                branchSelect
+                    ? branchSelect.value.trim()
+                    : "";
+
+
+            const programId =
+                programSelect
+                    ? programSelect.value.trim()
+                    : "";
+
+
+            const academicYear =
+                document.getElementById(
+                    "academic_year_id"
+                );
+
+
+            const academicYearId =
+                academicYear
+                    ? academicYear.value.trim()
+                    : "";
+
+
+            const name =
+                nameInput
+                    ? nameInput.value.trim()
+                    : "";
+
+
+            const capacity =
+                capacityInput
+                    ? capacityInput.value.trim()
+                    : "";
+
+
+            /* ==================================================
+               NAME
+            ================================================== */
+
+            if (!name) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please enter the class name."
+                );
+
+                nameInput.focus();
+
+                return;
+
+            }
+
+
+            /* ==================================================
+               INSTITUTION
+            ================================================== */
+
+            if (!institutionId) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please select an institution."
+                );
+
+                institutionSelect.focus();
+
+                return;
+
+            }
+
+
+            /* ==================================================
+               BRANCH
+            ================================================== */
+
+            if (!branchId) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please select a branch."
+                );
+
+                branchSelect.focus();
+
+                return;
+
+            }
+
+
+            /* ==================================================
+               PROGRAM
+            ================================================== */
+
+            if (!programId) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please select a program."
+                );
+
+                programSelect.focus();
+
+                return;
+
+            }
+
+
+            /* ==================================================
+               ACADEMIC YEAR
+            ================================================== */
+
+            if (!academicYearId) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please select an academic year."
+                );
+
+                academicYear.focus();
+
+                return;
+
+            }
+
+
+            /* ==================================================
+               CAPACITY
+            ================================================== */
+
+            if (capacity !== "") {
+
+                const capacityNumber =
+                    Number(capacity);
+
+
+                if (
+                    !Number.isInteger(
+                        capacityNumber
+                    ) ||
+                    capacityNumber < 0
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Capacity must be a valid number greater than or equal to 0."
+                    );
+
+                    capacityInput.focus();
+
+                    return;
+
+                }
+
+            }
+
+
+            /* ==================================================
+               BRANCH / INSTITUTION VALIDATION
+            ================================================== */
+
+            const selectedBranch =
+                branchSelect.options[
+                    branchSelect.selectedIndex
+                ];
+
+
+            if (
+                selectedBranch &&
+                selectedBranch.dataset.institutionId &&
+                String(
+                    selectedBranch.dataset.institutionId
+                ) !==
+                String(institutionId)
+            ) {
+
+                event.preventDefault();
+
+                alert(
+                    "The selected branch does not belong to the selected institution."
+                );
+
+                branchSelect.focus();
+
+                return;
+
+            }
+
+
+            /* ==================================================
+               PROGRAM / INSTITUTION VALIDATION
+            ================================================== */
+
+            const selectedProgram =
+                programSelect.options[
+                    programSelect.selectedIndex
+                ];
+
+
+            if (
+                selectedProgram &&
+                selectedProgram.dataset.institutionId &&
+                String(
+                    selectedProgram.dataset.institutionId
+                ) !==
+                String(institutionId)
+            ) {
+
+                event.preventDefault();
+
+                alert(
+                    "The selected program does not belong to the selected institution."
+                );
+
+                programSelect.focus();
+
+                return;
+
+            }
+
+
+            /* ==================================================
+               UPDATE BUTTON
+            ================================================== */
+
+            updateClassButton.disabled =
+                true;
+
+            updateClassButton.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i><span>Updating Class...</span>';
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        /*
+         * Keep current institution.
+         */
+
+        if (
+            institutionSelect &&
+            OLD_INSTITUTION_ID
+        ) {
+
+            institutionSelect.value =
+                OLD_INSTITUTION_ID;
+
+        }
+
+
+        /*
+         * Filter branches.
+         */
+
+        filterBranches(true);
+
+
+        /*
+         * Filter programs.
+         */
+
+        filterPrograms(true);
+
+
+        /*
+         * Initial preview.
+         */
+
+        updatePreview();
+
+    }
+);
+
+</script>
+
+{% endblock %}

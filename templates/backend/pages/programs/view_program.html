@@ -1,0 +1,1659 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+/* ============================================================
+   PROGRAM VIEW PAGE
+   ============================================================ */
+
+.program-view-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.program-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.program-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.program-header-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #06245f, #33206f);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 8px 20px rgba(6, 36, 95, 0.18);
+}
+
+.program-header-text h1 {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.25;
+    color: #06245f;
+    font-weight: 800;
+}
+
+.program-header-text p {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.program-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.program-btn {
+    border: none;
+    text-decoration: none;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+
+.program-btn:hover {
+    transform: translateY(-1px);
+}
+
+.program-btn-primary {
+    color: #fff;
+    background: #06245f;
+    box-shadow: 0 5px 14px rgba(6, 36, 95, .18);
+}
+
+.program-btn-primary:hover {
+    background: #041b48;
+}
+
+.program-btn-secondary {
+    color: #374151;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+}
+
+.program-btn-secondary:hover {
+    background: #e9eaec;
+}
+
+.program-btn-success {
+    color: #fff;
+    background: #32b73a;
+    box-shadow: 0 5px 14px rgba(50, 183, 58, .18);
+}
+
+.program-btn-success:hover {
+    background: #269c2e;
+}
+
+/* ============================================================
+   MAIN GRID
+   ============================================================ */
+
+.program-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 350px;
+    gap: 22px;
+    align-items: start;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.program-card {
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(15, 23, 42, .045);
+    margin-bottom: 22px;
+}
+
+.program-card:last-child {
+    margin-bottom: 0;
+}
+
+.program-card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #edf0f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.program-card-title {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+}
+
+.program-card-title-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.program-card-title h2 {
+    margin: 0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.program-card-title p {
+    margin: 3px 0 0;
+    color: #8a93a3;
+    font-size: 12px;
+}
+
+.program-card-body {
+    padding: 20px;
+}
+
+/* ============================================================
+   PROGRAM HERO
+   ============================================================ */
+
+.program-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(6, 36, 95, .05),
+            rgba(51, 32, 111, .035)
+        );
+    border-bottom: 1px solid #edf0f4;
+}
+
+.program-logo {
+    width: 76px;
+    height: 76px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #06245f, #33206f);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 29px;
+    font-weight: 800;
+    flex-shrink: 0;
+    box-shadow: 0 8px 22px rgba(6, 36, 95, .17);
+}
+
+.program-hero-content {
+    min-width: 0;
+}
+
+.program-hero-content h2 {
+    margin: 0;
+    color: #06245f;
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.program-code {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 7px;
+    padding: 5px 10px;
+    border-radius: 7px;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .5px;
+}
+
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+
+.program-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.program-status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.program-status-active {
+    color: #19752b;
+    background: #eaf8ed;
+}
+
+.program-status-active::before {
+    background: #32b73a;
+}
+
+.program-status-inactive {
+    color: #7a5a00;
+    background: #fff7d9;
+}
+
+.program-status-inactive::before {
+    background: #eab308;
+}
+
+.program-status-default {
+    color: #5b6472;
+    background: #f1f3f5;
+}
+
+.program-status-default::before {
+    background: #9ca3af;
+}
+
+/* ============================================================
+   INFORMATION GRID
+   ============================================================ */
+
+.program-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.program-info-item {
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #edf0f4;
+    border-radius: 12px;
+    background: #fafbfc;
+}
+
+.program-info-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #8a93a3;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .35px;
+    margin-bottom: 7px;
+}
+
+.program-info-label i {
+    color: #06245f;
+    font-size: 12px;
+}
+
+.program-info-value {
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.program-info-value.muted {
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+/* ============================================================
+   DESCRIPTION
+   ============================================================ */
+
+.program-description {
+    color: #4b5563;
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+.program-empty-description {
+    color: #9ca3af;
+    font-size: 13px;
+    font-style: italic;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.program-sidebar {
+    min-width: 0;
+}
+
+.program-summary {
+    text-align: center;
+}
+
+.program-summary-icon {
+    width: 86px;
+    height: 86px;
+    border-radius: 22px;
+    margin: 4px auto 15px;
+    background: linear-gradient(135deg, #06245f, #33206f);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    font-weight: 800;
+    box-shadow: 0 10px 25px rgba(6, 36, 95, .17);
+}
+
+.program-summary h3 {
+    margin: 0;
+    color: #172033;
+    font-size: 17px;
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.program-summary p {
+    margin: 6px 0 14px;
+    color: #8a93a3;
+    font-size: 12px;
+}
+
+.program-summary-status {
+    display: flex;
+    justify-content: center;
+}
+
+/* ============================================================
+   QUICK DETAILS
+   ============================================================ */
+
+.quick-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.quick-detail {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 13px 0;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.quick-detail:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.quick-detail:first-child {
+    padding-top: 0;
+}
+
+.quick-detail-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+}
+
+.quick-detail-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.quick-detail-label {
+    display: block;
+    color: #9aa2af;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    margin-bottom: 2px;
+}
+
+.quick-detail-value {
+    color: #263142;
+    font-size: 13px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+/* ============================================================
+   ACTION LIST
+   ============================================================ */
+
+.program-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.program-action-list .program-btn {
+    width: 100%;
+}
+
+/* ============================================================
+   TIMELINE / DATES
+   ============================================================ */
+
+.program-date-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.program-date-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+}
+
+.program-date-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 12px;
+}
+
+.program-date-content {
+    min-width: 0;
+}
+
+.program-date-label {
+    display: block;
+    color: #9aa2af;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    margin-bottom: 3px;
+}
+
+.program-date-value {
+    color: #374151;
+    font-size: 12px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+/* ============================================================
+   NOTICE
+   ============================================================ */
+
+.program-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px 14px;
+    border-radius: 11px;
+    background: #f5f8ff;
+    border: 1px solid #e1e9f8;
+    color: #475569;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.program-notice i {
+    color: #06245f;
+    margin-top: 2px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+    .program-main-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .program-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+        align-items: start;
+    }
+
+    .program-sidebar .program-card {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 720px) {
+    .program-page-header {
+        align-items: flex-start;
+    }
+
+    .program-header-actions {
+        width: 100%;
+    }
+
+    .program-header-actions .program-btn {
+        flex: 1;
+    }
+
+    .program-main-grid {
+        display: block;
+    }
+
+    .program-sidebar {
+        display: block;
+    }
+
+    .program-sidebar .program-card {
+        margin-bottom: 22px;
+    }
+
+    .program-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .program-hero {
+        align-items: flex-start;
+    }
+
+    .program-logo {
+        width: 62px;
+        height: 62px;
+        border-radius: 15px;
+        font-size: 24px;
+    }
+
+    .program-hero-content h2 {
+        font-size: 19px;
+    }
+}
+
+@media (max-width: 480px) {
+    .program-header-left {
+        width: 100%;
+    }
+
+    .program-header-text h1 {
+        font-size: 21px;
+    }
+
+    .program-card-body,
+    .program-card-header {
+        padding: 16px;
+    }
+
+    .program-hero {
+        padding: 16px;
+        gap: 13px;
+    }
+
+    .program-header-actions {
+        flex-direction: column;
+    }
+
+    .program-header-actions .program-btn {
+        width: 100%;
+        flex: none;
+    }
+}
+</style>
+
+
+<div class="program-view-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="program-page-header">
+
+        <div class="program-header-left">
+
+            <div class="program-header-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <div class="program-header-text">
+                <h1>Program Details</h1>
+                <p>View complete information about this academic program.</p>
+            </div>
+
+        </div>
+
+
+        <div class="program-header-actions">
+
+            <a
+                href="{{ url_for('main.all_programs') }}"
+                class="program-btn program-btn-secondary"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Programs
+            </a>
+
+            {% if program %}
+            <a
+                href="{{ url_for('main.edit_program', program_id=program.id) }}"
+                class="program-btn program-btn-primary"
+            >
+                <i class="fa-solid fa-pen-to-square"></i>
+                Edit Program
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN GRID
+         ======================================================== -->
+
+    <div class="program-main-grid">
+
+        <!-- ====================================================
+             LEFT CONTENT
+             ==================================================== -->
+
+        <div class="program-main-content">
+
+            <!-- ==================================================
+                 PROGRAM HERO
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-hero">
+
+                    <div class="program-logo">
+                        {% set program_name = program.name if program and program.name else 'Program' %}
+                        {{ program_name[:1]|upper }}
+                    </div>
+
+                    <div class="program-hero-content">
+
+                        <h2>
+                            {{ program.name if program and program.name else 'Unnamed Program' }}
+                        </h2>
+
+                        {% if program and program.code %}
+                            <span class="program-code">
+                                <i class="fa-solid fa-hashtag"></i>
+                                {{ program.code }}
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+                    <div style="margin-left:auto;">
+
+                        {% if program and program.status == 'active' %}
+
+                            <span class="program-status program-status-active">
+                                Active
+                            </span>
+
+                        {% elif program and program.status == 'inactive' %}
+
+                            <span class="program-status program-status-inactive">
+                                Inactive
+                            </span>
+
+                        {% elif program and program.status %}
+
+                            <span class="program-status program-status-default">
+                                {{ program.status|replace('_', ' ')|title }}
+                            </span>
+
+                        {% else %}
+
+                            <span class="program-status program-status-default">
+                                Unknown
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 BASIC INFORMATION
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-card-header">
+
+                    <div class="program-card-title">
+
+                        <div class="program-card-title-icon">
+                            <i class="fa-solid fa-circle-info"></i>
+                        </div>
+
+                        <div>
+                            <h2>Basic Information</h2>
+                            <p>General information about the program.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="program-card-body">
+
+                    <div class="program-info-grid">
+
+                        <!-- Name -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                Program Name
+                            </div>
+
+                            <div class="program-info-value">
+                                {% if program and program.name %}
+                                    {{ program.name }}
+                                {% else %}
+                                    <span class="muted">Not specified</span>
+                                {% endif %}
+                            </div>
+
+                        </div>
+
+
+                        <!-- Code -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-solid fa-hashtag"></i>
+                                Program Code
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.code %}
+                                    {{ program.code }}
+                                {% else %}
+                                    <span class="muted">Not specified</span>
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Short Name -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-solid fa-font"></i>
+                                Short Name
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.short_name %}
+                                    {{ program.short_name }}
+                                {% else %}
+                                    <span class="muted">Not specified</span>
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Program Type -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-solid fa-layer-group"></i>
+                                Program Type
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.program_type %}
+
+                                    {{ program.program_type|replace('_', ' ')|title }}
+
+                                {% else %}
+
+                                    <span class="muted">Not specified</span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Duration -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-regular fa-clock"></i>
+                                Duration
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.duration_months %}
+
+                                    {{ program.duration_months }}
+                                    {{ 'Month' if program.duration_months == 1 else 'Months' }}
+
+                                {% else %}
+
+                                    <span class="muted">Not specified</span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Status -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-solid fa-toggle-on"></i>
+                                Status
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.status == 'active' %}
+
+                                    <span class="program-status program-status-active">
+                                        Active
+                                    </span>
+
+                                {% elif program and program.status == 'inactive' %}
+
+                                    <span class="program-status program-status-inactive">
+                                        Inactive
+                                    </span>
+
+                                {% elif program and program.status %}
+
+                                    <span class="program-status program-status-default">
+                                        {{ program.status|replace('_', ' ')|title }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="muted">
+                                        Not specified
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 INSTITUTION & BRANCH
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-card-header">
+
+                    <div class="program-card-title">
+
+                        <div class="program-card-title-icon">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+
+                        <div>
+                            <h2>Academic Assignment</h2>
+                            <p>Institution and branch assigned to this program.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="program-card-body">
+
+                    <div class="program-info-grid">
+
+                        <!-- Institution -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-solid fa-building-columns"></i>
+                                Institution
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.institution %}
+
+                                    {{ program.institution.name }}
+
+                                {% elif program and program.institution_id %}
+
+                                    Institution #{{ program.institution_id }}
+
+                                {% else %}
+
+                                    <span class="muted">
+                                        Not assigned
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Branch -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-solid fa-code-branch"></i>
+                                Branch
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.branch %}
+
+                                    {{ program.branch.name }}
+
+                                {% elif program and program.branch_id %}
+
+                                    Branch #{{ program.branch_id }}
+
+                                {% else %}
+
+                                    <span class="muted">
+                                        Institution-wide / All Branches
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div style="margin-top:16px;">
+
+                        <div class="program-notice">
+
+                            <i class="fa-solid fa-circle-info"></i>
+
+                            <div>
+
+                                {% if program and program.branch_id %}
+
+                                    This program is specifically assigned to the selected
+                                    branch within the institution.
+
+                                {% else %}
+
+                                    This program does not have a specific branch assignment
+                                    and can be treated as an institution-wide program.
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 DESCRIPTION
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-card-header">
+
+                    <div class="program-card-title">
+
+                        <div class="program-card-title-icon">
+                            <i class="fa-solid fa-align-left"></i>
+                        </div>
+
+                        <div>
+                            <h2>Description</h2>
+                            <p>Additional information about this program.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="program-card-body">
+
+                    {% if program and program.description %}
+
+                        <div class="program-description">
+                            {{ program.description }}
+                        </div>
+
+                    {% else %}
+
+                        <div class="program-empty-description">
+                            No description has been added for this program.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 SYSTEM INFORMATION
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-card-header">
+
+                    <div class="program-card-title">
+
+                        <div class="program-card-title-icon">
+                            <i class="fa-solid fa-database"></i>
+                        </div>
+
+                        <div>
+                            <h2>System Information</h2>
+                            <p>Internal record information.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="program-card-body">
+
+                    <div class="program-info-grid">
+
+                        <!-- Program ID -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                Program ID
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.id %}
+                                    #{{ program.id }}
+                                {% else %}
+                                    <span class="muted">N/A</span>
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Created -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-regular fa-calendar-plus"></i>
+                                Created At
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.created_at %}
+
+                                    {{ program.created_at.strftime('%d %b %Y, %I:%M %p') }}
+
+                                {% else %}
+
+                                    <span class="muted">
+                                        Not available
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Updated -->
+                        <div class="program-info-item">
+
+                            <div class="program-info-label">
+                                <i class="fa-regular fa-calendar-check"></i>
+                                Last Updated
+                            </div>
+
+                            <div class="program-info-value">
+
+                                {% if program and program.updated_at %}
+
+                                    {{ program.updated_at.strftime('%d %b %Y, %I:%M %p') }}
+
+                                {% else %}
+
+                                    <span class="muted">
+                                        Not available
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             RIGHT SIDEBAR
+             ==================================================== -->
+
+        <aside class="program-sidebar">
+
+
+            <!-- ==================================================
+                 PROGRAM SUMMARY
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-card-body">
+
+                    <div class="program-summary">
+
+                        <div class="program-summary-icon">
+
+                            {% set summary_name = program.name if program and program.name else 'P' %}
+
+                            {{ summary_name[:1]|upper }}
+
+                        </div>
+
+
+                        <h3>
+                            {{ program.name if program and program.name else 'Unnamed Program' }}
+                        </h3>
+
+
+                        {% if program and program.code %}
+
+                            <p>
+                                {{ program.code }}
+                            </p>
+
+                        {% else %}
+
+                            <p>
+                                Program
+                            </p>
+
+                        {% endif %}
+
+
+                        <div class="program-summary-status">
+
+                            {% if program and program.status == 'active' %}
+
+                                <span class="program-status program-status-active">
+                                    Active
+                                </span>
+
+                            {% elif program and program.status == 'inactive' %}
+
+                                <span class="program-status program-status-inactive">
+                                    Inactive
+                                </span>
+
+                            {% else %}
+
+                                <span class="program-status program-status-default">
+                                    {{ program.status|replace('_', ' ')|title if program and program.status else 'Unknown' }}
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 QUICK DETAILS
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-card-header">
+
+                    <div class="program-card-title">
+
+                        <div class="program-card-title-icon">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+
+                        <div>
+                            <h2>Quick Details</h2>
+                            <p>Program overview.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="program-card-body">
+
+                    <div class="quick-details">
+
+
+                        <!-- Type -->
+                        <div class="quick-detail">
+
+                            <div class="quick-detail-icon">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+
+                            <div class="quick-detail-content">
+
+                                <span class="quick-detail-label">
+                                    Type
+                                </span>
+
+                                <span class="quick-detail-value">
+
+                                    {% if program and program.program_type %}
+                                        {{ program.program_type|replace('_', ' ')|title }}
+                                    {% else %}
+                                        Not specified
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Duration -->
+                        <div class="quick-detail">
+
+                            <div class="quick-detail-icon">
+                                <i class="fa-regular fa-clock"></i>
+                            </div>
+
+                            <div class="quick-detail-content">
+
+                                <span class="quick-detail-label">
+                                    Duration
+                                </span>
+
+                                <span class="quick-detail-value">
+
+                                    {% if program and program.duration_months %}
+                                        {{ program.duration_months }}
+                                        {{ 'Month' if program.duration_months == 1 else 'Months' }}
+                                    {% else %}
+                                        Not specified
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Institution -->
+                        <div class="quick-detail">
+
+                            <div class="quick-detail-icon">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </div>
+
+                            <div class="quick-detail-content">
+
+                                <span class="quick-detail-label">
+                                    Institution
+                                </span>
+
+                                <span class="quick-detail-value">
+
+                                    {% if program and program.institution %}
+                                        {{ program.institution.name }}
+                                    {% elif program and program.institution_id %}
+                                        #{{ program.institution_id }}
+                                    {% else %}
+                                        Not assigned
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Branch -->
+                        <div class="quick-detail">
+
+                            <div class="quick-detail-icon">
+                                <i class="fa-solid fa-code-branch"></i>
+                            </div>
+
+                            <div class="quick-detail-content">
+
+                                <span class="quick-detail-label">
+                                    Branch
+                                </span>
+
+                                <span class="quick-detail-value">
+
+                                    {% if program and program.branch %}
+                                        {{ program.branch.name }}
+                                    {% elif program and program.branch_id %}
+                                        #{{ program.branch_id }}
+                                    {% else %}
+                                        All Branches
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 ACTIONS
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-card-header">
+
+                    <div class="program-card-title">
+
+                        <div class="program-card-title-icon">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+
+                        <div>
+                            <h2>Actions</h2>
+                            <p>Manage this program.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="program-card-body">
+
+                    <div class="program-action-list">
+
+                        {% if program %}
+
+                            <a
+                                href="{{ url_for('main.edit_program', program_id=program.id) }}"
+                                class="program-btn program-btn-primary"
+                            >
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                Edit Program
+                            </a>
+
+                        {% endif %}
+
+
+                        <a
+                            href="{{ url_for('main.all_programs') }}"
+                            class="program-btn program-btn-secondary"
+                        >
+                            <i class="fa-solid fa-list"></i>
+                            All Programs
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 RECORD DATES
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-card-header">
+
+                    <div class="program-card-title">
+
+                        <div class="program-card-title-icon">
+                            <i class="fa-regular fa-calendar"></i>
+                        </div>
+
+                        <div>
+                            <h2>Record Dates</h2>
+                            <p>Program record timeline.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="program-card-body">
+
+                    <div class="program-date-list">
+
+                        <!-- Created -->
+                        <div class="program-date-item">
+
+                            <div class="program-date-icon">
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+
+                            <div class="program-date-content">
+
+                                <span class="program-date-label">
+                                    Created
+                                </span>
+
+                                <span class="program-date-value">
+
+                                    {% if program and program.created_at %}
+                                        {{ program.created_at.strftime('%d %B %Y, %I:%M %p') }}
+                                    {% else %}
+                                        Not available
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Updated -->
+                        <div class="program-date-item">
+
+                            <div class="program-date-icon">
+                                <i class="fa-solid fa-rotate"></i>
+                            </div>
+
+                            <div class="program-date-content">
+
+                                <span class="program-date-label">
+                                    Updated
+                                </span>
+
+                                <span class="program-date-value">
+
+                                    {% if program and program.updated_at %}
+                                        {{ program.updated_at.strftime('%d %B %Y, %I:%M %p') }}
+                                    {% else %}
+                                        Not available
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 INFORMATION NOTICE
+                 ================================================== -->
+
+            <div class="program-card">
+
+                <div class="program-card-body">
+
+                    <div class="program-notice">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <div>
+                            Program information can be updated from the
+                            <strong>Edit Program</strong> page. Academic
+                            structure and program assignment should be kept
+                            consistent with the institution configuration.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+{% endblock %}

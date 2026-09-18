@@ -1,0 +1,1307 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   EDIT TERM PAGE
+   ============================================================ */
+
+.term-edit-page {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.term-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.term-edit-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.term-edit-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #06245f;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.term-edit-header-icon i {
+    width: 23px;
+    height: 23px;
+}
+
+.term-edit-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.term-edit-subtitle {
+    margin: 4px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.term-edit-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    background: #ffffff;
+    border: 1px solid #dfe3ea;
+    color: #06245f;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all .2s ease;
+}
+
+.term-edit-back:hover {
+    background: #f5f7fb;
+    border-color: #06245f;
+}
+
+.term-edit-back i {
+    width: 17px;
+    height: 17px;
+}
+
+
+/* ============================================================
+   CARD
+   ============================================================ */
+
+.term-edit-card {
+    background: #ffffff;
+    border: 1px solid #e4e8ef;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(6, 36, 95, .06);
+    overflow: hidden;
+}
+
+.term-edit-card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #edf0f4;
+    background: #fafbfc;
+}
+
+.term-edit-card-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.term-edit-card-description {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.term-edit-form {
+    padding: 26px;
+}
+
+.term-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.term-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.term-edit-full {
+    grid-column: 1 / -1;
+}
+
+.term-edit-label {
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.term-edit-required {
+    color: #dc2626;
+}
+
+.term-edit-input,
+.term-edit-select,
+.term-edit-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d8dee8;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 14px;
+    padding: 12px 13px;
+    outline: none;
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+.term-edit-input:focus,
+.term-edit-select:focus,
+.term-edit-textarea:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .09);
+}
+
+.term-edit-input[readonly] {
+    background: #f3f5f8;
+    color: #06245f;
+    font-weight: 800;
+    cursor: not-allowed;
+}
+
+.term-edit-textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.term-edit-help {
+    margin: 0;
+    color: #7b8494;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   CODE
+   ============================================================ */
+
+.term-edit-code-wrapper {
+    position: relative;
+}
+
+.term-edit-code-wrapper .term-edit-input {
+    padding-right: 45px;
+}
+
+.term-edit-code-icon {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #32b73a;
+    pointer-events: none;
+}
+
+.term-edit-code-icon i {
+    width: 18px;
+    height: 18px;
+}
+
+
+/* ============================================================
+   CURRENT TERM
+   ============================================================ */
+
+.term-edit-current-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid #d8dee8;
+    border-radius: 9px;
+    background: #ffffff;
+}
+
+.term-edit-current-box input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: #32b73a;
+    cursor: pointer;
+}
+
+.term-edit-current-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+}
+
+.term-edit-current-title {
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.term-edit-current-help {
+    color: #7b8494;
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   INFO BOX
+   ============================================================ */
+
+.term-edit-info {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #f0f6ff;
+    border: 1px solid #d8e6ff;
+}
+
+.term-edit-info-icon {
+    color: #06245f;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.term-edit-info-icon i {
+    width: 19px;
+    height: 19px;
+}
+
+.term-edit-info-text {
+    color: #40516c;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.term-edit-info-text strong {
+    color: #06245f;
+}
+
+
+/* ============================================================
+   FORM ACTIONS
+   ============================================================ */
+
+.term-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid #edf0f4;
+}
+
+.term-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 43px;
+    padding: 10px 18px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.term-edit-btn i {
+    width: 17px;
+    height: 17px;
+}
+
+.term-edit-btn-cancel {
+    background: #ffffff;
+    border-color: #d8dee8;
+    color: #4b5563;
+}
+
+.term-edit-btn-cancel:hover {
+    background: #f5f6f8;
+}
+
+.term-edit-btn-save {
+    background: #06245f;
+    color: #ffffff;
+}
+
+.term-edit-btn-save:hover {
+    background: #041b49;
+}
+
+.term-edit-btn-save:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
+
+/* ============================================================
+   FLASH
+   ============================================================ */
+
+.term-edit-alert {
+    margin-bottom: 20px;
+    padding: 13px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.term-edit-alert-danger {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #be123c;
+}
+
+.term-edit-alert-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 800px) {
+
+    .term-edit-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .term-edit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .term-edit-full,
+    .term-edit-info {
+        grid-column: auto;
+    }
+
+    .term-edit-form {
+        padding: 20px;
+    }
+
+}
+
+@media (max-width: 520px) {
+
+    .term-edit-title {
+        font-size: 20px;
+    }
+
+    .term-edit-subtitle {
+        font-size: 12px;
+    }
+
+    .term-edit-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .term-edit-btn {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+<div class="term-edit-page">
+
+
+<!-- ========================================================
+     PAGE HEADER
+========================================================= -->
+
+<div class="term-edit-header">
+
+    <div class="term-edit-header-left">
+
+        <div class="term-edit-header-icon">
+            <i data-feather="edit-3"></i>
+        </div>
+
+        <div>
+
+            <h1 class="term-edit-title">
+                Edit Academic Term
+            </h1>
+
+            <p class="term-edit-subtitle">
+                Update the information for
+                <strong>{{ term.name }}</strong>.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <a
+        href="{{ url_for('main.view_term', term_id=term.id) }}"
+        class="term-edit-back"
+    >
+        <i data-feather="arrow-left"></i>
+        Back to Term
+    </a>
+
+</div>
+
+
+<!-- ========================================================
+     FLASH MESSAGES
+========================================================= -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div
+                class="term-edit-alert
+                {% if category in ['danger', 'error'] %}
+                    term-edit-alert-danger
+                {% else %}
+                    term-edit-alert-success
+                {% endif %}"
+            >
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endwith %}
+
+
+<!-- ========================================================
+     FORM CARD
+========================================================= -->
+
+<div class="term-edit-card">
+
+    <div class="term-edit-card-header">
+
+        <h2 class="term-edit-card-title">
+            Term Information
+        </h2>
+
+        <p class="term-edit-card-description">
+            Update the academic term information below.
+        </p>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="{{ url_for('main.edit_term', term_id=term.id) }}"
+        class="term-edit-form"
+        id="termEditForm"
+    >
+
+        <div class="term-edit-grid">
+
+
+            <!-- =================================================
+                 INSTITUTION
+            ================================================== -->
+
+            <div class="term-edit-field">
+
+                <label
+                    for="institution_id"
+                    class="term-edit-label"
+                >
+                    Institution
+                    <span class="term-edit-required">*</span>
+                </label>
+
+                <select
+                    name="institution_id"
+                    id="institution_id"
+                    class="term-edit-select"
+                    required
+                >
+
+                    <option value="">
+                        Select Institution
+                    </option>
+
+                    {% for institution in institutions %}
+
+                        <option
+                            value="{{ institution.id }}"
+                            {% if institution.id == term.institution_id %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ institution.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <p class="term-edit-help">
+                    Select the institution that owns this term.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 ACADEMIC YEAR
+            ================================================== -->
+
+            <div class="term-edit-field">
+
+                <label
+                    for="academic_year_id"
+                    class="term-edit-label"
+                >
+                    Academic Year
+                    <span class="term-edit-required">*</span>
+                </label>
+
+                <select
+                    name="academic_year_id"
+                    id="academic_year_id"
+                    class="term-edit-select"
+                    required
+                >
+
+                    <option value="">
+                        Select Academic Year
+                    </option>
+
+                    {% for year in academic_years %}
+
+                        <option
+                            value="{{ year.id }}"
+                            data-institution-id="{{ year.institution_id }}"
+                            {% if year.id == term.academic_year_id %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ year.name }}
+                            {% if year.is_current %}
+                                — Current
+                            {% endif %}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <p class="term-edit-help">
+                    Academic year must belong to the selected institution.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 TERM NAME
+            ================================================== -->
+
+            <div class="term-edit-field">
+
+                <label
+                    for="name"
+                    class="term-edit-label"
+                >
+                    Term Name
+                    <span class="term-edit-required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    class="term-edit-input"
+                    value="{{ term.name }}"
+                    placeholder="e.g. First Term"
+                    maxlength="100"
+                    required
+                >
+
+                <p class="term-edit-help">
+                    Example: First Term, Second Term, Third Term.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 SEQUENCE
+            ================================================== -->
+
+            <div class="term-edit-field">
+
+                <label
+                    for="sequence"
+                    class="term-edit-label"
+                >
+                    Sequence
+                    <span class="term-edit-required">*</span>
+                </label>
+
+                <input
+                    type="number"
+                    name="sequence"
+                    id="sequence"
+                    class="term-edit-input"
+                    value="{{ term.sequence }}"
+                    min="1"
+                    max="100"
+                    step="1"
+                    required
+                >
+
+                <p class="term-edit-help">
+                    Term order inside the academic year.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 AUTO CODE
+            ================================================== -->
+
+            <div class="term-edit-field">
+
+                <label
+                    for="code"
+                    class="term-edit-label"
+                >
+                    Term Code
+                </label>
+
+                <div class="term-edit-code-wrapper">
+
+                    <input
+                        type="text"
+                        name="code"
+                        id="code"
+                        class="term-edit-input"
+                        value="{{ term.code }}"
+                        maxlength="50"
+                        readonly
+                    >
+
+                    <span class="term-edit-code-icon">
+                        <i data-feather="lock"></i>
+                    </span>
+
+                </div>
+
+                <p class="term-edit-help">
+                    Automatically generated from the sequence.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 STATUS
+            ================================================== -->
+
+            <div class="term-edit-field">
+
+                <label
+                    for="status"
+                    class="term-edit-label"
+                >
+                    Status
+                    <span class="term-edit-required">*</span>
+                </label>
+
+                <select
+                    name="status"
+                    id="status"
+                    class="term-edit-select"
+                    required
+                >
+
+                    <option
+                        value="active"
+                        {% if term.status == 'active' %}
+                            selected
+                        {% endif %}
+                    >
+                        Active
+                    </option>
+
+                    <option
+                        value="inactive"
+                        {% if term.status == 'inactive' %}
+                            selected
+                        {% endif %}
+                    >
+                        Inactive
+                    </option>
+
+                    <option
+                        value="closed"
+                        {% if term.status == 'closed' %}
+                            selected
+                        {% endif %}
+                    >
+                        Closed
+                    </option>
+
+                </select>
+
+                <p class="term-edit-help">
+                    Current operational status of this term.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 START DATE
+            ================================================== -->
+
+            <div class="term-edit-field">
+
+                <label
+                    for="start_date"
+                    class="term-edit-label"
+                >
+                    Start Date
+                    <span class="term-edit-required">*</span>
+                </label>
+
+                <input
+                    type="date"
+                    name="start_date"
+                    id="start_date"
+                    class="term-edit-input"
+                    value="{% if term.start_date %}{{ term.start_date.strftime('%Y-%m-%d') }}{% endif %}"
+                    required
+                >
+
+                <p class="term-edit-help">
+                    Date when this term begins.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 END DATE
+            ================================================== -->
+
+            <div class="term-edit-field">
+
+                <label
+                    for="end_date"
+                    class="term-edit-label"
+                >
+                    End Date
+                    <span class="term-edit-required">*</span>
+                </label>
+
+                <input
+                    type="date"
+                    name="end_date"
+                    id="end_date"
+                    class="term-edit-input"
+                    value="{% if term.end_date %}{{ term.end_date.strftime('%Y-%m-%d') }}{% endif %}"
+                    required
+                >
+
+                <p class="term-edit-help">
+                    Date when this term ends.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 CURRENT TERM
+            ================================================== -->
+
+            <div class="term-edit-field">
+
+                <label class="term-edit-label">
+                    Current Term
+                </label>
+
+                <div class="term-edit-current-box">
+
+                    <input
+                        type="checkbox"
+                        name="is_current"
+                        id="is_current"
+                        value="1"
+                        {% if term.is_current %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <label
+                        for="is_current"
+                        class="term-edit-current-label"
+                    >
+
+                        <span class="term-edit-current-title">
+                            Set as Current Term
+                        </span>
+
+                        <span class="term-edit-current-help">
+                            Other current terms in this academic year will be unset.
+                        </span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 INFO
+            ================================================== -->
+
+            <div class="term-edit-info">
+
+                <div class="term-edit-info-icon">
+                    <i data-feather="info"></i>
+                </div>
+
+                <div class="term-edit-info-text">
+
+                    <strong>Automatic Code:</strong>
+                    The code is generated from the sequence.
+
+                    For example,
+                    Sequence <strong>1</strong> becomes
+                    <strong>TERM-01</strong> and
+                    Sequence <strong>2</strong> becomes
+                    <strong>TERM-02</strong>.
+
+                    <br>
+
+                    Changing the sequence will automatically update the code.
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 DESCRIPTION
+            ================================================== -->
+
+            <div class="term-edit-field term-edit-full">
+
+                <label
+                    for="description"
+                    class="term-edit-label"
+                >
+                    Description
+                </label>
+
+                <textarea
+                    name="description"
+                    id="description"
+                    class="term-edit-textarea"
+                    maxlength="2000"
+                    placeholder="Enter additional information about this term..."
+                >{{ term.description or '' }}</textarea>
+
+                <p class="term-edit-help">
+                    Optional description or additional notes.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             ACTIONS
+        ================================================== -->
+
+        <div class="term-edit-actions">
+
+            <a
+                href="{{ url_for('main.view_term', term_id=term.id) }}"
+                class="term-edit-btn term-edit-btn-cancel"
+            >
+                <i data-feather="x"></i>
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="term-edit-btn term-edit-btn-save"
+                id="updateTermBtn"
+            >
+                <i data-feather="save"></i>
+                Update Term
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+</div>
+
+<script>
+
+/* ============================================================
+   FEATHER ICONS
+   ============================================================ */
+
+if (typeof feather !== "undefined") {
+    feather.replace();
+}
+
+
+/* ============================================================
+   ELEMENTS
+   ============================================================ */
+
+const institutionSelect =
+    document.getElementById("institution_id");
+
+const academicYearSelect =
+    document.getElementById("academic_year_id");
+
+const sequenceInput =
+    document.getElementById("sequence");
+
+const codeInput =
+    document.getElementById("code");
+
+const startDateInput =
+    document.getElementById("start_date");
+
+const endDateInput =
+    document.getElementById("end_date");
+
+const termEditForm =
+    document.getElementById("termEditForm");
+
+const updateTermBtn =
+    document.getElementById("updateTermBtn");
+
+
+/* ============================================================
+   ACADEMIC YEAR OPTIONS
+   ============================================================ */
+
+const academicYearOptions = Array.from(
+    academicYearSelect.querySelectorAll(
+        "option[data-institution-id]"
+    )
+);
+
+
+/* ============================================================
+   FILTER ACADEMIC YEARS
+   ============================================================ */
+
+function filterAcademicYears(
+    selectedYearId = null
+) {
+
+    const institutionId =
+        institutionSelect.value;
+
+    academicYearSelect.innerHTML = "";
+
+    const defaultOption =
+        document.createElement("option");
+
+    defaultOption.value = "";
+
+    defaultOption.textContent =
+        institutionId
+            ? "Select Academic Year"
+            : "Select Institution First";
+
+    academicYearSelect.appendChild(
+        defaultOption
+    );
+
+
+    if (!institutionId) {
+
+        academicYearSelect.disabled = true;
+
+        return;
+    }
+
+
+    academicYearSelect.disabled = false;
+
+
+    academicYearOptions.forEach(function(option) {
+
+        if (
+            option.dataset.institutionId ===
+            institutionId
+        ) {
+
+            const clonedOption =
+                option.cloneNode(true);
+
+            if (
+                selectedYearId &&
+                String(clonedOption.value) ===
+                String(selectedYearId)
+            ) {
+
+                clonedOption.selected = true;
+
+            }
+
+            academicYearSelect.appendChild(
+                clonedOption
+            );
+
+        }
+
+    });
+
+}
+
+
+/* ============================================================
+   GENERATE CODE
+   ============================================================ */
+
+function generateTermCode() {
+
+    const sequence =
+        parseInt(
+            sequenceInput.value,
+            10
+        );
+
+
+    if (
+        Number.isNaN(sequence) ||
+        sequence < 1
+    ) {
+
+        codeInput.value = "";
+
+        return;
+    }
+
+
+    const paddedSequence =
+        String(sequence).padStart(2, "0");
+
+
+    codeInput.value =
+        "TERM-" + paddedSequence;
+
+}
+
+
+/* ============================================================
+   INSTITUTION CHANGE
+   ============================================================ */
+
+institutionSelect.addEventListener(
+    "change",
+    function() {
+
+        /*
+         * When institution changes, the previous
+         * academic year may no longer belong to it.
+         */
+
+        filterAcademicYears(null);
+
+    }
+);
+
+
+/* ============================================================
+   SEQUENCE CHANGE
+   ============================================================ */
+
+sequenceInput.addEventListener(
+    "input",
+    generateTermCode
+);
+
+sequenceInput.addEventListener(
+    "change",
+    generateTermCode
+);
+
+
+/* ============================================================
+   DATE VALIDATION
+   ============================================================ */
+
+function validateDates() {
+
+    const startDate =
+        startDateInput.value;
+
+    const endDate =
+        endDateInput.value;
+
+
+    if (!startDate || !endDate) {
+
+        endDateInput.setCustomValidity("");
+
+        return true;
+    }
+
+
+    if (endDate <= startDate) {
+
+        endDateInput.setCustomValidity(
+            "End date must be after the start date."
+        );
+
+        return false;
+    }
+
+
+    endDateInput.setCustomValidity("");
+
+    return true;
+
+}
+
+
+startDateInput.addEventListener(
+    "change",
+    validateDates
+);
+
+endDateInput.addEventListener(
+    "change",
+    validateDates
+);
+
+
+/* ============================================================
+   FORM SUBMIT
+   ============================================================ */
+
+termEditForm.addEventListener(
+    "submit",
+    function(event) {
+
+        generateTermCode();
+
+        validateDates();
+
+
+        if (!termEditForm.checkValidity()) {
+
+            event.preventDefault();
+
+            termEditForm.reportValidity();
+
+            return;
+        }
+
+
+        /*
+         * Prevent double submission.
+         */
+
+        updateTermBtn.disabled = true;
+
+        updateTermBtn.innerHTML = `
+            <i data-feather="loader"></i>
+            Updating Term...
+        `;
+
+
+        if (typeof feather !== "undefined") {
+            feather.replace();
+        }
+
+    }
+);
+
+
+/* ============================================================
+   INITIALIZE
+   ============================================================ */
+
+(function initializeEditTerm() {
+
+    const initialInstitution =
+        institutionSelect.value;
+
+    const initialAcademicYear =
+        "{{ term.academic_year_id }}";
+
+
+    if (initialInstitution) {
+
+        filterAcademicYears(
+            initialAcademicYear
+        );
+
+    } else {
+
+        academicYearSelect.disabled = true;
+
+    }
+
+
+    generateTermCode();
+
+})();
+
+</script>
+
+{% endblock %}

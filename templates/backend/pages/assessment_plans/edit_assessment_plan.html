@@ -1,0 +1,2231 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   EDIT ASSESSMENT PLAN PAGE
+   ============================================================ */
+
+.edit-assessment-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 10px 0 40px;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.edit-assessment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.edit-assessment-header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.edit-assessment-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: #06245f;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    flex-shrink: 0;
+    box-shadow: 0 8px 20px rgba(6, 36, 95, 0.18);
+}
+
+.edit-assessment-header h1 {
+    margin: 0;
+    color: #06245f;
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.edit-assessment-header p {
+    margin: 5px 0 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.back-assessment-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    font-size: 13px;
+    font-weight: 700;
+    transition: .2s ease;
+}
+
+.back-assessment-btn:hover {
+    background: #e2e8f0;
+    color: #06245f;
+}
+
+/* ============================================================
+   GRID
+   ============================================================ */
+
+.edit-assessment-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 24px;
+    align-items: start;
+}
+
+.edit-assessment-main {
+    min-width: 0;
+}
+
+/* ============================================================
+   FORM CARD
+   ============================================================ */
+
+.form-card {
+    background: #fff;
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 20px rgba(15, 23, 42, 0.045);
+}
+
+.form-card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid #edf1f6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.form-card-header-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #eef4ff;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
+.form-card-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.form-card-header p {
+    margin: 3px 0 0;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.form-card-body {
+    padding: 22px;
+}
+
+/* ============================================================
+   FORM GRID
+   ============================================================ */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.form-group {
+    min-width: 0;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.required {
+    color: #dc2626;
+}
+
+.form-control,
+.form-select,
+.form-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #dbe3ec;
+    background: #fff;
+    color: #1e293b;
+    border-radius: 10px;
+    padding: 12px 13px;
+    font-size: 13px;
+    outline: none;
+    transition: .2s ease;
+    font-family: inherit;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-textarea:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.form-control[readonly] {
+    background: #f8fafc;
+    cursor: not-allowed;
+}
+
+.form-textarea {
+    min-height: 125px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.form-help {
+    margin-top: 6px;
+    color: #94a3b8;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   SELECT
+   ============================================================ */
+
+.form-select {
+    appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #64748b 50%),
+        linear-gradient(135deg, #64748b 50%, transparent 50%);
+    background-position:
+        calc(100% - 17px) 17px,
+        calc(100% - 12px) 17px;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 38px;
+}
+
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.config-box {
+    border: 1px solid #e4eaf2;
+    border-radius: 13px;
+    padding: 16px;
+    background: #fafcff;
+}
+
+.config-box-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.config-box-title i {
+    color: #06245f;
+}
+
+/* ============================================================
+   RADIO / SWITCH
+   ============================================================ */
+
+.radio-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.radio-option {
+    position: relative;
+}
+
+.radio-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.radio-option label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 12px;
+    border: 1px solid #dbe3ec;
+    border-radius: 9px;
+    background: #fff;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.radio-option label i {
+    font-size: 11px;
+}
+
+.radio-option input:checked + label {
+    background: #eef4ff;
+    color: #06245f;
+    border-color: #9bb5e5;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.edit-assessment-sidebar {
+    min-width: 0;
+    position: sticky;
+    top: 20px;
+}
+
+.sidebar-card {
+    background: #fff;
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    box-shadow: 0 5px 20px rgba(15, 23, 42, 0.045);
+}
+
+.sidebar-card-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid #edf1f6;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-card-header i {
+    color: #06245f;
+}
+
+.sidebar-card-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.sidebar-card-body {
+    padding: 18px;
+}
+
+/* ============================================================
+   PREVIEW
+   ============================================================ */
+
+.plan-preview {
+    border: 1px solid #e3eaf3;
+    border-radius: 13px;
+    overflow: hidden;
+}
+
+.plan-preview-top {
+    background: #06245f;
+    color: #fff;
+    padding: 18px;
+}
+
+.plan-preview-top small {
+    display: block;
+    opacity: .72;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-bottom: 5px;
+}
+
+.plan-preview-top strong {
+    display: block;
+    font-size: 16px;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.preview-code {
+    display: inline-flex;
+    margin-top: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,.13);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.plan-preview-body {
+    padding: 14px;
+}
+
+.preview-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid #edf1f5;
+}
+
+.preview-row:last-child {
+    border-bottom: 0;
+}
+
+.preview-row span:first-child {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.preview-row span:last-child {
+    color: #334155;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: right;
+}
+
+.preview-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.preview-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #32b73a;
+}
+
+/* ============================================================
+   INFORMATION
+   ============================================================ */
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.info-icon {
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+}
+
+.info-item p {
+    margin: 0;
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn {
+    width: 100%;
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 15px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+    transition: .2s ease;
+    box-sizing: border-box;
+}
+
+.btn-primary {
+    background: #06245f;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #041b49;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.btn:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.field-error {
+    display: none;
+    margin-top: 5px;
+    color: #dc2626;
+    font-size: 11px;
+}
+
+.form-control.invalid,
+.form-select.invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, .06);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+
+    .edit-assessment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-assessment-sidebar {
+        position: static;
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .edit-assessment-page {
+        padding-top: 5px;
+    }
+
+    .edit-assessment-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .edit-assessment-header h1 {
+        font-size: 21px;
+    }
+
+    .form-grid,
+    .config-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group.full {
+        grid-column: auto;
+    }
+
+    .form-card-body {
+        padding: 16px;
+    }
+
+    .form-card-header {
+        padding: 15px 16px;
+    }
+
+    .back-assessment-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+}
+
+</style>
+
+
+<div class="edit-assessment-page">
+
+    <!-- ======================================================
+         PAGE HEADER
+         ====================================================== -->
+
+    <div class="edit-assessment-header">
+
+        <div class="edit-assessment-header-left">
+
+            <div class="edit-assessment-header-icon">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+
+            <div>
+                <h1>Edit Assessment Plan</h1>
+                <p>Update and configure this assessment plan.</p>
+            </div>
+
+        </div>
+
+        <a
+            href="{{ url_for('main.all_assessment_plans') }}"
+            class="back-assessment-btn"
+        >
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to Assessment Plans
+        </a>
+
+    </div>
+
+
+    <!-- ======================================================
+         MAIN FORM
+         ====================================================== -->
+
+    <form
+        id="edit-assessment-form"
+        method="POST"
+        action="{{ url_for('main.edit_assessment_plan', assessment_plan_id=assessment_plan.id) }}"
+        autocomplete="off"
+        novalidate
+    >
+
+        <div class="edit-assessment-grid">
+
+            <!-- ==================================================
+                 LEFT
+                 ================================================== -->
+
+            <div class="edit-assessment-main">
+
+
+                <!-- ==================================================
+                     BASIC INFORMATION
+                     ================================================== -->
+
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div class="form-card-header-icon">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+
+                        <div>
+                            <h3>Basic Information</h3>
+                            <p>Update the main details of this assessment plan.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="form-card-body">
+
+                        <div class="form-grid">
+
+                            <!-- NAME -->
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Assessment Plan Name
+                                    <span class="required">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="name"
+                                    id="name"
+                                    class="form-control"
+                                    placeholder="e.g. Monthly Assessment"
+                                    maxlength="150"
+                                    required
+                                    value="{{ request.form.get('name', assessment_plan.name or '') }}"
+                                >
+
+                                <div class="form-help">
+                                    Enter a clear and recognizable name.
+                                </div>
+
+                            </div>
+
+
+                            <!-- CODE -->
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Plan Code
+                                    <span class="required">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="code"
+                                    id="code"
+                                    class="form-control"
+                                    placeholder="e.g. ASS-MON-01"
+                                    maxlength="50"
+                                    required
+                                    value="{{ request.form.get('code', assessment_plan.code or '') }}"
+                                >
+
+                                <div class="form-help">
+                                    The code must be unique within the institution.
+                                </div>
+
+                            </div>
+
+
+                            <!-- DESCRIPTION -->
+
+                            <div class="form-group full">
+
+                                <label class="form-label">
+                                    Description
+                                </label>
+
+                                <textarea
+                                    name="description"
+                                    id="description"
+                                    class="form-textarea"
+                                    placeholder="Enter additional information about this assessment plan..."
+                                >{{ request.form.get('description', assessment_plan.description or '') }}</textarea>
+
+                                <div class="form-help">
+                                    Optional notes, instructions, or additional information.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ASSIGNMENT
+                     ================================================== -->
+
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div class="form-card-header-icon">
+                            <i class="fa-solid fa-link"></i>
+                        </div>
+
+                        <div>
+                            <h3>Assignment</h3>
+                            <p>Choose where this assessment plan belongs.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="form-card-body">
+
+                        <div class="form-grid">
+
+                            <!-- INSTITUTION -->
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Institution
+                                    <span class="required">*</span>
+                                </label>
+
+                                <select
+                                    name="institution_id"
+                                    id="institution_id"
+                                    class="form-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select Institution
+                                    </option>
+
+                                    {% for institution in institutions %}
+
+                                        {% set current_institution_id = request.form.get(
+                                            'institution_id',
+                                            assessment_plan.institution_id|string
+                                        ) %}
+
+                                        <option
+                                            value="{{ institution.id }}"
+                                            {% if current_institution_id|string == institution.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ institution.name }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                                <div class="form-help">
+                                    Select the institution that owns this plan.
+                                </div>
+
+                            </div>
+
+
+                            <!-- PROGRAM -->
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Program
+                                    <span class="required">*</span>
+                                </label>
+
+                                <select
+                                    name="program_id"
+                                    id="program_id"
+                                    class="form-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select Program
+                                    </option>
+
+                                    {% for program in programs %}
+
+                                        {% set current_program_id = request.form.get(
+                                            'program_id',
+                                            assessment_plan.program_id|string
+                                        ) %}
+
+                                        <option
+                                            value="{{ program.id }}"
+                                            data-institution-id="{{ program.institution_id }}"
+                                            {% if current_program_id|string == program.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ program.name }}
+                                            {% if program.code %}
+                                                — {{ program.code }}
+                                            {% endif %}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                                <div class="form-help">
+                                    Programs are filtered by the selected institution.
+                                </div>
+
+                            </div>
+
+
+                            <!-- ACADEMIC YEAR -->
+
+                            <div class="form-group full">
+
+                                <label class="form-label">
+                                    Academic Year
+                                    <span class="required">*</span>
+                                </label>
+
+                                <select
+                                    name="academic_year_id"
+                                    id="academic_year_id"
+                                    class="form-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select Academic Year
+                                    </option>
+
+                                    {% for academic_year in academic_years %}
+
+                                        {% set current_year_id = request.form.get(
+                                            'academic_year_id',
+                                            assessment_plan.academic_year_id|string
+                                        ) %}
+
+                                        <option
+                                            value="{{ academic_year.id }}"
+                                            {% if academic_year.institution_id is defined %}
+                                                data-institution-id="{{ academic_year.institution_id }}"
+                                            {% endif %}
+                                            {% if current_year_id|string == academic_year.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {% if academic_year.name is defined %}
+                                                {{ academic_year.name }}
+                                            {% elif academic_year.year is defined %}
+                                                {{ academic_year.year }}
+                                            {% else %}
+                                                Academic Year {{ academic_year.id }}
+                                            {% endif %}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                                <div class="form-help">
+                                    Select the academic year for this assessment plan.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     SCHEDULE
+                     ================================================== -->
+
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div class="form-card-header-icon">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </div>
+
+                        <div>
+                            <h3>Assessment Schedule</h3>
+                            <p>Configure how frequently assessments are generated.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="form-card-body">
+
+                        <div class="form-grid">
+
+                            <!-- FREQUENCY -->
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Frequency
+                                    <span class="required">*</span>
+                                </label>
+
+                                {% set current_frequency = request.form.get(
+                                    'frequency',
+                                    assessment_plan.frequency or 'monthly'
+                                ) %}
+
+                                <select
+                                    name="frequency"
+                                    id="frequency"
+                                    class="form-select"
+                                    required
+                                >
+
+                                    {% set frequency_options = frequencies|default([
+                                        ('monthly', 'Monthly'),
+                                        ('bi_monthly', 'Bi-Monthly'),
+                                        ('quarterly', 'Quarterly'),
+                                        ('semester', 'Semester'),
+                                        ('custom', 'Custom')
+                                    ]) %}
+
+                                    {% for value, label in frequency_options %}
+
+                                        <option
+                                            value="{{ value }}"
+                                            {% if current_frequency == value %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ label }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                                <div class="form-help">
+                                    Choose the interval used to schedule assessments.
+                                </div>
+
+                            </div>
+
+
+                            <!-- INTERVAL -->
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Interval
+                                    <span class="required">*</span>
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="interval_months"
+                                    id="interval_months"
+                                    class="form-control"
+                                    min="1"
+                                    step="1"
+                                    required
+                                    value="{{ request.form.get('interval_months', assessment_plan.interval_months or 1) }}"
+                                >
+
+                                <div class="form-help" id="interval-help">
+                                    Number of months between assessments.
+                                </div>
+
+                            </div>
+
+
+                            <!-- START DATE -->
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Start Date
+                                    <span class="required">*</span>
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="start_date"
+                                    id="start_date"
+                                    class="form-control"
+                                    required
+                                    value="{% if request.form.get('start_date') %}{{ request.form.get('start_date') }}{% elif assessment_plan.start_date %}{{ assessment_plan.start_date.strftime('%Y-%m-%d') }}{% endif %}"
+                                >
+
+                                <div class="form-help">
+                                    The date when this assessment plan begins.
+                                </div>
+
+                            </div>
+
+
+                            <!-- END DATE -->
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    End Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="end_date"
+                                    id="end_date"
+                                    class="form-control"
+                                    value="{% if request.form.get('end_date') %}{{ request.form.get('end_date') }}{% elif assessment_plan.end_date %}{{ assessment_plan.end_date.strftime('%Y-%m-%d') }}{% endif %}"
+                                >
+
+                                <div class="form-help">
+                                    Optional. Leave empty if the plan has no fixed end date.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     CONFIGURATION
+                     ================================================== -->
+
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div class="form-card-header-icon">
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+
+                        <div>
+                            <h3>Configuration</h3>
+                            <p>Control automatic generation and plan status.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="form-card-body">
+
+                        <div class="config-grid">
+
+                            <!-- AUTO GENERATE -->
+
+                            <div class="config-box">
+
+                                <div class="config-box-title">
+                                    <i class="fa-solid fa-robot"></i>
+                                    Automatic Generation
+                                </div>
+
+                                {% set current_auto_generate = request.form.get(
+                                    'auto_generate',
+                                    '1' if assessment_plan.auto_generate else '0'
+                                ) %}
+
+                                <div class="radio-options">
+
+                                    <div class="radio-option">
+
+                                        <input
+                                            type="radio"
+                                            name="auto_generate"
+                                            id="auto_yes"
+                                            value="1"
+                                            {% if current_auto_generate in ['1', 'true', 'True', 'yes', 'on'] %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <label for="auto_yes">
+                                            <i class="fa-solid fa-check"></i>
+                                            Yes
+                                        </label>
+
+                                    </div>
+
+
+                                    <div class="radio-option">
+
+                                        <input
+                                            type="radio"
+                                            name="auto_generate"
+                                            id="auto_no"
+                                            value="0"
+                                            {% if current_auto_generate in ['0', 'false', 'False', 'no', 'off'] %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <label for="auto_no">
+                                            <i class="fa-solid fa-ban"></i>
+                                            No
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="form-help">
+                                    Automatically generate assessments according to the schedule.
+                                </div>
+
+                            </div>
+
+
+                            <!-- STATUS -->
+
+                            <div class="config-box">
+
+                                <div class="config-box-title">
+                                    <i class="fa-solid fa-circle-dot"></i>
+                                    Plan Status
+                                </div>
+
+                                {% set current_status = request.form.get(
+                                    'status',
+                                    assessment_plan.status or 'active'
+                                ) %}
+
+                                <div class="radio-options">
+
+                                    <div class="radio-option">
+
+                                        <input
+                                            type="radio"
+                                            name="status"
+                                            id="status_active"
+                                            value="active"
+                                            {% if current_status == 'active' %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <label for="status_active">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                            Active
+                                        </label>
+
+                                    </div>
+
+
+                                    <div class="radio-option">
+
+                                        <input
+                                            type="radio"
+                                            name="status"
+                                            id="status_inactive"
+                                            value="inactive"
+                                            {% if current_status == 'inactive' %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <label for="status_inactive">
+                                            <i class="fa-solid fa-pause"></i>
+                                            Inactive
+                                        </label>
+
+                                    </div>
+
+
+                                    <div class="radio-option">
+
+                                        <input
+                                            type="radio"
+                                            name="status"
+                                            id="status_completed"
+                                            value="completed"
+                                            {% if current_status == 'completed' %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <label for="status_completed">
+                                            <i class="fa-solid fa-flag-checkered"></i>
+                                            Completed
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ==================================================
+                 RIGHT SIDEBAR
+                 ================================================== -->
+
+            <aside class="edit-assessment-sidebar">
+
+
+                <!-- ==================================================
+                     LIVE PREVIEW
+                     ================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <i class="fa-solid fa-eye"></i>
+
+                        <h3>Plan Preview</h3>
+
+                    </div>
+
+                    <div class="sidebar-card-body">
+
+                        <div class="plan-preview">
+
+                            <div class="plan-preview-top">
+
+                                <small>Assessment Plan</small>
+
+                                <strong id="preview-name">
+                                    {{ assessment_plan.name or 'Assessment Plan' }}
+                                </strong>
+
+                                <span class="preview-code" id="preview-code">
+                                    {{ assessment_plan.code or 'PLAN-CODE' }}
+                                </span>
+
+                            </div>
+
+                            <div class="plan-preview-body">
+
+                                <div class="preview-row">
+                                    <span>Frequency</span>
+                                    <span id="preview-frequency">Monthly</span>
+                                </div>
+
+                                <div class="preview-row">
+                                    <span>Interval</span>
+                                    <span id="preview-interval">
+                                        {{ assessment_plan.interval_months or 1 }} month(s)
+                                    </span>
+                                </div>
+
+                                <div class="preview-row">
+                                    <span>Start</span>
+                                    <span id="preview-start">—</span>
+                                </div>
+
+                                <div class="preview-row">
+                                    <span>End</span>
+                                    <span id="preview-end">—</span>
+                                </div>
+
+                                <div class="preview-row">
+                                    <span>Auto Generate</span>
+                                    <span id="preview-auto">Yes</span>
+                                </div>
+
+                                <div class="preview-row">
+                                    <span>Status</span>
+
+                                    <span class="preview-status">
+
+                                        <span
+                                            class="preview-status-dot"
+                                            id="preview-status-dot"
+                                        ></span>
+
+                                        <span id="preview-status">
+                                            Active
+                                        </span>
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     IMPORTANT INFORMATION
+                     ================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <h3>Important Information</h3>
+
+                    </div>
+
+                    <div class="sidebar-card-body">
+
+                        <div class="info-list">
+
+                            <div class="info-item">
+
+                                <div class="info-icon">
+                                    <i class="fa-solid fa-code"></i>
+                                </div>
+
+                                <p>
+                                    The assessment plan code must be unique within its institution.
+                                </p>
+
+                            </div>
+
+
+                            <div class="info-item">
+
+                                <div class="info-icon">
+                                    <i class="fa-solid fa-calendar"></i>
+                                </div>
+
+                                <p>
+                                    Monthly uses 1 month, bi-monthly uses 2 months,
+                                    quarterly uses 3 months, and semester uses 6 months.
+                                </p>
+
+                            </div>
+
+
+                            <div class="info-item">
+
+                                <div class="info-icon">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                </div>
+
+                                <p>
+                                    Custom frequency allows you to define your own interval.
+                                </p>
+
+                            </div>
+
+
+                            <div class="info-item">
+
+                                <div class="info-icon">
+                                    <i class="fa-solid fa-robot"></i>
+                                </div>
+
+                                <p>
+                                    Enable automatic generation when assessments should be
+                                    generated according to the configured schedule.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ACTIONS
+                     ================================================== -->
+
+                <div class="sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <i class="fa-solid fa-bolt"></i>
+
+                        <h3>Actions</h3>
+
+                    </div>
+
+                    <div class="sidebar-card-body">
+
+                        <div class="action-buttons">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                id="submit-btn"
+                            >
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span id="submit-text">
+                                    Update Assessment Plan
+                                </span>
+                            </button>
+
+                            <a
+                                href="{{ url_for('main.all_assessment_plans') }}"
+                                class="btn btn-secondary"
+                            >
+                                <i class="fa-solid fa-xmark"></i>
+                                Cancel
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </aside>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   EDIT ASSESSMENT PLAN
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("edit-assessment-form");
+
+    const institutionSelect = document.getElementById("institution_id");
+    const programSelect = document.getElementById("program_id");
+    const academicYearSelect = document.getElementById("academic_year_id");
+
+    const nameInput = document.getElementById("name");
+    const codeInput = document.getElementById("code");
+
+    const frequencySelect = document.getElementById("frequency");
+    const intervalInput = document.getElementById("interval_months");
+
+    const startDateInput = document.getElementById("start_date");
+    const endDateInput = document.getElementById("end_date");
+
+    const submitBtn = document.getElementById("submit-btn");
+    const submitText = document.getElementById("submit-text");
+
+
+    /* ========================================================
+       ORIGINAL SELECTED VALUES
+       ======================================================== */
+
+    const initialProgramId = "{{ request.form.get('program_id', assessment_plan.program_id|string) }}";
+    const initialAcademicYearId = "{{ request.form.get('academic_year_id', assessment_plan.academic_year_id|string) }}";
+
+
+    /* ========================================================
+       PROGRAM DATA
+       ======================================================== */
+
+    const programs = [
+
+        {% for program in programs %}
+
+        {
+            id: "{{ program.id }}",
+            name: {{ program.name|tojson }},
+            code: {{ (program.code or '')|tojson }},
+            institution_id: "{{ program.institution_id }}"
+        }
+
+        {% if not loop.last %},{% endif %}
+
+        {% endfor %}
+
+    ];
+
+
+    /* ========================================================
+       ACADEMIC YEAR DATA
+       ======================================================== */
+
+    const academicYears = [
+
+        {% for academic_year in academic_years %}
+
+        {
+            id: "{{ academic_year.id }}",
+
+            name:
+                {% if academic_year.name is defined %}
+                    {{ academic_year.name|tojson }}
+                {% elif academic_year.year is defined %}
+                    {{ academic_year.year|tojson }}
+                {% else %}
+                    {{ ("Academic Year " ~ academic_year.id)|tojson }}
+                {% endif %},
+
+            institution_id:
+                {% if academic_year.institution_id is defined %}
+                    "{{ academic_year.institution_id }}"
+                {% else %}
+                    ""
+                {% endif %}
+        }
+
+        {% if not loop.last %},{% endif %}
+
+        {% endfor %}
+
+    ];
+
+
+    /* ========================================================
+       FILTER PROGRAMS
+       ======================================================== */
+
+    function filterPrograms(preserveValue = true) {
+
+        const institutionId = institutionSelect.value;
+
+        const currentValue =
+            preserveValue
+                ? programSelect.value || initialProgramId
+                : "";
+
+        programSelect.innerHTML = "";
+
+        const defaultOption = document.createElement("option");
+
+        defaultOption.value = "";
+        defaultOption.textContent = institutionId
+            ? "Select Program"
+            : "Select Institution First";
+
+        programSelect.appendChild(defaultOption);
+
+        if (!institutionId) {
+
+            programSelect.disabled = true;
+
+            return;
+        }
+
+        programSelect.disabled = false;
+
+        const filteredPrograms = programs.filter(function (program) {
+
+            return String(program.institution_id) === String(institutionId);
+
+        });
+
+
+        filteredPrograms.forEach(function (program) {
+
+            const option = document.createElement("option");
+
+            option.value = program.id;
+
+            option.textContent =
+                program.name +
+                (program.code ? " — " + program.code : "");
+
+            if (String(program.id) === String(currentValue)) {
+                option.selected = true;
+            }
+
+            programSelect.appendChild(option);
+
+        });
+
+    }
+
+
+    /* ========================================================
+       FILTER ACADEMIC YEARS
+       ======================================================== */
+
+    function filterAcademicYears(preserveValue = true) {
+
+        const institutionId = institutionSelect.value;
+
+        const currentValue =
+            preserveValue
+                ? academicYearSelect.value || initialAcademicYearId
+                : "";
+
+        academicYearSelect.innerHTML = "";
+
+        const defaultOption = document.createElement("option");
+
+        defaultOption.value = "";
+        defaultOption.textContent = institutionId
+            ? "Select Academic Year"
+            : "Select Institution First";
+
+        academicYearSelect.appendChild(defaultOption);
+
+        if (!institutionId) {
+
+            academicYearSelect.disabled = true;
+
+            return;
+        }
+
+        academicYearSelect.disabled = false;
+
+
+        const filteredYears = academicYears.filter(function (year) {
+
+            /*
+             * If academic year has no institution_id,
+             * treat it as a global academic year.
+             */
+
+            if (!year.institution_id) {
+                return true;
+            }
+
+            return String(year.institution_id) === String(institutionId);
+
+        });
+
+
+        filteredYears.forEach(function (year) {
+
+            const option = document.createElement("option");
+
+            option.value = year.id;
+            option.textContent = year.name;
+
+            if (String(year.id) === String(currentValue)) {
+                option.selected = true;
+            }
+
+            academicYearSelect.appendChild(option);
+
+        });
+
+    }
+
+
+    /* ========================================================
+       FREQUENCY / INTERVAL
+       ======================================================== */
+
+    function updateFrequency() {
+
+        const frequency = frequencySelect.value;
+
+        const fixedIntervals = {
+
+            monthly: 1,
+            bi_monthly: 2,
+            quarterly: 3,
+            semester: 6
+
+        };
+
+
+        if (Object.prototype.hasOwnProperty.call(fixedIntervals, frequency)) {
+
+            intervalInput.value = fixedIntervals[frequency];
+
+            intervalInput.readOnly = true;
+
+            intervalInput.style.background = "#f8fafc";
+
+        } else {
+
+            intervalInput.readOnly = false;
+
+            intervalInput.style.background = "#fff";
+
+            if (!intervalInput.value || Number(intervalInput.value) <= 0) {
+                intervalInput.value = 1;
+            }
+
+        }
+
+
+        updatePreview();
+
+    }
+
+
+    /* ========================================================
+       DATE MIN
+       ======================================================== */
+
+    function updateEndDateMin() {
+
+        if (startDateInput.value) {
+
+            endDateInput.min = startDateInput.value;
+
+            if (
+                endDateInput.value &&
+                endDateInput.value < startDateInput.value
+            ) {
+
+                endDateInput.value = "";
+
+            }
+
+        } else {
+
+            endDateInput.removeAttribute("min");
+
+        }
+
+        updatePreview();
+
+    }
+
+
+    /* ========================================================
+       FORMAT DATE
+       ======================================================== */
+
+    function formatDate(value) {
+
+        if (!value) {
+            return "—";
+        }
+
+        const date = new Date(value + "T00:00:00");
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return date.toLocaleDateString(
+            undefined,
+            {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FREQUENCY LABEL
+       ======================================================== */
+
+    function getFrequencyLabel(value) {
+
+        const labels = {
+
+            monthly: "Monthly",
+            bi_monthly: "Bi-Monthly",
+            quarterly: "Quarterly",
+            semester: "Semester",
+            custom: "Custom"
+
+        };
+
+        return labels[value] || value || "—";
+
+    }
+
+
+    /* ========================================================
+       UPDATE PREVIEW
+       ======================================================== */
+
+    function updatePreview() {
+
+        const previewName =
+            document.getElementById("preview-name");
+
+        const previewCode =
+            document.getElementById("preview-code");
+
+        const previewFrequency =
+            document.getElementById("preview-frequency");
+
+        const previewInterval =
+            document.getElementById("preview-interval");
+
+        const previewStart =
+            document.getElementById("preview-start");
+
+        const previewEnd =
+            document.getElementById("preview-end");
+
+        const previewAuto =
+            document.getElementById("preview-auto");
+
+        const previewStatus =
+            document.getElementById("preview-status");
+
+        const previewStatusDot =
+            document.getElementById("preview-status-dot");
+
+
+        previewName.textContent =
+            nameInput.value.trim() || "Assessment Plan";
+
+
+        previewCode.textContent =
+            codeInput.value.trim() || "PLAN-CODE";
+
+
+        previewFrequency.textContent =
+            getFrequencyLabel(frequencySelect.value);
+
+
+        previewInterval.textContent =
+            (intervalInput.value || "0") + " month(s)";
+
+
+        previewStart.textContent =
+            formatDate(startDateInput.value);
+
+
+        previewEnd.textContent =
+            formatDate(endDateInput.value);
+
+
+        const autoYes =
+            document.getElementById("auto_yes");
+
+        previewAuto.textContent =
+            autoYes && autoYes.checked
+                ? "Yes"
+                : "No";
+
+
+        const selectedStatus =
+            document.querySelector(
+                'input[name="status"]:checked'
+            );
+
+        const status =
+            selectedStatus
+                ? selectedStatus.value
+                : "active";
+
+
+        previewStatus.textContent =
+            status.charAt(0).toUpperCase() +
+            status.slice(1);
+
+
+        if (status === "active") {
+
+            previewStatusDot.style.background =
+                "#32b73a";
+
+        } else if (status === "inactive") {
+
+            previewStatusDot.style.background =
+                "#f59e0b";
+
+        } else {
+
+            previewStatusDot.style.background =
+                "#64748b";
+
+        }
+
+    }
+
+
+    /* ========================================================
+       VALIDATION
+       ======================================================== */
+
+    function clearInvalid() {
+
+        document
+            .querySelectorAll(".invalid")
+            .forEach(function (element) {
+
+                element.classList.remove("invalid");
+
+            });
+
+    }
+
+
+    function markInvalid(element) {
+
+        if (!element) {
+            return;
+        }
+
+        element.classList.add("invalid");
+
+        element.focus();
+
+    }
+
+
+    function validateForm() {
+
+        clearInvalid();
+
+
+        if (!institutionSelect.value) {
+
+            alert("Please select an institution.");
+
+            markInvalid(institutionSelect);
+
+            return false;
+
+        }
+
+
+        if (!programSelect.value) {
+
+            alert("Please select a program.");
+
+            markInvalid(programSelect);
+
+            return false;
+
+        }
+
+
+        if (!academicYearSelect.value) {
+
+            alert("Please select an academic year.");
+
+            markInvalid(academicYearSelect);
+
+            return false;
+
+        }
+
+
+        if (!nameInput.value.trim()) {
+
+            alert("Please enter the assessment plan name.");
+
+            markInvalid(nameInput);
+
+            return false;
+
+        }
+
+
+        if (!codeInput.value.trim()) {
+
+            alert("Please enter the assessment plan code.");
+
+            markInvalid(codeInput);
+
+            return false;
+
+        }
+
+
+        const interval =
+            parseInt(intervalInput.value, 10);
+
+
+        if (
+            !interval ||
+            interval < 1
+        ) {
+
+            alert("Interval months must be greater than 0.");
+
+            markInvalid(intervalInput);
+
+            return false;
+
+        }
+
+
+        if (!startDateInput.value) {
+
+            alert("Please select a start date.");
+
+            markInvalid(startDateInput);
+
+            return false;
+
+        }
+
+
+        if (
+            endDateInput.value &&
+            endDateInput.value < startDateInput.value
+        ) {
+
+            alert("End date cannot be earlier than the start date.");
+
+            markInvalid(endDateInput);
+
+            return false;
+
+        }
+
+
+        return true;
+
+    }
+
+
+    /* ========================================================
+       EVENTS
+       ======================================================== */
+
+    institutionSelect.addEventListener(
+        "change",
+        function () {
+
+            filterPrograms(false);
+            filterAcademicYears(false);
+
+            updatePreview();
+
+        }
+    );
+
+
+    programSelect.addEventListener(
+        "change",
+        updatePreview
+    );
+
+
+    academicYearSelect.addEventListener(
+        "change",
+        updatePreview
+    );
+
+
+    frequencySelect.addEventListener(
+        "change",
+        updateFrequency
+    );
+
+
+    intervalInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+
+    nameInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+
+    codeInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+
+    startDateInput.addEventListener(
+        "change",
+        updateEndDateMin
+    );
+
+
+    endDateInput.addEventListener(
+        "change",
+        updatePreview
+    );
+
+
+    document
+        .querySelectorAll('input[name="auto_generate"]')
+        .forEach(function (input) {
+
+            input.addEventListener(
+                "change",
+                updatePreview
+            );
+
+        });
+
+
+    document
+        .querySelectorAll('input[name="status"]')
+        .forEach(function (input) {
+
+            input.addEventListener(
+                "change",
+                updatePreview
+            );
+
+        });
+
+
+    /* ========================================================
+       SUBMIT
+       ======================================================== */
+
+    form.addEventListener(
+        "submit",
+        function (event) {
+
+            if (!validateForm()) {
+
+                event.preventDefault();
+
+                return;
+
+            }
+
+
+            submitBtn.disabled = true;
+
+            submitText.textContent =
+                "Updating Assessment Plan...";
+
+
+            const icon =
+                submitBtn.querySelector("i");
+
+            if (icon) {
+
+                icon.className =
+                    "fa-solid fa-spinner fa-spin";
+
+            }
+
+        }
+    );
+
+
+    /* ========================================================
+       INITIALIZE
+       ======================================================== */
+
+    filterPrograms(true);
+
+    filterAcademicYears(true);
+
+    updateFrequency();
+
+    updateEndDateMin();
+
+    updatePreview();
+
+});
+
+</script>
+
+{% endblock %}

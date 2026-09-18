@@ -1,0 +1,2107 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* =========================================================
+   EDIT BRANCH PAGE
+   ========================================================= */
+
+.edit-branch-page {
+    width: 100%;
+    max-width: 1150px;
+    margin: 0 auto;
+    padding: 10px 0 40px;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.branch-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.branch-page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.branch-header-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.branch-page-header h1 {
+    margin: 0;
+    color: #06245f;
+    font-size: 27px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.branch-page-header p {
+    margin: 6px 0 0;
+    color: #718096;
+    font-size: 13px;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 41px;
+    padding: 0 15px;
+    border: 1px solid #dce3ee;
+    border-radius: 9px;
+    background: #fff;
+    color: #475467;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    transition: .2s ease;
+}
+
+.back-button:hover {
+    border-color: #06245f;
+    color: #06245f;
+    background: #f8faff;
+}
+
+
+/* =========================================================
+   FORM CARD
+   ========================================================= */
+
+.branch-form-card {
+    background: #fff;
+    border: 1px solid #e6ebf2;
+    border-radius: 16px;
+    box-shadow: 0 5px 22px rgba(6, 36, 95, .055);
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   SECTION
+   ========================================================= */
+
+.branch-section {
+    padding: 25px;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.branch-section:last-of-type {
+    border-bottom: 0;
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin-bottom: 22px;
+}
+
+.section-heading-icon {
+    width: 39px;
+    height: 39px;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.section-heading h2 {
+    margin: 0;
+    color: #1a202c;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.section-heading p {
+    margin: 4px 0 0;
+    color: #98a2b3;
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   FORM GRID
+   ========================================================= */
+
+.branch-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.form-field {
+    min-width: 0;
+}
+
+.form-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-field label {
+    display: block;
+    margin: 0 0 7px;
+    color: #344054;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.required {
+    color: #d92d20;
+    margin-left: 2px;
+}
+
+.form-control {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #dce3ee;
+    border-radius: 9px;
+    background: #fff;
+    color: #1a202c;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+}
+
+.form-control:hover {
+    border-color: #c8d2e0;
+}
+
+.form-control:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.form-control::placeholder {
+    color: #a0aec0;
+}
+
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+.form-help {
+    display: block;
+    margin-top: 6px;
+    color: #98a2b3;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.status-options {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.status-option {
+    position: relative;
+}
+
+.status-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.status-option label {
+    min-width: 105px;
+    height: 42px;
+    margin: 0;
+    padding: 0 14px;
+    border: 1px solid #dce3ee;
+    border-radius: 9px;
+    background: #fff;
+    color: #475467;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: .2s ease;
+    box-sizing: border-box;
+}
+
+.status-option label:hover {
+    border-color: #b8c4d5;
+}
+
+.status-option input:checked + label {
+    border-color: #06245f;
+    background: #eef3fb;
+    color: #06245f;
+    box-shadow: 0 0 0 2px rgba(6, 36, 95, .04);
+}
+
+
+/* =========================================================
+   BRANDING
+   ========================================================= */
+
+.branding-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 17px;
+}
+
+.branding-card {
+    border: 1px solid #e3e8ef;
+    border-radius: 12px;
+    background: #fbfcfe;
+    padding: 15px;
+}
+
+.branding-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.branding-card-title-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.branding-card-title h3 {
+    margin: 0;
+    color: #344054;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   FILE UPLOAD
+   ========================================================= */
+
+.file-upload-box {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 11px;
+    transition:
+        border-color .2s ease,
+        background .2s ease;
+}
+
+.file-upload-box:hover {
+    border-color: #06245f;
+    background: #f8faff;
+}
+
+.file-upload-box.dragover {
+    border-color: #06245f;
+    background: #eef3fb;
+}
+
+.file-upload-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.file-upload-content {
+    text-align: center;
+    color: #98a2b3;
+    padding: 15px;
+    pointer-events: none;
+}
+
+.file-upload-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+}
+
+.file-upload-title {
+    display: block;
+    color: #475467;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.file-upload-subtitle {
+    display: block;
+    margin-top: 4px;
+    color: #98a2b3;
+    font-size: 9px;
+}
+
+.image-preview {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.image-preview-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 29px;
+    height: 29px;
+    border: 0;
+    border-radius: 7px;
+    background: rgba(255,255,255,.95);
+    color: #b42318;
+    box-shadow: 0 2px 8px rgba(0,0,0,.10);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.image-preview-remove:hover {
+    background: #fef3f2;
+}
+
+.file-name {
+    display: block;
+    margin-top: 7px;
+    color: #667085;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-help {
+    display: block;
+    margin-top: 5px;
+    color: #98a2b3;
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   CURRENT IMAGE LABEL
+   ========================================================= */
+
+.current-image-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #ecfdf3;
+    color: #027a48;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.current-image-label i {
+    width: 11px;
+    height: 11px;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.form-footer {
+    padding: 20px 25px;
+    background: #fbfcfe;
+    border-top: 1px solid #edf1f6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.footer-note {
+    color: #98a2b3;
+    font-size: 11px;
+}
+
+.footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.btn {
+    min-height: 43px;
+    padding: 0 18px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: .2s ease;
+}
+
+.btn-cancel {
+    border: 1px solid #dce3ee;
+    background: #fff;
+    color: #475467;
+}
+
+.btn-cancel:hover {
+    border-color: #b8c4d5;
+    background: #f8fafc;
+}
+
+.btn-update {
+    border: 1px solid #06245f;
+    background: #06245f;
+    color: #fff;
+}
+
+.btn-update:hover {
+    background: #041b49;
+    border-color: #041b49;
+    transform: translateY(-1px);
+}
+
+.btn-update:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .branding-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 720px) {
+
+    .branch-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-field.full-width {
+        grid-column: auto;
+    }
+
+    .branch-section {
+        padding: 20px;
+    }
+
+    .form-footer {
+        padding: 18px 20px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .footer-actions {
+        width: 100%;
+    }
+
+    .footer-actions .btn {
+        flex: 1;
+    }
+
+}
+
+@media (max-width: 520px) {
+
+    .branch-page-header {
+        align-items: stretch;
+    }
+
+    .branch-page-header-left {
+        align-items: flex-start;
+    }
+
+    .branch-page-header h1 {
+        font-size: 23px;
+    }
+
+    .back-button {
+        width: 100%;
+    }
+
+    .status-options {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .status-option,
+    .status-option label {
+        width: 100%;
+    }
+
+    .footer-actions {
+        flex-direction: column;
+    }
+
+    .footer-actions .btn {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+
+<div class="edit-branch-page">
+
+
+    <!-- =====================================================
+         PAGE HEADER
+         ====================================================== -->
+
+    <div class="branch-page-header">
+
+        <div class="branch-page-header-left">
+
+            <div class="branch-header-icon">
+                <i data-feather="git-branch"></i>
+            </div>
+
+            <div>
+
+                <h1>Edit Branch</h1>
+
+                <p>
+                    Update branch information and branding images.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('main.view_branch', branch_id=branch.id) }}"
+            class="back-button"
+        >
+            <i data-feather="arrow-left"></i>
+            Back to Branch
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         FORM
+         ====================================================== -->
+
+    <form
+        method="POST"
+        action="{{ url_for('main.edit_branch', branch_id=branch.id) }}"
+        class="branch-form-card"
+        enctype="multipart/form-data"
+        autocomplete="off"
+        id="editBranchForm"
+    >
+
+        {% if csrf_token is defined %}
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+        {% endif %}
+
+
+        <!-- =================================================
+             BASIC INFORMATION
+             ================================================== -->
+
+        <div class="branch-section">
+
+            <div class="section-heading">
+
+                <div class="section-heading-icon">
+                    <i data-feather="info"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Basic Information
+                    </h2>
+
+                    <p>
+                        Branch identity and institution assignment
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="branch-form-grid">
+
+
+                <!-- Institution -->
+
+                <div class="form-field">
+
+                    <label for="institution_id">
+
+                        Institution
+
+                        <span class="required">*</span>
+
+                    </label>
+
+
+                    <select
+                        id="institution_id"
+                        name="institution_id"
+                        class="form-control"
+                        required
+                    >
+
+                        <option value="">
+                            Select Institution
+                        </option>
+
+
+                        {% for institution in institutions %}
+
+                            <option
+                                value="{{ institution.id }}"
+                                {% if branch.institution_id|string == institution.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ institution.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+
+                    <small class="form-help">
+                        Select the institution that owns this branch.
+                    </small>
+
+                </div>
+
+
+                <!-- Branch Name -->
+
+                <div class="form-field">
+
+                    <label for="name">
+
+                        Branch Name
+
+                        <span class="required">*</span>
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        class="form-control"
+                        maxlength="150"
+                        value="{{ branch.name or '' }}"
+                        placeholder="e.g. Main Branch"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Branch Code -->
+
+                <div class="form-field">
+
+                    <label for="code">
+
+                        Branch Code
+
+                        <span class="required">*</span>
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="code"
+                        name="code"
+                        class="form-control"
+                        maxlength="50"
+                        value="{{ branch.code or '' }}"
+                        placeholder="e.g. BR001"
+                        required
+                    >
+
+
+                    <small class="form-help">
+                        Branch code must be unique.
+                    </small>
+
+                </div>
+
+
+                <!-- Status -->
+
+                <div class="form-field">
+
+                    <label>
+                        Status
+                    </label>
+
+
+                    <div class="status-options">
+
+
+                        <div class="status-option">
+
+                            <input
+                                type="radio"
+                                id="status_active"
+                                name="status"
+                                value="active"
+                                {% if branch.status == 'active' %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <label for="status_active">
+                                Active
+                            </label>
+
+                        </div>
+
+
+                        <div class="status-option">
+
+                            <input
+                                type="radio"
+                                id="status_inactive"
+                                name="status"
+                                value="inactive"
+                                {% if branch.status == 'inactive' %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <label for="status_inactive">
+                                Inactive
+                            </label>
+
+                        </div>
+
+
+                        <div class="status-option">
+
+                            <input
+                                type="radio"
+                                id="status_suspended"
+                                name="status"
+                                value="suspended"
+                                {% if branch.status == 'suspended' %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <label for="status_suspended">
+                                Suspended
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CONTACT INFORMATION
+             ================================================== -->
+
+        <div class="branch-section">
+
+            <div class="section-heading">
+
+                <div class="section-heading-icon">
+                    <i data-feather="phone"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Contact Information
+                    </h2>
+
+                    <p>
+                        Branch phone, email and location
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="branch-form-grid">
+
+
+                <!-- Phone -->
+
+                <div class="form-field">
+
+                    <label for="phone">
+                        Phone
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="phone"
+                        name="phone"
+                        class="form-control"
+                        maxlength="30"
+                        value="{{ branch.phone or '' }}"
+                        placeholder="+252 61 XXX XXXX"
+                    >
+
+                </div>
+
+
+                <!-- Email -->
+
+                <div class="form-field">
+
+                    <label for="email">
+                        Email
+                    </label>
+
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-control"
+                        maxlength="150"
+                        value="{{ branch.email or '' }}"
+                        placeholder="branch@example.com"
+                    >
+
+                </div>
+
+
+                <!-- City -->
+
+                <div class="form-field">
+
+                    <label for="city">
+                        City
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        class="form-control"
+                        maxlength="100"
+                        value="{{ branch.city or '' }}"
+                        placeholder="Mogadishu"
+                    >
+
+                </div>
+
+
+                <!-- Address -->
+
+                <div class="form-field">
+
+                    <label for="address">
+                        Address
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        class="form-control"
+                        maxlength="255"
+                        value="{{ branch.address or '' }}"
+                        placeholder="Branch street / address"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CLOUDINARY BRANDING
+             ================================================== -->
+
+        <div class="branch-section">
+
+            <div class="section-heading">
+
+                <div class="section-heading-icon">
+                    <i data-feather="cloud"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Branch Branding
+                    </h2>
+
+                    <p>
+                        Replace existing Cloudinary images when necessary.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="branding-grid">
+
+
+                <!-- =================================================
+                     MAIN LOGO
+                     ================================================== -->
+
+                <div class="branding-card">
+
+                    <div class="branding-card-title">
+
+                        <div class="branding-card-title-icon">
+                            <i data-feather="image"></i>
+                        </div>
+
+                        <h3>
+                            Main Logo
+                        </h3>
+
+                    </div>
+
+
+                    {% if branch.main_logo %}
+
+                        <div class="current-image-label">
+
+                            <i data-feather="check-circle"></i>
+
+                            Current Cloudinary Image
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div
+                        class="file-upload-box"
+                        id="mainLogoDropZone"
+                    >
+
+
+                        <input
+                            type="file"
+                            id="main_logo"
+                            name="main_logo"
+                            class="file-upload-input"
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                            onchange="previewBranchFile(
+                                this,
+                                'mainLogoPreview',
+                                'mainLogoUploadContent',
+                                'mainLogoFileName',
+                                'mainLogoRemove'
+                            )"
+                        >
+
+
+                        {% if branch.main_logo %}
+
+                            <div
+                                class="image-preview"
+                                id="mainLogoPreview"
+                                style="display:flex;"
+                            >
+
+                                <img
+                                    src="{{ branch.main_logo }}"
+                                    alt="Current Main Logo"
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer"
+                                    onerror="
+                                        this.style.display='none';
+                                        document.getElementById('mainLogoCurrentFallback').style.display='flex';
+                                    "
+                                >
+
+                                <div
+                                    id="mainLogoCurrentFallback"
+                                    class="file-upload-content"
+                                    style="display:none;"
+                                >
+
+                                    <div class="file-upload-icon">
+                                        <i data-feather="image"></i>
+                                    </div>
+
+                                    <span class="file-upload-title">
+                                        Image unavailable
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <div
+                                class="image-preview"
+                                id="mainLogoPreview"
+                            >
+
+                                <img alt="Main Logo Preview">
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div
+                            class="file-upload-content"
+                            id="mainLogoUploadContent"
+                            {% if branch.main_logo %}
+                                style="display:none;"
+                            {% endif %}
+                        >
+
+                            <div class="file-upload-icon">
+                                <i data-feather="upload-cloud"></i>
+                            </div>
+
+                            <span class="file-upload-title">
+                                Click to replace main logo
+                            </span>
+
+                            <span class="file-upload-subtitle">
+                                PNG, JPG, WEBP or GIF
+                            </span>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="image-preview-remove"
+                            id="mainLogoRemove"
+                            onclick="removeBranchFile(
+                                'main_logo',
+                                'mainLogoPreview',
+                                'mainLogoUploadContent',
+                                'mainLogoFileName',
+                                'mainLogoRemove'
+                            )"
+                            aria-label="Remove selected main logo"
+                        >
+                            <i data-feather="x"></i>
+                        </button>
+
+                    </div>
+
+
+                    <span
+                        class="file-name"
+                        id="mainLogoFileName"
+                    >
+                        {% if branch.main_logo %}
+                            Existing image will remain unless replaced.
+                        {% else %}
+                            No file selected
+                        {% endif %}
+                    </span>
+
+
+                    <small class="file-help">
+                        Leave empty to keep the current image.
+                    </small>
+
+                </div>
+
+
+                <!-- =================================================
+                     SUB LOGO
+                     ================================================== -->
+
+                <div class="branding-card">
+
+                    <div class="branding-card-title">
+
+                        <div class="branding-card-title-icon">
+                            <i data-feather="layers"></i>
+                        </div>
+
+                        <h3>
+                            Sub Logo
+                        </h3>
+
+                    </div>
+
+
+                    {% if branch.sub_logo %}
+
+                        <div class="current-image-label">
+
+                            <i data-feather="check-circle"></i>
+
+                            Current Cloudinary Image
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div
+                        class="file-upload-box"
+                        id="subLogoDropZone"
+                    >
+
+
+                        <input
+                            type="file"
+                            id="sub_logo"
+                            name="sub_logo"
+                            class="file-upload-input"
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                            onchange="previewBranchFile(
+                                this,
+                                'subLogoPreview',
+                                'subLogoUploadContent',
+                                'subLogoFileName',
+                                'subLogoRemove'
+                            )"
+                        >
+
+
+                        {% if branch.sub_logo %}
+
+                            <div
+                                class="image-preview"
+                                id="subLogoPreview"
+                                style="display:flex;"
+                            >
+
+                                <img
+                                    src="{{ branch.sub_logo }}"
+                                    alt="Current Sub Logo"
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer"
+                                    onerror="
+                                        this.style.display='none';
+                                        document.getElementById('subLogoCurrentFallback').style.display='flex';
+                                    "
+                                >
+
+                                <div
+                                    id="subLogoCurrentFallback"
+                                    class="file-upload-content"
+                                    style="display:none;"
+                                >
+
+                                    <div class="file-upload-icon">
+                                        <i data-feather="layers"></i>
+                                    </div>
+
+                                    <span class="file-upload-title">
+                                        Image unavailable
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <div
+                                class="image-preview"
+                                id="subLogoPreview"
+                            >
+
+                                <img alt="Sub Logo Preview">
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div
+                            class="file-upload-content"
+                            id="subLogoUploadContent"
+                            {% if branch.sub_logo %}
+                                style="display:none;"
+                            {% endif %}
+                        >
+
+                            <div class="file-upload-icon">
+                                <i data-feather="upload-cloud"></i>
+                            </div>
+
+                            <span class="file-upload-title">
+                                Click to replace sub logo
+                            </span>
+
+                            <span class="file-upload-subtitle">
+                                PNG, JPG, WEBP or GIF
+                            </span>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="image-preview-remove"
+                            id="subLogoRemove"
+                            onclick="removeBranchFile(
+                                'sub_logo',
+                                'subLogoPreview',
+                                'subLogoUploadContent',
+                                'subLogoFileName',
+                                'subLogoRemove'
+                            )"
+                            aria-label="Remove selected sub logo"
+                        >
+                            <i data-feather="x"></i>
+                        </button>
+
+                    </div>
+
+
+                    <span
+                        class="file-name"
+                        id="subLogoFileName"
+                    >
+                        {% if branch.sub_logo %}
+                            Existing image will remain unless replaced.
+                        {% else %}
+                            No file selected
+                        {% endif %}
+                    </span>
+
+
+                    <small class="file-help">
+                        Leave empty to keep the current image.
+                    </small>
+
+                </div>
+
+
+                <!-- =================================================
+                     SIGNATURE
+                     ================================================== -->
+
+                <div class="branding-card">
+
+                    <div class="branding-card-title">
+
+                        <div class="branding-card-title-icon">
+                            <i data-feather="edit-3"></i>
+                        </div>
+
+                        <h3>
+                            Signature Photo
+                        </h3>
+
+                    </div>
+
+
+                    {% if branch.signature_photo %}
+
+                        <div class="current-image-label">
+
+                            <i data-feather="check-circle"></i>
+
+                            Current Cloudinary Image
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div
+                        class="file-upload-box"
+                        id="signatureDropZone"
+                    >
+
+
+                        <input
+                            type="file"
+                            id="signature_photo"
+                            name="signature_photo"
+                            class="file-upload-input"
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                            onchange="previewBranchFile(
+                                this,
+                                'signaturePreview',
+                                'signatureUploadContent',
+                                'signatureFileName',
+                                'signatureRemove'
+                            )"
+                        >
+
+
+                        {% if branch.signature_photo %}
+
+                            <div
+                                class="image-preview"
+                                id="signaturePreview"
+                                style="display:flex;"
+                            >
+
+                                <img
+                                    src="{{ branch.signature_photo }}"
+                                    alt="Current Signature"
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer"
+                                    onerror="
+                                        this.style.display='none';
+                                        document.getElementById('signatureCurrentFallback').style.display='flex';
+                                    "
+                                >
+
+                                <div
+                                    id="signatureCurrentFallback"
+                                    class="file-upload-content"
+                                    style="display:none;"
+                                >
+
+                                    <div class="file-upload-icon">
+                                        <i data-feather="edit-3"></i>
+                                    </div>
+
+                                    <span class="file-upload-title">
+                                        Image unavailable
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <div
+                                class="image-preview"
+                                id="signaturePreview"
+                            >
+
+                                <img alt="Signature Preview">
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div
+                            class="file-upload-content"
+                            id="signatureUploadContent"
+                            {% if branch.signature_photo %}
+                                style="display:none;"
+                            {% endif %}
+                        >
+
+                            <div class="file-upload-icon">
+                                <i data-feather="upload-cloud"></i>
+                            </div>
+
+                            <span class="file-upload-title">
+                                Click to replace signature
+                            </span>
+
+                            <span class="file-upload-subtitle">
+                                PNG, JPG, WEBP or GIF
+                            </span>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="image-preview-remove"
+                            id="signatureRemove"
+                            onclick="removeBranchFile(
+                                'signature_photo',
+                                'signaturePreview',
+                                'signatureUploadContent',
+                                'signatureFileName',
+                                'signatureRemove'
+                            )"
+                            aria-label="Remove selected signature"
+                        >
+                            <i data-feather="x"></i>
+                        </button>
+
+                    </div>
+
+
+                    <span
+                        class="file-name"
+                        id="signatureFileName"
+                    >
+                        {% if branch.signature_photo %}
+                            Existing image will remain unless replaced.
+                        {% else %}
+                            No file selected
+                        {% endif %}
+                    </span>
+
+
+                    <small class="file-help">
+                        Leave empty to keep the current image.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             DESCRIPTION
+             ================================================== -->
+
+        <div class="branch-section">
+
+            <div class="section-heading">
+
+                <div class="section-heading-icon">
+                    <i data-feather="file-text"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Description
+                    </h2>
+
+                    <p>
+                        Additional information about this branch
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="branch-form-grid">
+
+                <div class="form-field full-width">
+
+                    <label for="description">
+                        Description
+                    </label>
+
+
+                    <textarea
+                        id="description"
+                        name="description"
+                        class="form-control"
+                        maxlength="2000"
+                        placeholder="Write additional information about this branch..."
+                    >{{ branch.description or '' }}</textarea>
+
+
+                    <small class="form-help">
+                        Maximum 2000 characters.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FOOTER
+             ================================================== -->
+
+        <div class="form-footer">
+
+            <div class="footer-note">
+
+                Fields marked with
+                <span class="required">*</span>
+                are required.
+
+            </div>
+
+
+            <div class="footer-actions">
+
+                <a
+                    href="{{ url_for('main.view_branch', branch_id=branch.id) }}"
+                    class="btn btn-cancel"
+                >
+                    <i data-feather="x"></i>
+                    Cancel
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-update"
+                    id="updateBranchButton"
+                >
+                    <i data-feather="save"></i>
+                    Update Branch
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   PREVIEW SELECTED FILE
+   ========================================================= */
+
+function previewBranchFile(
+    input,
+    previewId,
+    contentId,
+    fileNameId,
+    removeButtonId
+) {
+
+    const preview = document.getElementById(previewId);
+    const content = document.getElementById(contentId);
+    const fileName = document.getElementById(fileNameId);
+    const removeButton = document.getElementById(removeButtonId);
+
+    if (
+        !input ||
+        !preview ||
+        !content ||
+        !fileName ||
+        !removeButton
+    ) {
+        return;
+    }
+
+
+    const file = input.files && input.files[0];
+
+
+    if (!file) {
+        return;
+    }
+
+
+    /* -----------------------------------------------------
+       Validate image
+       ----------------------------------------------------- */
+
+    if (!file.type.startsWith("image/")) {
+
+        alert("Please select a valid image file.");
+
+        input.value = "";
+
+        return;
+    }
+
+
+    /* -----------------------------------------------------
+       Maximum 5 MB
+       ----------------------------------------------------- */
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+
+        alert("Image size must not exceed 5 MB.");
+
+        input.value = "";
+
+        return;
+    }
+
+
+    fileName.textContent = file.name;
+
+
+    const reader = new FileReader();
+
+
+    reader.onload = function (event) {
+
+        const image = preview.querySelector("img");
+
+
+        if (!image) {
+            return;
+        }
+
+
+        image.src = event.target.result;
+
+
+        image.style.display = "block";
+
+        preview.style.display = "flex";
+
+        content.style.display = "none";
+
+        removeButton.style.display = "flex";
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+}
+
+
+/* =========================================================
+   REMOVE SELECTED NEW FILE
+   ========================================================= */
+
+function removeBranchFile(
+    inputId,
+    previewId,
+    contentId,
+    fileNameId,
+    removeButtonId
+) {
+
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const content = document.getElementById(contentId);
+    const fileName = document.getElementById(fileNameId);
+    const removeButton = document.getElementById(removeButtonId);
+
+
+    if (input) {
+        input.value = "";
+    }
+
+
+    /*
+     * On edit page we intentionally do not delete
+     * the existing Cloudinary image here.
+     *
+     * The current image can remain until a new file
+     * is uploaded and the Flask route replaces it.
+     */
+
+    if (preview) {
+
+        const image = preview.querySelector("img");
+
+        if (image) {
+
+            /*
+             * If the preview belongs to an existing image,
+             * restore it instead of clearing it.
+             */
+
+            const existingSrc = preview.dataset.existingSrc;
+
+            if (existingSrc) {
+
+                image.src = existingSrc;
+
+                preview.style.display = "flex";
+
+            } else {
+
+                image.removeAttribute("src");
+
+                preview.style.display = "none";
+
+            }
+
+        }
+
+    }
+
+
+    if (content) {
+
+        /*
+         * Show upload area again.
+         */
+
+        content.style.display = "block";
+
+    }
+
+
+    if (removeButton) {
+        removeButton.style.display = "none";
+    }
+
+
+    if (fileName) {
+
+        if (inputId === "main_logo") {
+
+            fileName.textContent =
+                "{% if branch.main_logo %}Existing image will remain unless replaced.{% else %}No file selected{% endif %}";
+
+        }
+
+        else if (inputId === "sub_logo") {
+
+            fileName.textContent =
+                "{% if branch.sub_logo %}Existing image will remain unless replaced.{% else %}No file selected{% endif %}";
+
+        }
+
+        else if (inputId === "signature_photo") {
+
+            fileName.textContent =
+                "{% if branch.signature_photo %}Existing image will remain unless replaced.{% else %}No file selected{% endif %}";
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   DRAG & DROP
+   ========================================================= */
+
+function setupBranchDropZone(
+    zoneId,
+    inputId,
+    previewId,
+    contentId,
+    fileNameId,
+    removeButtonId
+) {
+
+    const zone = document.getElementById(zoneId);
+    const input = document.getElementById(inputId);
+
+    if (!zone || !input) {
+        return;
+    }
+
+
+    zone.addEventListener(
+        "dragover",
+        function (event) {
+
+            event.preventDefault();
+
+            zone.classList.add("dragover");
+
+        }
+    );
+
+
+    zone.addEventListener(
+        "dragleave",
+        function () {
+
+            zone.classList.remove("dragover");
+
+        }
+    );
+
+
+    zone.addEventListener(
+        "drop",
+        function (event) {
+
+            event.preventDefault();
+
+            zone.classList.remove("dragover");
+
+
+            const files = event.dataTransfer.files;
+
+
+            if (!files || !files.length) {
+                return;
+            }
+
+
+            try {
+
+                const dataTransfer = new DataTransfer();
+
+                dataTransfer.items.add(files[0]);
+
+                input.files = dataTransfer.files;
+
+
+                previewBranchFile(
+                    input,
+                    previewId,
+                    contentId,
+                    fileNameId,
+                    removeButtonId
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Unable to process dropped file:",
+                    error
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        /* -----------------------------------------------------
+           Store existing Cloudinary URLs
+           ----------------------------------------------------- */
+
+        const mainPreview =
+            document.getElementById("mainLogoPreview");
+
+        const subPreview =
+            document.getElementById("subLogoPreview");
+
+        const signaturePreview =
+            document.getElementById("signaturePreview");
+
+
+        {% if branch.main_logo %}
+
+            if (mainPreview) {
+                mainPreview.dataset.existingSrc =
+                    "{{ branch.main_logo }}";
+            }
+
+        {% endif %}
+
+
+        {% if branch.sub_logo %}
+
+            if (subPreview) {
+                subPreview.dataset.existingSrc =
+                    "{{ branch.sub_logo }}";
+            }
+
+        {% endif %}
+
+
+        {% if branch.signature_photo %}
+
+            if (signaturePreview) {
+                signaturePreview.dataset.existingSrc =
+                    "{{ branch.signature_photo }}";
+            }
+
+        {% endif %}
+
+
+        /* -----------------------------------------------------
+           Drop zones
+           ----------------------------------------------------- */
+
+        setupBranchDropZone(
+            "mainLogoDropZone",
+            "main_logo",
+            "mainLogoPreview",
+            "mainLogoUploadContent",
+            "mainLogoFileName",
+            "mainLogoRemove"
+        );
+
+
+        setupBranchDropZone(
+            "subLogoDropZone",
+            "sub_logo",
+            "subLogoPreview",
+            "subLogoUploadContent",
+            "subLogoFileName",
+            "subLogoRemove"
+        );
+
+
+        setupBranchDropZone(
+            "signatureDropZone",
+            "signature_photo",
+            "signaturePreview",
+            "signatureUploadContent",
+            "signatureFileName",
+            "signatureRemove"
+        );
+
+
+        /* -----------------------------------------------------
+           Submit protection
+           ----------------------------------------------------- */
+
+        const form =
+            document.getElementById("editBranchForm");
+
+        const button =
+            document.getElementById("updateBranchButton");
+
+
+        if (form && button) {
+
+            form.addEventListener(
+                "submit",
+                function () {
+
+                    button.disabled = true;
+
+                    button.innerHTML = `
+                        <i data-feather="loader"></i>
+                        Updating Branch...
+                    `;
+
+
+                    if (typeof feather !== "undefined") {
+                        feather.replace();
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* -----------------------------------------------------
+           Feather icons
+           ----------------------------------------------------- */
+
+        if (typeof feather !== "undefined") {
+            feather.replace();
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

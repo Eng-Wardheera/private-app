@@ -1,0 +1,1736 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   ADD ACADEMIC YEAR
+   ============================================================ */
+
+.academic-year-page {
+    width: 100%;
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 5px 0 40px;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.ay-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.ay-title-wrap {
+    min-width: 0;
+}
+
+.ay-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -.4px;
+}
+
+.ay-subtitle {
+    margin: 7px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.ay-back-btn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 14px;
+    border: 1px solid #e2e6ec;
+    border-radius: 10px;
+    background: #fff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: .18s ease;
+}
+
+.ay-back-btn:hover {
+    background: #f8fafc;
+    border-color: #cfd5dd;
+    transform: translateY(-1px);
+}
+
+.ay-back-btn svg {
+    width: 17px;
+    height: 17px;
+}
+
+
+/* ============================================================
+   MAIN CARD
+   ============================================================ */
+
+.ay-form-card {
+    background: #fff;
+    border: 1px solid #e6eaf0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 22px rgba(15, 23, 42, .055);
+}
+
+.ay-card-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #edf0f4;
+    background: #fbfcfe;
+}
+
+.ay-card-header-icon {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    background: #eef3fb;
+    color: #06245f;
+}
+
+.ay-card-header-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.ay-card-header-title {
+    margin: 0;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.ay-card-header-text {
+    margin: 4px 0 0;
+    color: #8b93a1;
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.ay-form {
+    padding: 25px;
+}
+
+.ay-section {
+    margin-bottom: 28px;
+}
+
+.ay-section:last-child {
+    margin-bottom: 0;
+}
+
+.ay-section-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #edf0f4;
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.ay-section-title svg {
+    width: 17px;
+    height: 17px;
+    color: #06245f;
+}
+
+.ay-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.ay-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ay-field {
+    min-width: 0;
+}
+
+.ay-field-full {
+    grid-column: 1 / -1;
+}
+
+.ay-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.ay-required {
+    color: #dc2626;
+}
+
+.ay-help {
+    margin-top: 6px;
+    color: #9ca3af;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
+.ay-input,
+.ay-select,
+.ay-textarea {
+    width: 100%;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #fff;
+    color: #1f2937;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background .18s ease;
+    box-sizing: border-box;
+}
+
+.ay-input,
+.ay-select {
+    height: 44px;
+}
+
+.ay-input {
+    padding: 0 12px;
+}
+
+.ay-select {
+    padding: 0 35px 0 12px;
+    cursor: pointer;
+}
+
+.ay-textarea {
+    min-height: 125px;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.ay-input:focus,
+.ay-select:focus,
+.ay-textarea:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.ay-input[readonly] {
+    background: #f8fafc;
+    color: #06245f;
+    font-weight: 800;
+    cursor: not-allowed;
+}
+
+
+/* ============================================================
+   CODE FIELD
+   ============================================================ */
+
+.ay-code-wrap {
+    position: relative;
+}
+
+.ay-code-wrap .ay-input {
+    padding-right: 105px;
+}
+
+.ay-auto-badge {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 25px;
+    padding: 0 8px;
+    border-radius: 6px;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.ay-auto-badge svg {
+    width: 12px;
+    height: 12px;
+}
+
+
+/* ============================================================
+   CURRENT YEAR SWITCH
+   ============================================================ */
+
+.ay-current-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    min-height: 72px;
+    padding: 13px 15px;
+    border: 1px solid #e1e6ed;
+    border-radius: 11px;
+    background: #fbfcfe;
+}
+
+.ay-current-info {
+    min-width: 0;
+}
+
+.ay-current-title {
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.ay-current-description {
+    margin-top: 4px;
+    color: #8b93a1;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.ay-switch {
+    position: relative;
+    width: 48px;
+    height: 27px;
+    flex: 0 0 48px;
+}
+
+.ay-switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ay-switch-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: #d1d5db;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.ay-switch-slider::before {
+    content: "";
+    position: absolute;
+    width: 21px;
+    height: 21px;
+    left: 3px;
+    top: 3px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,.16);
+    transition: .2s ease;
+}
+
+.ay-switch input:checked + .ay-switch-slider {
+    background: #32b73a;
+}
+
+.ay-switch input:checked + .ay-switch-slider::before {
+    transform: translateX(21px);
+}
+
+
+/* ============================================================
+   DATE QUICK INFO
+   ============================================================ */
+
+.ay-date-preview {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 7px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.ay-date-preview.show {
+    display: flex;
+}
+
+.ay-date-preview svg {
+    width: 14px;
+    height: 14px;
+}
+
+
+/* ============================================================
+   FORM FOOTER
+   ============================================================ */
+
+.ay-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #edf0f4;
+}
+
+.ay-footer-note {
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.ay-footer-note span {
+    color: #dc2626;
+}
+
+.ay-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.ay-btn {
+    min-height: 43px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 17px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.ay-btn svg {
+    width: 17px;
+    height: 17px;
+}
+
+.ay-btn-primary {
+    background: #06245f;
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(6, 36, 95, .15);
+}
+
+.ay-btn-primary:hover {
+    background: #041b49;
+    transform: translateY(-1px);
+    box-shadow: 0 9px 20px rgba(6, 36, 95, .2);
+}
+
+.ay-btn-secondary {
+    background: #fff;
+    color: #374151;
+    border-color: #e1e5eb;
+}
+
+.ay-btn-secondary:hover {
+    background: #f8fafc;
+}
+
+.ay-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* ============================================================
+   FLASH MESSAGES
+   ============================================================ */
+
+.ay-flash-container {
+    margin-bottom: 18px;
+}
+
+.ay-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px 15px;
+    margin-bottom: 9px;
+    border-radius: 10px;
+    border: 1px solid;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.ay-alert:last-child {
+    margin-bottom: 0;
+}
+
+.ay-alert svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    margin-top: 1px;
+}
+
+.ay-alert-success {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.ay-alert-danger,
+.ay-alert-error {
+    background: #fff1f2;
+    border-color: #fecdd3;
+    color: #9f1239;
+}
+
+.ay-alert-warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.ay-alert-info {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+
+.ay-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: aySpin .7s linear infinite;
+}
+
+@keyframes aySpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 800px) {
+
+    .academic-year-page {
+        max-width: 100%;
+    }
+
+    .ay-page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ay-back-btn {
+        width: fit-content;
+    }
+
+    .ay-grid,
+    .ay-grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .ay-field-full {
+        grid-column: auto;
+    }
+
+    .ay-form {
+        padding: 20px;
+    }
+
+    .ay-form-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ay-form-actions {
+        width: 100%;
+    }
+
+    .ay-form-actions .ay-btn {
+        flex: 1;
+    }
+
+}
+
+@media (max-width: 520px) {
+
+    .academic-year-page {
+        padding-bottom: 20px;
+    }
+
+    .ay-title {
+        font-size: 23px;
+    }
+
+    .ay-subtitle {
+        font-size: 12px;
+    }
+
+    .ay-card-header {
+        padding: 17px;
+    }
+
+    .ay-form {
+        padding: 17px;
+    }
+
+    .ay-current-box {
+        align-items: flex-start;
+    }
+
+    .ay-form-actions {
+        flex-direction: column;
+    }
+
+    .ay-form-actions .ay-btn {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+
+<div class="academic-year-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+    ========================================================= -->
+
+    <div class="ay-page-header">
+
+        <div class="ay-title-wrap">
+
+            <h1 class="ay-title">
+                Add Academic Year
+            </h1>
+
+            <p class="ay-subtitle">
+                Create a new academic year for an institution.
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('main.all_academic_years') }}"
+            class="ay-back-btn"
+        >
+            <i data-feather="arrow-left"></i>
+            Back to Academic Years
+        </a>
+
+    </div>
+
+
+    <!-- ========================================================
+         FLASH MESSAGES
+    ========================================================= -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            <div class="ay-flash-container">
+
+                {% for category, message in messages %}
+
+                    <div
+                        class="ay-alert
+                        {% if category == 'success' %}
+                            ay-alert-success
+                        {% elif category == 'danger' or category == 'error' %}
+                            ay-alert-danger
+                        {% elif category == 'warning' %}
+                            ay-alert-warning
+                        {% else %}
+                            ay-alert-info
+                        {% endif %}"
+                    >
+
+                        <i
+                            data-feather="{% if category == 'success' %}
+                                check-circle
+                            {% elif category == 'warning' %}
+                                alert-triangle
+                            {% elif category == 'danger' or category == 'error' %}
+                                alert-circle
+                            {% else %}
+                                info
+                            {% endif %}"
+                        ></i>
+
+                        <div>
+                            {{ message }}
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- ========================================================
+         FORM CARD
+    ========================================================= -->
+
+    <div class="ay-form-card">
+
+        <div class="ay-card-header">
+
+            <div class="ay-card-header-icon">
+                <i data-feather="calendar-plus"></i>
+            </div>
+
+            <div>
+
+                <h2 class="ay-card-header-title">
+                    Academic Year Information
+                </h2>
+
+                <p class="ay-card-header-text">
+                    Enter the academic year details below.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             FORM
+        ==================================================== -->
+
+        <form
+            method="POST"
+            action="{{ url_for('main.add_academic_year') }}"
+            class="ay-form"
+            id="academicYearForm"
+            autocomplete="off"
+        >
+
+            {% if csrf_token is defined %}
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
+            {% endif %}
+
+
+            <!-- ==================================================
+                 BASIC INFORMATION
+            =================================================== -->
+
+            <div class="ay-section">
+
+                <h3 class="ay-section-title">
+
+                    <i data-feather="layers"></i>
+
+                    Basic Information
+
+                </h3>
+
+
+                <div class="ay-grid">
+
+                    <!-- INSTITUTION -->
+
+                    <div class="ay-field">
+
+                        <label
+                            for="institution_id"
+                            class="ay-label"
+                        >
+                            Institution
+                            <span class="ay-required">*</span>
+                        </label>
+
+                        <select
+                            id="institution_id"
+                            name="institution_id"
+                            class="ay-select"
+                            required
+                        >
+
+                            <option value="">
+                                Select Institution
+                            </option>
+
+                            {% for institution in institutions %}
+
+                                <option
+                                    value="{{ institution.id }}"
+                                    {% if request.form.get('institution_id')|string == institution.id|string %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ institution.name }}
+                                    {% if institution.short_name %}
+                                        ({{ institution.short_name }})
+                                    {% endif %}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <div class="ay-help">
+                            Select the institution this academic year belongs to.
+                        </div>
+
+                    </div>
+
+
+                    <!-- NAME -->
+
+                    <div class="ay-field">
+
+                        <label
+                            for="name"
+                            class="ay-label"
+                        >
+                            Academic Year Name
+                            <span class="ay-required">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            class="ay-input"
+                            value="{{ request.form.get('name', '') }}"
+                            placeholder="e.g. 2026/2027"
+                            maxlength="50"
+                            required
+                        >
+
+                        <div class="ay-help">
+                            Example: 2026/2027, 2027/2028.
+                        </div>
+
+                    </div>
+
+
+                    <!-- AUTO CODE -->
+
+                    <div class="ay-field">
+
+                        <label
+                            for="code"
+                            class="ay-label"
+                        >
+                            Academic Year Code
+                            <span class="ay-required">*</span>
+                        </label>
+
+                        <div class="ay-code-wrap">
+
+                            <input
+                                type="text"
+                                id="code"
+                                name="code"
+                                class="ay-input"
+                                value="{{ request.form.get('code', '') }}"
+                                placeholder="Auto generated"
+                                maxlength="50"
+                                readonly
+                                required
+                            >
+
+                            <span class="ay-auto-badge">
+
+                                <i data-feather="zap"></i>
+
+                                AUTO
+
+                            </span>
+
+                        </div>
+
+                        <div class="ay-help">
+                            Code is generated automatically from the academic year name.
+                        </div>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="ay-field">
+
+                        <label
+                            for="status"
+                            class="ay-label"
+                        >
+                            Status
+                            <span class="ay-required">*</span>
+                        </label>
+
+                        <select
+                            id="status"
+                            name="status"
+                            class="ay-select"
+                            required
+                        >
+
+                            <option
+                                value="active"
+                                {% if request.form.get('status', 'active') == 'active' %}
+                                    selected
+                                {% endif %}
+                            >
+                                Active
+                            </option>
+
+                            <option
+                                value="inactive"
+                                {% if request.form.get('status') == 'inactive' %}
+                                    selected
+                                {% endif %}
+                            >
+                                Inactive
+                            </option>
+
+                            <option
+                                value="closed"
+                                {% if request.form.get('status') == 'closed' %}
+                                    selected
+                                {% endif %}
+                            >
+                                Closed
+                            </option>
+
+                        </select>
+
+                        <div class="ay-help">
+                            Active means the academic year is available for normal use.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 ACADEMIC DATES
+            =================================================== -->
+
+            <div class="ay-section">
+
+                <h3 class="ay-section-title">
+
+                    <i data-feather="calendar"></i>
+
+                    Academic Period
+
+                </h3>
+
+
+                <div class="ay-grid">
+
+                    <!-- START DATE -->
+
+                    <div class="ay-field">
+
+                        <label
+                            for="start_date"
+                            class="ay-label"
+                        >
+                            Start Date
+                            <span class="ay-required">*</span>
+                        </label>
+
+                        <input
+                            type="date"
+                            id="start_date"
+                            name="start_date"
+                            class="ay-input"
+                            value="{{ request.form.get('start_date', '') }}"
+                            required
+                        >
+
+                        <div
+                            class="ay-date-preview"
+                            id="startDatePreview"
+                        >
+                            <i data-feather="check-circle"></i>
+                            <span id="startDateText"></span>
+                        </div>
+
+                    </div>
+
+
+                    <!-- END DATE -->
+
+                    <div class="ay-field">
+
+                        <label
+                            for="end_date"
+                            class="ay-label"
+                        >
+                            End Date
+                            <span class="ay-required">*</span>
+                        </label>
+
+                        <input
+                            type="date"
+                            id="end_date"
+                            name="end_date"
+                            class="ay-input"
+                            value="{{ request.form.get('end_date', '') }}"
+                            required
+                        >
+
+                        <div
+                            class="ay-date-preview"
+                            id="endDatePreview"
+                        >
+                            <i data-feather="check-circle"></i>
+                            <span id="endDateText"></span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 CURRENT YEAR
+            =================================================== -->
+
+            <div class="ay-section">
+
+                <h3 class="ay-section-title">
+
+                    <i data-feather="star"></i>
+
+                    Current Academic Year
+
+                </h3>
+
+
+                <div class="ay-current-box">
+
+                    <div class="ay-current-info">
+
+                        <div class="ay-current-title">
+                            Set as Current Academic Year
+                        </div>
+
+                        <div class="ay-current-description">
+                            If enabled, any other current academic year
+                            belonging to this institution will automatically
+                            become not current.
+                        </div>
+
+                    </div>
+
+
+                    <label class="ay-switch">
+
+                        <input
+                            type="checkbox"
+                            id="is_current"
+                            name="is_current"
+                            value="true"
+                            {% if request.form.get('is_current') in ['true', '1', 'yes', 'on'] %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <span class="ay-switch-slider"></span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 DESCRIPTION
+            =================================================== -->
+
+            <div class="ay-section">
+
+                <h3 class="ay-section-title">
+
+                    <i data-feather="file-text"></i>
+
+                    Additional Information
+
+                </h3>
+
+
+                <div class="ay-grid">
+
+                    <div class="ay-field ay-field-full">
+
+                        <label
+                            for="description"
+                            class="ay-label"
+                        >
+                            Description
+                        </label>
+
+                        <textarea
+                            id="description"
+                            name="description"
+                            class="ay-textarea"
+                            maxlength="2000"
+                            placeholder="Enter any additional information about this academic year..."
+                        >{{ request.form.get('description', '') }}</textarea>
+
+                        <div class="ay-help">
+                            Optional. You can add notes, academic period details,
+                            or other relevant information.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 FORM FOOTER
+            =================================================== -->
+
+            <div class="ay-form-footer">
+
+                <div class="ay-footer-note">
+
+                    <span>*</span>
+                    Required fields
+
+                </div>
+
+
+                <div class="ay-form-actions">
+
+                    <a
+                        href="{{ url_for('main.all_academic_years') }}"
+                        class="ay-btn ay-btn-secondary"
+                        id="cancelBtn"
+                    >
+                        <i data-feather="x"></i>
+                        Cancel
+                    </a>
+
+
+                    <button
+                        type="submit"
+                        class="ay-btn ay-btn-primary"
+                        id="submitBtn"
+                    >
+                        <i data-feather="save"></i>
+                        Create Academic Year
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   ELEMENTS
+   ============================================================ */
+
+const ayNameInput =
+    document.getElementById("name");
+
+const ayCodeInput =
+    document.getElementById("code");
+
+const startDateInput =
+    document.getElementById("start_date");
+
+const endDateInput =
+    document.getElementById("end_date");
+
+const institutionInput =
+    document.getElementById("institution_id");
+
+const statusInput =
+    document.getElementById("status");
+
+const academicYearForm =
+    document.getElementById("academicYearForm");
+
+const submitButton =
+    document.getElementById("submitBtn");
+
+
+/* ============================================================
+   AUTO CODE GENERATOR
+   ============================================================ */
+
+/*
+ * Examples:
+ *
+ * 2026/2027
+ *      -> AY-2026-2027
+ *
+ * 2026-2027
+ *      -> AY-2026-2027
+ *
+ * 2026 2027
+ *      -> AY-2026-2027
+ *
+ * Academic Year 2026/2027
+ *      -> AY-2026-2027
+ */
+
+function generateAcademicYearCode(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    const text =
+        value
+            .trim()
+            .toUpperCase();
+
+
+    /* ========================================================
+       Find year numbers
+    ======================================================== */
+
+    const years =
+        text.match(/\b\d{4}\b/g);
+
+
+    if (years && years.length >= 2) {
+
+        return "AY-" +
+            years[0] +
+            "-" +
+            years[1];
+
+    }
+
+
+    /* ========================================================
+       If only one year exists
+    ======================================================== */
+
+    if (years && years.length === 1) {
+
+        const firstYear =
+            parseInt(years[0], 10);
+
+        if (!isNaN(firstYear)) {
+
+            return "AY-" +
+                firstYear +
+                "-" +
+                (firstYear + 1);
+
+        }
+
+    }
+
+
+    /* ========================================================
+       Fallback
+    ======================================================== */
+
+    const cleaned =
+        text
+            .replace(/[^A-Z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+
+
+    if (!cleaned) {
+        return "";
+    }
+
+
+    return "AY-" + cleaned;
+
+}
+
+
+/* ============================================================
+   UPDATE CODE
+   ============================================================ */
+
+function updateAcademicYearCode() {
+
+    if (!ayNameInput || !ayCodeInput) {
+        return;
+    }
+
+    const generated =
+        generateAcademicYearCode(
+            ayNameInput.value
+        );
+
+    ayCodeInput.value =
+        generated;
+
+}
+
+
+/* ============================================================
+   NAME INPUT
+   ============================================================ */
+
+if (ayNameInput) {
+
+    ayNameInput.addEventListener(
+        "input",
+        updateAcademicYearCode
+    );
+
+    ayNameInput.addEventListener(
+        "blur",
+        updateAcademicYearCode
+    );
+
+}
+
+
+/* ============================================================
+   INITIAL CODE
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        updateAcademicYearCode();
+
+        if (
+            typeof feather !== "undefined"
+        ) {
+            feather.replace();
+        }
+
+    }
+);
+
+
+/* ============================================================
+   DATE PREVIEW
+   ============================================================ */
+
+function formatAcademicDate(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    const date =
+        new Date(value + "T00:00:00");
+
+    if (isNaN(date.getTime())) {
+        return "";
+    }
+
+    return date.toLocaleDateString(
+        undefined,
+        {
+            day: "2-digit",
+            month: "long",
+            year: "numeric"
+        }
+    );
+
+}
+
+
+function updateDatePreview() {
+
+    const startPreview =
+        document.getElementById(
+            "startDatePreview"
+        );
+
+    const startText =
+        document.getElementById(
+            "startDateText"
+        );
+
+    const endPreview =
+        document.getElementById(
+            "endDatePreview"
+        );
+
+    const endText =
+        document.getElementById(
+            "endDateText"
+        );
+
+
+    if (
+        startDateInput &&
+        startPreview &&
+        startText
+    ) {
+
+        if (startDateInput.value) {
+
+            startText.textContent =
+                "Starts " +
+                formatAcademicDate(
+                    startDateInput.value
+                );
+
+            startPreview.classList.add(
+                "show"
+            );
+
+        } else {
+
+            startPreview.classList.remove(
+                "show"
+            );
+
+        }
+
+    }
+
+
+    if (
+        endDateInput &&
+        endPreview &&
+        endText
+    ) {
+
+        if (endDateInput.value) {
+
+            endText.textContent =
+                "Ends " +
+                formatAcademicDate(
+                    endDateInput.value
+                );
+
+            endPreview.classList.add(
+                "show"
+            );
+
+        } else {
+
+            endPreview.classList.remove(
+                "show"
+            );
+
+        }
+
+    }
+
+}
+
+
+if (startDateInput) {
+
+    startDateInput.addEventListener(
+        "change",
+        updateDatePreview
+    );
+
+}
+
+if (endDateInput) {
+
+    endDateInput.addEventListener(
+        "change",
+        updateDatePreview
+    );
+
+}
+
+
+/* ============================================================
+   DATE VALIDATION
+   ============================================================ */
+
+function validateAcademicDates() {
+
+    if (
+        !startDateInput ||
+        !endDateInput
+    ) {
+        return true;
+    }
+
+
+    if (
+        !startDateInput.value ||
+        !endDateInput.value
+    ) {
+        return true;
+    }
+
+
+    const start =
+        new Date(
+            startDateInput.value +
+            "T00:00:00"
+        );
+
+    const end =
+        new Date(
+            endDateInput.value +
+            "T00:00:00"
+        );
+
+
+    if (end <= start) {
+
+        endDateInput.setCustomValidity(
+            "End date must be after the start date."
+        );
+
+        return false;
+
+    }
+
+
+    endDateInput.setCustomValidity("");
+
+    return true;
+
+}
+
+
+if (startDateInput) {
+
+    startDateInput.addEventListener(
+        "change",
+        function() {
+
+            validateAcademicDates();
+
+            updateDatePreview();
+
+        }
+    );
+
+}
+
+
+if (endDateInput) {
+
+    endDateInput.addEventListener(
+        "change",
+        function() {
+
+            validateAcademicDates();
+
+            updateDatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   AUTO STATUS
+   ============================================================ */
+
+function updateStatusFromCurrentYear() {
+
+    const current =
+        document.getElementById(
+            "is_current"
+        );
+
+    if (
+        !current ||
+        !statusInput
+    ) {
+        return;
+    }
+
+
+    /*
+     * Current year should normally be active.
+     * We do not force the value; we only provide
+     * a sensible default when current is enabled.
+     */
+
+    if (
+        current.checked &&
+        statusInput.value === ""
+    ) {
+
+        statusInput.value =
+            "active";
+
+    }
+
+}
+
+
+const currentCheckbox =
+    document.getElementById(
+        "is_current"
+    );
+
+
+if (currentCheckbox) {
+
+    currentCheckbox.addEventListener(
+        "change",
+        updateStatusFromCurrentYear
+    );
+
+}
+
+
+/* ============================================================
+   FORM SUBMISSION
+   ============================================================ */
+
+if (academicYearForm) {
+
+    academicYearForm.addEventListener(
+        "submit",
+        function(event) {
+
+            updateAcademicYearCode();
+
+            if (
+                !validateAcademicDates()
+            ) {
+
+                event.preventDefault();
+
+                endDateInput.focus();
+
+                return;
+
+            }
+
+
+            /*
+             * Make sure auto-generated code exists.
+             */
+
+            if (
+                !ayCodeInput.value.trim()
+            ) {
+
+                event.preventDefault();
+
+                ayNameInput.focus();
+
+                return;
+
+            }
+
+
+            /*
+             * Prevent double submission.
+             */
+
+            if (submitButton) {
+
+                submitButton.disabled = true;
+
+                submitButton.innerHTML = `
+                    <span class="ay-spinner"></span>
+                    Creating Academic Year...
+                `;
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   INITIAL DATE PREVIEW
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        updateDatePreview();
+
+    }
+);
+
+</script>
+
+{% endblock %}

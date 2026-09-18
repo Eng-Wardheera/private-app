@@ -1,0 +1,1298 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   ADD TERM PAGE
+   ============================================================ */
+
+.term-page {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.term-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.term-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.term-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #06245f;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.term-header-icon i {
+    width: 23px;
+    height: 23px;
+}
+
+.term-header-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.term-header-subtitle {
+    margin: 4px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.term-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    background: #ffffff;
+    border: 1px solid #dfe3ea;
+    color: #06245f;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all .2s ease;
+}
+
+.term-back-btn:hover {
+    background: #f5f7fb;
+    border-color: #06245f;
+}
+
+.term-back-btn i {
+    width: 17px;
+    height: 17px;
+}
+
+/* ============================================================
+   CARD
+   ============================================================ */
+
+.term-form-card {
+    background: #ffffff;
+    border: 1px solid #e4e8ef;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(6, 36, 95, .06);
+    overflow: hidden;
+}
+
+.term-card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #edf0f4;
+    background: #fafbfc;
+}
+
+.term-card-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.term-card-description {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.term-form {
+    padding: 26px;
+}
+
+.term-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.term-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.term-field-full {
+    grid-column: 1 / -1;
+}
+
+.term-label {
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.term-required {
+    color: #dc2626;
+}
+
+.term-input,
+.term-select,
+.term-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d8dee8;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 14px;
+    padding: 12px 13px;
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.term-input:focus,
+.term-select:focus,
+.term-textarea:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .09);
+}
+
+.term-input[readonly] {
+    background: #f3f5f8;
+    color: #06245f;
+    font-weight: 800;
+    cursor: not-allowed;
+}
+
+.term-input::placeholder,
+.term-textarea::placeholder {
+    color: #9ca3af;
+}
+
+.term-textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.term-help {
+    margin: 0;
+    color: #7b8494;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   CODE PREVIEW
+   ============================================================ */
+
+.term-code-wrapper {
+    position: relative;
+}
+
+.term-code-wrapper .term-input {
+    padding-right: 45px;
+}
+
+.term-code-icon {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #32b73a;
+    pointer-events: none;
+}
+
+.term-code-icon i {
+    width: 18px;
+    height: 18px;
+}
+
+/* ============================================================
+   CURRENT CHECKBOX
+   ============================================================ */
+
+.term-current-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid #d8dee8;
+    border-radius: 9px;
+    background: #ffffff;
+}
+
+.term-current-box input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: #32b73a;
+    cursor: pointer;
+}
+
+.term-current-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+}
+
+.term-current-title {
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.term-current-help {
+    color: #7b8494;
+    font-size: 11px;
+}
+
+/* ============================================================
+   INFO BOX
+   ============================================================ */
+
+.term-info-box {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #f0f6ff;
+    border: 1px solid #d8e6ff;
+}
+
+.term-info-icon {
+    color: #06245f;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.term-info-icon i {
+    width: 19px;
+    height: 19px;
+}
+
+.term-info-text {
+    color: #40516c;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.term-info-text strong {
+    color: #06245f;
+}
+
+/* ============================================================
+   FORM ACTIONS
+   ============================================================ */
+
+.term-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid #edf0f4;
+}
+
+.term-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 43px;
+    padding: 10px 18px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.term-btn i {
+    width: 17px;
+    height: 17px;
+}
+
+.term-btn-cancel {
+    background: #ffffff;
+    border-color: #d8dee8;
+    color: #4b5563;
+}
+
+.term-btn-cancel:hover {
+    background: #f5f6f8;
+}
+
+.term-btn-save {
+    background: #06245f;
+    color: #ffffff;
+}
+
+.term-btn-save:hover {
+    background: #041b49;
+}
+
+.term-btn-save:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   FLASH MESSAGES
+   ============================================================ */
+
+.term-alert {
+    margin-bottom: 20px;
+    padding: 13px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.term-alert-danger {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #be123c;
+}
+
+.term-alert-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 800px) {
+
+    .term-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .term-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .term-field-full,
+    .term-info-box {
+        grid-column: auto;
+    }
+
+    .term-form {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 520px) {
+
+    .term-header-title {
+        font-size: 20px;
+    }
+
+    .term-header-subtitle {
+        font-size: 12px;
+    }
+
+    .term-form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .term-btn {
+        width: 100%;
+    }
+}
+
+</style>
+
+<div class="term-page">
+
+
+<!-- ========================================================
+     PAGE HEADER
+========================================================= -->
+
+<div class="term-page-header">
+
+    <div class="term-header-left">
+
+        <div class="term-header-icon">
+            <i data-feather="layers"></i>
+        </div>
+
+        <div>
+            <h1 class="term-header-title">
+                Add Academic Term
+            </h1>
+
+            <p class="term-header-subtitle">
+                Create a new academic term for an academic year.
+            </p>
+        </div>
+
+    </div>
+
+    <a
+        href="{{ url_for('main.all_terms') }}"
+        class="term-back-btn"
+    >
+        <i data-feather="arrow-left"></i>
+        Back to Terms
+    </a>
+
+</div>
+
+
+<!-- ========================================================
+     FLASH MESSAGES
+========================================================= -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div
+                class="term-alert
+                {% if category in ['danger', 'error'] %}
+                    term-alert-danger
+                {% else %}
+                    term-alert-success
+                {% endif %}"
+            >
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endwith %}
+
+
+<!-- ========================================================
+     FORM CARD
+========================================================= -->
+
+<div class="term-form-card">
+
+    <div class="term-card-header">
+
+        <h2 class="term-card-title">
+            Term Information
+        </h2>
+
+        <p class="term-card-description">
+            Complete the required information below to create the term.
+        </p>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="{{ url_for('main.add_term') }}"
+        class="term-form"
+        id="termForm"
+    >
+
+        <!-- =================================================
+             FORM GRID
+        ================================================== -->
+
+        <div class="term-grid">
+
+
+            <!-- =================================================
+                 INSTITUTION
+            ================================================== -->
+
+            <div class="term-field">
+
+                <label
+                    for="institution_id"
+                    class="term-label"
+                >
+                    Institution
+                    <span class="term-required">*</span>
+                </label>
+
+                <select
+                    name="institution_id"
+                    id="institution_id"
+                    class="term-select"
+                    required
+                >
+
+                    <option value="">
+                        Select Institution
+                    </option>
+
+                    {% for institution in institutions %}
+
+                        <option
+                            value="{{ institution.id }}"
+                            {% if request.form.get('institution_id') == institution.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ institution.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <p class="term-help">
+                    Select the institution that owns this term.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 ACADEMIC YEAR
+            ================================================== -->
+
+            <div class="term-field">
+
+                <label
+                    for="academic_year_id"
+                    class="term-label"
+                >
+                    Academic Year
+                    <span class="term-required">*</span>
+                </label>
+
+                <select
+                    name="academic_year_id"
+                    id="academic_year_id"
+                    class="term-select"
+                    required
+                    disabled
+                >
+
+                    <option value="">
+                        Select Academic Year
+                    </option>
+
+                    {% for year in academic_years %}
+
+                        <option
+                            value="{{ year.id }}"
+                            data-institution-id="{{ year.institution_id }}"
+                            {% if request.form.get('academic_year_id') == year.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ year.name }}
+                            {% if year.is_current %}
+                                — Current
+                            {% endif %}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <p class="term-help">
+                    Only academic years belonging to the selected institution are shown.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 TERM NAME
+            ================================================== -->
+
+            <div class="term-field">
+
+                <label
+                    for="name"
+                    class="term-label"
+                >
+                    Term Name
+                    <span class="term-required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    class="term-input"
+                    value="{{ request.form.get('name', '') }}"
+                    placeholder="e.g. First Term"
+                    maxlength="100"
+                    required
+                >
+
+                <p class="term-help">
+                    Example: First Term, Second Term, Third Term.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 SEQUENCE
+            ================================================== -->
+
+            <div class="term-field">
+
+                <label
+                    for="sequence"
+                    class="term-label"
+                >
+                    Sequence
+                    <span class="term-required">*</span>
+                </label>
+
+                <input
+                    type="number"
+                    name="sequence"
+                    id="sequence"
+                    class="term-input"
+                    value="{{ request.form.get('sequence', '1') }}"
+                    min="1"
+                    max="100"
+                    step="1"
+                    required
+                >
+
+                <p class="term-help">
+                    The order of the term inside the academic year.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 AUTO CODE
+            ================================================== -->
+
+            <div class="term-field">
+
+                <label
+                    for="code"
+                    class="term-label"
+                >
+                    Term Code
+                </label>
+
+                <div class="term-code-wrapper">
+
+                    <input
+                        type="text"
+                        name="code"
+                        id="code"
+                        class="term-input"
+                        value="{{ request.form.get('code', '') }}"
+                        placeholder="TERM-01"
+                        maxlength="50"
+                        readonly
+                    >
+
+                    <span class="term-code-icon">
+                        <i data-feather="lock"></i>
+                    </span>
+
+                </div>
+
+                <p class="term-help">
+                    Automatically generated from the term sequence.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 STATUS
+            ================================================== -->
+
+            <div class="term-field">
+
+                <label
+                    for="status"
+                    class="term-label"
+                >
+                    Status
+                    <span class="term-required">*</span>
+                </label>
+
+                <select
+                    name="status"
+                    id="status"
+                    class="term-select"
+                    required
+                >
+
+                    {% set selected_status = request.form.get('status', 'active') %}
+
+                    <option
+                        value="active"
+                        {% if selected_status == 'active' %}selected{% endif %}
+                    >
+                        Active
+                    </option>
+
+                    <option
+                        value="inactive"
+                        {% if selected_status == 'inactive' %}selected{% endif %}
+                    >
+                        Inactive
+                    </option>
+
+                    <option
+                        value="closed"
+                        {% if selected_status == 'closed' %}selected{% endif %}
+                    >
+                        Closed
+                    </option>
+
+                </select>
+
+                <p class="term-help">
+                    Choose the current operational status of this term.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 START DATE
+            ================================================== -->
+
+            <div class="term-field">
+
+                <label
+                    for="start_date"
+                    class="term-label"
+                >
+                    Start Date
+                    <span class="term-required">*</span>
+                </label>
+
+                <input
+                    type="date"
+                    name="start_date"
+                    id="start_date"
+                    class="term-input"
+                    value="{{ request.form.get('start_date', '') }}"
+                    required
+                >
+
+                <p class="term-help">
+                    The date when this term begins.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 END DATE
+            ================================================== -->
+
+            <div class="term-field">
+
+                <label
+                    for="end_date"
+                    class="term-label"
+                >
+                    End Date
+                    <span class="term-required">*</span>
+                </label>
+
+                <input
+                    type="date"
+                    name="end_date"
+                    id="end_date"
+                    class="term-input"
+                    value="{{ request.form.get('end_date', '') }}"
+                    required
+                >
+
+                <p class="term-help">
+                    The date when this term ends.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 CURRENT TERM
+            ================================================== -->
+
+            <div class="term-field">
+
+                <label class="term-label">
+                    Current Term
+                </label>
+
+                <div class="term-current-box">
+
+                    <input
+                        type="checkbox"
+                        name="is_current"
+                        id="is_current"
+                        value="1"
+                        {% if request.form.get('is_current') %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <label
+                        for="is_current"
+                        class="term-current-label"
+                    >
+
+                        <span class="term-current-title">
+                            Set as Current Term
+                        </span>
+
+                        <span class="term-current-help">
+                            Other current terms in this academic year will be unset.
+                        </span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 INFORMATION BOX
+            ================================================== -->
+
+            <div class="term-info-box">
+
+                <div class="term-info-icon">
+                    <i data-feather="info"></i>
+                </div>
+
+                <div class="term-info-text">
+
+                    <strong>Automatic Code:</strong>
+                    The system automatically generates the term code
+                    using the sequence number.
+
+                    For example,
+                    Sequence <strong>1</strong> becomes
+                    <strong>TERM-01</strong>,
+                    while Sequence <strong>2</strong> becomes
+                    <strong>TERM-02</strong>.
+
+                    <br>
+
+                    Each term code must be unique within its academic year.
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 DESCRIPTION
+            ================================================== -->
+
+            <div class="term-field term-field-full">
+
+                <label
+                    for="description"
+                    class="term-label"
+                >
+                    Description
+                </label>
+
+                <textarea
+                    name="description"
+                    id="description"
+                    class="term-textarea"
+                    maxlength="2000"
+                    placeholder="Enter any additional information about this term..."
+                >{{ request.form.get('description', '') }}</textarea>
+
+                <p class="term-help">
+                    Optional description or additional notes.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FORM ACTIONS
+        ================================================= -->
+
+        <div class="term-form-actions">
+
+            <a
+                href="{{ url_for('main.all_terms') }}"
+                class="term-btn term-btn-cancel"
+            >
+                <i data-feather="x"></i>
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="term-btn term-btn-save"
+                id="saveTermBtn"
+            >
+                <i data-feather="save"></i>
+                Create Term
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+</div>
+
+<script>
+
+/* ============================================================
+   FEATHER ICONS
+   ============================================================ */
+
+if (typeof feather !== "undefined") {
+    feather.replace();
+}
+
+
+/* ============================================================
+   ELEMENTS
+   ============================================================ */
+
+const institutionSelect =
+    document.getElementById("institution_id");
+
+const academicYearSelect =
+    document.getElementById("academic_year_id");
+
+const nameInput =
+    document.getElementById("name");
+
+const sequenceInput =
+    document.getElementById("sequence");
+
+const codeInput =
+    document.getElementById("code");
+
+const startDateInput =
+    document.getElementById("start_date");
+
+const endDateInput =
+    document.getElementById("end_date");
+
+const termForm =
+    document.getElementById("termForm");
+
+const saveTermBtn =
+    document.getElementById("saveTermBtn");
+
+
+/* ============================================================
+   STORE ALL ACADEMIC YEAR OPTIONS
+   ============================================================ */
+
+const academicYearOptions = Array.from(
+    academicYearSelect.querySelectorAll("option[data-institution-id]")
+);
+
+
+/* ============================================================
+   FILTER ACADEMIC YEARS BY INSTITUTION
+   ============================================================ */
+
+function filterAcademicYears() {
+
+    const institutionId =
+        institutionSelect.value;
+
+    const currentAcademicYearId =
+        academicYearSelect.value;
+
+    academicYearSelect.innerHTML = "";
+
+    const defaultOption =
+        document.createElement("option");
+
+    defaultOption.value = "";
+    defaultOption.textContent =
+        institutionId
+            ? "Select Academic Year"
+            : "Select Institution First";
+
+    academicYearSelect.appendChild(defaultOption);
+
+    if (!institutionId) {
+
+        academicYearSelect.disabled = true;
+
+        return;
+    }
+
+    academicYearSelect.disabled = false;
+
+    let foundCurrent = false;
+
+    academicYearOptions.forEach(function(option) {
+
+        if (
+            option.dataset.institutionId === institutionId
+        ) {
+
+            const clonedOption =
+                option.cloneNode(true);
+
+            if (
+                currentAcademicYearId &&
+                clonedOption.value === currentAcademicYearId
+            ) {
+                clonedOption.selected = true;
+                foundCurrent = true;
+            }
+
+            academicYearSelect.appendChild(
+                clonedOption
+            );
+        }
+
+    });
+
+    if (!foundCurrent) {
+        academicYearSelect.value = "";
+    }
+}
+
+
+/* ============================================================
+   GENERATE TERM CODE
+   ============================================================ */
+
+function generateTermCode() {
+
+    let sequence =
+        parseInt(sequenceInput.value, 10);
+
+    if (
+        Number.isNaN(sequence) ||
+        sequence < 1
+    ) {
+        codeInput.value = "";
+        return;
+    }
+
+    /*
+     * 1  -> TERM-01
+     * 2  -> TERM-02
+     * 10 -> TERM-10
+     */
+
+    const paddedSequence =
+        String(sequence).padStart(2, "0");
+
+    codeInput.value =
+        "TERM-" + paddedSequence;
+}
+
+
+/* ============================================================
+   INSTITUTION CHANGE
+   ============================================================ */
+
+institutionSelect.addEventListener(
+    "change",
+    function() {
+
+        academicYearSelect.value = "";
+
+        filterAcademicYears();
+
+    }
+);
+
+
+/* ============================================================
+   SEQUENCE CHANGE
+   ============================================================ */
+
+sequenceInput.addEventListener(
+    "input",
+    generateTermCode
+);
+
+sequenceInput.addEventListener(
+    "change",
+    generateTermCode
+);
+
+
+/* ============================================================
+   NAME CHANGE
+   ============================================================
+
+   Name does not directly modify the code because the code
+   should remain stable and based on sequence.
+   ============================================================ */
+
+
+/* ============================================================
+   DATE VALIDATION
+   ============================================================ */
+
+function validateDates() {
+
+    const startDate =
+        startDateInput.value;
+
+    const endDate =
+        endDateInput.value;
+
+    if (!startDate || !endDate) {
+        return true;
+    }
+
+    if (endDate <= startDate) {
+
+        endDateInput.setCustomValidity(
+            "End date must be after the start date."
+        );
+
+        return false;
+    }
+
+    endDateInput.setCustomValidity("");
+
+    return true;
+}
+
+
+startDateInput.addEventListener(
+    "change",
+    validateDates
+);
+
+endDateInput.addEventListener(
+    "change",
+    validateDates
+);
+
+
+/* ============================================================
+   FORM SUBMIT
+   ============================================================ */
+
+termForm.addEventListener(
+    "submit",
+    function(event) {
+
+        generateTermCode();
+
+        validateDates();
+
+        if (!termForm.checkValidity()) {
+
+            event.preventDefault();
+
+            termForm.reportValidity();
+
+            return;
+        }
+
+        /*
+         * Prevent accidental double submission.
+         */
+
+        saveTermBtn.disabled = true;
+
+        saveTermBtn.innerHTML = `
+            <i data-feather="loader"></i>
+            Creating Term...
+        `;
+
+        if (typeof feather !== "undefined") {
+            feather.replace();
+        }
+
+    }
+);
+
+
+/* ============================================================
+   INITIALIZE
+   ============================================================ */
+
+(function initializeTermForm() {
+
+    /*
+     * If form was returned after validation error,
+     * preserve institution/academic year selection.
+     */
+
+    const initialInstitution =
+        institutionSelect.value;
+
+    const initialAcademicYear =
+        "{{ request.form.get('academic_year_id', '') }}";
+
+    if (initialInstitution) {
+
+        academicYearSelect.value =
+            initialAcademicYear;
+
+        filterAcademicYears();
+
+        if (initialAcademicYear) {
+
+            academicYearSelect.value =
+                initialAcademicYear;
+        }
+
+    } else {
+
+        academicYearSelect.disabled = true;
+
+    }
+
+    generateTermCode();
+
+})();
+
+</script>
+
+{% endblock %}

@@ -1,4 +1,3 @@
-
 {% extends "backend/home/base.html" %}
 
 {% block content %}
@@ -90,7 +89,7 @@
 }
 
 /* ============================================================
-   FORM GRID
+   FORM LAYOUT
    ============================================================ */
 
 .add-user-grid {
@@ -100,10 +99,7 @@
     align-items: start;
 }
 
-.add-user-main {
-    min-width: 0;
-}
-
+.add-user-main,
 .add-user-sidebar {
     min-width: 0;
 }
@@ -112,17 +108,17 @@
    CARDS
    ============================================================ */
 
-.form-card {
+.form-card,
+.sidebar-card {
     background: #fff;
     border: 1px solid #e7eaf0;
     border-radius: 14px;
-    margin-bottom: 20px;
     overflow: hidden;
     box-shadow: 0 2px 9px rgba(20, 30, 50, 0.025);
 }
 
-.form-card:last-child {
-    margin-bottom: 0;
+.form-card {
+    margin-bottom: 20px;
 }
 
 .form-card-header {
@@ -163,7 +159,7 @@
 }
 
 /* ============================================================
-   FORM GRID
+   FIELDS
    ============================================================ */
 
 .fields-grid {
@@ -227,10 +223,91 @@
     box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
 }
 
+.form-control-custom:disabled,
+.form-select-custom:disabled {
+    background: #f5f7fa;
+    color: #9aa2af;
+    cursor: not-allowed;
+}
+
 .form-help {
     margin-top: 6px;
     color: #9299a7;
     font-size: 11px;
+}
+
+/* ============================================================
+   INSTITUTION / BRANCH
+   ============================================================ */
+
+.assignment-box {
+    padding: 14px;
+    border: 1px solid #e7eaf0;
+    border-radius: 11px;
+    background: #fafbfd;
+}
+
+.assignment-box-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 14px;
+}
+
+.assignment-box-header-icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 8px;
+    background: rgba(6, 36, 95, .08);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.assignment-box-header strong {
+    display: block;
+    color: #303948;
+    font-size: 12px;
+}
+
+.assignment-box-header span {
+    display: block;
+    margin-top: 2px;
+    color: #9299a7;
+    font-size: 10px;
+}
+
+.assignment-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.assignment-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 11px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    background: rgba(6, 36, 95, .045);
+    color: #6f7887;
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.assignment-note i {
+    color: #06245f;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.assignment-required-note {
+    color: #e5484d;
+    font-size: 10px;
+    margin-top: 4px;
 }
 
 /* ============================================================
@@ -243,36 +320,30 @@
     gap: 8px;
 }
 
-.phone-country-select {
+.phone-country-select,
+.phone-number-input {
     width: 100%;
     height: 42px;
     border: 1px solid #dfe4eb;
     border-radius: 9px;
     background: #fff;
     color: #252d3b;
-    padding: 0 9px;
-    font-size: 12px;
-    outline: none;
-    cursor: pointer;
-}
-
-.phone-country-select:focus {
-    border-color: #06245f;
-    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
-}
-
-.phone-number-input {
-    width: 100%;
-    height: 42px;
-    border: 1px solid #dfe4eb;
-    border-radius: 9px;
-    padding: 0 12px;
-    font-size: 13px;
-    color: #252d3b;
     outline: none;
     box-sizing: border-box;
 }
 
+.phone-country-select {
+    padding: 0 9px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.phone-number-input {
+    padding: 0 12px;
+    font-size: 13px;
+}
+
+.phone-country-select:focus,
 .phone-number-input:focus {
     border-color: #06245f;
     box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
@@ -307,7 +378,7 @@
 }
 
 /* ============================================================
-   RADIO / SETTINGS
+   RADIO OPTIONS
    ============================================================ */
 
 .option-group {
@@ -435,11 +506,11 @@
    ============================================================ */
 
 .sidebar-card {
-    background: #fff;
-    border: 1px solid #e7eaf0;
-    border-radius: 14px;
-    overflow: hidden;
     margin-bottom: 20px;
+}
+
+.sidebar-card:last-child {
+    margin-bottom: 0;
 }
 
 .sidebar-card-header {
@@ -459,7 +530,7 @@
 }
 
 /* ============================================================
-   CREATE BUTTON
+   BUTTONS
    ============================================================ */
 
 .create-user-btn {
@@ -481,6 +552,11 @@
 
 .create-user-btn:hover {
     background: #041b48;
+}
+
+.create-user-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
 }
 
 .cancel-user-btn {
@@ -564,10 +640,6 @@
     .add-user-sidebar {
         order: -1;
     }
-
-    .sidebar-card {
-        margin-bottom: 18px;
-    }
 }
 
 @media (max-width: 700px) {
@@ -589,7 +661,8 @@
         width: 100%;
     }
 
-    .fields-grid {
+    .fields-grid,
+    .assignment-fields {
         grid-template-columns: 1fr;
     }
 
@@ -623,6 +696,7 @@
             </div>
 
             <div>
+
                 <h1 class="add-user-title">
                     Add User
                 </h1>
@@ -630,6 +704,7 @@
                 <p class="add-user-subtitle">
                     Create a new user account and configure their access.
                 </p>
+
             </div>
 
         </div>
@@ -654,10 +729,12 @@
     ========================================================= -->
 
     <form
+        id="add-user-form"
         method="POST"
         action="{{ url_for('main.add_user') }}"
         enctype="multipart/form-data"
         autocomplete="off"
+        novalidate
     >
 
         <div class="add-user-grid">
@@ -710,6 +787,7 @@
                                     class="form-control-custom"
                                     placeholder="Enter full name"
                                     value="{{ request.form.get('fullname', '') }}"
+                                    maxlength="150"
                                     required
                                 >
 
@@ -735,6 +813,7 @@
                                     class="form-control-custom"
                                     placeholder="Enter username"
                                     value="{{ request.form.get('username', '') }}"
+                                    maxlength="150"
                                     required
                                 >
 
@@ -760,6 +839,7 @@
                                     class="form-control-custom"
                                     placeholder="name@example.com"
                                     value="{{ request.form.get('email', '') }}"
+                                    maxlength="150"
                                     required
                                 >
 
@@ -778,6 +858,8 @@
                                     <span class="required">*</span>
                                 </label>
 
+                                {% set selected_role = request.form.get('role', 'student') %}
+
                                 <select
                                     id="role"
                                     name="role"
@@ -787,18 +869,186 @@
 
                                     {% for role in roles %}
 
+                                        {% set role_value = role.value if role.value is defined else role %}
+
                                         <option
-                                            value="{{ role }}"
-                                            {% if request.form.get('role', 'student') == role %}
+                                            value="{{ role_value }}"
+                                            {% if selected_role == role_value %}
                                                 selected
                                             {% endif %}
                                         >
-                                            {{ role.replace('_', ' ')|title }}
+                                            {{ role_value.replace('_', ' ')|title }}
                                         </option>
 
                                     {% endfor %}
 
                                 </select>
+
+                            </div>
+
+
+                            <!-- ==================================================
+                                 INSTITUTION
+                            =================================================== -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="institution_id"
+                                >
+                                    Institution
+                                </label>
+
+                                <select
+                                    id="institution_id"
+                                    name="institution_id"
+                                    class="form-select-custom"
+                                >
+
+                                    <option value="">
+                                        Select Institution
+                                    </option>
+
+                                    {% set selected_institution_id =
+                                        request.form.get('institution_id', '') | string
+                                    %}
+
+                                    {% for institution in institutions %}
+
+                                        {% set institution_id =
+                                            institution.id | string
+                                        %}
+
+                                        <option
+                                            value="{{ institution.id }}"
+                                            data-institution-id="{{ institution.id }}"
+                                            {% if selected_institution_id == institution_id %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {{ institution.name }}
+
+                                            {% if institution.short_name %}
+                                                — {{ institution.short_name }}
+                                            {% endif %}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                                <div class="form-help">
+                                    Select the institution this user belongs to.
+                                </div>
+
+                            </div>
+
+
+                            <!-- ==================================================
+                                 BRANCH
+                            =================================================== -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="branch_id"
+                                >
+                                    Branch
+                                </label>
+
+                                <select
+                                    id="branch_id"
+                                    name="branch_id"
+                                    class="form-select-custom"
+                                >
+
+                                    <option value="">
+                                        Select Branch
+                                    </option>
+
+                                    {% set selected_branch_id =
+                                        request.form.get('branch_id', '') | string
+                                    %}
+
+                                    {% for branch in branches %}
+
+                                        {% set branch_id =
+                                            branch.id | string
+                                        %}
+
+                                        <option
+                                            value="{{ branch.id }}"
+                                            data-institution-id="{{ branch.institution_id }}"
+                                            {% if selected_branch_id == branch_id %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {{ branch.name }}
+
+                                            {% if branch.code %}
+                                                — {{ branch.code }}
+                                            {% endif %}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                                <div class="form-help">
+                                    Branches are filtered by the selected institution.
+                                </div>
+
+                            </div>
+
+
+                            <!-- ==================================================
+                                 INSTITUTION + BRANCH ASSIGNMENT NOTE
+                            =================================================== -->
+
+                            <div class="form-group field-full">
+
+                                <div class="assignment-box">
+
+                                    <div class="assignment-box-header">
+
+                                        <div class="assignment-box-header-icon">
+                                            <i class="fas fa-building"></i>
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Institution & Branch Assignment
+                                            </strong>
+
+                                            <span>
+                                                Control which institution and branch this account belongs to.
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="assignment-note">
+
+                                        <i class="fas fa-info-circle"></i>
+
+                                        <span>
+                                            A branch belongs to one institution. Select an institution first,
+                                            then choose one of its branches. Superadmin accounts can normally
+                                            operate without a specific institution or branch assignment.
+                                        </span>
+
+                                    </div>
+
+                                </div>
 
                             </div>
 
@@ -858,7 +1108,7 @@
                                         <option
                                             value="{{ country.name }}"
                                             data-country-code="{{ country.code }}"
-                                            {% if request.form.get('country') == country.name %}
+                                            {% if request.form.get('country', '') == country.name %}
                                                 selected
                                             {% endif %}
                                         >
@@ -885,12 +1135,6 @@
 
                                 <div class="phone-wrapper">
 
-                                    <!--
-                                        IMPORTANT:
-                                        This sends the actual calling code,
-                                        e.g. +252, not +SO.
-                                    -->
-
                                     <select
                                         id="phone_country"
                                         name="phone_country"
@@ -902,36 +1146,24 @@
                                             Code
                                         </option>
 
-                                        {% for country in all_countries %}
-
-                                            <option
-                                                value=""
-                                                data-iso="{{ country.code }}"
-                                                data-country-name="{{ country.name }}"
-                                            >
-                                                {{ country.name }}
-                                            </option>
-
-                                        {% endfor %}
-
                                     </select>
-
 
                                     <input
                                         type="tel"
                                         id="phone"
                                         name="phone"
                                         class="phone-number-input"
-                                        placeholder="Enter the phone number without the country code"
+                                        placeholder="Phone number"
                                         value="{{ request.form.get('phone', '') }}"
                                         inputmode="tel"
                                         autocomplete="tel-national"
+                                        maxlength="30"
                                     >
 
                                 </div>
 
                                 <div class="form-help">
-                                    Enter the phone number without the country code.
+                                    Select the country code and enter the number without the country code.
                                 </div>
 
                             </div>
@@ -948,14 +1180,23 @@
                                     State / Region
                                 </label>
 
+                                <!-- Canonical submitted value -->
+                                <input
+                                    type="hidden"
+                                    id="state-hidden"
+                                    name="state"
+                                    value="{{ request.form.get('state', '') }}"
+                                >
+
                                 <select
                                     id="state-dropdown"
                                     class="form-select-custom"
-                                    disabled
                                 >
+
                                     <option value="">
                                         Select State / Region
                                     </option>
+
                                 </select>
 
                                 <input
@@ -963,10 +1204,10 @@
                                     id="state-text"
                                     class="form-control-custom"
                                     placeholder="Enter state / region"
+                                    value="{{ request.form.get('state', '') }}"
+                                    maxlength="255"
                                     style="display:none;"
                                 >
-
-                                <!-- Only the active field gets name="state" -->
 
                             </div>
 
@@ -982,14 +1223,23 @@
                                     City
                                 </label>
 
+                                <!-- Canonical submitted value -->
+                                <input
+                                    type="hidden"
+                                    id="city-hidden"
+                                    name="city"
+                                    value="{{ request.form.get('city', '') }}"
+                                >
+
                                 <select
                                     id="city-dropdown"
                                     class="form-select-custom"
-                                    disabled
                                 >
+
                                     <option value="">
                                         Select City
                                     </option>
+
                                 </select>
 
                                 <input
@@ -997,6 +1247,8 @@
                                     id="city-text"
                                     class="form-control-custom"
                                     placeholder="Enter city"
+                                    value="{{ request.form.get('city', '') }}"
+                                    maxlength="255"
                                     style="display:none;"
                                 >
 
@@ -1021,6 +1273,7 @@
                                     class="form-control-custom"
                                     placeholder="Street, building, apartment, etc."
                                     value="{{ request.form.get('address', '') }}"
+                                    maxlength="255"
                                 >
 
                             </div>
@@ -1075,6 +1328,8 @@
                                         name="password"
                                         class="form-control-custom"
                                         placeholder="Minimum 6 characters"
+                                        minlength="6"
+                                        autocomplete="new-password"
                                         required
                                     >
 
@@ -1112,6 +1367,8 @@
                                         name="confirm_password"
                                         class="form-control-custom"
                                         placeholder="Repeat password"
+                                        minlength="6"
+                                        autocomplete="new-password"
                                         required
                                     >
 
@@ -1279,6 +1536,7 @@
                                     class="form-control-custom"
                                     placeholder="Enter place of birth"
                                     value="{{ request.form.get('pob', '') }}"
+                                    maxlength="255"
                                 >
 
                             </div>
@@ -1359,6 +1617,7 @@
                                     name="bio"
                                     class="form-textarea-custom"
                                     placeholder="Write a short biography..."
+                                    maxlength="5000"
                                 >{{ request.form.get('bio', '') }}</textarea>
 
                             </div>
@@ -1385,9 +1644,7 @@
                 <div class="sidebar-card">
 
                     <div class="sidebar-card-header">
-
                         <h3>Profile Photo</h3>
-
                     </div>
 
                     <div class="sidebar-card-body">
@@ -1443,15 +1700,13 @@
 
 
                 <!-- ==================================================
-                     ACCOUNT STATUS
+                     ACCOUNT SETTINGS
                 =================================================== -->
 
                 <div class="sidebar-card">
 
                     <div class="sidebar-card-header">
-
                         <h3>Account Settings</h3>
-
                     </div>
 
                     <div class="sidebar-card-body">
@@ -1544,7 +1799,7 @@
                                         for="verified_yes"
                                         class="option-label active-green"
                                     >
-                                        <i class="fas fa-badge-check"></i>
+                                        <i class="fas fa-check-circle"></i>
                                         Verified
                                     </label>
 
@@ -1588,9 +1843,7 @@
                 <div class="sidebar-card">
 
                     <div class="sidebar-card-header">
-
                         <h3>Important Information</h3>
-
                     </div>
 
                     <div class="sidebar-card-body">
@@ -1606,8 +1859,26 @@
                                 <strong>User Role</strong>
 
                                 <span>
-                                    The selected role determines the
-                                    user's system access.
+                                    The selected role determines the user's system access.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>Institution & Branch</strong>
+
+                                <span>
+                                    Assign the user to an institution and its branch for proper access control.
                                 </span>
 
                             </div>
@@ -1626,8 +1897,7 @@
                                 <strong>Password</strong>
 
                                 <span>
-                                    Password must contain at least
-                                    6 characters.
+                                    Password must contain at least 6 characters.
                                 </span>
 
                             </div>
@@ -1646,8 +1916,7 @@
                                 <strong>Phone</strong>
 
                                 <span>
-                                    Select the country code and enter
-                                    the number without the country code.
+                                    Select the country code and enter the number without the country code.
                                 </span>
 
                             </div>
@@ -1669,10 +1938,11 @@
 
                         <button
                             type="submit"
+                            id="create-user-btn"
                             class="create-user-btn"
                         >
                             <i class="fas fa-user-plus"></i>
-                            Create User
+                            <span>Create User</span>
                         </button>
 
                         <a
@@ -1698,293 +1968,111 @@
 <script>
 /* ============================================================
    COUNTRY CALLING CODES
-   ============================================================
-
-   IMPORTANT:
-   pycountry gives ISO codes such as:
-
-       SO = Somalia
-       AL = Albania
-       NL = Netherlands
-
-   But phone numbers need calling codes:
-
-       Somalia       +252
-       Albania       +355
-       Netherlands   +31
-
    ============================================================ */
 
 const COUNTRY_CALLING_CODES = {
 
-    AF: "+93",
-    AL: "+355",
-    DZ: "+213",
-    AS: "+1",
-    AD: "+376",
-    AO: "+244",
-    AI: "+1",
-    AG: "+1",
-    AR: "+54",
-    AM: "+374",
-    AW: "+297",
-    AU: "+61",
-    AT: "+43",
-    AZ: "+994",
+    AF:"+93", AL:"+355", DZ:"+213", AS:"+1", AD:"+376",
+    AO:"+244", AI:"+1", AG:"+1", AR:"+54", AM:"+374",
+    AW:"+297", AU:"+61", AT:"+43", AZ:"+994",
 
-    BS: "+1",
-    BH: "+973",
-    BD: "+880",
-    BB: "+1",
-    BY: "+375",
-    BE: "+32",
-    BZ: "+501",
-    BJ: "+229",
-    BM: "+1",
-    BT: "+975",
-    BO: "+591",
-    BQ: "+599",
-    BA: "+387",
-    BW: "+267",
-    BR: "+55",
-    IO: "+246",
-    VG: "+1",
-    BN: "+673",
-    BG: "+359",
-    BF: "+226",
-    BI: "+257",
+    BS:"+1", BH:"+973", BD:"+880", BB:"+1", BY:"+375",
+    BE:"+32", BZ:"+501", BJ:"+229", BM:"+1", BT:"+975",
+    BO:"+591", BQ:"+599", BA:"+387", BW:"+267", BR:"+55",
+    IO:"+246", VG:"+1", BN:"+673", BG:"+359", BF:"+226",
+    BI:"+257",
 
-    CV: "+238",
-    KH: "+855",
-    CM: "+237",
-    CA: "+1",
-    KY: "+1",
-    CF: "+236",
-    TD: "+235",
-    CL: "+56",
-    CN: "+86",
-    CO: "+57",
-    KM: "+269",
-    CG: "+242",
-    CD: "+243",
-    CK: "+682",
-    CR: "+506",
-    CI: "+225",
-    HR: "+385",
-    CU: "+53",
-    CW: "+599",
-    CY: "+357",
-    CZ: "+420",
+    CV:"+238", KH:"+855", CM:"+237", CA:"+1", KY:"+1",
+    CF:"+236", TD:"+235", CL:"+56", CN:"+86", CO:"+57",
+    KM:"+269", CG:"+242", CD:"+243", CK:"+682", CR:"+506",
+    CI:"+225", HR:"+385", CU:"+53", CW:"+599", CY:"+357",
+    CZ:"+420",
 
-    DK: "+45",
-    DJ: "+253",
-    DM: "+1",
-    DO: "+1",
+    DK:"+45", DJ:"+253", DM:"+1", DO:"+1",
 
-    EC: "+593",
-    EG: "+20",
-    SV: "+503",
-    GQ: "+240",
-    ER: "+291",
-    EE: "+372",
-    SZ: "+268",
-    ET: "+251",
+    EC:"+593", EG:"+20", SV:"+503", GQ:"+240", ER:"+291",
+    EE:"+372", SZ:"+268", ET:"+251",
 
-    FK: "+500",
-    FO: "+298",
-    FJ: "+679",
-    FI: "+358",
-    FR: "+33",
-    GF: "+594",
-    PF: "+689",
+    FK:"+500", FO:"+298", FJ:"+679", FI:"+358", FR:"+33",
+    GF:"+594", PF:"+689",
 
-    GA: "+241",
-    GM: "+220",
-    GE: "+995",
-    DE: "+49",
-    GH: "+233",
-    GI: "+350",
-    GR: "+30",
-    GL: "+299",
-    GD: "+1",
-    GP: "+590",
-    GU: "+1",
-    GT: "+502",
-    GG: "+44",
-    GN: "+224",
-    GW: "+245",
-    GY: "+592",
+    GA:"+241", GM:"+220", GE:"+995", DE:"+49", GH:"+233",
+    GI:"+350", GR:"+30", GL:"+299", GD:"+1", GP:"+590",
+    GU:"+1", GT:"+502", GG:"+44", GN:"+224", GW:"+245",
+    GY:"+592",
 
-    HT: "+509",
-    HN: "+504",
-    HK: "+852",
-    HU: "+36",
+    HT:"+509", HN:"+504", HK:"+852", HU:"+36",
 
-    IS: "+354",
-    IN: "+91",
-    ID: "+62",
-    IR: "+98",
-    IQ: "+964",
-    IE: "+353",
-    IM: "+44",
-    IL: "+972",
-    IT: "+39",
+    IS:"+354", IN:"+91", ID:"+62", IR:"+98", IQ:"+964",
+    IE:"+353", IM:"+44", IL:"+972", IT:"+39",
 
-    JM: "+1",
-    JP: "+81",
-    JE: "+44",
-    JO: "+962",
+    JM:"+1", JP:"+81", JE:"+44", JO:"+962",
 
-    KZ: "+7",
-    KE: "+254",
-    KI: "+686",
-    KP: "+850",
-    KR: "+82",
-    KW: "+965",
-    KG: "+996",
+    KZ:"+7", KE:"+254", KI:"+686", KP:"+850", KR:"+82",
+    KW:"+965", KG:"+996",
 
-    LA: "+856",
-    LV: "+371",
-    LB: "+961",
-    LS: "+266",
-    LR: "+231",
-    LY: "+218",
-    LI: "+423",
-    LT: "+370",
-    LU: "+352",
+    LA:"+856", LV:"+371", LB:"+961", LS:"+266", LR:"+231",
+    LY:"+218", LI:"+423", LT:"+370", LU:"+352",
 
-    MO: "+853",
-    MG: "+261",
-    MW: "+265",
-    MY: "+60",
-    MV: "+960",
-    ML: "+223",
-    MT: "+356",
-    MH: "+692",
-    MQ: "+596",
-    MR: "+222",
-    MU: "+230",
-    YT: "+262",
-    MX: "+52",
-    FM: "+691",
-    MD: "+373",
-    MC: "+377",
-    MN: "+976",
-    ME: "+382",
-    MS: "+1",
-    MA: "+212",
-    MZ: "+258",
-    MM: "+95",
+    MO:"+853", MG:"+261", MW:"+265", MY:"+60", MV:"+960",
+    ML:"+223", MT:"+356", MH:"+692", MQ:"+596", MR:"+222",
+    MU:"+230", YT:"+262", MX:"+52", FM:"+691", MD:"+373",
+    MC:"+377", MN:"+976", ME:"+382", MS:"+1", MA:"+212",
+    MZ:"+258", MM:"+95",
 
-    NA: "+264",
-    NR: "+674",
-    NP: "+977",
-    NL: "+31",
-    NC: "+687",
-    NZ: "+64",
-    NI: "+505",
-    NE: "+227",
-    NG: "+234",
-    NU: "+683",
-    NF: "+672",
-    MK: "+389",
-    MP: "+1",
-    NO: "+47",
+    NA:"+264", NR:"+674", NP:"+977", NL:"+31", NC:"+687",
+    NZ:"+64", NI:"+505", NE:"+227", NG:"+234", NU:"+683",
+    NF:"+672", MK:"+389", MP:"+1", NO:"+47",
 
-    OM: "+968",
+    OM:"+968",
 
-    PK: "+92",
-    PW: "+680",
-    PS: "+970",
-    PA: "+507",
-    PG: "+675",
-    PY: "+595",
-    PE: "+51",
-    PH: "+63",
-    PN: "+64",
-    PL: "+48",
-    PT: "+351",
-    PR: "+1",
+    PK:"+92", PW:"+680", PS:"+970", PA:"+507", PG:"+675",
+    PY:"+595", PE:"+51", PH:"+63", PN:"+64", PL:"+48",
+    PT:"+351", PR:"+1",
 
-    QA: "+974",
+    QA:"+974",
 
-    RE: "+262",
-    RO: "+40",
-    RU: "+7",
-    RW: "+250",
+    RE:"+262", RO:"+40", RU:"+7", RW:"+250",
 
-    BL: "+590",
-    SH: "+290",
-    KN: "+1",
-    LC: "+1",
-    MF: "+590",
-    PM: "+508",
-    VC: "+1",
-    WS: "+685",
-    SM: "+378",
-    ST: "+239",
-    SA: "+966",
-    SN: "+221",
-    RS: "+381",
-    SC: "+248",
-    SL: "+232",
-    SG: "+65",
-    SX: "+1",
-    SK: "+421",
-    SI: "+386",
-    SB: "+677",
-    SO: "+252",
-    ZA: "+27",
-    SS: "+211",
-    ES: "+34",
-    LK: "+94",
-    SD: "+249",
-    SR: "+597",
-    SJ: "+47",
-    SE: "+46",
-    CH: "+41",
-    SY: "+963",
+    BL:"+590", SH:"+290", KN:"+1", LC:"+1", MF:"+590",
+    PM:"+508", VC:"+1", WS:"+685", SM:"+378", ST:"+239",
+    SA:"+966", SN:"+221", RS:"+381", SC:"+248", SL:"+232",
+    SG:"+65", SX:"+1", SK:"+421", SI:"+386", SB:"+677",
+    SO:"+252", ZA:"+27", SS:"+211", ES:"+34", LK:"+94",
+    SD:"+249", SR:"+597", SJ:"+47", SE:"+46", CH:"+41",
+    SY:"+963",
 
-    TW: "+886",
-    TJ: "+992",
-    TZ: "+255",
-    TH: "+66",
-    TL: "+670",
-    TG: "+228",
-    TK: "+690",
-    TO: "+676",
-    TT: "+1",
-    TN: "+216",
-    TR: "+90",
-    TM: "+993",
-    TC: "+1",
-    TV: "+688",
+    TW:"+886", TJ:"+992", TZ:"+255", TH:"+66", TL:"+670",
+    TG:"+228", TK:"+690", TO:"+676", TT:"+1", TN:"+216",
+    TR:"+90", TM:"+993", TC:"+1", TV:"+688",
 
-    UG: "+256",
-    UA: "+380",
-    AE: "+971",
-    GB: "+44",
-    US: "+1",
-    UY: "+598",
-    UZ: "+998",
+    UG:"+256", UA:"+380", AE:"+971", GB:"+44", US:"+1",
+    UY:"+598", UZ:"+998",
 
-    VU: "+678",
-    VA: "+39",
-    VE: "+58",
-    VN: "+84",
-    VI: "+1",
+    VU:"+678", VA:"+39", VE:"+58", VN:"+84", VI:"+1",
 
-    WF: "+681",
-    YE: "+967",
-
-    ZM: "+260",
-    ZW: "+263"
+    WF:"+681", YE:"+967", ZM:"+260", ZW:"+263"
 };
 
 
 /* ============================================================
-   PHONE COUNTRY SELECT
+   DOM ELEMENTS
    ============================================================ */
+
+const addUserForm =
+    document.getElementById("add-user-form");
+
+const roleSelect =
+    document.getElementById("role");
+
+const institutionSelect =
+    document.getElementById("institution_id");
+
+const branchSelect =
+    document.getElementById("branch_id");
+
+const countrySelect =
+    document.getElementById("country");
 
 const phoneCountrySelect =
     document.getElementById("phone_country");
@@ -1992,170 +2080,14 @@ const phoneCountrySelect =
 const phoneInput =
     document.getElementById("phone");
 
-const countrySelect =
-    document.getElementById("country");
-
-
-/*
- * Build the phone country select from all_countries.
- *
- * pycountry provides:
- *
- *   country.code = SO
- *   country.name = Somalia
- *
- * We add:
- *
- *   +252
- *
- * from COUNTRY_CALLING_CODES.
- */
-
-function buildPhoneCountries() {
-
-    const countries = [];
-
-    {% for country in all_countries %}
-        countries.push({
-            code: {{ country.code | tojson }},
-            name: {{ country.name | tojson }}
-        });
-    {% endfor %}
-
-    const currentPhoneCountry =
-        {{ request.form.get('phone_country', '') | tojson }};
-
-    phoneCountrySelect.innerHTML = "";
-
-    const defaultOption =
-        document.createElement("option");
-
-    defaultOption.value = "";
-    defaultOption.textContent = "Code";
-
-    phoneCountrySelect.appendChild(defaultOption);
-
-
-    countries.forEach(function(country) {
-
-        const callingCode =
-            COUNTRY_CALLING_CODES[country.code];
-
-        /*
-         * Some territories/countries may not have a calling code
-         * in the map. Do not display them as +ISO.
-         */
-
-        if (!callingCode) {
-            return;
-        }
-
-        const option =
-            document.createElement("option");
-
-        option.value = callingCode;
-
-        option.dataset.iso = country.code;
-
-        option.dataset.countryName = country.name;
-
-        option.textContent =
-            `${callingCode} ${country.name}`;
-
-        if (currentPhoneCountry === callingCode) {
-            option.selected = true;
-        }
-
-        phoneCountrySelect.appendChild(option);
-
-    });
-}
-
-
-/* ============================================================
-   AUTO SELECT PHONE CODE WHEN COUNTRY CHANGES
-   ============================================================ */
-
-function selectPhoneCodeFromCountry() {
-
-    const selected =
-        countrySelect.options[
-            countrySelect.selectedIndex
-        ];
-
-    if (!selected) {
-        return;
-    }
-
-    const iso =
-        selected.dataset.countryCode;
-
-    if (!iso) {
-        return;
-    }
-
-    const callingCode =
-        COUNTRY_CALLING_CODES[iso];
-
-    if (!callingCode) {
-        return;
-    }
-
-    const phoneOption =
-        Array.from(
-            phoneCountrySelect.options
-        ).find(function(option) {
-            return option.value === callingCode;
-        });
-
-    if (phoneOption) {
-        phoneOption.selected = true;
-    }
-}
-
-
-/* ============================================================
-   COUNTRY CHANGE
-   ============================================================ */
-
-countrySelect.addEventListener(
-    "change",
-    selectPhoneCodeFromCountry
-);
-
-
-/* ============================================================
-   PHONE INPUT
-   ============================================================
-
-   Prevent the user from entering +252 again.
-
-   The country code is selected separately.
-   */
-
-phoneInput.addEventListener(
-    "input",
-    function() {
-
-        this.value = this.value
-            .replace(/[^\d\s\-().]/g, "");
-
-    }
-);
-
-
-/* ============================================================
-   SOMALIA REGIONS
-   ============================================================ */
-
-const SOMALIA_REGIONS =
-    {{ somalia_regions | tojson | safe }};
-
 const stateDropdown =
     document.getElementById("state-dropdown");
 
 const stateText =
     document.getElementById("state-text");
+
+const stateHidden =
+    document.getElementById("state-hidden");
 
 const cityDropdown =
     document.getElementById("city-dropdown");
@@ -2163,138 +2095,742 @@ const cityDropdown =
 const cityText =
     document.getElementById("city-text");
 
+const cityHidden =
+    document.getElementById("city-hidden");
 
-const oldState =
+const photoInput =
+    document.getElementById("photo");
+
+const photoPreview =
+    document.getElementById("photo-preview");
+
+const photoPlaceholder =
+    document.getElementById("photo-placeholder");
+
+const photoName =
+    document.getElementById("photo-name");
+
+const createUserButton =
+    document.getElementById("create-user-btn");
+
+
+/* ============================================================
+   SERVER DATA
+   ============================================================ */
+
+const SOMALIA_REGIONS =
+    {{ somalia_regions | default({}) | tojson | safe }};
+
+const OLD_STATE =
     {{ request.form.get('state', '') | tojson }};
 
-const oldCity =
+const OLD_CITY =
     {{ request.form.get('city', '') | tojson }};
 
+const OLD_PHONE_COUNTRY =
+    {{ request.form.get('phone_country', '') | tojson }};
+
+const OLD_INSTITUTION_ID =
+    {{ request.form.get('institution_id', '') | tojson }};
+
+const OLD_BRANCH_ID =
+    {{ request.form.get('branch_id', '') | tojson }};
+
 
 /* ============================================================
-   SET ACTIVE STATE FIELD
+   ROLE / INSTITUTION VISIBILITY
    ============================================================ */
 
-function setStateFieldName(useDropdown) {
+function updateAssignmentVisibility() {
 
-    if (useDropdown) {
-
-        stateDropdown.name = "state";
-        stateDropdown.disabled = false;
-
-        stateText.removeAttribute("name");
-        stateText.disabled = true;
-
-    } else {
-
-        stateDropdown.removeAttribute("name");
-        stateDropdown.disabled = true;
-
-        stateText.name = "state";
-        stateText.disabled = false;
-
+    if (!roleSelect || !institutionSelect || !branchSelect) {
+        return;
     }
-}
 
-
-/* ============================================================
-   SET ACTIVE CITY FIELD
-   ============================================================ */
-
-function setCityFieldName(useDropdown) {
-
-    if (useDropdown) {
-
-        cityDropdown.name = "city";
-        cityDropdown.disabled = false;
-
-        cityText.removeAttribute("name");
-        cityText.disabled = true;
-
-    } else {
-
-        cityDropdown.removeAttribute("name");
-        cityDropdown.disabled = true;
-
-        cityText.name = "city";
-        cityText.disabled = false;
-
-    }
-}
-
-
-/* ============================================================
-   LOAD REGIONS
-   ============================================================ */
-
-function loadRegions() {
-
-    const country =
-        countrySelect.value;
-
-    stateDropdown.innerHTML =
-        '<option value="">Select State / Region</option>';
-
-    cityDropdown.innerHTML =
-        '<option value="">Select City</option>';
-
-    cityDropdown.disabled = true;
+    const role =
+        roleSelect.value.toLowerCase().trim();
 
     /*
-     * Somalia uses the region -> city structure.
+     * Superadmin normally operates globally.
+     *
+     * Other users can be assigned to an institution.
      */
 
+    const isSuperadmin =
+        role === "superadmin";
+
+
+    const institutionGroup =
+        institutionSelect.closest(".form-group");
+
+    const branchGroup =
+        branchSelect.closest(".form-group");
+
+
+    if (isSuperadmin) {
+
+        /*
+         * Keep the fields visible but optional.
+         * This allows a superadmin to still be assigned
+         * if the backend supports it.
+         */
+
+        if (institutionGroup) {
+            institutionGroup.style.display = "";
+        }
+
+        if (branchGroup) {
+            branchGroup.style.display = "";
+        }
+
+        institutionSelect.removeAttribute("required");
+        branchSelect.removeAttribute("required");
+
+    } else {
+
+        if (institutionGroup) {
+            institutionGroup.style.display = "";
+        }
+
+        if (branchGroup) {
+            branchGroup.style.display = "";
+        }
+
+        /*
+         * Institution is required for non-superadmin users.
+         */
+
+        institutionSelect.setAttribute(
+            "required",
+            "required"
+        );
+
+        /*
+         * Branch is not globally forced because
+         * some institution-level accounts may not
+         * belong to a specific branch.
+         */
+
+        branchSelect.removeAttribute("required");
+    }
+}
+
+
+/* ============================================================
+   FILTER BRANCHES BY INSTITUTION
+   ============================================================ */
+
+function filterBranches(
+    preserveSelected = true
+) {
+
+    if (!institutionSelect || !branchSelect) {
+        return;
+    }
+
+
+    const institutionId =
+        institutionSelect.value.trim();
+
+
+    const previousBranch =
+        preserveSelected
+            ? (
+                branchSelect.dataset.currentValue ||
+                OLD_BRANCH_ID ||
+                branchSelect.value
+              )
+            : "";
+
+
+    const allOptions =
+        Array.from(
+            branchSelect.querySelectorAll(
+                "option[data-institution-id]"
+            )
+        );
+
+
+    /*
+     * Remove all dynamic branch options.
+     */
+
+    allOptions.forEach(function(option) {
+        option.remove();
+    });
+
+
+    /*
+     * Rebuild from server data.
+     */
+
+    const branches = [
+
+        {% for branch in branches %}
+
+        {
+            id: {{ branch.id | tojson }},
+            name: {{ branch.name | tojson }},
+            code: {{ branch.code | default('', true) | tojson }},
+            institution_id: {{ branch.institution_id | tojson }}
+        }
+
+        {% if not loop.last %},{% endif %}
+
+        {% endfor %}
+
+    ];
+
+
+    branches.forEach(function(branch) {
+
+        if (
+            institutionId &&
+            String(branch.institution_id) !==
+            String(institutionId)
+        ) {
+            return;
+        }
+
+
+        /*
+         * If institution has not been selected,
+         * don't show branch records.
+         */
+
+        if (!institutionId) {
+            return;
+        }
+
+
+        const option =
+            document.createElement("option");
+
+
+        option.value =
+            branch.id;
+
+        option.dataset.institutionId =
+            branch.institution_id;
+
+
+        option.textContent =
+            branch.code
+                ? `${branch.name} — ${branch.code}`
+                : branch.name;
+
+
+        if (
+            previousBranch &&
+            String(previousBranch) ===
+            String(branch.id)
+        ) {
+
+            option.selected = true;
+        }
+
+
+        branchSelect.appendChild(option);
+
+    });
+
+
+    /*
+     * Keep a clean placeholder.
+     */
+
+    if (!branchSelect.value) {
+        branchSelect.value = "";
+    }
+
+
+    branchSelect.disabled =
+        !institutionId;
+
+
+    /*
+     * Save selected branch for future
+     * institution changes.
+     */
+
+    branchSelect.dataset.currentValue =
+        branchSelect.value || "";
+}
+
+
+/* ============================================================
+   INSTITUTION CHANGE
+   ============================================================ */
+
+if (institutionSelect) {
+
+    institutionSelect.addEventListener(
+        "change",
+        function() {
+
+            /*
+             * When institution changes,
+             * the old branch is no longer trusted.
+             */
+
+            branchSelect.dataset.currentValue = "";
+
+            filterBranches(false);
+
+        }
+    );
+}
+
+
+/* ============================================================
+   BRANCH CHANGE
+   ============================================================ */
+
+if (branchSelect) {
+
+    branchSelect.addEventListener(
+        "change",
+        function() {
+
+            branchSelect.dataset.currentValue =
+                branchSelect.value || "";
+
+        }
+    );
+}
+
+
+/* ============================================================
+   ROLE CHANGE
+   ============================================================ */
+
+if (roleSelect) {
+
+    roleSelect.addEventListener(
+        "change",
+        function() {
+
+            updateAssignmentVisibility();
+
+        }
+    );
+}
+
+
+/* ============================================================
+   BUILD PHONE COUNTRY LIST
+   ============================================================ */
+
+function buildPhoneCountries() {
+
+    if (!phoneCountrySelect) {
+        return;
+    }
+
+
+    phoneCountrySelect.innerHTML = "";
+
+
+    const defaultOption =
+        document.createElement("option");
+
+    defaultOption.value = "";
+    defaultOption.textContent = "Code";
+
+    phoneCountrySelect.appendChild(
+        defaultOption
+    );
+
+
+    const countries = [];
+
+
+    {% for country in all_countries %}
+
+        countries.push({
+
+            code:
+                {{ country.code | tojson }},
+
+            name:
+                {{ country.name | tojson }}
+
+        });
+
+    {% endfor %}
+
+
+    countries.forEach(function(country) {
+
+        const callingCode =
+            COUNTRY_CALLING_CODES[
+                country.code
+            ];
+
+
+        if (!callingCode) {
+            return;
+        }
+
+
+        const option =
+            document.createElement("option");
+
+
+        option.value =
+            callingCode;
+
+
+        option.dataset.iso =
+            country.code;
+
+
+        option.dataset.countryName =
+            country.name;
+
+
+        option.textContent =
+            `${callingCode} ${country.name}`;
+
+
+        /*
+         * Preserve previously submitted phone code.
+         */
+
+        if (
+            OLD_PHONE_COUNTRY &&
+            OLD_PHONE_COUNTRY === callingCode
+        ) {
+
+            option.selected = true;
+
+        }
+
+
+        phoneCountrySelect.appendChild(
+            option
+        );
+
+    });
+}
+
+
+/* ============================================================
+   SELECT PHONE CODE FROM COUNTRY
+   ============================================================ */
+
+function selectPhoneCodeFromCountry() {
+
     if (
-        country.toLowerCase() !== "somalia"
+        !countrySelect ||
+        !phoneCountrySelect
     ) {
+        return;
+    }
 
-        stateDropdown.style.display = "none";
-        stateText.style.display = "block";
 
-        cityDropdown.style.display = "none";
-        cityText.style.display = "block";
+    const selectedOption =
+        countrySelect.options[
+            countrySelect.selectedIndex
+        ];
 
-        setStateFieldName(false);
-        setCityFieldName(false);
 
-        stateText.value = oldState || "";
-        cityText.value = oldCity || "";
+    if (!selectedOption) {
+        return;
+    }
+
+
+    const iso =
+        selectedOption.dataset.countryCode;
+
+
+    if (!iso) {
+        return;
+    }
+
+
+    const callingCode =
+        COUNTRY_CALLING_CODES[iso];
+
+
+    if (!callingCode) {
+        return;
+    }
+
+
+    /*
+     * Match ISO first because several countries
+     * share the same calling code, such as +1.
+     */
+
+    const phoneOption =
+        Array.from(
+            phoneCountrySelect.options
+        ).find(function(option) {
+
+            return (
+                option.dataset.iso === iso
+            );
+
+        });
+
+
+    if (phoneOption) {
+
+        phoneCountrySelect.value =
+            phoneOption.value;
 
         return;
     }
 
 
-    /* Somalia */
+    /*
+     * Fallback to calling code.
+     */
 
-    stateDropdown.style.display = "block";
-    stateText.style.display = "none";
+    const fallbackOption =
+        Array.from(
+            phoneCountrySelect.options
+        ).find(function(option) {
 
-    cityDropdown.style.display = "block";
-    cityText.style.display = "none";
-
-    setStateFieldName(true);
-    setCityFieldName(true);
-
-
-    Object.keys(SOMALIA_REGIONS)
-        .forEach(function(region) {
-
-            const option =
-                document.createElement("option");
-
-            option.value = region;
-            option.textContent = region;
-
-            if (region === oldState) {
-                option.selected = true;
-            }
-
-            stateDropdown.appendChild(option);
+            return option.value === callingCode;
 
         });
 
 
-    loadCities();
+    if (fallbackOption) {
+
+        phoneCountrySelect.value =
+            callingCode;
+
+    }
+}
+
+
+/* ============================================================
+   SET STATE FIELD
+   ============================================================ */
+
+function setStateField(useDropdown) {
+
+    if (
+        !stateDropdown ||
+        !stateText ||
+        !stateHidden
+    ) {
+        return;
+    }
+
+
+    if (useDropdown) {
+
+        stateDropdown.style.display =
+            "block";
+
+        stateText.style.display =
+            "none";
+
+        stateDropdown.disabled =
+            false;
+
+        stateText.disabled =
+            true;
+
+    } else {
+
+        stateDropdown.style.display =
+            "none";
+
+        stateText.style.display =
+            "block";
+
+        stateDropdown.disabled =
+            true;
+
+        stateText.disabled =
+            false;
+
+    }
+}
+
+
+/* ============================================================
+   SET CITY FIELD
+   ============================================================ */
+
+function setCityField(useDropdown) {
+
+    if (
+        !cityDropdown ||
+        !cityText ||
+        !cityHidden
+    ) {
+        return;
+    }
+
+
+    if (useDropdown) {
+
+        cityDropdown.style.display =
+            "block";
+
+        cityText.style.display =
+            "none";
+
+        cityDropdown.disabled =
+            false;
+
+        cityText.disabled =
+            true;
+
+    } else {
+
+        cityDropdown.style.display =
+            "none";
+
+        cityText.style.display =
+            "block";
+
+        cityDropdown.disabled =
+            true;
+
+        cityText.disabled =
+            false;
+
+    }
+}
+
+
+/* ============================================================
+   LOAD SOMALIA REGIONS
+   ============================================================ */
+
+function loadRegions(
+    preserveOldValues = true
+) {
+
+    if (!countrySelect) {
+        return;
+    }
+
+
+    const country =
+        countrySelect.value
+            .trim()
+            .toLowerCase();
+
+
+    stateDropdown.innerHTML =
+        '<option value="">Select State / Region</option>';
+
+
+    cityDropdown.innerHTML =
+        '<option value="">Select City</option>';
+
+
+    cityDropdown.disabled =
+        true;
+
+
+    /*
+     * Non-Somalia:
+     * use text inputs.
+     */
+
+    if (country !== "somalia") {
+
+        setStateField(false);
+        setCityField(false);
+
+
+        if (preserveOldValues) {
+
+            stateText.value =
+                OLD_STATE || "";
+
+            cityText.value =
+                OLD_CITY || "";
+
+            stateHidden.value =
+                OLD_STATE || "";
+
+            cityHidden.value =
+                OLD_CITY || "";
+
+        } else {
+
+            stateText.value = "";
+            cityText.value = "";
+
+            stateHidden.value = "";
+            cityHidden.value = "";
+
+        }
+
+        return;
+    }
+
+
+    /*
+     * Somalia:
+     * use Region -> City dropdowns.
+     */
+
+    setStateField(true);
+    setCityField(true);
+
+
+    Object.keys(
+        SOMALIA_REGIONS || {}
+    ).forEach(function(region) {
+
+        const option =
+            document.createElement("option");
+
+
+        option.value =
+            region;
+
+
+        option.textContent =
+            region;
+
+
+        if (
+            preserveOldValues &&
+            region === OLD_STATE
+        ) {
+
+            option.selected = true;
+
+        }
+
+
+        stateDropdown.appendChild(
+            option
+        );
+
+    });
+
+
+    /*
+     * Synchronize hidden state.
+     */
+
+    if (
+        preserveOldValues &&
+        OLD_STATE
+    ) {
+
+        stateDropdown.value =
+            OLD_STATE;
+
+    }
+
+
+    loadCities(
+        preserveOldValues
+    );
 }
 
 
@@ -2302,17 +2838,32 @@ function loadRegions() {
    LOAD CITIES
    ============================================================ */
 
-function loadCities() {
+function loadCities(
+    preserveOldCity = false
+) {
+
+    if (
+        !stateDropdown ||
+        !cityDropdown
+    ) {
+        return;
+    }
+
 
     const region =
         stateDropdown.value;
 
+
     cityDropdown.innerHTML =
         '<option value="">Select City</option>';
 
+
     if (!region) {
 
-        cityDropdown.disabled = true;
+        cityDropdown.disabled =
+            true;
+
+        cityHidden.value = "";
 
         return;
     }
@@ -2327,59 +2878,186 @@ function loadCities() {
         const option =
             document.createElement("option");
 
-        option.value = city;
-        option.textContent = city;
 
-        if (city === oldCity) {
-            option.selected = true;
+        option.value =
+            city;
+
+
+        option.textContent =
+            city;
+
+
+        if (
+            preserveOldCity &&
+            city === OLD_CITY
+        ) {
+
+            option.selected =
+                true;
+
         }
 
-        cityDropdown.appendChild(option);
+
+        cityDropdown.appendChild(
+            option
+        );
 
     });
 
+
     cityDropdown.disabled =
         cities.length === 0;
+
+
+    /*
+     * Synchronize hidden values.
+     */
+
+    stateHidden.value =
+        stateDropdown.value || "";
+
+
+    cityHidden.value =
+        cityDropdown.value || "";
 }
 
 
 /* ============================================================
-   COUNTRY CHANGE FOR LOCATION
+   COUNTRY CHANGE
    ============================================================ */
 
-countrySelect.addEventListener(
-    "change",
-    function() {
+if (countrySelect) {
 
-        /*
-         * When changing country, old state/city should no longer
-         * control the new country.
-         */
+    countrySelect.addEventListener(
+        "change",
+        function() {
 
-        stateText.value = "";
-        cityText.value = "";
+            /*
+             * Clear previous location.
+             */
 
-        stateDropdown.value = "";
-        cityDropdown.value = "";
+            stateDropdown.value = "";
+            cityDropdown.value = "";
 
-        loadRegions();
+            stateText.value = "";
+            cityText.value = "";
 
-    }
-);
+            stateHidden.value = "";
+            cityHidden.value = "";
+
+
+            /*
+             * Automatically select phone code.
+             */
+
+            selectPhoneCodeFromCountry();
+
+
+            /*
+             * Reload location fields.
+             */
+
+            loadRegions(false);
+
+        }
+    );
+}
 
 
 /* ============================================================
    REGION CHANGE
    ============================================================ */
 
-stateDropdown.addEventListener(
-    "change",
-    function() {
+if (stateDropdown) {
 
-        loadCities();
+    stateDropdown.addEventListener(
+        "change",
+        function() {
 
-    }
-);
+            stateHidden.value =
+                stateDropdown.value || "";
+
+            cityHidden.value = "";
+
+            loadCities(false);
+
+        }
+    );
+}
+
+
+/* ============================================================
+   CITY CHANGE
+   ============================================================ */
+
+if (cityDropdown) {
+
+    cityDropdown.addEventListener(
+        "change",
+        function() {
+
+            stateHidden.value =
+                stateDropdown.value || "";
+
+            cityHidden.value =
+                cityDropdown.value || "";
+
+        }
+    );
+}
+
+
+/* ============================================================
+   TEXT STATE / CITY CHANGE
+   ============================================================ */
+
+if (stateText) {
+
+    stateText.addEventListener(
+        "input",
+        function() {
+
+            stateHidden.value =
+                this.value.trim();
+
+        }
+    );
+}
+
+
+if (cityText) {
+
+    cityText.addEventListener(
+        "input",
+        function() {
+
+            cityHidden.value =
+                this.value.trim();
+
+        }
+    );
+}
+
+
+/* ============================================================
+   PHONE INPUT
+   ============================================================ */
+
+if (phoneInput) {
+
+    phoneInput.addEventListener(
+        "input",
+        function() {
+
+            this.value =
+                this.value.replace(
+                    /[^\d\s\-().]/g,
+                    ""
+                );
+
+        }
+    );
+}
 
 
 /* ============================================================
@@ -2394,15 +3072,27 @@ function togglePassword(
     const input =
         document.getElementById(inputId);
 
+
     const icon =
         button.querySelector("i");
+
+
+    if (!input || !icon) {
+        return;
+    }
+
 
     if (input.type === "password") {
 
         input.type = "text";
 
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
+        icon.classList.remove(
+            "fa-eye"
+        );
+
+        icon.classList.add(
+            "fa-eye-slash"
+        );
 
         button.setAttribute(
             "aria-label",
@@ -2413,8 +3103,13 @@ function togglePassword(
 
         input.type = "password";
 
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
+        icon.classList.remove(
+            "fa-eye-slash"
+        );
+
+        icon.classList.add(
+            "fa-eye"
+        );
 
         button.setAttribute(
             "aria-label",
@@ -2428,90 +3123,121 @@ function togglePassword(
    PHOTO PREVIEW
    ============================================================ */
 
-const photoInput =
-    document.getElementById("photo");
+if (photoInput) {
 
-const photoPreview =
-    document.getElementById("photo-preview");
+    photoInput.addEventListener(
+        "change",
+        function() {
 
-const photoPlaceholder =
-    document.getElementById("photo-placeholder");
-
-const photoName =
-    document.getElementById("photo-name");
+            const file =
+                this.files &&
+                this.files[0];
 
 
-photoInput.addEventListener(
-    "change",
-    function() {
-
-        const file =
-            this.files && this.files[0];
-
-        if (!file) {
-
-            photoPreview.style.display = "none";
-            photoPlaceholder.style.display = "flex";
-
-            photoName.textContent =
-                "JPG, PNG, WEBP or GIF";
-
-            return;
-        }
-
-
-        photoName.textContent =
-            file.name;
-
-
-        if (!file.type.startsWith("image/")) {
-
-            photoPreview.style.display = "none";
-            photoPlaceholder.style.display = "flex";
-
-            photoName.textContent =
-                "Please select a valid image.";
-
-            this.value = "";
-
-            return;
-        }
-
-
-        const reader =
-            new FileReader();
-
-
-        reader.onload =
-            function(event) {
-
-                photoPreview.src =
-                    event.target.result;
+            if (!file) {
 
                 photoPreview.style.display =
-                    "block";
-
-                photoPlaceholder.style.display =
                     "none";
 
-            };
+                photoPlaceholder.style.display =
+                    "flex";
+
+                photoName.textContent =
+                    "JPG, PNG, WEBP or GIF";
+
+                return;
+            }
 
 
-        reader.readAsDataURL(file);
+            const allowedTypes = [
 
-    }
-);
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+                "image/gif"
+
+            ];
+
+
+            if (
+                !allowedTypes.includes(
+                    file.type
+                )
+            ) {
+
+                this.value = "";
+
+                photoPreview.style.display =
+                    "none";
+
+                photoPlaceholder.style.display =
+                    "flex";
+
+                photoName.textContent =
+                    "Please select JPG, PNG, WEBP or GIF.";
+
+                return;
+            }
+
+
+            /*
+             * Maximum 5 MB.
+             */
+
+            const MAX_SIZE =
+                5 * 1024 * 1024;
+
+
+            if (file.size > MAX_SIZE) {
+
+                this.value = "";
+
+                photoPreview.style.display =
+                    "none";
+
+                photoPlaceholder.style.display =
+                    "flex";
+
+                photoName.textContent =
+                    "Image must be 5 MB or smaller.";
+
+                return;
+            }
+
+
+            photoName.textContent =
+                file.name;
+
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function(event) {
+
+                    photoPreview.src =
+                        event.target.result;
+
+                    photoPreview.style.display =
+                        "block";
+
+                    photoPlaceholder.style.display =
+                        "none";
+
+                };
+
+
+            reader.readAsDataURL(file);
+
+        }
+    );
+}
 
 
 /* ============================================================
-   FORM SUBMIT
+   FORM VALIDATION
    ============================================================ */
-
-const addUserForm =
-    document.querySelector(
-        'form[action="{{ url_for("main.add_user") }}"]'
-    );
-
 
 if (addUserForm) {
 
@@ -2519,11 +3245,135 @@ if (addUserForm) {
         "submit",
         function(event) {
 
+            /*
+             * Always synchronize location fields.
+             */
+
+            if (
+                countrySelect &&
+                countrySelect.value
+                    .trim()
+                    .toLowerCase() === "somalia"
+            ) {
+
+                stateHidden.value =
+                    stateDropdown.value || "";
+
+                cityHidden.value =
+                    cityDropdown.value || "";
+
+            } else {
+
+                stateHidden.value =
+                    stateText.value.trim();
+
+                cityHidden.value =
+                    cityText.value.trim();
+
+            }
+
+
+            /*
+             * Synchronize institution.
+             */
+
+            const institutionId =
+                institutionSelect
+                    ? institutionSelect.value.trim()
+                    : "";
+
+
+            const branchId =
+                branchSelect
+                    ? branchSelect.value.trim()
+                    : "";
+
+
+            const role =
+                roleSelect
+                    ? roleSelect.value
+                        .trim()
+                        .toLowerCase()
+                    : "";
+
+
+            /*
+             * Non-superadmin users should have
+             * an institution.
+             */
+
+            if (
+                role !== "superadmin" &&
+                !institutionId
+            ) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please select an institution for this user."
+                );
+
+                institutionSelect.focus();
+
+                return;
+
+            }
+
+
+            /*
+             * Validate branch belongs to
+             * selected institution.
+             */
+
+            if (
+                institutionId &&
+                branchId
+            ) {
+
+                const selectedBranch =
+                    branchSelect.options[
+                        branchSelect.selectedIndex
+                    ];
+
+
+                if (
+                    selectedBranch &&
+                    selectedBranch.dataset
+                        .institutionId &&
+                    String(
+                        selectedBranch.dataset
+                            .institutionId
+                    ) !==
+                    String(institutionId)
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "The selected branch does not belong to the selected institution."
+                    );
+
+                    branchSelect.focus();
+
+                    return;
+                }
+            }
+
+
+            /*
+             * Password.
+             */
+
             const password =
-                document.getElementById("password").value;
+                document.getElementById(
+                    "password"
+                ).value;
+
 
             const confirmPassword =
-                document.getElementById("confirm_password").value;
+                document.getElementById(
+                    "confirm_password"
+                ).value;
 
 
             if (password.length < 6) {
@@ -2534,11 +3384,22 @@ if (addUserForm) {
                     "Password must contain at least 6 characters."
                 );
 
+                document
+                    .getElementById("password")
+                    .focus();
+
                 return;
             }
 
 
-            if (password !== confirmPassword) {
+            /*
+             * Password confirmation.
+             */
+
+            if (
+                password !==
+                confirmPassword
+            ) {
 
                 event.preventDefault();
 
@@ -2546,36 +3407,63 @@ if (addUserForm) {
                     "Password and confirm password do not match."
                 );
 
+                document
+                    .getElementById(
+                        "confirm_password"
+                    )
+                    .focus();
+
                 return;
             }
 
 
             /*
-             * Make sure phone number does not accidentally contain
-             * the country calling code.
+             * Phone number cleanup.
              */
 
             const selectedPhoneCode =
                 phoneCountrySelect.value;
 
+
             let number =
                 phoneInput.value.trim();
 
 
+            /*
+             * If user accidentally entered:
+             *
+             * +252 612345678
+             */
+
             if (
                 selectedPhoneCode &&
-                number.startsWith(selectedPhoneCode)
+                number.startsWith(
+                    selectedPhoneCode
+                )
             ) {
 
                 number =
-                    number.substring(
-                        selectedPhoneCode.length
-                    );
+                    number
+                        .substring(
+                            selectedPhoneCode.length
+                        )
+                        .trim();
 
                 phoneInput.value =
                     number;
-
             }
+
+
+            /*
+             * Prevent duplicate submit.
+             */
+
+            createUserButton.disabled =
+                true;
+
+
+            createUserButton.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i><span>Creating User...</span>';
 
         }
     );
@@ -2583,24 +3471,51 @@ if (addUserForm) {
 
 
 /* ============================================================
-   INITIALIZE
+   INITIALIZATION
    ============================================================ */
 
 document.addEventListener(
     "DOMContentLoaded",
     function() {
 
+        /*
+         * Build phone country list.
+         */
+
         buildPhoneCountries();
 
-        loadRegions();
 
         /*
-         * Automatically select the phone code based on selected
-         * country when no old phone country exists.
+         * Filter branches according to
+         * the selected institution.
+         */
+
+        filterBranches(true);
+
+
+        /*
+         * Role-based configuration.
+         */
+
+        updateAssignmentVisibility();
+
+
+        /*
+         * Load state/city.
+         */
+
+        loadRegions(true);
+
+
+        /*
+         * If no saved phone country exists,
+         * derive it from selected country.
          */
 
         if (
+            phoneCountrySelect &&
             !phoneCountrySelect.value &&
+            countrySelect &&
             countrySelect.value
         ) {
 

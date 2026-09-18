@@ -1,0 +1,1848 @@
+{% extends "backend/home/base.html" %}
+
+{% block title %}View Institution{% endblock %}
+
+{% block content %}
+
+<style>
+/* ============================================================
+   VIEW INSTITUTION PAGE
+   ============================================================ */
+
+.institution-view-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.page-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(6, 36, 95, 0.10);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.page-header h1 {
+    margin: 0;
+    color: #06245f;
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.page-header p {
+    margin: 4px 0 0;
+    color: #687386;
+    font-size: 14px;
+}
+
+.page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: #06245f;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #041c4c;
+}
+
+.btn-secondary {
+    background: #fff;
+    color: #06245f;
+    border-color: #dce2eb;
+}
+
+.btn-secondary:hover {
+    background: #f6f8fb;
+}
+
+.btn-danger {
+    background: #fff;
+    color: #dc3545;
+    border-color: #f1c6cb;
+}
+
+.btn-danger:hover {
+    background: #fff5f6;
+}
+
+/* ============================================================
+   HERO CARD
+   ============================================================ */
+
+.institution-hero {
+    background: #fff;
+    border: 1px solid #e6eaf0;
+    border-radius: 18px;
+    padding: 25px;
+    margin-bottom: 22px;
+    box-shadow: 0 5px 20px rgba(6, 36, 95, 0.05);
+}
+
+.hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+}
+
+.hero-main {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 0;
+}
+
+.institution-logo {
+    width: 92px;
+    height: 92px;
+    border-radius: 18px;
+    object-fit: cover;
+    border: 1px solid #e2e7ef;
+    background: #f7f9fc;
+    flex-shrink: 0;
+}
+
+.institution-logo-fallback {
+    width: 92px;
+    height: 92px;
+    border-radius: 18px;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #33206f
+    );
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    flex-shrink: 0;
+}
+
+.hero-info {
+    min-width: 0;
+}
+
+.hero-info h2 {
+    margin: 0 0 7px;
+    color: #182235;
+    font-size: 27px;
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.hero-code {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #687386;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.hero-code strong {
+    color: #06245f;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.status-active {
+    background: #eaf8ef;
+    color: #218838;
+}
+
+.status-active .status-dot {
+    background: #32b73a;
+}
+
+.status-inactive {
+    background: #f1f3f5;
+    color: #687386;
+}
+
+.status-inactive .status-dot {
+    background: #8a94a6;
+}
+
+.status-suspended {
+    background: #fff0f1;
+    color: #dc3545;
+}
+
+.status-suspended .status-dot {
+    background: #dc3545;
+}
+
+.hero-created {
+    text-align: right;
+    color: #7b8494;
+    font-size: 13px;
+}
+
+.hero-created strong {
+    display: block;
+    color: #273247;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.stat-card {
+    background: #fff;
+    border: 1px solid #e6eaf0;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 4px 16px rgba(6, 36, 95, 0.04);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    flex-shrink: 0;
+}
+
+.stat-icon.blue {
+    background: rgba(6, 36, 95, 0.10);
+    color: #06245f;
+}
+
+.stat-icon.green {
+    background: rgba(50, 183, 58, 0.11);
+    color: #279d31;
+}
+
+.stat-icon.purple {
+    background: rgba(51, 32, 111, 0.10);
+    color: #33206f;
+}
+
+.stat-icon.orange {
+    background: rgba(245, 158, 11, 0.11);
+    color: #d97706;
+}
+
+.stat-info {
+    min-width: 0;
+}
+
+.stat-label {
+    color: #7a8494;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    color: #182235;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   MAIN GRID
+   ============================================================ */
+
+.content-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e6eaf0;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(6, 36, 95, 0.04);
+    overflow: hidden;
+}
+
+.card + .card {
+    margin-top: 22px;
+}
+
+.card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #edf0f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-header-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgba(6, 36, 95, 0.08);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #202b3c;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* ============================================================
+   INFORMATION GRID
+   ============================================================ */
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+}
+
+.info-item {
+    padding: 15px 10px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.info-item:nth-child(odd) {
+    padding-left: 0;
+    padding-right: 22px;
+}
+
+.info-item:nth-child(even) {
+    padding-left: 22px;
+    padding-right: 0;
+    border-left: 1px solid #edf0f4;
+}
+
+.info-item:nth-last-child(-n + 2) {
+    border-bottom: 0;
+}
+
+.info-label {
+    color: #8790a0;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.info-value {
+    color: #263247;
+    font-size: 14px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.info-value.empty {
+    color: #a0a8b5;
+    font-weight: 500;
+}
+
+.info-value a {
+    color: #06245f;
+    text-decoration: none;
+}
+
+.info-value a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================================
+   DESCRIPTION
+   ============================================================ */
+
+.description-box {
+    background: #f8f9fc;
+    border: 1px solid #e8ebf1;
+    border-radius: 11px;
+    padding: 15px;
+    color: #596579;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* ============================================================
+   QUICK LINKS
+   ============================================================ */
+
+.quick-links {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.quick-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 14px;
+    border: 1px solid #e7ebf1;
+    border-radius: 11px;
+    color: #273247;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.quick-link:hover {
+    border-color: rgba(6, 36, 95, .25);
+    background: #f8faff;
+    transform: translateX(2px);
+}
+
+.quick-link-left {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.quick-link-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgba(6, 36, 95, .08);
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quick-link-title {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.quick-link-description {
+    color: #8790a0;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.quick-link-arrow {
+    color: #9aa3b2;
+}
+
+/* ============================================================
+   CONTACT
+   ============================================================ */
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.contact-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+}
+
+.contact-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 9px;
+    background: #f1f4f9;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.contact-content {
+    min-width: 0;
+}
+
+.contact-label {
+    color: #8a93a2;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+}
+
+.contact-value {
+    color: #293449;
+    font-size: 13px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.contact-value a {
+    color: #06245f;
+    text-decoration: none;
+}
+
+.contact-value a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.action-buttons .btn {
+    width: 100%;
+}
+
+.delete-form {
+    margin-top: 10px;
+}
+
+.delete-form .btn {
+    width: 100%;
+}
+
+/* ============================================================
+   BRANCHES / USERS PLACEHOLDER
+   ============================================================ */
+
+.empty-mini {
+    padding: 22px 10px;
+    text-align: center;
+    color: #8a93a2;
+    font-size: 13px;
+}
+
+.empty-mini i {
+    display: block;
+    font-size: 25px;
+    margin-bottom: 8px;
+    color: #b2bac6;
+}
+
+/* ============================================================
+   FOOTER META
+   ============================================================ */
+
+.meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    font-size: 13px;
+}
+
+.meta-row span:first-child {
+    color: #8992a1;
+}
+
+.meta-row strong {
+    color: #273247;
+    text-align: right;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-created {
+        display: none;
+    }
+}
+
+@media (max-width: 720px) {
+
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .page-header-actions {
+        width: 100%;
+    }
+
+    .page-header-actions .btn {
+        flex: 1;
+    }
+
+    .institution-hero {
+        padding: 18px;
+    }
+
+    .hero-content {
+        align-items: flex-start;
+    }
+
+    .hero-main {
+        align-items: flex-start;
+    }
+
+    .institution-logo,
+    .institution-logo-fallback {
+        width: 70px;
+        height: 70px;
+        border-radius: 14px;
+    }
+
+    .institution-logo-fallback {
+        font-size: 27px;
+    }
+
+    .hero-info h2 {
+        font-size: 21px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-item,
+    .info-item:nth-child(odd),
+    .info-item:nth-child(even) {
+        padding-left: 0;
+        padding-right: 0;
+        border-left: 0;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+    .info-item:last-child {
+        border-bottom: 0;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .page-header h1 {
+        font-size: 21px;
+    }
+
+    .page-header-actions {
+        flex-direction: column;
+    }
+
+    .page-header-actions .btn {
+        width: 100%;
+        flex: none;
+    }
+
+    .hero-main {
+        gap: 12px;
+    }
+
+    .institution-logo,
+    .institution-logo-fallback {
+        width: 58px;
+        height: 58px;
+    }
+
+    .hero-info h2 {
+        font-size: 18px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+
+<div class="institution-view-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+    ========================================================= -->
+
+    <div class="page-header">
+
+        <div class="page-header-left">
+
+            <div class="page-header-icon">
+                <i data-feather="building-2"></i>
+            </div>
+
+            <div>
+                <h1>Institution Details</h1>
+                <p>View and manage institution information.</p>
+            </div>
+
+        </div>
+
+
+        <div class="page-header-actions">
+
+            <a
+                href="{{ url_for('main.all_institutions') }}"
+                class="btn btn-secondary"
+            >
+                <i data-feather="arrow-left"></i>
+                All Institutions
+            </a>
+
+            <a
+                href="{{ url_for(
+                    'main.edit_institution',
+                    institution_id=institution.id
+                ) }}"
+                class="btn btn-primary"
+            >
+                <i data-feather="edit-3"></i>
+                Edit Institution
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         INSTITUTION HERO
+    ========================================================= -->
+
+    <div class="institution-hero">
+
+        <div class="hero-content">
+
+            <div class="hero-main">
+
+                {% if institution.logo %}
+
+                    <img
+                        src="{{ institution.logo }}"
+                        alt="{{ institution.name }}"
+                        class="institution-logo"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    >
+
+                    <div
+                        class="institution-logo-fallback"
+                        style="display:none;"
+                    >
+                        <i data-feather="building-2"></i>
+                    </div>
+
+                {% else %}
+
+                    <div class="institution-logo-fallback">
+                        <i data-feather="building-2"></i>
+                    </div>
+
+                {% endif %}
+
+
+                <div class="hero-info">
+
+                    <h2>
+                        {{ institution.name }}
+                    </h2>
+
+
+                    {% if institution.code or institution.short_name %}
+
+                        <div class="hero-code">
+
+                            <i data-feather="hash" style="width:14px;"></i>
+
+                            {% if institution.code %}
+                                <strong>
+                                    {{ institution.code }}
+                                </strong>
+                            {% endif %}
+
+                            {% if institution.code and institution.short_name %}
+                                <span>•</span>
+                            {% endif %}
+
+                            {% if institution.short_name %}
+                                <span>
+                                    {{ institution.short_name }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% set current_status = institution.status|default('active')|lower %}
+
+                    {% if current_status == 'active' %}
+
+                        <span class="status-badge status-active">
+                            <span class="status-dot"></span>
+                            Active
+                        </span>
+
+                    {% elif current_status == 'inactive' %}
+
+                        <span class="status-badge status-inactive">
+                            <span class="status-dot"></span>
+                            Inactive
+                        </span>
+
+                    {% elif current_status == 'suspended' %}
+
+                        <span class="status-badge status-suspended">
+                            <span class="status-dot"></span>
+                            Suspended
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-badge status-inactive">
+                            <span class="status-dot"></span>
+                            {{ institution.status|default('Unknown') }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            {% if institution.created_at %}
+
+                <div class="hero-created">
+
+                    Institution Created
+
+                    <strong>
+                        {{ institution.created_at.strftime('%d %b %Y') }}
+                    </strong>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         STATISTICS
+    ========================================================= -->
+
+    <div class="stats-grid">
+
+        <!-- BRANCHES -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon blue">
+                <i data-feather="git-branch"></i>
+            </div>
+
+            <div class="stat-info">
+
+                <div class="stat-label">
+                    Total Branches
+                </div>
+
+                <div class="stat-value">
+                    {{ total_branches|default(0) }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- USERS -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon green">
+                <i data-feather="users"></i>
+            </div>
+
+            <div class="stat-info">
+
+                <div class="stat-label">
+                    Total Users
+                </div>
+
+                <div class="stat-value">
+                    {{ total_users|default(0) }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon purple">
+                <i data-feather="activity"></i>
+            </div>
+
+            <div class="stat-info">
+
+                <div class="stat-label">
+                    Institution Status
+                </div>
+
+                <div
+                    class="stat-value"
+                    style="font-size:17px; text-transform:capitalize;"
+                >
+                    {{ institution.status|default('Unknown') }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ID -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon orange">
+                <i data-feather="key"></i>
+            </div>
+
+            <div class="stat-info">
+
+                <div class="stat-label">
+                    Institution ID
+                </div>
+
+                <div class="stat-value">
+                    #{{ institution.id }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         CONTENT
+    ========================================================= -->
+
+    <div class="content-grid">
+
+        <!-- ====================================================
+             LEFT COLUMN
+        ===================================================== -->
+
+        <div>
+
+
+            <!-- BASIC INFORMATION -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="card-header-left">
+
+                        <div class="card-header-icon">
+                            <i data-feather="info"></i>
+                        </div>
+
+                        <h3>
+                            Basic Information
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="info-grid">
+
+                        <!-- NAME -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                Institution Name
+                            </div>
+
+                            <div class="info-value">
+                                {{ institution.name }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- SHORT NAME -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                Short Name
+                            </div>
+
+                            <div
+                                class="info-value
+                                {% if not institution.short_name %}
+                                    empty
+                                {% endif %}"
+                            >
+                                {{ institution.short_name|default('Not provided', true) }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- CODE -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                Institution Code
+                            </div>
+
+                            <div
+                                class="info-value
+                                {% if not institution.code %}
+                                    empty
+                                {% endif %}"
+                            >
+                                {{ institution.code|default('Not provided', true) }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- STATUS -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                Status
+                            </div>
+
+                            <div class="info-value">
+
+                                {% set s = institution.status|default('active')|lower %}
+
+                                {% if s == 'active' %}
+
+                                    <span class="status-badge status-active">
+                                        <span class="status-dot"></span>
+                                        Active
+                                    </span>
+
+                                {% elif s == 'inactive' %}
+
+                                    <span class="status-badge status-inactive">
+                                        <span class="status-dot"></span>
+                                        Inactive
+                                    </span>
+
+                                {% elif s == 'suspended' %}
+
+                                    <span class="status-badge status-suspended">
+                                        <span class="status-dot"></span>
+                                        Suspended
+                                    </span>
+
+                                {% else %}
+
+                                    {{ institution.status|default('Unknown') }}
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- COUNTRY -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                Country
+                            </div>
+
+                            <div
+                                class="info-value
+                                {% if not institution.country %}
+                                    empty
+                                {% endif %}"
+                            >
+                                {{ institution.country|default('Not provided', true) }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- STATE -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                State / Region
+                            </div>
+
+                            <div
+                                class="info-value
+                                {% if not institution.state %}
+                                    empty
+                                {% endif %}"
+                            >
+                                {{ institution.state|default('Not provided', true) }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- CITY -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                City
+                            </div>
+
+                            <div
+                                class="info-value
+                                {% if not institution.city %}
+                                    empty
+                                {% endif %}"
+                            >
+                                {{ institution.city|default('Not provided', true) }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- ADDRESS -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                Address
+                            </div>
+
+                            <div
+                                class="info-value
+                                {% if not institution.address %}
+                                    empty
+                                {% endif %}"
+                            >
+                                {{ institution.address|default('Not provided', true) }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+
+            {% if institution.description %}
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div class="card-header-left">
+
+                            <div class="card-header-icon">
+                                <i data-feather="file-text"></i>
+                            </div>
+
+                            <h3>
+                                Description
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="description-box">
+                            {{ institution.description }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- SYSTEM INFORMATION -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="card-header-left">
+
+                        <div class="card-header-icon">
+                            <i data-feather="database"></i>
+                        </div>
+
+                        <h3>
+                            System Information
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="meta-list">
+
+                        <div class="meta-row">
+
+                            <span>
+                                Institution ID
+                            </span>
+
+                            <strong>
+                                #{{ institution.id }}
+                            </strong>
+
+                        </div>
+
+
+                        {% if institution.created_at %}
+
+                            <div class="meta-row">
+
+                                <span>
+                                    Created At
+                                </span>
+
+                                <strong>
+                                    {{ institution.created_at.strftime('%d %B %Y, %I:%M %p') }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if institution.updated_at %}
+
+                            <div class="meta-row">
+
+                                <span>
+                                    Last Updated
+                                </span>
+
+                                <strong>
+                                    {{ institution.updated_at.strftime('%d %B %Y, %I:%M %p') }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div class="meta-row">
+
+                            <span>
+                                Current Status
+                            </span>
+
+                            <strong style="text-transform:capitalize;">
+                                {{ institution.status|default('Unknown') }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             RIGHT COLUMN
+        ===================================================== -->
+
+        <div>
+
+
+            <!-- CONTACT INFORMATION -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="card-header-left">
+
+                        <div class="card-header-icon">
+                            <i data-feather="phone"></i>
+                        </div>
+
+                        <h3>
+                            Contact Information
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="contact-list">
+
+
+                        {% if institution.email %}
+
+                            <div class="contact-row">
+
+                                <div class="contact-icon">
+                                    <i data-feather="mail"></i>
+                                </div>
+
+                                <div class="contact-content">
+
+                                    <div class="contact-label">
+                                        Email
+                                    </div>
+
+                                    <div class="contact-value">
+
+                                        <a
+                                            href="mailto:{{ institution.email }}"
+                                        >
+                                            {{ institution.email }}
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if institution.phone %}
+
+                            <div class="contact-row">
+
+                                <div class="contact-icon">
+                                    <i data-feather="phone"></i>
+                                </div>
+
+                                <div class="contact-content">
+
+                                    <div class="contact-label">
+                                        Phone
+                                    </div>
+
+                                    <div class="contact-value">
+
+                                        <a
+                                            href="tel:{{ institution.phone }}"
+                                        >
+                                            {{ institution.phone }}
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if institution.website %}
+
+                            <div class="contact-row">
+
+                                <div class="contact-icon">
+                                    <i data-feather="globe"></i>
+                                </div>
+
+                                <div class="contact-content">
+
+                                    <div class="contact-label">
+                                        Website
+                                    </div>
+
+                                    <div class="contact-value">
+
+                                        <a
+                                            href="{{ institution.website }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {{ institution.website }}
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if institution.address or institution.city or institution.state or institution.country %}
+
+                            <div class="contact-row">
+
+                                <div class="contact-icon">
+                                    <i data-feather="map-pin"></i>
+                                </div>
+
+                                <div class="contact-content">
+
+                                    <div class="contact-label">
+                                        Location
+                                    </div>
+
+                                    <div class="contact-value">
+
+                                        {% if institution.address %}
+                                            {{ institution.address }}<br>
+                                        {% endif %}
+
+                                        {% if institution.city %}
+                                            {{ institution.city }}
+                                        {% endif %}
+
+                                        {% if institution.state %}
+                                            {% if institution.city %}, {% endif %}
+                                            {{ institution.state }}
+                                        {% endif %}
+
+                                        {% if institution.country %}
+                                            {% if institution.city or institution.state %}
+                                                ,
+                                            {% endif %}
+                                            {{ institution.country }}
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if not institution.email
+                           and not institution.phone
+                           and not institution.website
+                           and not institution.address
+                           and not institution.city
+                           and not institution.state
+                           and not institution.country %}
+
+                            <div class="empty-mini">
+
+                                <i data-feather="phone-off"></i>
+
+                                No contact information
+                                available.
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- QUICK ACCESS -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="card-header-left">
+
+                        <div class="card-header-icon">
+                            <i data-feather="grid"></i>
+                        </div>
+
+                        <h3>
+                            Quick Access
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="quick-links">
+
+
+                        <a
+                            href="#"
+                            class="quick-link"
+                        >
+
+                            <div class="quick-link-left">
+
+                                <div class="quick-link-icon">
+                                    <i data-feather="git-branch"></i>
+                                </div>
+
+                                <div>
+
+                                    <div class="quick-link-title">
+                                        Branches
+                                    </div>
+
+                                    <div class="quick-link-description">
+                                        Manage institution branches
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <i
+                                data-feather="chevron-right"
+                                class="quick-link-arrow"
+                            ></i>
+
+                        </a>
+
+
+                        <a
+                            href="#"
+                            class="quick-link"
+                        >
+
+                            <div class="quick-link-left">
+
+                                <div class="quick-link-icon">
+                                    <i data-feather="users"></i>
+                                </div>
+
+                                <div>
+
+                                    <div class="quick-link-title">
+                                        Users
+                                    </div>
+
+                                    <div class="quick-link-description">
+                                        View institution users
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <i
+                                data-feather="chevron-right"
+                                class="quick-link-arrow"
+                            ></i>
+
+                        </a>
+
+
+                        <a
+                            href="#"
+                            class="quick-link"
+                        >
+
+                            <div class="quick-link-left">
+
+                                <div class="quick-link-icon">
+                                    <i data-feather="book-open"></i>
+                                </div>
+
+                                <div>
+
+                                    <div class="quick-link-title">
+                                        Courses
+                                    </div>
+
+                                    <div class="quick-link-description">
+                                        Manage institution courses
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <i
+                                data-feather="chevron-right"
+                                class="quick-link-arrow"
+                            ></i>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="card-header-left">
+
+                        <div class="card-header-icon">
+                            <i data-feather="settings"></i>
+                        </div>
+
+                        <h3>
+                            Actions
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="action-buttons">
+
+                        <a
+                            href="{{ url_for(
+                                'main.edit_institution',
+                                institution_id=institution.id
+                            ) }}"
+                            class="btn btn-primary"
+                        >
+                            <i data-feather="edit-3"></i>
+                            Edit
+                        </a>
+
+
+                        <a
+                            href="{{ url_for('main.all_institutions') }}"
+                            class="btn btn-secondary"
+                        >
+                            <i data-feather="list"></i>
+                            All
+                        </a>
+
+                    </div>
+
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'main.delete_institution',
+                            institution_id=institution.id
+                        ) }}"
+                        class="delete-form"
+                        onsubmit="return confirmDeleteInstitution();"
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn btn-danger"
+                        >
+                            <i data-feather="trash-2"></i>
+                            Delete Institution
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+/* ============================================================
+   FEATHER ICONS
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (typeof feather !== "undefined") {
+        feather.replace();
+    }
+
+});
+
+
+/* ============================================================
+   DELETE CONFIRMATION
+   ============================================================ */
+
+function confirmDeleteInstitution() {
+
+    const institutionName =
+        {{ institution.name|tojson }};
+
+    return confirm(
+        "Are you sure you want to delete \"" +
+        institutionName +
+        "\"?\n\n" +
+        "This action may remove related institution data " +
+        "depending on your database cascade configuration."
+    );
+}
+</script>
+
+{% endblock %}
