@@ -8,451 +8,458 @@
    ALL PROGRAMS PAGE
    ============================================================ */
 
-.all-programs-page {
+.programs-page {
     width: 100%;
-    padding: 0;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 4px 0 30px;
 }
-
 
 /* ============================================================
    PAGE HEADER
    ============================================================ */
 
-.programs-page-header {
+.programs-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 20px;
     margin-bottom: 24px;
 }
 
-.programs-page-title {
+.programs-header-left {
+    min-width: 0;
+}
+
+.programs-title {
     margin: 0;
-    font-size: 26px;
-    font-weight: 700;
     color: #06245f;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.4px;
 }
 
-.programs-page-subtitle {
-    margin: 5px 0 0;
-    color: #6c757d;
+.programs-subtitle {
+    margin: 7px 0 0;
+    color: #64748b;
     font-size: 14px;
+    line-height: 1.6;
 }
 
-.programs-page-header-right {
+.programs-header-actions {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.program-btn {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        background .18s ease,
+        border-color .18s ease;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.program-btn:hover {
+    transform: translateY(-1px);
+}
+
+.program-btn-primary {
+    background: #06245f;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(6, 36, 95, .16);
+}
+
+.program-btn-primary:hover {
+    background: #041b49;
+    color: #fff;
+}
+
+.program-btn-light {
+    background: #fff;
+    color: #334155;
+    border-color: #dbe3ef;
+}
+
+.program-btn-light:hover {
+    border-color: #b8c7dc;
+    background: #f8fafc;
+}
 
 /* ============================================================
    STATISTICS
    ============================================================ */
 
-.programs-stat-grid {
+.program-stats {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 14px;
+    margin-bottom: 22px;
 }
 
-.programs-stat-card {
+.program-stat-card {
     position: relative;
     overflow: hidden;
-    background: #ffffff;
-    border: 1px solid #e8ecf3;
+    background: #fff;
+    border: 1px solid #e5eaf1;
     border-radius: 14px;
-    padding: 18px;
-    min-height: 112px;
-    box-shadow: 0 4px 18px rgba(6, 36, 95, 0.06);
+    padding: 17px;
+    box-shadow: 0 3px 14px rgba(15, 23, 42, .045);
 }
 
-.programs-stat-card::after {
+.program-stat-card::after {
     content: "";
     position: absolute;
-    width: 75px;
-    height: 75px;
+    width: 70px;
+    height: 70px;
+    right: -28px;
+    bottom: -28px;
     border-radius: 50%;
-    right: -30px;
-    bottom: -30px;
-    background: rgba(6, 36, 95, 0.04);
+    background: rgba(6, 36, 95, .045);
 }
 
-.programs-stat-content {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-}
-
-.programs-stat-icon {
-    width: 46px;
-    height: 46px;
-    min-width: 46px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #eef3fb;
-    color: #06245f;
-    font-size: 19px;
-}
-
-.programs-stat-card.green .programs-stat-icon {
-    background: #eaf8ec;
-    color: #32b73a;
-}
-
-.programs-stat-card.red .programs-stat-icon {
-    background: #fff0f0;
-    color: #dc3545;
-}
-
-.programs-stat-card.purple .programs-stat-icon {
-    background: #f2effb;
-    color: #33206f;
-}
-
-.programs-stat-card.orange .programs-stat-icon {
-    background: #fff6e8;
-    color: #e28a00;
-}
-
-.programs-stat-label {
-    color: #7a8496;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.programs-stat-value {
-    color: #1c2434;
-    font-size: 24px;
-    line-height: 1;
-    font-weight: 750;
-}
-
-
-/* ============================================================
-   PROGRAM TYPE STATISTICS
-   ============================================================ */
-
-.program-type-stat-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
-}
-
-.program-type-stat-card {
+.program-stat-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    background: #ffffff;
-    border: 1px solid #e8ecf3;
-    border-radius: 12px;
-    padding: 13px 15px;
-    box-shadow: 0 3px 12px rgba(6, 36, 95, 0.04);
 }
 
-.program-type-stat-name {
-    color: #687386;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.program-type-stat-count {
+.program-stat-icon {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef3fb;
     color: #06245f;
-    font-size: 17px;
-    font-weight: 750;
+    font-size: 16px;
 }
 
+.program-stat-card:nth-child(2) .program-stat-icon {
+    background: #edf9ef;
+    color: #269530;
+}
+
+.program-stat-card:nth-child(3) .program-stat-icon {
+    background: #fef3c7;
+    color: #b7791f;
+}
+
+.program-stat-card:nth-child(4) .program-stat-icon {
+    background: #f1edff;
+    color: #5b3bb5;
+}
+
+.program-stat-card:nth-child(5) .program-stat-icon {
+    background: #fff1f2;
+    color: #d33b4b;
+}
+
+.program-stat-label {
+    margin-top: 14px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.program-stat-value {
+    margin-top: 3px;
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.2;
+}
 
 /* ============================================================
-   MAIN CARD
+   FILTER CARD
    ============================================================ */
 
-.programs-main-card {
-    background: #ffffff;
-    border: 1px solid #e8ecf3;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(6, 36, 95, 0.06);
-    overflow: hidden;
+.program-filter-card {
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 14px rgba(15, 23, 42, .045);
 }
 
-.programs-card-header {
-    padding: 20px;
-    border-bottom: 1px solid #edf0f5;
-}
-
-.programs-card-header-top {
+.program-filter-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 15px;
-    margin-bottom: 18px;
+    margin-bottom: 15px;
 }
 
-.programs-card-title {
-    margin: 0;
+.program-filter-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
     color: #06245f;
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 800;
 }
 
-.programs-card-description {
-    margin: 4px 0 0;
-    color: #7b8494;
-    font-size: 13px;
+.program-filter-title i {
+    color: #32b73a;
 }
 
-
-/* ============================================================
-   FILTERS
-   ============================================================ */
-
-.programs-filter-form {
+.program-filter-grid {
     display: grid;
     grid-template-columns:
         minmax(220px, 1.7fr)
-        repeat(4, minmax(140px, 1fr))
-        auto auto;
-    gap: 10px;
+        minmax(150px, 1fr)
+        minmax(150px, 1fr)
+        minmax(150px, 1fr)
+        minmax(150px, 1fr);
+    gap: 12px;
     align-items: end;
 }
 
-.programs-filter-group {
+.program-filter-field {
     min-width: 0;
 }
 
-.programs-filter-label {
+.program-filter-label {
     display: block;
     margin-bottom: 6px;
-    color: #596579;
+    color: #475569;
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .3px;
+    font-weight: 800;
 }
 
-.programs-filter-input,
-.programs-filter-select {
+.program-input,
+.program-select {
     width: 100%;
     height: 42px;
-    border: 1px solid #dfe4ec;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #303846;
-    font-size: 13px;
+    box-sizing: border-box;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
     padding: 0 12px;
     outline: none;
-    transition: .2s ease;
+    font-family: inherit;
+    font-size: 13px;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
 }
 
-.programs-filter-input:focus,
-.programs-filter-select:focus {
+.program-input:focus,
+.program-select:focus {
     border-color: #06245f;
     box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
 }
 
-.programs-filter-select:disabled {
-    background: #f4f6f9;
-    color: #9aa3b2;
-    cursor: not-allowed;
-}
-
-.programs-filter-search {
+.program-search-wrap {
     position: relative;
 }
 
-.programs-filter-search i {
+.program-search-wrap i {
     position: absolute;
-    left: 12px;
-    top: 14px;
-    color: #8b95a7;
-    font-size: 13px;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
 }
 
-.programs-filter-search .programs-filter-input {
-    padding-left: 34px;
+.program-search-wrap .program-input {
+    padding-left: 37px;
 }
 
-.filter-btn {
-    height: 42px;
-    border: 0;
-    border-radius: 8px;
-    padding: 0 16px;
-    background: #06245f;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 650;
-    cursor: pointer;
-    transition: .2s ease;
-    white-space: nowrap;
+.program-filter-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 13px;
+    flex-wrap: wrap;
 }
-
-.filter-btn:hover {
-    background: #041c4a;
-}
-
-.reset-btn {
-    height: 42px;
-    border: 1px solid #dfe4ec;
-    border-radius: 8px;
-    padding: 0 16px;
-    background: #ffffff;
-    color: #5f6b7d;
-    font-size: 13px;
-    font-weight: 650;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-}
-
-.reset-btn:hover {
-    background: #f7f9fc;
-    color: #06245f;
-}
-
 
 /* ============================================================
-   TABLE TOOLBAR
+   TABLE CARD
    ============================================================ */
 
-.programs-table-toolbar {
-    padding: 14px 20px;
-    background: #fafbfc;
-    border-bottom: 1px solid #edf0f5;
+.program-table-card {
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 14px rgba(15, 23, 42, .045);
+}
+
+.program-table-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 15px;
+    padding: 17px 18px;
+    border-bottom: 1px solid #e8edf4;
 }
 
-.programs-result-count {
-    color: #6c7687;
-    font-size: 13px;
+.program-table-title-wrap {
+    min-width: 0;
 }
 
-.programs-result-count strong {
-    color: #06245f;
+.program-table-title {
+    margin: 0;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 800;
 }
 
-.per-page-wrapper {
+.program-table-count {
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.program-per-page {
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.per-page-wrapper label {
-    color: #6c7687;
+    color: #64748b;
     font-size: 12px;
-    margin: 0;
+    font-weight: 700;
 }
 
-.per-page-select {
-    height: 34px;
-    min-width: 70px;
-    border: 1px solid #dfe4ec;
-    border-radius: 7px;
-    background: #ffffff;
+.program-per-page select {
+    width: 72px;
+    height: 36px;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #fff;
     padding: 0 8px;
-    color: #303846;
-    font-size: 12px;
+    color: #334155;
+    outline: none;
 }
 
-
-/* ============================================================
-   TABLE
-   ============================================================ */
-
-.programs-table-wrapper {
+.program-table-scroll {
     width: 100%;
     overflow-x: auto;
 }
 
-.programs-table {
+.program-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    min-width: 1350px;
+    min-width: 1180px;
+    border-collapse: collapse;
 }
 
-.programs-table thead th {
-    padding: 13px 14px;
-    background: #f7f9fc;
-    border-bottom: 1px solid #e7ebf1;
-    color: #657084;
-    font-size: 11px;
-    font-weight: 750;
+.program-table thead th {
+    background: #f8fafc;
+    border-bottom: 1px solid #e5eaf1;
+    padding: 12px 14px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: .35px;
+    letter-spacing: .45px;
+    text-align: left;
     white-space: nowrap;
 }
 
-.programs-table tbody td {
-    padding: 14px;
-    border-bottom: 1px solid #edf0f4;
-    color: #3f4857;
+.program-table tbody td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #edf1f6;
+    color: #334155;
     font-size: 13px;
     vertical-align: middle;
-    background: #ffffff;
 }
 
-.programs-table tbody tr {
+.program-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.program-table tbody tr {
     transition: background .15s ease;
 }
 
-.programs-table tbody tr:hover td {
-    background: #f9fbff;
+.program-table tbody tr:hover {
+    background: #f8fbff;
 }
-
-.programs-table tbody tr:last-child td {
-    border-bottom: 0;
-}
-
 
 /* ============================================================
-   PROGRAM CELL
+   PROGRAM ID
    ============================================================ */
 
-.program-info {
+.program-id {
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   PROGRAM NAME
+   ============================================================ */
+
+.program-name-wrap {
     display: flex;
     align-items: center;
     gap: 11px;
-    min-width: 230px;
+    min-width: 210px;
 }
 
 .program-icon {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    border-radius: 11px;
+    flex: 0 0 auto;
+    width: 39px;
+    height: 39px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 10px;
     background: #eef3fb;
     color: #06245f;
-    font-size: 17px;
+    font-size: 15px;
+}
+
+.program-name-content {
+    min-width: 0;
 }
 
 .program-name {
-    color: #252d3a;
-    font-weight: 700;
-    line-height: 1.3;
+    display: block;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 270px;
+}
+
+.program-name:hover {
+    color: #06245f;
 }
 
 .program-short-name {
-    color: #8992a2;
+    display: block;
+    margin-top: 3px;
+    color: #94a3b8;
     font-size: 11px;
-    margin-top: 2px;
-    white-space: nowrap;
 }
-
 
 /* ============================================================
    CODE
@@ -461,69 +468,52 @@
 .program-code {
     display: inline-flex;
     align-items: center;
-    padding: 5px 9px;
+    padding: 5px 8px;
     border-radius: 7px;
-    background: #f2f5fa;
-    color: #06245f;
-    border: 1px solid #e1e7f0;
+    background: #f1f5f9;
+    color: #334155;
+    font-family: Consolas, Monaco, monospace;
     font-size: 11px;
-    font-weight: 750;
-    white-space: nowrap;
+    font-weight: 700;
 }
-
 
 /* ============================================================
-   DESCRIPTION
+   INSTITUTION / BRANCH
    ============================================================ */
 
-.program-description {
-    max-width: 250px;
-    color: #687386;
-    font-size: 12px;
-    line-height: 1.5;
+.program-org {
+    min-width: 160px;
 }
 
-
-/* ============================================================
-   ORGANIZATION
-   ============================================================ */
-
-.organization-cell {
-    min-width: 170px;
-}
-
-.organization-name {
-    color: #273247;
+.program-org-name {
+    color: #334155;
     font-size: 12px;
     font-weight: 700;
-    line-height: 1.35;
 }
 
-.organization-icon {
-    color: #06245f;
-    margin-right: 5px;
+.program-org-id {
+    margin-top: 3px;
+    color: #94a3b8;
+    font-size: 10px;
 }
 
-.branch-name {
-    color: #657084;
-    font-size: 11px;
-    margin-top: 4px;
-    white-space: nowrap;
-}
-
-.branch-icon {
-    color: #32b73a;
-    margin-right: 5px;
-}
-
-.no-organization {
-    color: #9aa3b2;
+.program-branch {
+    color: #475569;
     font-size: 12px;
+    font-weight: 600;
 }
 
+.program-branch-wide {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #5b3bb5;
+    font-size: 11px;
+    font-weight: 700;
+}
 
 /* ============================================================
-   TYPE BADGES
+   TYPE
    ============================================================ */
 
 .program-type-badge {
@@ -531,86 +521,96 @@
     align-items: center;
     gap: 5px;
     padding: 5px 9px;
-    border-radius: 20px;
+    border-radius: 999px;
+    background: #f1edff;
+    color: #5b3bb5;
     font-size: 10px;
-    font-weight: 750;
-    white-space: nowrap;
+    font-weight: 800;
+    text-transform: capitalize;
 }
-
-.type-academic {
-    color: #06245f;
-    background: #eaf0fa;
-}
-
-.type-language {
-    color: #006f7b;
-    background: #e8f7f8;
-}
-
-.type-vocational {
-    color: #2a7d32;
-    background: #eaf7eb;
-}
-
-.type-scientific {
-    color: #33206f;
-    background: #f0ecfa;
-}
-
-.type-professional {
-    color: #a46300;
-    background: #fff5df;
-}
-
-.type-general {
-    color: #596579;
-    background: #f1f3f6;
-}
-
 
 /* ============================================================
    DURATION
    ============================================================ */
 
-.duration-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: #596579;
-    background: #f6f7f9;
-    border: 1px solid #e5e8ee;
-    padding: 5px 9px;
-    border-radius: 20px;
-    font-size: 10px;
+.program-duration {
+    color: #334155;
+    font-size: 12px;
     font-weight: 700;
+}
+
+.program-duration i {
+    margin-right: 5px;
+    color: #94a3b8;
+}
+
+/* ============================================================
+   PRICE
+   ============================================================ */
+
+.program-price {
+    color: #06245f;
+    font-size: 13px;
+    font-weight: 800;
     white-space: nowrap;
 }
 
+.program-price-currency {
+    margin-right: 2px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+}
 
 /* ============================================================
    STATUS
    ============================================================ */
 
-.status-badge {
+.program-status {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    border-radius: 20px;
+    gap: 6px;
     padding: 5px 9px;
+    border-radius: 999px;
     font-size: 10px;
-    font-weight: 750;
+    font-weight: 800;
+    text-transform: capitalize;
 }
 
-.status-active {
-    background: #eaf8ec;
-    color: #23852c;
+.program-status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
 }
 
-.status-inactive {
-    background: #fff0f0;
-    color: #c52d38;
+.program-status-active {
+    background: #edf9ef;
+    color: #21882a;
 }
 
+.program-status-active::before {
+    background: #32b73a;
+}
+
+.program-status-inactive {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.program-status-inactive::before {
+    background: #94a3b8;
+}
+
+/* ============================================================
+   DATE
+   ============================================================ */
+
+.program-date {
+    color: #64748b;
+    font-size: 11px;
+    white-space: nowrap;
+}
 
 /* ============================================================
    ACTIONS
@@ -620,246 +620,466 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
 }
 
-.action-btn {
-    width: 33px;
-    height: 33px;
-    border-radius: 7px;
+.program-action {
+    width: 34px;
+    height: 34px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid transparent;
-    cursor: pointer;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    color: #64748b;
     text-decoration: none;
-    transition: .18s ease;
-    font-size: 12px;
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        transform .18s ease;
+    cursor: pointer;
 }
 
-.action-btn.view {
-    background: #f2effb;
-    color: #33206f;
-    border-color: #e4ddf6;
+.program-action:hover {
+    transform: translateY(-1px);
 }
 
-.action-btn.view:hover {
-    background: #33206f;
-    color: #ffffff;
-}
-
-.action-btn.edit {
-    background: #eef3fb;
+.program-action-view:hover {
     color: #06245f;
-    border-color: #dce6f6;
+    border-color: #b9c9e3;
+    background: #f3f7fd;
 }
 
-.action-btn.edit:hover {
-    background: #06245f;
-    color: #ffffff;
+.program-action-edit:hover {
+    color: #b7791f;
+    border-color: #f1d59a;
+    background: #fffaf0;
 }
 
-.action-btn.delete {
-    background: #fff0f0;
-    color: #d63343;
-    border-color: #f6d7da;
+.program-action-delete {
+    color: #dc3545;
 }
 
-.action-btn.delete:hover {
-    background: #d63343;
-    color: #ffffff;
+.program-action-delete:hover {
+    color: #b42333;
+    border-color: #f2b8bf;
+    background: #fff1f2;
 }
 
+/* ============================================================
+   DELETE FORM
+   ============================================================ */
+
+.program-delete-form {
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
+}
+
+/* ============================================================
+   DELETE MODAL
+   ============================================================ */
+
+.program-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, .58);
+    backdrop-filter: blur(4px);
+}
+
+.program-modal-overlay.show {
+    display: flex;
+}
+
+.program-delete-modal {
+    width: 100%;
+    max-width: 450px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 25px 70px rgba(15, 23, 42, .25);
+    overflow: hidden;
+    animation: programModalIn .18s ease;
+}
+
+@keyframes programModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.program-modal-top {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 20px;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.program-modal-icon {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    background: #fff1f2;
+    color: #dc3545;
+    font-size: 19px;
+}
+
+.program-modal-title {
+    margin: 0;
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.program-modal-body {
+    padding: 20px;
+}
+
+.program-modal-text {
+    margin: 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.program-modal-program {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border: 1px solid #e5eaf1;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.program-modal-program-name {
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.program-modal-program-code {
+    margin-top: 4px;
+    color: #64748b;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 11px;
+}
+
+.program-modal-warning {
+    margin-top: 13px;
+    color: #b42333;
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.program-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    padding: 15px 20px;
+    border-top: 1px solid #edf1f6;
+    background: #fafbfc;
+}
+
+.program-modal-btn {
+    min-height: 39px;
+    padding: 0 15px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.program-modal-cancel {
+    color: #334155;
+    background: #fff;
+    border-color: #dbe3ef;
+}
+
+.program-modal-cancel:hover {
+    background: #f8fafc;
+}
+
+.program-modal-delete {
+    color: #fff;
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.program-modal-delete:hover {
+    background: #b42333;
+    border-color: #b42333;
+}
 
 /* ============================================================
    EMPTY STATE
    ============================================================ */
 
-.programs-empty-state {
+.program-empty {
+    padding: 65px 25px;
     text-align: center;
-    padding: 65px 20px;
 }
 
-.programs-empty-icon {
-    width: 65px;
-    height: 65px;
+.program-empty-icon {
+    width: 64px;
+    height: 64px;
     margin: 0 auto 15px;
-    border-radius: 50%;
-    background: #f1f4f9;
-    color: #8490a3;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 18px;
+    background: #eef3fb;
+    color: #06245f;
     font-size: 25px;
 }
 
-.programs-empty-state h4 {
-    margin: 0 0 7px;
-    color: #303847;
-    font-size: 17px;
-}
-
-.programs-empty-state p {
+.program-empty-title {
     margin: 0;
-    color: #8992a2;
-    font-size: 13px;
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 800;
 }
 
+.program-empty-text {
+    max-width: 480px;
+    margin: 7px auto 20px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
 
 /* ============================================================
    PAGINATION
    ============================================================ */
 
-.programs-pagination {
-    padding: 17px 20px;
-    border-top: 1px solid #edf0f5;
+.program-pagination {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 15px;
+    flex-wrap: wrap;
+    padding: 15px 18px;
+    border-top: 1px solid #e8edf4;
 }
 
-.pagination-info {
-    color: #7b8494;
+.program-pagination-info {
+    color: #64748b;
     font-size: 12px;
 }
 
-.pagination {
+.program-pagination-info strong {
+    color: #334155;
+}
+
+.program-pagination-links {
     display: flex;
     align-items: center;
     gap: 5px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    flex-wrap: wrap;
 }
 
-.pagination a,
-.pagination span {
-    min-width: 32px;
-    height: 32px;
+.program-page-link {
+    min-width: 34px;
+    height: 34px;
     padding: 0 9px;
-    border: 1px solid #e1e5ec;
-    border-radius: 7px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #5d687a;
-    background: #ffffff;
-    font-size: 12px;
-    font-weight: 650;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #fff;
+    color: #475569;
     text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
 }
 
-.pagination a:hover {
-    background: #f2f5fa;
+.program-page-link:hover {
+    border-color: #b9c9e3;
     color: #06245f;
-    border-color: #cbd5e5;
+    background: #f5f8fc;
 }
 
-.pagination .active {
-    background: #06245f;
-    color: #ffffff;
+.program-page-link.active {
     border-color: #06245f;
+    background: #06245f;
+    color: #fff;
 }
 
-.pagination .disabled {
+.program-page-link.disabled {
     opacity: .45;
     pointer-events: none;
 }
 
+.program-page-dots {
+    color: #94a3b8;
+    padding: 0 3px;
+}
+
+/* ============================================================
+   FILTER SUMMARY
+   ============================================================ */
+
+.program-active-filters {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-top: 13px;
+}
+
+.program-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: #eef3fb;
+    color: #334155;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.program-filter-chip i {
+    color: #06245f;
+}
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
 
-@media (max-width: 1500px) {
+@media (max-width: 1250px) {
 
-    .programs-filter-form {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .programs-filter-search {
-        grid-column: span 2;
-    }
-
-}
-
-@media (max-width: 1300px) {
-
-    .programs-stat-grid {
+    .program-stats {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    .program-type-stat-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .programs-filter-form {
+    .program-filter-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .programs-filter-search {
-        grid-column: span 3;
     }
 
 }
 
 @media (max-width: 900px) {
 
-    .programs-page-header {
+    .programs-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
     }
 
-    .programs-stat-grid {
+    .programs-header-actions {
+        width: 100%;
+    }
+
+    .program-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .program-type-stat-grid {
+    .program-filter-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .programs-filter-form {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .programs-filter-search {
-        grid-column: span 2;
-    }
-
-    .programs-pagination {
-        flex-direction: column;
-        align-items: flex-start;
     }
 
 }
 
-@media (max-width: 600px) {
+@media (max-width: 620px) {
 
-    .programs-stat-grid,
-    .program-type-stat-grid {
+    .programs-page {
+        padding-bottom: 20px;
+    }
+
+    .programs-title {
+        font-size: 23px;
+    }
+
+    .programs-header-actions {
+        display: grid;
         grid-template-columns: 1fr;
     }
 
-    .programs-filter-form {
+    .program-btn {
+        width: 100%;
+    }
+
+    .program-stats {
         grid-template-columns: 1fr;
     }
 
-    .programs-filter-search {
-        grid-column: span 1;
+    .program-filter-grid {
+        grid-template-columns: 1fr;
     }
 
-    .programs-card-header-top {
-        flex-direction: column;
+    .program-table-header {
         align-items: flex-start;
-    }
-
-    .programs-table-toolbar {
         flex-direction: column;
-        align-items: flex-start;
     }
 
-    .programs-page-title {
-        font-size: 22px;
+    .program-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .program-pagination-links {
+        width: 100%;
+    }
+
+    .program-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .program-modal-btn {
+        width: 100%;
+    }
+
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    .programs-header-actions,
+    .program-filter-card,
+    .program-actions,
+    .program-per-page,
+    .program-pagination,
+    .program-modal-overlay {
+        display: none !important;
+    }
+
+    .programs-page {
+        max-width: none;
+    }
+
+    .program-table-card,
+    .program-stat-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+
+    .program-table {
+        min-width: 0;
     }
 
 }
@@ -867,58 +1087,47 @@
 </style>
 
 
-<div class="all-programs-page">
+<div class="programs-page">
 
-
-    <!-- ========================================================
+    <!-- ======================================================
          PAGE HEADER
-         ======================================================== -->
+         ====================================================== -->
 
-    <div class="programs-page-header">
+    <div class="programs-header">
 
-        <div>
+        <div class="programs-header-left">
 
-            <h1 class="programs-page-title">
-
-                <i class="fas fa-graduation-cap me-2"></i>
-
+            <h1 class="programs-title">
+                <i class="fa-solid fa-layer-group"></i>
                 All Programs
-
             </h1>
 
-            <p class="programs-page-subtitle">
-
-                Manage academic programs, institutions, branches,
-                program types, duration and account status.
-
+            <p class="programs-subtitle">
+                Manage, search, filter and view all academic
+                and professional programs.
             </p>
 
         </div>
 
 
-        <div class="programs-page-header-right">
+        <div class="programs-header-actions">
 
-            <a
-                href="{{ url_for('main.dashboard') }}"
-                class="reset-btn"
+            <button
+                type="button"
+                class="program-btn program-btn-light"
+                onclick="window.print()"
             >
-
-                <i class="fas fa-arrow-left me-2"></i>
-
-                Dashboard
-
-            </a>
+                <i class="fa-solid fa-print"></i>
+                Print
+            </button>
 
 
             <a
                 href="{{ url_for('main.add_program') }}"
-                class="reset-btn"
+                class="program-btn program-btn-primary"
             >
-
-                <i class="fas fa-plus me-2"></i>
-
+                <i class="fa-solid fa-plus"></i>
                 Add Program
-
             </a>
 
         </div>
@@ -926,35 +1135,30 @@
     </div>
 
 
-    <!-- ========================================================
-         MAIN STATISTICS
-         ======================================================== -->
+    <!-- ======================================================
+         STATISTICS
+         ====================================================== -->
 
-    <div class="programs-stat-grid">
+    <div class="program-stats">
 
+        <div class="program-stat-card">
 
-        <!-- TOTAL -->
-
-        <div class="programs-stat-card">
-
-            <div class="programs-stat-content">
-
-                <div class="programs-stat-icon">
-
-                    <i class="fas fa-graduation-cap"></i>
-
-                </div>
+            <div class="program-stat-top">
 
                 <div>
 
-                    <div class="programs-stat-label">
+                    <div class="program-stat-label">
                         Total Programs
                     </div>
 
-                    <div class="programs-stat-value">
-                        {{ total_programs }}
+                    <div class="program-stat-value">
+                        {{ total_programs|default(0) }}
                     </div>
 
+                </div>
+
+                <div class="program-stat-icon">
+                    <i class="fa-solid fa-layer-group"></i>
                 </div>
 
             </div>
@@ -962,28 +1166,24 @@
         </div>
 
 
-        <!-- ACTIVE -->
+        <div class="program-stat-card">
 
-        <div class="programs-stat-card green">
-
-            <div class="programs-stat-content">
-
-                <div class="programs-stat-icon">
-
-                    <i class="fas fa-circle-check"></i>
-
-                </div>
+            <div class="program-stat-top">
 
                 <div>
 
-                    <div class="programs-stat-label">
+                    <div class="program-stat-label">
                         Active Programs
                     </div>
 
-                    <div class="programs-stat-value">
-                        {{ active_programs }}
+                    <div class="program-stat-value">
+                        {{ active_programs|default(0) }}
                     </div>
 
+                </div>
+
+                <div class="program-stat-icon">
+                    <i class="fa-solid fa-circle-check"></i>
                 </div>
 
             </div>
@@ -991,28 +1191,24 @@
         </div>
 
 
-        <!-- INACTIVE -->
+        <div class="program-stat-card">
 
-        <div class="programs-stat-card red">
-
-            <div class="programs-stat-content">
-
-                <div class="programs-stat-icon">
-
-                    <i class="fas fa-circle-xmark"></i>
-
-                </div>
+            <div class="program-stat-top">
 
                 <div>
 
-                    <div class="programs-stat-label">
+                    <div class="program-stat-label">
                         Inactive Programs
                     </div>
 
-                    <div class="programs-stat-value">
-                        {{ inactive_programs }}
+                    <div class="program-stat-value">
+                        {{ inactive_programs|default(0) }}
                     </div>
 
+                </div>
+
+                <div class="program-stat-icon">
+                    <i class="fa-solid fa-circle-pause"></i>
                 </div>
 
             </div>
@@ -1020,28 +1216,24 @@
         </div>
 
 
-        <!-- INSTITUTIONS -->
+        <div class="program-stat-card">
 
-        <div class="programs-stat-card purple">
-
-            <div class="programs-stat-content">
-
-                <div class="programs-stat-icon">
-
-                    <i class="fas fa-building"></i>
-
-                </div>
+            <div class="program-stat-top">
 
                 <div>
 
-                    <div class="programs-stat-label">
-                        Institutions
+                    <div class="program-stat-label">
+                        Institution-wide
                     </div>
 
-                    <div class="programs-stat-value">
-                        {{ institution_count }}
+                    <div class="program-stat-value">
+                        {{ institution_wide_programs|default(0) }}
                     </div>
 
+                </div>
+
+                <div class="program-stat-icon">
+                    <i class="fa-solid fa-building"></i>
                 </div>
 
             </div>
@@ -1049,28 +1241,24 @@
         </div>
 
 
-        <!-- BRANCHES -->
+        <div class="program-stat-card">
 
-        <div class="programs-stat-card orange">
-
-            <div class="programs-stat-content">
-
-                <div class="programs-stat-icon">
-
-                    <i class="fas fa-code-branch"></i>
-
-                </div>
+            <div class="program-stat-top">
 
                 <div>
 
-                    <div class="programs-stat-label">
-                        Branches
+                    <div class="program-stat-label">
+                        Branch Programs
                     </div>
 
-                    <div class="programs-stat-value">
-                        {{ branch_count }}
+                    <div class="program-stat-value">
+                        {{ branch_programs|default(0) }}
                     </div>
 
+                </div>
+
+                <div class="program-stat-icon">
+                    <i class="fa-solid fa-code-branch"></i>
                 </div>
 
             </div>
@@ -1080,269 +1268,86 @@
     </div>
 
 
-    <!-- ========================================================
-         PROGRAM TYPE STATISTICS
-         ======================================================== -->
+    <!-- ======================================================
+         FILTERS
+         ====================================================== -->
 
-    <div class="program-type-stat-grid">
+    <div class="program-filter-card">
 
-        <div class="program-type-stat-card">
+        <div class="program-filter-header">
 
-            <span class="program-type-stat-name">
-                Academic
-            </span>
+            <div class="program-filter-title">
 
-            <span class="program-type-stat-count">
-                {{ academic_count }}
-            </span>
+                <i class="fa-solid fa-filter"></i>
 
-        </div>
-
-
-        <div class="program-type-stat-card">
-
-            <span class="program-type-stat-name">
-                Language
-            </span>
-
-            <span class="program-type-stat-count">
-                {{ language_count }}
-            </span>
-
-        </div>
-
-
-        <div class="program-type-stat-card">
-
-            <span class="program-type-stat-name">
-                Vocational
-            </span>
-
-            <span class="program-type-stat-count">
-                {{ vocational_count }}
-            </span>
-
-        </div>
-
-
-        <div class="program-type-stat-card">
-
-            <span class="program-type-stat-name">
-                Professional
-            </span>
-
-            <span class="program-type-stat-count">
-                {{ professional_count }}
-            </span>
-
-        </div>
-
-    </div>
-
-
-    <!-- ========================================================
-         MAIN PROGRAM CARD
-         ======================================================== -->
-
-    <div class="programs-main-card">
-
-
-        <!-- ====================================================
-             CARD HEADER
-             ==================================================== -->
-
-        <div class="programs-card-header">
-
-            <div class="programs-card-header-top">
-
-                <div>
-
-                    <h2 class="programs-card-title">
-                        Program Management
-                    </h2>
-
-                    <p class="programs-card-description">
-                        Search and manage all registered academic
-                        programs, institutions and branches.
-                    </p>
-
-                </div>
+                Program Filters
 
             </div>
 
+        </div>
 
-            <!-- =================================================
-                 FILTER FORM
-                 ================================================= -->
 
-            <form
-                method="GET"
-                action="{{ url_for('main.all_programs') }}"
-                class="programs-filter-form"
-            >
+        <form
+            method="GET"
+            action="{{ url_for('main.all_programs') }}"
+        >
 
+            <div class="program-filter-grid">
 
                 <!-- SEARCH -->
 
-                <div class="programs-filter-group programs-filter-search">
+                <div class="program-filter-field">
 
-                    <label class="programs-filter-label">
+                    <label
+                        class="program-filter-label"
+                        for="program-search"
+                    >
                         Search
                     </label>
 
-                    <i class="fas fa-search"></i>
+                    <div class="program-search-wrap">
 
-                    <input
-                        type="text"
-                        name="search"
-                        class="programs-filter-input"
-                        placeholder="Program name, code, short name..."
-                        value="{{ search or '' }}"
-                    >
+                        <i class="fa-solid fa-magnifying-glass"></i>
 
-                </div>
+                        <input
+                            id="program-search"
+                            type="search"
+                            name="search"
+                            class="program-input"
+                            value="{{ search|default('') }}"
+                            placeholder="Name, code, type..."
+                            autocomplete="off"
+                        >
 
-
-                <!-- INSTITUTION -->
-
-                <div class="programs-filter-group">
-
-                    <label
-                        for="filter_institution"
-                        class="programs-filter-label"
-                    >
-                        Institution
-                    </label>
-
-                    <select
-                        id="filter_institution"
-                        name="institution_id"
-                        class="programs-filter-select"
-                    >
-
-                        <option value="">
-                            All Institutions
-                        </option>
-
-                        {% for institution in institutions|default([]) %}
-
-                            <option
-                                value="{{ institution.id }}"
-                                {% if selected_institution_id|string == institution.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-
-                                {{ institution.name }}
-
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- BRANCH -->
-
-                <div class="programs-filter-group">
-
-                    <label
-                        for="filter_branch"
-                        class="programs-filter-label"
-                    >
-                        Branch
-                    </label>
-
-                    <select
-                        id="filter_branch"
-                        name="branch_id"
-                        class="programs-filter-select"
-                    >
-
-                        <option value="">
-                            All Branches
-                        </option>
-
-                        {% for branch in branches|default([]) %}
-
-                            <option
-                                value="{{ branch.id }}"
-                                data-institution-id="{{ branch.institution_id }}"
-                                {% if selected_branch_id|string == branch.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-
-                                {{ branch.name }}
-
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- PROGRAM TYPE -->
-
-                <div class="programs-filter-group">
-
-                    <label class="programs-filter-label">
-                        Program Type
-                    </label>
-
-                    <select
-                        name="program_type"
-                        class="programs-filter-select"
-                    >
-
-                        <option value="">
-                            All Types
-                        </option>
-
-                        {% for type_name in program_types|default([]) %}
-
-                            <option
-                                value="{{ type_name }}"
-                                {% if selected_program_type == type_name %}
-                                    selected
-                                {% endif %}
-                            >
-
-                                {{ type_name|replace('_', ' ')|title }}
-
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
+                    </div>
 
                 </div>
 
 
                 <!-- STATUS -->
 
-                <div class="programs-filter-group">
+                <div class="program-filter-field">
 
-                    <label class="programs-filter-label">
+                    <label
+                        class="program-filter-label"
+                        for="program-status"
+                    >
                         Status
                     </label>
 
                     <select
+                        id="program-status"
                         name="status"
-                        class="programs-filter-select"
+                        class="program-select"
                     >
 
                         <option value="">
-                            All Status
+                            All Statuses
                         </option>
 
                         <option
                             value="active"
-                            {% if selected_status == "active" %}
+                            {% if selected_status|default('')|lower == 'active' %}
                                 selected
                             {% endif %}
                         >
@@ -1351,7 +1356,7 @@
 
                         <option
                             value="inactive"
-                            {% if selected_status == "inactive" %}
+                            {% if selected_status|default('')|lower == 'inactive' %}
                                 selected
                             {% endif %}
                         >
@@ -1363,891 +1368,1124 @@
                 </div>
 
 
-                <!-- FILTER -->
+                <!-- PROGRAM TYPE -->
+
+                <div class="program-filter-field">
+
+                    <label
+                        class="program-filter-label"
+                        for="program-type"
+                    >
+                        Program Type
+                    </label>
+
+                    <select
+                        id="program-type"
+                        name="program_type"
+                        class="program-select"
+                    >
+
+                        <option value="">
+                            All Types
+                        </option>
+
+                        {% for program_type in program_types|default([]) %}
+
+                            <option
+                                value="{{ program_type }}"
+                                {% if selected_program_type|default('')|lower
+                                    == program_type|string|lower %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{
+                                    program_type
+                                    |replace("_", " ")
+                                    |title
+                                }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- INSTITUTION -->
+
+                <div class="program-filter-field">
+
+                    <label
+                        class="program-filter-label"
+                        for="program-institution"
+                    >
+                        Institution
+                    </label>
+
+                    <select
+                        id="program-institution"
+                        name="institution_id"
+                        class="program-select"
+                    >
+
+                        <option value="">
+                            All Institutions
+                        </option>
+
+                        {% for institution in institutions|default([]) %}
+
+                            <option
+                                value="{{ institution.id }}"
+                                {% if selected_institution_id|default('')|string
+                                    == institution.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ institution.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- BRANCH -->
+
+                <div class="program-filter-field">
+
+                    <label
+                        class="program-filter-label"
+                        for="program-branch"
+                    >
+                        Branch
+                    </label>
+
+                    <select
+                        id="program-branch"
+                        name="branch_id"
+                        class="program-select"
+                    >
+
+                        <option value="">
+                            All Branches
+                        </option>
+
+                        {% for branch in branches|default([]) %}
+
+                            <option
+                                value="{{ branch.id }}"
+                                {% if selected_branch_id|default('')|string
+                                    == branch.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ branch.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="program-filter-actions">
 
                 <button
                     type="submit"
-                    class="filter-btn"
+                    class="program-btn program-btn-primary"
                 >
-
-                    <i class="fas fa-filter me-1"></i>
-
-                    Filter
-
+                    <i class="fa-solid fa-filter"></i>
+                    Apply Filters
                 </button>
 
 
-                <!-- RESET -->
-
                 <a
                     href="{{ url_for('main.all_programs') }}"
-                    class="reset-btn"
+                    class="program-btn program-btn-light"
+                >
+                    <i class="fa-solid fa-rotate-left"></i>
+                    Reset
+                </a>
+
+            </div>
+
+
+            <!-- ACTIVE FILTERS -->
+
+            {% if search|default('')
+                or selected_status|default('')
+                or selected_program_type|default('')
+                or selected_institution_id|default('')
+                or selected_branch_id|default('')
+            %}
+
+                <div class="program-active-filters">
+
+                    <span class="program-filter-chip">
+                        <i class="fa-solid fa-filter"></i>
+                        Active filters
+                    </span>
+
+
+                    {% if search|default('') %}
+
+                        <span class="program-filter-chip">
+                            Search: {{ search }}
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if selected_status|default('') %}
+
+                        <span class="program-filter-chip">
+                            Status:
+                            {{ selected_status|title }}
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if selected_program_type|default('') %}
+
+                        <span class="program-filter-chip">
+                            Type:
+                            {{
+                                selected_program_type
+                                |replace("_", " ")
+                                |title
+                            }}
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if selected_institution_id|default('') %}
+
+                        <span class="program-filter-chip">
+                            Institution selected
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if selected_branch_id|default('') %}
+
+                        <span class="program-filter-chip">
+                            Branch selected
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </form>
+
+    </div>
+
+
+    <!-- ======================================================
+         PROGRAM TABLE
+         ====================================================== -->
+
+    <div class="program-table-card">
+
+        <div class="program-table-header">
+
+            <div class="program-table-title-wrap">
+
+                <h2 class="program-table-title">
+                    Programs
+                </h2>
+
+                <div class="program-table-count">
+
+                    Showing
+
+                    <strong>
+                        {{ programs|length }}
+                    </strong>
+
+                    of
+
+                    <strong>
+                        {{ pagination.total }}
+                    </strong>
+
+                    programs
+
+                </div>
+
+            </div>
+
+
+            <!-- PER PAGE -->
+
+            <form
+                method="GET"
+                action="{{ url_for('main.all_programs') }}"
+                class="program-per-page"
+            >
+
+                {% if search|default('') %}
+                    <input
+                        type="hidden"
+                        name="search"
+                        value="{{ search }}"
+                    >
+                {% endif %}
+
+
+                {% if selected_status|default('') %}
+                    <input
+                        type="hidden"
+                        name="status"
+                        value="{{ selected_status }}"
+                    >
+                {% endif %}
+
+
+                {% if selected_program_type|default('') %}
+                    <input
+                        type="hidden"
+                        name="program_type"
+                        value="{{ selected_program_type }}"
+                    >
+                {% endif %}
+
+
+                {% if selected_institution_id|default('') %}
+                    <input
+                        type="hidden"
+                        name="institution_id"
+                        value="{{ selected_institution_id }}"
+                    >
+                {% endif %}
+
+
+                {% if selected_branch_id|default('') %}
+                    <input
+                        type="hidden"
+                        name="branch_id"
+                        value="{{ selected_branch_id }}"
+                    >
+                {% endif %}
+
+
+                <span>
+                    Per page
+                </span>
+
+
+                <select
+                    name="per_page"
+                    onchange="this.form.submit()"
                 >
 
-                    <i class="fas fa-rotate-left me-1"></i>
+                    {% for option in [10, 25, 50, 100] %}
 
-                    Reset
+                        <option
+                            value="{{ option }}"
+                            {% if per_page|default(25)|int == option %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ option }}
+                        </option>
 
-                </a>
+                    {% endfor %}
+
+                </select>
 
             </form>
 
         </div>
 
 
-        <!-- ====================================================
-             TABLE TOOLBAR
-             ==================================================== -->
+        {% if programs %}
 
-        <div class="programs-table-toolbar">
+            <div class="program-table-scroll">
 
-            <div class="programs-result-count">
+                <table class="program-table">
 
-                Showing
+                    <thead>
 
-                <strong>
-                    {{ pagination.first or 0 }}
-                </strong>
+                        <tr>
 
-                -
+                            <th>#</th>
+                            <th>Program</th>
+                            <th>Code</th>
+                            <th>Institution</th>
+                            <th>Branch</th>
+                            <th>Type</th>
+                            <th>Duration</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
 
-                <strong>
-                    {{ pagination.last or 0 }}
-                </strong>
+                        </tr>
 
-                of
-
-                <strong>
-                    {{ pagination.total }}
-                </strong>
-
-                programs
-
-            </div>
+                    </thead>
 
 
-            <div class="per-page-wrapper">
+                    <tbody>
 
-                <label for="per_page">
-                    Per page
-                </label>
+                        {# =================================================
+                           IMPORTANT:
+                           EVERYTHING USING program.id IS INSIDE THIS LOOP
+                           ================================================= #}
 
-                <select
-                    id="per_page"
-                    name="per_page"
-                    class="per-page-select"
-                >
+                        {% for program in programs %}
 
-                    <option
-                        value="10"
-                        {% if per_page == 10 %}selected{% endif %}
-                    >
-                        10
-                    </option>
+                            <tr>
 
-                    <option
-                        value="20"
-                        {% if per_page == 20 %}selected{% endif %}
-                    >
-                        20
-                    </option>
+                                <!-- NUMBER -->
 
-                    <option
-                        value="50"
-                        {% if per_page == 50 %}selected{% endif %}
-                    >
-                        50
-                    </option>
+                                <td>
 
-                    <option
-                        value="100"
-                        {% if per_page == 100 %}selected{% endif %}
-                    >
-                        100
-                    </option>
-
-                </select>
-
-            </div>
-
-        </div>
-
-
-        <!-- ====================================================
-             PROGRAMS TABLE
-             ==================================================== -->
-
-        <div class="programs-table-wrapper">
-
-            <table class="programs-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            No.
-                        </th>
-
-                        <th>
-                            Program
-                        </th>
-
-                        <th>
-                            Code
-                        </th>
-
-                        <th>
-                            Institution
-                        </th>
-
-                        <th>
-                            Branch
-                        </th>
-
-                        <th>
-                            Program Type
-                        </th>
-
-                        <th>
-                            Duration
-                        </th>
-
-                        <th>
-                            Description
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Created
-                        </th>
-
-                        <th>
-                            Actions
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                {% if programs %}
-
-                    {% for program in programs %}
-
-                    <tr
-                        id="program-row-{{ program.id }}"
-                        data-program-row="{{ program.id }}"
-                    >
-
-
-                        <!-- ====================================
-                             NUMBER
-                             ==================================== -->
-
-                        <td>
-
-                            {{
-                                ((pagination.page - 1)
-                                * pagination.per_page)
-                                + loop.index
-                            }}
-
-                        </td>
-
-
-                        <!-- ====================================
-                             PROGRAM
-                             ==================================== -->
-
-                        <td>
-
-                            <div class="program-info">
-
-                                <div class="program-icon">
-
-                                    <i class="fas fa-graduation-cap"></i>
-
-                                </div>
-
-
-                                <div>
-
-                                    <div class="program-name">
+                                    <span class="program-id">
 
                                         {{
-                                            program.name
-                                            or "Unnamed Program"
+                                            (
+                                                (pagination.page - 1)
+                                                * pagination.per_page
+                                            ) + loop.index
                                         }}
 
-                                    </div>
+                                    </span>
+
+                                </td>
 
 
-                                    {% if program.short_name %}
+                                <!-- PROGRAM -->
 
-                                        <div class="program-short-name">
+                                <td>
 
-                                            <i class="fas fa-tag me-1"></i>
+                                    <div class="program-name-wrap">
 
-                                            {{ program.short_name }}
+                                        <div class="program-icon">
+
+                                            {% set ptype =
+                                                program.program_type
+                                                |default('')
+                                                |lower
+                                            %}
+
+
+                                            {% if ptype == 'computer' %}
+
+                                                <i class="fa-solid fa-computer"></i>
+
+                                            {% elif ptype == 'language' %}
+
+                                                <i class="fa-solid fa-language"></i>
+
+                                            {% elif ptype == 'science' %}
+
+                                                <i class="fa-solid fa-flask"></i>
+
+                                            {% elif ptype == 'vocational' %}
+
+                                                <i class="fa-solid fa-screwdriver-wrench"></i>
+
+                                            {% elif ptype == 'professional' %}
+
+                                                <i class="fa-solid fa-briefcase"></i>
+
+                                            {% else %}
+
+                                                <i class="fa-solid fa-graduation-cap"></i>
+
+                                            {% endif %}
 
                                         </div>
 
+
+                                        <div class="program-name-content">
+
+                                            <a
+                                                href="{{ url_for(
+                                                    'main.view_program',
+                                                    program_id=program.id
+                                                ) }}"
+                                                class="program-name"
+                                                title="{{ program.name }}"
+                                            >
+                                                {{ program.name }}
+                                            </a>
+
+
+                                            {% if program.short_name %}
+
+                                                <span class="program-short-name">
+                                                    {{ program.short_name }}
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="program-short-name">
+                                                    Program #{{ program.id }}
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- CODE -->
+
+                                <td>
+
+                                    <span class="program-code">
+                                        {{ program.code }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- INSTITUTION -->
+
+                                <td>
+
+                                    <div class="program-org">
+
+                                        {% if program.institution %}
+
+                                            <div class="program-org-name">
+                                                {{ program.institution.name }}
+                                            </div>
+
+                                        {% else %}
+
+                                            <div class="program-org-name">
+                                                —
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        <div class="program-org-id">
+
+                                            ID:
+                                            {{ program.institution_id }}
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- BRANCH -->
+
+                                <td>
+
+                                    {% if program.branch %}
+
+                                        <div class="program-branch">
+
+                                            <i class="fa-solid fa-code-branch"></i>
+
+                                            {{ program.branch.name }}
+
+                                        </div>
+
+                                    {% else %}
+
+                                        <span class="program-branch-wide">
+
+                                            <i class="fa-solid fa-building"></i>
+
+                                            Institution-wide
+
+                                        </span>
+
                                     {% endif %}
 
-                                </div>
-
-                            </div>
-
-                        </td>
+                                </td>
 
 
-                        <!-- ====================================
-                             CODE
-                             ==================================== -->
+                                <!-- TYPE -->
 
-                        <td>
+                                <td>
 
-                            {% if program.code %}
+                                    {% if program.program_type %}
 
-                                <span class="program-code">
+                                        <span class="program-type-badge">
 
-                                    <i class="fas fa-hashtag me-1"></i>
+                                            <i class="fa-solid fa-tag"></i>
 
-                                    {{ program.code }}
+                                            {{
+                                                program.program_type
+                                                |replace("_", " ")
+                                                |title
+                                            }}
 
-                                </span>
+                                        </span>
 
-                            {% else %}
+                                    {% else %}
 
-                                <span class="no-organization">
-                                    —
-                                </span>
+                                        <span class="program-short-name">
+                                            —
+                                        </span>
 
-                            {% endif %}
+                                    {% endif %}
 
-                        </td>
+                                </td>
 
 
-                        <!-- ====================================
-                             INSTITUTION
-                             ==================================== -->
+                                <!-- DURATION -->
 
-                        <td>
+                                <td>
 
-                            <div class="organization-cell">
+                                    {% if program.duration_months is not none %}
 
-                                {% if program.institution %}
+                                        <span class="program-duration">
 
-                                    <div class="organization-name">
+                                            <i class="fa-regular fa-clock"></i>
 
-                                        <i class="fas fa-building organization-icon"></i>
+                                            {{ program.duration_months }}
 
-                                        {{ program.institution.name }}
+                                            {% if program.duration_months == 1 %}
+                                                month
+                                            {% else %}
+                                                months
+                                            {% endif %}
 
-                                    </div>
+                                        </span>
 
-                                {% elif program.institution_id %}
+                                    {% else %}
 
-                                    <div class="organization-name">
+                                        <span class="program-short-name">
+                                            Not specified
+                                        </span>
 
-                                        <i class="fas fa-building organization-icon"></i>
+                                    {% endif %}
 
-                                        Institution #{{ program.institution_id }}
+                                </td>
 
-                                    </div>
 
-                                {% else %}
+                                <!-- PRICE -->
 
-                                    <span class="no-organization">
+                                <td>
+
+                                    <span class="program-price">
+
+                                        <span class="program-price-currency">
+                                            USD
+                                        </span>
+
+                                        {{
+                                            "%.2f"|format(
+                                                (program.price|default(0)|float)
+                                            )
+                                        }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    {% set program_status =
+                                        program.status
+                                        |default('active')
+                                        |lower
+                                    %}
+
+
+                                    {% if program_status == 'active' %}
+
+                                        <span class="
+                                            program-status
+                                            program-status-active
+                                        ">
+                                            Active
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="
+                                            program-status
+                                            program-status-inactive
+                                        ">
+                                            Inactive
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- CREATED -->
+
+                                <td>
+
+                                    {% if program.created_at %}
+
+                                        <div class="program-date">
+
+                                            {{
+                                                program.created_at.strftime(
+                                                    '%d %b %Y'
+                                                )
+                                            }}
+
+                                        </div>
+
+
+                                        <div class="program-short-name">
+
+                                            {{
+                                                program.created_at.strftime(
+                                                    '%I:%M %p'
+                                                )
+                                            }}
+
+                                        </div>
+
+                                    {% else %}
+
                                         —
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-                        </td>
-
-
-                        <!-- ====================================
-                             BRANCH
-                             ==================================== -->
-
-                        <td>
-
-                            <div class="organization-cell">
-
-                                {% if program.branch %}
-
-                                    <div class="branch-name">
-
-                                        <i class="fas fa-code-branch branch-icon"></i>
-
-                                        {{ program.branch.name }}
-
-                                    </div>
-
-                                {% elif program.branch_id %}
-
-                                    <div class="branch-name">
-
-                                        <i class="fas fa-code-branch branch-icon"></i>
-
-                                        Branch #{{ program.branch_id }}
-
-                                    </div>
-
-                                {% else %}
-
-                                    <span class="no-organization">
-                                        All Branches
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-                        </td>
-
-
-                        <!-- ====================================
-                             PROGRAM TYPE
-                             ==================================== -->
-
-                        <td>
-
-                            {% set type_class = {
-                                'academic': 'type-academic',
-                                'language': 'type-language',
-                                'vocational': 'type-vocational',
-                                'scientific': 'type-scientific',
-                                'professional': 'type-professional'
-                            }.get(
-                                (program.program_type or '')|lower,
-                                'type-general'
-                            ) %}
-
-
-                            <span
-                                class="program-type-badge {{ type_class }}"
-                            >
-
-                                {% if (program.program_type or '')|lower == "academic" %}
-
-                                    <i class="fas fa-book-open"></i>
-
-                                {% elif (program.program_type or '')|lower == "language" %}
-
-                                    <i class="fas fa-language"></i>
-
-                                {% elif (program.program_type or '')|lower == "vocational" %}
-
-                                    <i class="fas fa-screwdriver-wrench"></i>
-
-                                {% elif (program.program_type or '')|lower == "scientific" %}
-
-                                    <i class="fas fa-flask"></i>
-
-                                {% elif (program.program_type or '')|lower == "professional" %}
-
-                                    <i class="fas fa-user-tie"></i>
-
-                                {% else %}
-
-                                    <i class="fas fa-layer-group"></i>
-
-                                {% endif %}
-
-
-                                {{
-                                    program.program_type
-                                    |replace('_', ' ')
-                                    |title
-                                    if program.program_type
-                                    else "General"
-                                }}
-
-                            </span>
-
-                        </td>
-
-
-                        <!-- ====================================
-                             DURATION
-                             ==================================== -->
-
-                        <td>
-
-                            {% if program.duration_months %}
-
-                                <span class="duration-badge">
-
-                                    <i class="fas fa-calendar-days"></i>
-
-                                    {{ program.duration_months }}
-
-                                    {% if program.duration_months == 1 %}
-                                        Month
-                                    {% else %}
-                                        Months
-                                    {% endif %}
-
-                                </span>
-
-                            {% else %}
-
-                                <span class="no-organization">
-                                    —
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <!-- ====================================
-                             DESCRIPTION
-                             ==================================== -->
-
-                        <td>
-
-                            {% if program.description %}
-
-                                <div
-                                    class="program-description"
-                                    title="{{ program.description }}"
-                                >
-
-                                    {% if program.description|length > 90 %}
-
-                                        {{ program.description[:90] }}...
-
-                                    {% else %}
-
-                                        {{ program.description }}
 
                                     {% endif %}
 
-                                </div>
+                                </td>
 
-                            {% else %}
 
-                                <span class="no-organization">
-                                    —
-                                </span>
+                                <!-- =================================================
+                                     ACTIONS
+                                     ================================================= -->
 
-                            {% endif %}
+                                <td>
 
-                        </td>
+                                    <div class="program-actions">
 
 
-                        <!-- ====================================
-                             STATUS
-                             ==================================== -->
+                                        <!-- VIEW -->
 
-                        <td>
+                                        <a
+                                            href="{{ url_for(
+                                                'main.view_program',
+                                                program_id=program.id
+                                            ) }}"
+                                            class="
+                                                program-action
+                                                program-action-view
+                                            "
+                                            title="View Program"
+                                            aria-label="View Program"
+                                        >
 
-                            {% if program.status %}
+                                            <i class="fa-regular fa-eye"></i>
 
-                                <span class="status-badge status-active">
+                                        </a>
 
-                                    <i class="fas fa-check-circle"></i>
 
-                                    Active
+                                        <!-- EDIT -->
 
-                                </span>
+                                        <a
+                                            href="{{ url_for(
+                                                'main.edit_program',
+                                                program_id=program.id
+                                            ) }}"
+                                            class="
+                                                program-action
+                                                program-action-edit
+                                            "
+                                            title="Edit Program"
+                                            aria-label="Edit Program"
+                                        >
 
-                            {% else %}
+                                            <i class="fa-solid fa-pen"></i>
 
-                                <span class="status-badge status-inactive">
+                                        </a>
 
-                                    <i class="fas fa-times-circle"></i>
 
-                                    Inactive
+                                        <!-- DELETE -->
 
-                                </span>
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'main.delete_program',
+                                                program_id=program.id
+                                            ) }}"
+                                            class="program-delete-form"
+                                            onsubmit="return confirmProgramDelete(
+                                                event,
+                                                this,
+                                                '{{ program.name|e }}',
+                                                '{{ program.code|e }}'
+                                            );"
+                                        >
 
-                            {% endif %}
+                                            <button
+                                                type="submit"
+                                                class="
+                                                    program-action
+                                                    program-action-delete
+                                                "
+                                                title="Delete Program"
+                                                aria-label="Delete Program"
+                                            >
 
-                        </td>
+                                                <i class="fa-solid fa-trash-can"></i>
 
+                                            </button>
 
-                        <!-- ====================================
-                             CREATED
-                             ==================================== -->
+                                        </form>
 
-                        <td>
+                                    </div>
 
-                            {% if program.created_at %}
+                                </td>
 
-                                <span
-                                    title="{{ program.created_at.strftime('%Y-%m-%d %H:%M:%S') }}"
-                                >
+                            </tr>
 
-                                    {{ program.created_at.strftime('%Y-%m-%d') }}
+                        {% endfor %}
 
-                                </span>
+                    </tbody>
 
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <!-- ====================================
-                             ACTIONS
-                             ==================================== -->
-
-                        <td>
-
-                            <div class="program-actions">
-
-
-                                <!-- VIEW -->
-
-                                <a
-                                    href="{{ url_for('main.view_program', program_id=program.id) }}"
-                                    class="action-btn view"
-                                    title="View Program"
-                                    aria-label="View Program"
-                                >
-
-                                    <i class="fas fa-eye"></i>
-
-                                </a>
-
-
-                                <!-- EDIT -->
-
-                                <a
-                                    href="{{ url_for('main.edit_program', program_id=program.id) }}"
-                                    class="action-btn edit"
-                                    title="Edit Program"
-                                    aria-label="Edit Program"
-                                >
-
-                                    <i class="fas fa-pen"></i>
-
-                                </a>
-
-
-                                <!-- DELETE -->
-
-                                <button
-                                    type="button"
-                                    class="action-btn delete"
-                                    title="Delete Program"
-                                    aria-label="Delete Program"
-                                    onclick="deleteProgram({{ program.id }})"
-                                >
-
-                                    <i class="fas fa-trash"></i>
-
-                                </button>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-
-                {% else %}
-
-
-                    <tr>
-
-                        <td colspan="11">
-
-                            <div class="programs-empty-state">
-
-                                <div class="programs-empty-icon">
-
-                                    <i class="fas fa-graduation-cap"></i>
-
-                                </div>
-
-                                <h4>
-                                    No programs found
-                                </h4>
-
-                                <p>
-                                    No programs match your current
-                                    search or filter criteria.
-                                </p>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                {% endif %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-
-        <!-- ====================================================
-             PAGINATION
-             ==================================================== -->
-
-        {% if pagination.pages > 0 %}
-
-        <div class="programs-pagination">
-
-
-            <div class="pagination-info">
-
-                Page
-
-                <strong>
-                    {{ pagination.page }}
-                </strong>
-
-                of
-
-                <strong>
-                    {{ pagination.pages }}
-                </strong>
+                </table>
 
             </div>
 
 
-            <ul class="pagination">
+            <!-- ==================================================
+                 PAGINATION
+                 ================================================== -->
+
+            <div class="program-pagination">
+
+                <div class="program-pagination-info">
+
+                    {% if pagination.total > 0 %}
+
+                        Showing
+
+                        <strong>
+                            {{
+                                (
+                                    (pagination.page - 1)
+                                    * pagination.per_page
+                                ) + 1
+                            }}
+                        </strong>
+
+                        to
+
+                        <strong>
+                            {{
+                                [
+                                    pagination.page * pagination.per_page,
+                                    pagination.total
+                                ]|min
+                            }}
+                        </strong>
+
+                        of
+
+                        <strong>
+                            {{ pagination.total }}
+                        </strong>
+
+                    {% else %}
+
+                        No programs found.
+
+                    {% endif %}
+
+                </div>
 
 
-                <!-- FIRST -->
+                {% if pagination.pages > 1 %}
 
-                {% if pagination.has_prev %}
+                    <div class="program-pagination-links">
 
-                    <li>
+                        <!-- PREVIOUS -->
 
-                        <a
-                            href="{{ url_for(
-                                'main.all_programs',
-                                page=1,
-                                per_page=per_page,
-                                search=search,
-                                institution_id=selected_institution_id,
-                                branch_id=selected_branch_id,
-                                program_type=selected_program_type,
-                                status=selected_status
-                            ) }}"
-                            title="First page"
-                        >
-
-                            <i class="fas fa-angles-left"></i>
-
-                        </a>
-
-                    </li>
-
-                {% else %}
-
-                    <li>
-
-                        <span class="disabled">
-
-                            <i class="fas fa-angles-left"></i>
-
-                        </span>
-
-                    </li>
-
-                {% endif %}
-
-
-                <!-- PREVIOUS -->
-
-                {% if pagination.has_prev %}
-
-                    <li>
-
-                        <a
-                            href="{{ url_for(
-                                'main.all_programs',
-                                page=pagination.prev_num,
-                                per_page=per_page,
-                                search=search,
-                                institution_id=selected_institution_id,
-                                branch_id=selected_branch_id,
-                                program_type=selected_program_type,
-                                status=selected_status
-                            ) }}"
-                        >
-
-                            <i class="fas fa-angle-left"></i>
-
-                        </a>
-
-                    </li>
-
-                {% else %}
-
-                    <li>
-
-                        <span class="disabled">
-
-                            <i class="fas fa-angle-left"></i>
-
-                        </span>
-
-                    </li>
-
-                {% endif %}
-
-
-                <!-- PAGE NUMBERS -->
-
-                {% set start_page = pagination.page - 2 %}
-                {% set end_page = pagination.page + 2 %}
-
-                {% if start_page < 1 %}
-                    {% set start_page = 1 %}
-                {% endif %}
-
-                {% if end_page > pagination.pages %}
-                    {% set end_page = pagination.pages %}
-                {% endif %}
-
-
-                {% for page_num in range(
-                    start_page,
-                    end_page + 1
-                ) %}
-
-                    <li>
-
-                        {% if page_num == pagination.page %}
-
-                            <span class="active">
-                                {{ page_num }}
-                            </span>
-
-                        {% else %}
+                        {% if pagination.has_prev %}
 
                             <a
                                 href="{{ url_for(
                                     'main.all_programs',
-                                    page=page_num,
+                                    page=pagination.prev_num,
                                     per_page=per_page,
                                     search=search,
-                                    institution_id=selected_institution_id,
-                                    branch_id=selected_branch_id,
+                                    status=selected_status,
                                     program_type=selected_program_type,
-                                    status=selected_status
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id
                                 ) }}"
+                                class="program-page-link"
+                                title="Previous"
                             >
 
-                                {{ page_num }}
+                                <i class="fa-solid fa-chevron-left"></i>
 
+                            </a>
+
+                        {% else %}
+
+                            <span class="program-page-link disabled">
+
+                                <i class="fa-solid fa-chevron-left"></i>
+
+                            </span>
+
+                        {% endif %}
+
+
+                        <!-- PAGE RANGE -->
+
+                        {% set start_page = pagination.page - 2 %}
+                        {% set end_page = pagination.page + 2 %}
+
+
+                        {% if start_page < 1 %}
+                            {% set start_page = 1 %}
+                        {% endif %}
+
+
+                        {% if end_page > pagination.pages %}
+                            {% set end_page = pagination.pages %}
+                        {% endif %}
+
+
+                        <!-- FIRST PAGE -->
+
+                        {% if start_page > 1 %}
+
+                            <a
+                                href="{{ url_for(
+                                    'main.all_programs',
+                                    page=1,
+                                    per_page=per_page,
+                                    search=search,
+                                    status=selected_status,
+                                    program_type=selected_program_type,
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id
+                                ) }}"
+                                class="program-page-link"
+                            >
+                                1
+                            </a>
+
+
+                            {% if start_page > 2 %}
+
+                                <span class="program-page-dots">
+                                    ...
+                                </span>
+
+                            {% endif %}
+
+                        {% endif %}
+
+
+                        <!-- PAGE NUMBERS -->
+
+                        {% for page_num in range(
+                            start_page,
+                            end_page + 1
+                        ) %}
+
+                            {% if page_num == pagination.page %}
+
+                                <span class="
+                                    program-page-link
+                                    active
+                                ">
+                                    {{ page_num }}
+                                </span>
+
+                            {% else %}
+
+                                <a
+                                    href="{{ url_for(
+                                        'main.all_programs',
+                                        page=page_num,
+                                        per_page=per_page,
+                                        search=search,
+                                        status=selected_status,
+                                        program_type=selected_program_type,
+                                        institution_id=selected_institution_id,
+                                        branch_id=selected_branch_id
+                                    ) }}"
+                                    class="program-page-link"
+                                >
+                                    {{ page_num }}
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        <!-- LAST PAGE -->
+
+                        {% if end_page < pagination.pages %}
+
+                            {% if end_page < pagination.pages - 1 %}
+
+                                <span class="program-page-dots">
+                                    ...
+                                </span>
+
+                            {% endif %}
+
+
+                            <a
+                                href="{{ url_for(
+                                    'main.all_programs',
+                                    page=pagination.pages,
+                                    per_page=per_page,
+                                    search=search,
+                                    status=selected_status,
+                                    program_type=selected_program_type,
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id
+                                ) }}"
+                                class="program-page-link"
+                            >
+                                {{ pagination.pages }}
                             </a>
 
                         {% endif %}
 
-                    </li>
 
-                {% endfor %}
+                        <!-- NEXT -->
 
+                        {% if pagination.has_next %}
 
-                <!-- NEXT -->
+                            <a
+                                href="{{ url_for(
+                                    'main.all_programs',
+                                    page=pagination.next_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    status=selected_status,
+                                    program_type=selected_program_type,
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id
+                                ) }}"
+                                class="program-page-link"
+                                title="Next"
+                            >
 
-                {% if pagination.has_next %}
+                                <i class="fa-solid fa-chevron-right"></i>
 
-                    <li>
+                            </a>
 
-                        <a
-                            href="{{ url_for(
-                                'main.all_programs',
-                                page=pagination.next_num,
-                                per_page=per_page,
-                                search=search,
-                                institution_id=selected_institution_id,
-                                branch_id=selected_branch_id,
-                                program_type=selected_program_type,
-                                status=selected_status
-                            ) }}"
-                        >
+                        {% else %}
 
-                            <i class="fas fa-angle-right"></i>
+                            <span class="program-page-link disabled">
 
-                        </a>
+                                <i class="fa-solid fa-chevron-right"></i>
 
-                    </li>
+                            </span>
 
-                {% else %}
+                        {% endif %}
 
-                    <li>
-
-                        <span class="disabled">
-
-                            <i class="fas fa-angle-right"></i>
-
-                        </span>
-
-                    </li>
+                    </div>
 
                 {% endif %}
 
+            </div>
 
-                <!-- LAST -->
 
-                {% if pagination.has_next %}
+        {% else %}
 
-                    <li>
+            <!-- ==================================================
+                 EMPTY STATE
+                 ================================================== -->
 
-                        <a
-                            href="{{ url_for(
-                                'main.all_programs',
-                                page=pagination.pages,
-                                per_page=per_page,
-                                search=search,
-                                institution_id=selected_institution_id,
-                                branch_id=selected_branch_id,
-                                program_type=selected_program_type,
-                                status=selected_status
-                            ) }}"
-                            title="Last page"
-                        >
+            <div class="program-empty">
 
-                            <i class="fas fa-angles-right"></i>
+                <div class="program-empty-icon">
 
-                        </a>
+                    <i class="fa-solid fa-layer-group"></i>
 
-                    </li>
+                </div>
+
+
+                <h3 class="program-empty-title">
+                    No Programs Found
+                </h3>
+
+
+                <p class="program-empty-text">
+
+                    {% if search|default('')
+                        or selected_status|default('')
+                        or selected_program_type|default('')
+                        or selected_institution_id|default('')
+                        or selected_branch_id|default('')
+                    %}
+
+                        No programs match your current filters.
+                        Try changing the search or filter values.
+
+                    {% else %}
+
+                        There are no programs registered yet.
+                        Create your first program to get started.
+
+                    {% endif %}
+
+                </p>
+
+
+                {% if search|default('')
+                    or selected_status|default('')
+                    or selected_program_type|default('')
+                    or selected_institution_id|default('')
+                    or selected_branch_id|default('')
+                %}
+
+                    <a
+                        href="{{ url_for('main.all_programs') }}"
+                        class="program-btn program-btn-light"
+                    >
+
+                        <i class="fa-solid fa-rotate-left"></i>
+
+                        Clear Filters
+
+                    </a>
 
                 {% else %}
 
-                    <li>
+                    <a
+                        href="{{ url_for('main.add_program') }}"
+                        class="program-btn program-btn-primary"
+                    >
 
-                        <span class="disabled">
+                        <i class="fa-solid fa-plus"></i>
 
-                            <i class="fas fa-angles-right"></i>
+                        Add First Program
 
-                        </span>
-
-                    </li>
+                    </a>
 
                 {% endif %}
 
-            </ul>
-
-        </div>
+            </div>
 
         {% endif %}
 
@@ -2257,156 +2495,146 @@
 
 
 <!-- ============================================================
-     JAVASCRIPT
+     DELETE CONFIRMATION MODAL
      ============================================================ -->
+
+<div
+    id="programDeleteModal"
+    class="program-modal-overlay"
+    aria-hidden="true"
+>
+
+    <div
+        class="program-delete-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="programDeleteTitle"
+    >
+
+        <div class="program-modal-top">
+
+            <div class="program-modal-icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+
+            <div>
+
+                <h3
+                    id="programDeleteTitle"
+                    class="program-modal-title"
+                >
+                    Delete Program
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <div class="program-modal-body">
+
+            <p class="program-modal-text">
+
+                Are you sure you want to delete this program?
+                This action cannot be undone.
+
+            </p>
+
+
+            <div class="program-modal-program">
+
+                <div
+                    id="deleteProgramName"
+                    class="program-modal-program-name"
+                >
+                    —
+                </div>
+
+                <div
+                    id="deleteProgramCode"
+                    class="program-modal-program-code"
+                >
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="program-modal-warning">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                Deleting a program may also affect related records
+                depending on your database relationships and
+                cascade settings.
+
+            </div>
+
+        </div>
+
+
+        <div class="program-modal-actions">
+
+            <button
+                type="button"
+                class="program-modal-btn program-modal-cancel"
+                onclick="closeProgramDeleteModal()"
+            >
+                <i class="fa-solid fa-xmark"></i>
+                Cancel
+            </button>
+
+
+            <button
+                type="button"
+                class="program-modal-btn program-modal-delete"
+                id="programDeleteConfirmButton"
+            >
+                <i class="fa-solid fa-trash-can"></i>
+                Delete Program
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 
 <script>
 
 /* ============================================================
-   INSTITUTION → BRANCH FILTER
+   PROGRAM SEARCH
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const institutionFilter =
-        document.getElementById("filter_institution");
+    const searchInput =
+        document.getElementById("program-search");
 
-    const branchFilter =
-        document.getElementById("filter_branch");
+    if (searchInput) {
 
+        searchInput.addEventListener(
+            "keydown",
+            function (event) {
 
-    if (!institutionFilter || !branchFilter) {
-        return;
-    }
+                if (event.key === "Enter") {
 
+                    event.preventDefault();
 
-    const allBranchOptions =
-        Array.from(
-            branchFilter.querySelectorAll(
-                "option[data-institution-id]"
-            )
-        ).map(function (option) {
+                    const form =
+                        searchInput.closest("form");
 
-            return {
-                value: option.value,
-
-                text:
-                    option.textContent.trim(),
-
-                institutionId:
-                    String(
-                        option.dataset.institutionId
-                    )
-            };
-
-        });
-
-
-    function updateBranchFilter(
-        preserveSelected = true
-    ) {
-
-        const institutionId =
-            String(
-                institutionFilter.value || ""
-            );
-
-
-        const currentBranchId =
-            preserveSelected
-                ? String(
-                    branchFilter.value || ""
-                )
-                : "";
-
-
-        branchFilter.innerHTML = "";
-
-
-        const allOption =
-            document.createElement("option");
-
-        allOption.value = "";
-
-        allOption.textContent =
-            "All Branches";
-
-        branchFilter.appendChild(
-            allOption
-        );
-
-
-        let matchingBranches;
-
-
-        if (!institutionId) {
-
-            matchingBranches =
-                allBranchOptions;
-
-        } else {
-
-            matchingBranches =
-                allBranchOptions.filter(
-                    function (branch) {
-
-                        return (
-                            String(
-                                branch.institutionId
-                            ) === institutionId
-                        );
-
+                    if (form) {
+                        form.submit();
                     }
-                );
-
-        }
-
-
-        matchingBranches.forEach(
-            function (branch) {
-
-                const option =
-                    document.createElement("option");
-
-                option.value =
-                    branch.value;
-
-                option.textContent =
-                    branch.text;
-
-
-                if (
-                    preserveSelected &&
-                    String(branch.value) ===
-                    currentBranchId
-                ) {
-
-                    option.selected = true;
 
                 }
-
-
-                branchFilter.appendChild(
-                    option
-                );
 
             }
         );
 
     }
-
-
-    updateBranchFilter(true);
-
-
-    institutionFilter.addEventListener(
-        "change",
-        function () {
-
-            updateBranchFilter(false);
-
-        }
-    );
 
 });
 
@@ -2415,319 +2643,195 @@ document.addEventListener("DOMContentLoaded", function () {
    DELETE PROGRAM
    ============================================================ */
 
-window.deleteProgram =
-async function (programId) {
-
-    if (!programId) {
-        return;
-    }
+let programDeleteForm = null;
 
 
-    const button =
-        document.querySelector(
-            `.action-btn.delete[onclick="deleteProgram(${programId})"]`
+function confirmProgramDelete(
+    event,
+    form,
+    programName,
+    programCode
+) {
+
+    event.preventDefault();
+
+    programDeleteForm = form;
+
+    const modal =
+        document.getElementById("programDeleteModal");
+
+    const nameElement =
+        document.getElementById("deleteProgramName");
+
+    const codeElement =
+        document.getElementById("deleteProgramCode");
+
+    const confirmButton =
+        document.getElementById(
+            "programDeleteConfirmButton"
         );
 
 
-    const row =
-        button
-            ? button.closest("tr")
-            : null;
+    if (nameElement) {
+        nameElement.textContent =
+            programName || "Unnamed Program";
+    }
 
 
-    let programName =
-        "this program";
+    if (codeElement) {
+        codeElement.textContent =
+            programCode
+                ? "Code: " + programCode
+                : "Program";
+    }
 
 
-    if (row) {
+    if (modal) {
 
-        const nameElement =
-            row.querySelector(
-                ".program-name"
-            );
+        modal.classList.add("show");
 
-
-        if (nameElement) {
-
-            programName =
-                nameElement.textContent.trim() ||
-                "this program";
-
-        }
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
 
     }
 
 
-    let confirmed = false;
+    if (confirmButton) {
 
-
-    if (
-        typeof Swal !== "undefined"
-    ) {
-
-        const result =
-            await Swal.fire({
-
-                icon: "warning",
-
-                title: "Delete Program?",
-
-                html:
-                    `Are you sure you want to delete <strong>${escapeHtml(programName)}</strong>?<br><br>` +
-                    `<span style="font-size:13px;color:#8a93a2;">` +
-                    `This action cannot be undone.` +
-                    `</span>`,
-
-                showCancelButton: true,
-
-                confirmButtonText:
-                    '<i class="fas fa-trash"></i> Yes, Delete',
-
-                cancelButtonText:
-                    "Cancel",
-
-                confirmButtonColor:
-                    "#dc3545",
-
-                cancelButtonColor:
-                    "#6c757d",
-
-                reverseButtons: true,
-
-                focusCancel: true
-
-            });
-
-
-        confirmed =
-            result.isConfirmed;
-
-    } else {
-
-        confirmed =
-            confirm(
-                "Are you sure you want to delete this program?"
-            );
+        confirmButton.focus();
 
     }
 
 
-    if (!confirmed) {
-        return;
+    return false;
+}
+
+
+/* ============================================================
+   CLOSE DELETE MODAL
+   ============================================================ */
+
+function closeProgramDeleteModal() {
+
+    const modal =
+        document.getElementById("programDeleteModal");
+
+    if (modal) {
+
+        modal.classList.remove("show");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
     }
 
-
-    if (button) {
-
-        button.disabled = true;
-
-        button.innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i>';
-
-    }
+    programDeleteForm = null;
+}
 
 
-    try {
+/* ============================================================
+   CONFIRM DELETE
+   ============================================================ */
 
-        const response =
-            await fetch(
-                `/delete-program/${programId}`,
-                {
-                    method: "POST",
+document.addEventListener("DOMContentLoaded", function () {
 
-                    headers: {
-                        "Accept": "application/json",
+    const confirmButton =
+        document.getElementById(
+            "programDeleteConfirmButton"
+        );
 
-                        "X-Requested-With":
-                            "XMLHttpRequest"
-                    },
+    if (confirmButton) {
 
-                    credentials:
-                        "same-origin"
+        confirmButton.addEventListener(
+            "click",
+            function () {
+
+                if (!programDeleteForm) {
+                    return;
                 }
-            );
 
 
-        const data =
-            await response.json();
+                const form =
+                    programDeleteForm;
+
+                programDeleteForm = null;
 
 
-        if (
-            !response.ok ||
-            !data.success
-        ) {
+                const modal =
+                    document.getElementById(
+                        "programDeleteModal"
+                    );
 
-            throw new Error(
-                data.message ||
-                "Unable to delete this program."
-            );
+                if (modal) {
 
-        }
+                    modal.classList.remove("show");
 
+                    modal.setAttribute(
+                        "aria-hidden",
+                        "true"
+                    );
 
-        if (row) {
-
-            row.style.transition =
-                "opacity .25s ease, transform .25s ease";
-
-            row.style.opacity =
-                "0";
-
-            row.style.transform =
-                "translateX(20px)";
+                }
 
 
-            setTimeout(
-                function () {
+                form.submit();
 
-                    row.remove();
-
-                },
-                280
-            );
-
-        }
-
-
-        if (
-            typeof Swal !== "undefined"
-        ) {
-
-            Swal.fire({
-
-                icon: "success",
-
-                title: "Program Deleted",
-
-                text:
-                    data.message ||
-                    "The program has been deleted successfully.",
-
-                timer: 1800,
-
-                showConfirmButton: false
-
-            });
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            "Delete program error:",
-            error
+            }
         );
-
-
-        if (button) {
-
-            button.disabled = false;
-
-            button.innerHTML =
-                '<i class="fas fa-trash"></i>';
-
-        }
-
-
-        if (
-            typeof Swal !== "undefined"
-        ) {
-
-            Swal.fire({
-
-                icon: "error",
-
-                title: "Delete Failed",
-
-                text:
-                    error.message ||
-                    "Unable to delete this program.",
-
-                confirmButtonColor:
-                    "#06245f"
-
-            });
-
-        } else {
-
-            alert(
-                error.message ||
-                "Unable to delete this program."
-            );
-
-        }
 
     }
 
-};
 
+    /* ========================================================
+       CLOSE WHEN CLICKING OUTSIDE MODAL
+       ======================================================== */
 
-/* ============================================================
-   ESCAPE HTML
-   ============================================================ */
-
-window.escapeHtml =
-function (value) {
-
-    const div =
-        document.createElement("div");
-
-
-    div.textContent =
-        value == null
-            ? ""
-            : String(value);
-
-
-    return div.innerHTML;
-
-};
-
-
-/* ============================================================
-   PER PAGE
-   ============================================================ */
-
-document.addEventListener(
-    "change",
-    function (event) {
-
-        if (
-            event.target.id !==
-            "per_page"
-        ) {
-
-            return;
-
-        }
-
-
-        const params =
-            new URLSearchParams(
-                window.location.search
-            );
-
-
-        params.set(
-            "per_page",
-            event.target.value
+    const modal =
+        document.getElementById(
+            "programDeleteModal"
         );
 
+    if (modal) {
 
-        params.set(
-            "page",
-            "1"
+        modal.addEventListener(
+            "click",
+            function (event) {
+
+                if (event.target === modal) {
+
+                    closeProgramDeleteModal();
+
+                }
+
+            }
         );
-
-
-        window.location.href =
-            `${window.location.pathname}?${params.toString()}`;
 
     }
-);
+
+
+    /* ========================================================
+       ESC KEY
+       ======================================================== */
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Escape") {
+
+                closeProgramDeleteModal();
+
+            }
+
+        }
+    );
+
+});
 
 </script>
-
 
 {% endblock %}

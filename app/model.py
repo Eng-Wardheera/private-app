@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 import enum
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -652,6 +652,44 @@ class Institution(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    teacher_subjects = db.relationship(
+        "TeacherSubject",
+        back_populates="institution",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    # ========================================================
+    # STUDENTS
+    # ========================================================
+
+    students = db.relationship(
+        "Student",
+        back_populates="institution",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    # ========================================================
+    # STUDENT ENROLLMENTS
+    # ========================================================
+
+    student_enrollments = db.relationship(
+        "StudentEnrollment",
+        back_populates="institution",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    # ========================================================
+    # STUDENT CHARGES
+    # ========================================================
+
+    student_charges = db.relationship(
+        "StudentCharge",
+        back_populates="institution",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     def __repr__(self):
 
@@ -851,6 +889,44 @@ class Branch(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    teacher_subjects = db.relationship(
+        "TeacherSubject",
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    # ========================================================
+    # STUDENTS
+    # ========================================================
+
+    students = db.relationship(
+        "Student",
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    # ========================================================
+    # STUDENT ENROLLMENTS
+    # ========================================================
+
+    student_enrollments = db.relationship(
+        "StudentEnrollment",
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    # ========================================================
+    # STUDENT CHARGES
+    # ========================================================
+
+    student_charges = db.relationship(
+        "StudentCharge",
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # REPRESENTATION
@@ -1019,6 +1095,33 @@ class AcademicYear(db.Model):
     )
     sections = db.relationship(
         "Section",
+        back_populates="academic_year",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    teacher_subjects = db.relationship(
+        "TeacherSubject",
+        back_populates="academic_year",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    # ========================================================
+    # STUDENT ENROLLMENTS
+    # ========================================================
+
+    student_enrollments = db.relationship(
+        "StudentEnrollment",
+        back_populates="academic_year",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    # ========================================================
+    # STUDENT CHARGES
+    # ========================================================
+
+    student_charges = db.relationship(
+        "StudentCharge",
         back_populates="academic_year",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -1258,7 +1361,6 @@ class Term(db.Model):
 # PROGRAM MODEL
 # PostgreSQL / Neon
 # ============================================================
-
 class Program(db.Model):
 
     __tablename__ = "programs"
@@ -1359,6 +1461,25 @@ class Program(db.Model):
     )
 
     # ========================================================
+    # PROGRAM PRICE
+    #
+    # Example:
+    # 100.00
+    # 250.00
+    # 500.00
+    #
+    # Numeric is recommended for money values.
+    # ========================================================
+
+    price = db.Column(
+        db.Numeric(12, 2),
+        nullable=False,
+        default=0,
+        server_default="0",
+        index=True
+    )
+
+    # ========================================================
     # STATUS
     # active / inactive
     # ========================================================
@@ -1405,20 +1526,37 @@ class Program(db.Model):
         "Branch",
         back_populates="programs"
     )
+
     assessment_plans = db.relationship(
         "AssessmentPlan",
         back_populates="program",
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+
     classes = db.relationship(
         "Class",
         back_populates="program",
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+
     subjects = db.relationship(
         "Subject",
+        back_populates="program",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    teacher_subjects = db.relationship(
+        "TeacherSubject",
+        back_populates="program",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    student_enrollments = db.relationship(
+        "StudentEnrollment",
         back_populates="program",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -1437,6 +1575,18 @@ class Program(db.Model):
             name="uq_program_institution_code"
         ),
 
+        # Price cannot be negative
+        db.CheckConstraint(
+            "price >= 0",
+            name="ck_program_price"
+        ),
+
+        # Duration cannot be negative
+        db.CheckConstraint(
+            "duration_months IS NULL OR duration_months >= 0",
+            name="ck_program_duration_months"
+        ),
+
     )
 
     # ========================================================
@@ -1452,9 +1602,9 @@ class Program(db.Model):
             f"branch_id={self.branch_id} "
             f"name={self.name!r} "
             f"code={self.code!r} "
+            f"price={self.price} "
             f"status={self.status!r}>"
         )
-
 
 # ============================================================
 # ASSESSMENT PLAN MODEL
@@ -1899,6 +2049,18 @@ class Class(db.Model):
         "AcademicYear",
         back_populates="classes"
     )
+    teacher_subjects = db.relationship(
+        "TeacherSubject",
+        back_populates="class_",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    student_enrollments = db.relationship(
+        "StudentEnrollment",
+        back_populates="class_",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # TABLE CONSTRAINTS
@@ -2122,6 +2284,18 @@ class Section(db.Model):
     academic_year = db.relationship(
         "AcademicYear",
         back_populates="sections"
+    )
+    teacher_subjects = db.relationship(
+        "TeacherSubject",
+        back_populates="section",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    student_enrollments = db.relationship(
+        "StudentEnrollment",
+        back_populates="section",
+        cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
     # ========================================================
@@ -2395,6 +2569,12 @@ class Subject(db.Model):
     program = db.relationship(
         "Program",
         back_populates="subjects"
+    )
+    teacher_subjects = db.relationship(
+        "TeacherSubject",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
     # ========================================================
@@ -2747,6 +2927,12 @@ class Teacher(db.Model):
         "Branch",
         back_populates="teachers"
     )
+    teacher_subjects = db.relationship(
+        "TeacherSubject",
+        back_populates="teacher",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # TABLE CONSTRAINTS
@@ -2824,7 +3010,1379 @@ class Teacher(db.Model):
         )
 
 
+# ============================================================
+# TEACHER SUBJECT MODEL
+# PostgreSQL / Neon
+# ============================================================
 
+class TeacherSubject(db.Model):
+
+    __tablename__ = "teacher_subjects"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # INSTITUTION RELATIONSHIP
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH RELATIONSHIP
+    # ========================================================
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # TEACHER RELATIONSHIP
+    # ========================================================
+
+    teacher_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "teachers.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # SUBJECT RELATIONSHIP
+    # ========================================================
+
+    subject_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "subjects.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # PROGRAM RELATIONSHIP
+    # ========================================================
+
+    program_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "programs.id",
+            ondelete="CASCADE"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # CLASS RELATIONSHIP
+    # ========================================================
+
+    class_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "classes.id",
+            ondelete="CASCADE"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # SECTION RELATIONSHIP
+    # ========================================================
+
+    section_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "sections.id",
+            ondelete="CASCADE"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # ACADEMIC YEAR RELATIONSHIP
+    # ========================================================
+
+    academic_year_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "academic_years.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # TEACHING ROLE / RESPONSIBILITY
+    # ========================================================
+
+    teaching_type = db.Column(
+        db.String(50),
+        nullable=False,
+        default="teacher",
+        server_default="teacher",
+        index=True
+    )
+
+    # Examples:
+    # teacher
+    # assistant
+    # coordinator
+    # substitute
+
+    # ========================================================
+    # PRIMARY TEACHER
+    # ========================================================
+
+    is_primary = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=True,
+        server_default=db.text("TRUE"),
+        index=True
+    )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="active",
+        server_default="active",
+        index=True
+    )
+
+    # active
+    # inactive
+    # suspended
+
+    # ========================================================
+    # START / END DATE
+    # ========================================================
+
+    start_date = db.Column(
+        db.Date,
+        nullable=True,
+        index=True
+    )
+
+    end_date = db.Column(
+        db.Date,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # NOTES
+    # ========================================================
+
+    notes = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # TIMESTAMPS
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="teacher_subjects"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="teacher_subjects"
+    )
+
+    teacher = db.relationship(
+        "Teacher",
+        back_populates="teacher_subjects"
+    )
+
+    subject = db.relationship(
+        "Subject",
+        back_populates="teacher_subjects"
+    )
+
+    program = db.relationship(
+        "Program",
+        back_populates="teacher_subjects"
+    )
+
+    class_ = db.relationship(
+        "Class",
+        back_populates="teacher_subjects"
+    )
+
+    section = db.relationship(
+        "Section",
+        back_populates="teacher_subjects"
+    )
+
+    academic_year = db.relationship(
+        "AcademicYear",
+        back_populates="teacher_subjects"
+    )
+
+    # ========================================================
+    # CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        # Prevent duplicate teacher-subject assignment
+        db.UniqueConstraint(
+            "teacher_id",
+            "subject_id",
+            "class_id",
+            "section_id",
+            "academic_year_id",
+            name="uq_teacher_subject_class_section_year"
+        ),
+
+        # Valid teaching date range
+        db.CheckConstraint(
+            "end_date IS NULL OR start_date IS NULL OR end_date >= start_date",
+            name="ck_teacher_subject_date_range"
+        ),
+
+    )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<TeacherSubject "
+            f"id={self.id} "
+            f"institution_id={self.institution_id} "
+            f"branch_id={self.branch_id} "
+            f"teacher_id={self.teacher_id} "
+            f"subject_id={self.subject_id} "
+            f"class_id={self.class_id} "
+            f"section_id={self.section_id} "
+            f"academic_year_id={self.academic_year_id} "
+            f"status={self.status!r}>"
+        )
+
+# ============================================================
+# STUDENT MODEL
+# PostgreSQL / Neon
+# Flask-Login Student Account
+# ============================================================
+
+class Student(UserMixin, db.Model):
+
+    __tablename__ = "students"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # LOGIN INFORMATION
+    # ========================================================
+
+    username = db.Column(
+        db.String(150),
+        nullable=False,
+        unique=True,
+        index=True
+    )
+
+    email = db.Column(
+        db.String(150),
+        nullable=True,
+        unique=True,
+        index=True
+    )
+
+    password = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    role = db.Column(
+        db.String(50),
+        nullable=False,
+        default="student",
+        server_default="student",
+        index=True
+    )
+
+    # ========================================================
+    # ACCOUNT STATUS
+    # ========================================================
+
+    is_active = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=True,
+        server_default=db.text("TRUE"),
+        index=True
+    )
+
+    is_verified = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+        server_default=db.text("FALSE"),
+        index=True
+    )
+
+    # ========================================================
+    # SESSION / LOGIN TRACKING
+    # ========================================================
+
+    session_token = db.Column(
+        db.String(128),
+        unique=True,
+        nullable=True,
+        index=True
+    )
+
+    login_time = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    last_login = db.Column(
+        db.DateTime,
+        nullable=True,
+        index=True
+    )
+
+    last_active = db.Column(
+        db.DateTime,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # STUDENT IDENTIFICATION
+    # ========================================================
+
+    admission_no = db.Column(
+        db.String(50),
+        nullable=False,
+        index=True
+    )
+
+    roll_no = db.Column(
+        db.String(50),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # PERSONAL INFORMATION
+    # ========================================================
+
+    full_name = db.Column(
+        db.String(200),
+        nullable=False,
+        index=True
+    )
+
+    gender = db.Column(
+        db.String(20),
+        nullable=True,
+        index=True
+    )
+
+    date_of_birth = db.Column(
+        db.Date,
+        nullable=True
+    )
+
+    place_of_birth = db.Column(
+        db.String(150),
+        nullable=True
+    )
+
+    nationality = db.Column(
+        db.String(100),
+        nullable=True
+    )
+
+    # ========================================================
+    # CONTACT
+    # ========================================================
+
+    phone = db.Column(
+        db.String(30),
+        nullable=True,
+        index=True
+    )
+
+    address = db.Column(
+        db.String(255),
+        nullable=True
+    )
+
+    city = db.Column(
+        db.String(100),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # PARENT / GUARDIAN
+    # ========================================================
+
+    parent_name = db.Column(
+        db.String(200),
+        nullable=True,
+        index=True
+    )
+
+    parent_phone = db.Column(
+        db.String(30),
+        nullable=True,
+        index=True
+    )
+
+    parent_email = db.Column(
+        db.String(150),
+        nullable=True
+    )
+
+    parent_address = db.Column(
+        db.String(255),
+        nullable=True
+    )
+
+    relationship_to_student = db.Column(
+        db.String(50),
+        nullable=True
+    )
+
+    # ========================================================
+    # PHOTO
+    # ========================================================
+
+    photo = db.Column(
+        db.String(500),
+        nullable=True
+    )
+
+    # ========================================================
+    # STUDENT STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="active",
+        server_default="active",
+        index=True
+    )
+
+    # active
+    # inactive
+    # graduated
+    # transferred
+    # suspended
+    # withdrawn
+
+    # ========================================================
+    # NOTES
+    # ========================================================
+
+    notes = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # TIMESTAMPS
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="students"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="students"
+    )
+
+    enrollments = db.relationship(
+        "StudentEnrollment",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    charges = db.relationship(
+        "StudentCharge",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    # ========================================================
+    # CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        db.UniqueConstraint(
+            "institution_id",
+            "admission_no",
+            name="uq_student_institution_admission_no"
+        ),
+
+        db.CheckConstraint(
+            "status IN ("
+            "'active', "
+            "'inactive', "
+            "'graduated', "
+            "'transferred', "
+            "'suspended', "
+            "'withdrawn'"
+            ")",
+            name="ck_student_status"
+        ),
+
+    )
+
+    # ========================================================
+    # PASSWORD MANAGEMENT
+    # ========================================================
+
+    def set_password(self, raw_password):
+
+        if not raw_password:
+            raise ValueError(
+                "Student password cannot be empty."
+            )
+
+        self.password = generate_password_hash(
+            raw_password,
+            method="pbkdf2:sha256"
+        )
+
+    # ========================================================
+    # CHECK PASSWORD
+    # ========================================================
+
+    def check_password(self, raw_password):
+
+        if not self.password or not raw_password:
+            return False
+
+        return check_password_hash(
+            self.password,
+            raw_password
+        )
+
+    # ========================================================
+    # ACCOUNT STATUS
+    # ========================================================
+
+    def is_account_active(self):
+
+        return (
+            self.is_active
+            and self.status == "active"
+        )
+
+    # ========================================================
+    # FLASK-LOGIN ID
+    # ========================================================
+
+    def get_id(self):
+
+        return str(self.id)
+
+    # ========================================================
+    # DISPLAY NAME
+    # ========================================================
+
+    @property
+    def display_name(self):
+
+        return (
+            self.full_name
+            or self.username
+            or self.email
+            or f"Student {self.id}"
+        )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<Student "
+            f"id={self.id} "
+            f"institution_id={self.institution_id} "
+            f"branch_id={self.branch_id} "
+            f"admission_no={self.admission_no!r} "
+            f"username={self.username!r} "
+            f"full_name={self.full_name!r} "
+            f"role={self.role!r} "
+            f"status={self.status!r}>"
+        )
+
+
+# ============================================================
+# STUDENT ENROLLMENT MODEL
+# PostgreSQL / Neon
+# ============================================================
+
+class StudentEnrollment(db.Model):
+
+    __tablename__ = "student_enrollments"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # STUDENT
+    # ========================================================
+
+    student_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "students.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # ACADEMIC YEAR
+    # ========================================================
+
+    academic_year_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "academic_years.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # PROGRAM
+    # ========================================================
+
+    program_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "programs.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # CLASS
+    # ========================================================
+
+    class_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "classes.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # SECTION
+    # ========================================================
+
+    section_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "sections.id",
+            ondelete="SET NULL"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # ENROLLMENT NUMBER
+    # ========================================================
+
+    enrollment_no = db.Column(
+        db.String(50),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # ENROLLMENT DATE
+    # ========================================================
+
+    enrollment_date = db.Column(
+        db.Date,
+        nullable=False,
+        default=date.today,
+        server_default=db.func.current_date(),
+        index=True
+    )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(30),
+        nullable=False,
+        default="active",
+        server_default="active",
+        index=True
+    )
+
+    # active
+    # completed
+    # transferred
+    # withdrawn
+    # suspended
+    # promoted
+
+    # ========================================================
+    # PREVIOUS CLASS / NOTES
+    # ========================================================
+
+    notes = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # CREATED / UPDATED
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="student_enrollments"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="student_enrollments"
+    )
+
+    student = db.relationship(
+        "Student",
+        back_populates="enrollments"
+    )
+
+    academic_year = db.relationship(
+        "AcademicYear",
+        back_populates="student_enrollments"
+    )
+
+    program = db.relationship(
+        "Program",
+        back_populates="student_enrollments"
+    )
+
+    class_ = db.relationship(
+        "Class",
+        back_populates="student_enrollments"
+    )
+
+    section = db.relationship(
+        "Section",
+        back_populates="student_enrollments"
+    )
+
+    charges = db.relationship(
+        "StudentCharge",
+        back_populates="enrollment",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    # ========================================================
+    # CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        db.UniqueConstraint(
+            "institution_id",
+            "enrollment_no",
+            name="uq_enrollment_institution_no"
+        ),
+
+        db.UniqueConstraint(
+            "student_id",
+            "academic_year_id",
+            name="uq_student_academic_year_enrollment"
+        ),
+
+        db.CheckConstraint(
+            "status IN ("
+            "'active', "
+            "'completed', "
+            "'transferred', "
+            "'withdrawn', "
+            "'suspended', "
+            "'promoted'"
+            ")",
+            name="ck_student_enrollment_status"
+        ),
+    )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<StudentEnrollment "
+            f"id={self.id} "
+            f"student_id={self.student_id} "
+            f"academic_year_id={self.academic_year_id} "
+            f"program_id={self.program_id} "
+            f"class_id={self.class_id} "
+            f"section_id={self.section_id} "
+            f"enrollment_no={self.enrollment_no!r} "
+            f"status={self.status!r}>"
+        )
+
+
+# ============================================================
+# STUDENT CHARGE MODEL
+# Registration Fee / Other Charges
+# PostgreSQL / Neon
+# ============================================================
+
+class StudentCharge(db.Model):
+
+    __tablename__ = "student_charges"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # STUDENT
+    # ========================================================
+
+    student_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "students.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # ENROLLMENT
+    # ========================================================
+
+    enrollment_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "student_enrollments.id",
+            ondelete="SET NULL"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # ACADEMIC YEAR
+    # ========================================================
+
+    academic_year_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "academic_years.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # CHARGE TYPE
+    # ========================================================
+
+    charge_type = db.Column(
+        db.String(50),
+        nullable=False,
+        index=True
+    )
+
+    # registration
+    # admission
+    # id_card
+    # exam
+    # tuition
+    # uniform
+    # books
+    # transport
+    # laboratory
+    # library
+    # certificate
+    # other
+
+    # ========================================================
+    # CHARGE NAME
+    # ========================================================
+
+    charge_name = db.Column(
+        db.String(150),
+        nullable=False,
+        index=True
+    )
+
+    description = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # FINANCIAL INFORMATION
+    # ========================================================
+
+    amount = db.Column(
+        db.Numeric(12, 2),
+        nullable=False
+    )
+
+    discount = db.Column(
+        db.Numeric(12, 2),
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    net_amount = db.Column(
+        db.Numeric(12, 2),
+        nullable=False
+    )
+
+    paid_amount = db.Column(
+        db.Numeric(12, 2),
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    balance = db.Column(
+        db.Numeric(12, 2),
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    # ========================================================
+    # DUE DATE
+    # ========================================================
+
+    due_date = db.Column(
+        db.Date,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # PAYMENT STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="unpaid",
+        server_default="unpaid",
+        index=True
+    )
+
+    # unpaid
+    # partial
+    # paid
+    # cancelled
+    # overdue
+
+    # ========================================================
+    # CREATED BY
+    # ========================================================
+
+    created_by = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "users.id",
+            ondelete="SET NULL"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # TIMESTAMPS
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="student_charges"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="student_charges"
+    )
+
+    student = db.relationship(
+        "Student",
+        back_populates="charges"
+    )
+
+    enrollment = db.relationship(
+        "StudentEnrollment",
+        back_populates="charges"
+    )
+
+    academic_year = db.relationship(
+        "AcademicYear",
+        back_populates="student_charges"
+    )
+
+    created_by_user = db.relationship(
+        "User",
+        foreign_keys=[created_by]
+    )
+
+    # ========================================================
+    # CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        db.CheckConstraint(
+            "amount >= 0",
+            name="ck_student_charge_amount"
+        ),
+
+        db.CheckConstraint(
+            "discount >= 0",
+            name="ck_student_charge_discount"
+        ),
+
+        db.CheckConstraint(
+            "discount <= amount",
+            name="ck_student_charge_discount_amount"
+        ),
+
+        db.CheckConstraint(
+            "net_amount >= 0",
+            name="ck_student_charge_net_amount"
+        ),
+
+        db.CheckConstraint(
+            "paid_amount >= 0",
+            name="ck_student_charge_paid_amount"
+        ),
+
+        db.CheckConstraint(
+            "paid_amount <= net_amount",
+            name="ck_student_charge_paid_net_amount"
+        ),
+
+        db.CheckConstraint(
+            "balance >= 0",
+            name="ck_student_charge_balance"
+        ),
+
+        db.CheckConstraint(
+            "status IN ("
+            "'unpaid', "
+            "'partial', "
+            "'paid', "
+            "'cancelled', "
+            "'overdue'"
+            ")",
+            name="ck_student_charge_status"
+        ),
+    )
+
+    # ========================================================
+    # CALCULATE BALANCE
+    # ========================================================
+
+    def calculate_balance(self):
+
+        self.net_amount = (
+            self.amount - self.discount
+        )
+
+        self.balance = (
+            self.net_amount - self.paid_amount
+        )
+
+        if self.balance <= 0:
+
+            self.balance = 0
+            self.status = "paid"
+
+        elif self.paid_amount > 0:
+
+            self.status = "partial"
+
+        else:
+
+            self.status = "unpaid"
+
+        return self.balance
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<StudentCharge "
+            f"id={self.id} "
+            f"student_id={self.student_id} "
+            f"charge_type={self.charge_type!r} "
+            f"charge_name={self.charge_name!r} "
+            f"net_amount={self.net_amount} "
+            f"paid_amount={self.paid_amount} "
+            f"balance={self.balance} "
+            f"status={self.status!r}>"
+        )
 
 
 
