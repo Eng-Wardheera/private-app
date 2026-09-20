@@ -4029,7 +4029,6 @@ class StudentEnrollment(db.Model):
 # Registration Fee / Other Charges
 # PostgreSQL / Neon
 # ============================================================
-
 class StudentCharge(db.Model):
 
     __tablename__ = "student_charges"
@@ -4116,6 +4115,23 @@ class StudentCharge(db.Model):
 
     # ========================================================
     # CHARGE TYPE
+    #
+    # Registration:
+    #     registration
+    #
+    # Program:
+    #     program_fee
+    #
+    # Future:
+    #     tuition
+    #     exam
+    #     books
+    #     uniform
+    #     transport
+    #     laboratory
+    #     library
+    #     certificate
+    #     other
     # ========================================================
 
     charge_type = db.Column(
@@ -4123,19 +4139,6 @@ class StudentCharge(db.Model):
         nullable=False,
         index=True
     )
-
-    # registration
-    # admission
-    # id_card
-    # exam
-    # tuition
-    # uniform
-    # books
-    # transport
-    # laboratory
-    # library
-    # certificate
-    # other
 
     # ========================================================
     # CHARGE NAME
@@ -4147,19 +4150,29 @@ class StudentCharge(db.Model):
         index=True
     )
 
+    # ========================================================
+    # DESCRIPTION
+    # ========================================================
+
     description = db.Column(
         db.Text,
         nullable=True
     )
 
     # ========================================================
-    # FINANCIAL INFORMATION
+    # AMOUNT
     # ========================================================
 
     amount = db.Column(
         db.Numeric(12, 2),
-        nullable=False
+        nullable=False,
+        default=0,
+        server_default="0"
     )
+
+    # ========================================================
+    # DISCOUNT
+    # ========================================================
 
     discount = db.Column(
         db.Numeric(12, 2),
@@ -4168,10 +4181,20 @@ class StudentCharge(db.Model):
         server_default="0"
     )
 
+    # ========================================================
+    # NET AMOUNT
+    # ========================================================
+
     net_amount = db.Column(
         db.Numeric(12, 2),
-        nullable=False
+        nullable=False,
+        default=0,
+        server_default="0"
     )
+
+    # ========================================================
+    # PAID AMOUNT
+    # ========================================================
 
     paid_amount = db.Column(
         db.Numeric(12, 2),
@@ -4179,6 +4202,10 @@ class StudentCharge(db.Model):
         default=0,
         server_default="0"
     )
+
+    # ========================================================
+    # BALANCE
+    # ========================================================
 
     balance = db.Column(
         db.Numeric(12, 2),
@@ -4208,12 +4235,6 @@ class StudentCharge(db.Model):
         server_default="unpaid",
         index=True
     )
-
-    # unpaid
-    # partial
-    # paid
-    # cancelled
-    # overdue
 
     # ========================================================
     # CREATED BY
@@ -4335,6 +4356,25 @@ class StudentCharge(db.Model):
             ")",
             name="ck_student_charge_status"
         ),
+
+        db.CheckConstraint(
+            "charge_type IN ("
+            "'registration', "
+            "'program_fee', "
+            "'tuition', "
+            "'exam', "
+            "'admission', "
+            "'id_card', "
+            "'uniform', "
+            "'books', "
+            "'transport', "
+            "'laboratory', "
+            "'library', "
+            "'certificate', "
+            "'other'"
+            ")",
+            name="ck_student_charge_type"
+        ),
     )
 
     # ========================================================
@@ -4378,12 +4418,12 @@ class StudentCharge(db.Model):
             f"student_id={self.student_id} "
             f"charge_type={self.charge_type!r} "
             f"charge_name={self.charge_name!r} "
+            f"amount={self.amount} "
             f"net_amount={self.net_amount} "
             f"paid_amount={self.paid_amount} "
             f"balance={self.balance} "
             f"status={self.status!r}>"
         )
-
 
 
 

@@ -220,6 +220,24 @@
 }
 
 /* ============================================================
+   AUTO GENERATED HELP
+   ============================================================ */
+
+.auto-generated-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    color: #06245f;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.auto-generated-note i {
+    font-size: 10px;
+}
+
+/* ============================================================
    SELECT
    ============================================================ */
 
@@ -679,7 +697,10 @@
 
                             <div class="form-group">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="name"
+                                >
                                     Assessment Plan Name
                                     <span class="required">*</span>
                                 </label>
@@ -689,14 +710,15 @@
                                     name="name"
                                     id="name"
                                     class="form-control"
-                                    placeholder="e.g. Monthly Assessment"
+                                    placeholder="e.g. Monthly Assessment Plan"
                                     maxlength="150"
                                     required
                                     value="{{ request.form.get('name', assessment_plan.name or '') }}"
                                 >
 
-                                <div class="form-help">
-                                    Enter a clear and recognizable name.
+                                <div class="auto-generated-note">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    Name is automatically generated when frequency changes.
                                 </div>
 
                             </div>
@@ -706,7 +728,10 @@
 
                             <div class="form-group">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="code"
+                                >
                                     Plan Code
                                     <span class="required">*</span>
                                 </label>
@@ -716,14 +741,15 @@
                                     name="code"
                                     id="code"
                                     class="form-control"
-                                    placeholder="e.g. ASS-MON-01"
+                                    placeholder="e.g. ASSESSMENT-MONTHLY"
                                     maxlength="50"
                                     required
                                     value="{{ request.form.get('code', assessment_plan.code or '') }}"
                                 >
 
-                                <div class="form-help">
-                                    The code must be unique within the institution.
+                                <div class="auto-generated-note">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    Code is automatically generated from the selected frequency.
                                 </div>
 
                             </div>
@@ -733,7 +759,10 @@
 
                             <div class="form-group full">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="description"
+                                >
                                     Description
                                 </label>
 
@@ -784,7 +813,10 @@
 
                             <div class="form-group">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="institution_id"
+                                >
                                     Institution
                                     <span class="required">*</span>
                                 </label>
@@ -831,7 +863,10 @@
 
                             <div class="form-group">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="program_id"
+                                >
                                     Program
                                     <span class="required">*</span>
                                 </label>
@@ -882,7 +917,10 @@
 
                             <div class="form-group full">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="academic_year_id"
+                                >
                                     Academic Year
                                     <span class="required">*</span>
                                 </label>
@@ -969,7 +1007,10 @@
 
                             <div class="form-group">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="frequency"
+                                >
                                     Frequency
                                     <span class="required">*</span>
                                 </label>
@@ -1010,7 +1051,7 @@
                                 </select>
 
                                 <div class="form-help">
-                                    Choose the interval used to schedule assessments.
+                                    Select a frequency. Name and code will be generated automatically.
                                 </div>
 
                             </div>
@@ -1020,7 +1061,10 @@
 
                             <div class="form-group">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="interval_months"
+                                >
                                     Interval
                                     <span class="required">*</span>
                                 </label>
@@ -1031,6 +1075,7 @@
                                     id="interval_months"
                                     class="form-control"
                                     min="1"
+                                    max="120"
                                     step="1"
                                     required
                                     value="{{ request.form.get('interval_months', assessment_plan.interval_months or 1) }}"
@@ -1047,7 +1092,10 @@
 
                             <div class="form-group">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="start_date"
+                                >
                                     Start Date
                                     <span class="required">*</span>
                                 </label>
@@ -1072,7 +1120,10 @@
 
                             <div class="form-group">
 
-                                <label class="form-label">
+                                <label
+                                    class="form-label"
+                                    for="end_date"
+                                >
                                     End Date
                                 </label>
 
@@ -1306,7 +1357,10 @@
                                     {{ assessment_plan.name or 'Assessment Plan' }}
                                 </strong>
 
-                                <span class="preview-code" id="preview-code">
+                                <span
+                                    class="preview-code"
+                                    id="preview-code"
+                                >
                                     {{ assessment_plan.code or 'PLAN-CODE' }}
                                 </span>
 
@@ -1421,6 +1475,7 @@
 
                                 <p>
                                     Custom frequency allows you to define your own interval.
+                                    The name and code will use that interval automatically.
                                 </p>
 
                             </div>
@@ -1470,9 +1525,11 @@
                                 id="submit-btn"
                             >
                                 <i class="fa-solid fa-floppy-disk"></i>
+
                                 <span id="submit-text">
                                     Update Assessment Plan
                                 </span>
+
                             </button>
 
                             <a
@@ -1507,31 +1564,61 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const form = document.getElementById("edit-assessment-form");
+    const form =
+        document.getElementById("edit-assessment-form");
 
-    const institutionSelect = document.getElementById("institution_id");
-    const programSelect = document.getElementById("program_id");
-    const academicYearSelect = document.getElementById("academic_year_id");
+    const institutionSelect =
+        document.getElementById("institution_id");
 
-    const nameInput = document.getElementById("name");
-    const codeInput = document.getElementById("code");
+    const programSelect =
+        document.getElementById("program_id");
 
-    const frequencySelect = document.getElementById("frequency");
-    const intervalInput = document.getElementById("interval_months");
+    const academicYearSelect =
+        document.getElementById("academic_year_id");
 
-    const startDateInput = document.getElementById("start_date");
-    const endDateInput = document.getElementById("end_date");
+    const nameInput =
+        document.getElementById("name");
 
-    const submitBtn = document.getElementById("submit-btn");
-    const submitText = document.getElementById("submit-text");
+    const codeInput =
+        document.getElementById("code");
+
+    const frequencySelect =
+        document.getElementById("frequency");
+
+    const intervalInput =
+        document.getElementById("interval_months");
+
+    const intervalHelp =
+        document.getElementById("interval-help");
+
+    const startDateInput =
+        document.getElementById("start_date");
+
+    const endDateInput =
+        document.getElementById("end_date");
+
+    const submitBtn =
+        document.getElementById("submit-btn");
+
+    const submitText =
+        document.getElementById("submit-text");
 
 
     /* ========================================================
        ORIGINAL SELECTED VALUES
        ======================================================== */
 
-    const initialProgramId = "{{ request.form.get('program_id', assessment_plan.program_id|string) }}";
-    const initialAcademicYearId = "{{ request.form.get('academic_year_id', assessment_plan.academic_year_id|string) }}";
+    const initialProgramId =
+        {{ request.form.get(
+            'program_id',
+            assessment_plan.program_id|string
+        )|tojson }};
+
+    const initialAcademicYearId =
+        {{ request.form.get(
+            'academic_year_id',
+            assessment_plan.academic_year_id|string
+        )|tojson }};
 
 
     /* ========================================================
@@ -1543,10 +1630,10 @@ document.addEventListener("DOMContentLoaded", function () {
         {% for program in programs %}
 
         {
-            id: "{{ program.id }}",
+            id: {{ program.id|string|tojson }},
             name: {{ program.name|tojson }},
             code: {{ (program.code or '')|tojson }},
-            institution_id: "{{ program.institution_id }}"
+            institution_id: {{ program.institution_id|string|tojson }}
         }
 
         {% if not loop.last %},{% endif %}
@@ -1565,9 +1652,10 @@ document.addEventListener("DOMContentLoaded", function () {
         {% for academic_year in academic_years %}
 
         {
-            id: "{{ academic_year.id }}",
+            id: {{ academic_year.id|string|tojson }},
 
             name:
+
                 {% if academic_year.name is defined %}
                     {{ academic_year.name|tojson }}
                 {% elif academic_year.year is defined %}
@@ -1577,8 +1665,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 {% endif %},
 
             institution_id:
+
                 {% if academic_year.institution_id is defined %}
-                    "{{ academic_year.institution_id }}"
+                    {{ academic_year.institution_id|string|tojson }}
                 {% else %}
                     ""
                 {% endif %}
@@ -1592,12 +1681,79 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ========================================================
+       FREQUENCY CONFIGURATION
+       ======================================================== */
+
+    const FREQUENCY_CONFIG = {
+
+        monthly: {
+            label: "Monthly",
+            interval: 1,
+            name: "Monthly Assessment Plan",
+            code: "ASSESSMENT-MONTHLY"
+        },
+
+        bi_monthly: {
+            label: "Bi-Monthly",
+            interval: 2,
+            name: "Bi-Monthly Assessment Plan",
+            code: "ASSESSMENT-BI-MONTHLY"
+        },
+
+        quarterly: {
+            label: "Quarterly",
+            interval: 3,
+            name: "Quarterly Assessment Plan",
+            code: "ASSESSMENT-QUARTERLY"
+        },
+
+        semester: {
+            label: "Semester",
+            interval: 6,
+            name: "Semester Assessment Plan",
+            code: "ASSESSMENT-SEMESTER"
+        },
+
+        custom: {
+            label: "Custom",
+            interval: null,
+            name: "Custom Assessment Plan",
+            code: "ASSESSMENT-CUSTOM"
+        }
+
+    };
+
+
+    /* ========================================================
+       TRACK AUTO-GENERATED VALUES
+       ======================================================== */
+
+    let generatedName =
+        nameInput.value.trim();
+
+    let generatedCode =
+        codeInput.value.trim();
+
+
+    /*
+     * Existing values are preserved on initial page load.
+     *
+     * Once frequency is changed, Name + Code are generated
+     * automatically.
+     */
+
+    let frequencyChanged =
+        false;
+
+
+    /* ========================================================
        FILTER PROGRAMS
        ======================================================== */
 
     function filterPrograms(preserveValue = true) {
 
-        const institutionId = institutionSelect.value;
+        const institutionId =
+            institutionSelect.value;
 
         const currentValue =
             preserveValue
@@ -1606,14 +1762,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
         programSelect.innerHTML = "";
 
-        const defaultOption = document.createElement("option");
+        const defaultOption =
+            document.createElement("option");
 
         defaultOption.value = "";
-        defaultOption.textContent = institutionId
-            ? "Select Program"
-            : "Select Institution First";
+
+        defaultOption.textContent =
+            institutionId
+                ? "Select Program"
+                : "Select Institution First";
 
         programSelect.appendChild(defaultOption);
+
 
         if (!institutionId) {
 
@@ -1622,28 +1782,43 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+
         programSelect.disabled = false;
 
-        const filteredPrograms = programs.filter(function (program) {
 
-            return String(program.institution_id) === String(institutionId);
+        const filteredPrograms =
+            programs.filter(function (program) {
 
-        });
+                return String(program.institution_id) ===
+                    String(institutionId);
+
+            });
 
 
         filteredPrograms.forEach(function (program) {
 
-            const option = document.createElement("option");
+            const option =
+                document.createElement("option");
 
-            option.value = program.id;
+            option.value =
+                program.id;
 
             option.textContent =
                 program.name +
-                (program.code ? " — " + program.code : "");
+                (
+                    program.code
+                        ? " — " + program.code
+                        : ""
+                );
 
-            if (String(program.id) === String(currentValue)) {
+
+            if (
+                String(program.id) ===
+                String(currentValue)
+            ) {
                 option.selected = true;
             }
+
 
             programSelect.appendChild(option);
 
@@ -1658,7 +1833,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function filterAcademicYears(preserveValue = true) {
 
-        const institutionId = institutionSelect.value;
+        const institutionId =
+            institutionSelect.value;
 
         const currentValue =
             preserveValue
@@ -1667,14 +1843,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
         academicYearSelect.innerHTML = "";
 
-        const defaultOption = document.createElement("option");
+
+        const defaultOption =
+            document.createElement("option");
 
         defaultOption.value = "";
-        defaultOption.textContent = institutionId
-            ? "Select Academic Year"
-            : "Select Institution First";
+
+        defaultOption.textContent =
+            institutionId
+                ? "Select Academic Year"
+                : "Select Institution First";
 
         academicYearSelect.appendChild(defaultOption);
+
 
         if (!institutionId) {
 
@@ -1683,35 +1864,42 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+
         academicYearSelect.disabled = false;
 
 
-        const filteredYears = academicYears.filter(function (year) {
+        const filteredYears =
+            academicYears.filter(function (year) {
 
-            /*
-             * If academic year has no institution_id,
-             * treat it as a global academic year.
-             */
+                if (!year.institution_id) {
+                    return true;
+                }
 
-            if (!year.institution_id) {
-                return true;
-            }
+                return String(year.institution_id) ===
+                    String(institutionId);
 
-            return String(year.institution_id) === String(institutionId);
-
-        });
+            });
 
 
         filteredYears.forEach(function (year) {
 
-            const option = document.createElement("option");
+            const option =
+                document.createElement("option");
 
-            option.value = year.id;
-            option.textContent = year.name;
+            option.value =
+                year.id;
 
-            if (String(year.id) === String(currentValue)) {
+            option.textContent =
+                year.name;
+
+
+            if (
+                String(year.id) ===
+                String(currentValue)
+            ) {
                 option.selected = true;
             }
+
 
             academicYearSelect.appendChild(option);
 
@@ -1721,40 +1909,160 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ========================================================
-       FREQUENCY / INTERVAL
+       GENERATE NAME + CODE
        ======================================================== */
 
-    function updateFrequency() {
+    function generatePlanIdentity() {
 
-        const frequency = frequencySelect.value;
+        const frequency =
+            frequencySelect.value;
 
-        const fixedIntervals = {
-
-            monthly: 1,
-            bi_monthly: 2,
-            quarterly: 3,
-            semester: 6
-
-        };
+        const config =
+            FREQUENCY_CONFIG[frequency];
 
 
-        if (Object.prototype.hasOwnProperty.call(fixedIntervals, frequency)) {
+        if (!config) {
+            return;
+        }
 
-            intervalInput.value = fixedIntervals[frequency];
 
-            intervalInput.readOnly = true;
+        let generatedPlanName =
+            config.name;
 
-            intervalInput.style.background = "#f8fafc";
+        let generatedPlanCode =
+            config.code;
 
-        } else {
 
-            intervalInput.readOnly = false;
+        /* ----------------------------------------------------
+           CUSTOM FREQUENCY
+           ---------------------------------------------------- */
 
-            intervalInput.style.background = "#fff";
+        if (frequency === "custom") {
 
-            if (!intervalInput.value || Number(intervalInput.value) <= 0) {
-                intervalInput.value = 1;
+            const interval =
+                parseInt(
+                    intervalInput.value,
+                    10
+                );
+
+
+            if (
+                Number.isInteger(interval) &&
+                interval > 0
+            ) {
+
+                const monthLabel =
+                    interval === 1
+                        ? "Month"
+                        : "Months";
+
+
+                generatedPlanName =
+                    `Custom ${interval}-${monthLabel} Assessment Plan`;
+
+
+                generatedPlanCode =
+                    `ASSESSMENT-CUSTOM-${interval}M`;
+
             }
+
+        }
+
+
+        nameInput.value =
+            generatedPlanName;
+
+        codeInput.value =
+            generatedPlanCode;
+
+
+        generatedName =
+            generatedPlanName;
+
+        generatedCode =
+            generatedPlanCode;
+
+
+        updatePreview();
+
+    }
+
+
+    /* ========================================================
+       UPDATE FREQUENCY
+       ======================================================== */
+
+    function updateFrequency(
+        generateIdentity = false
+    ) {
+
+        const frequency =
+            frequencySelect.value;
+
+        const config =
+            FREQUENCY_CONFIG[frequency];
+
+
+        if (!config) {
+            return;
+        }
+
+
+        /* ----------------------------------------------------
+           FIXED FREQUENCIES
+           ---------------------------------------------------- */
+
+        if (config.interval !== null) {
+
+            intervalInput.value =
+                config.interval;
+
+            intervalInput.readOnly =
+                true;
+
+            intervalInput.style.background =
+                "#f8fafc";
+
+            intervalHelp.textContent =
+                `${config.label} assessments use ${config.interval} month(s).`;
+
+        }
+
+        /* ----------------------------------------------------
+           CUSTOM
+           ---------------------------------------------------- */
+
+        else {
+
+            intervalInput.readOnly =
+                false;
+
+            intervalInput.style.background =
+                "#fff";
+
+            if (
+                !intervalInput.value ||
+                Number(intervalInput.value) <= 0
+            ) {
+
+                intervalInput.value = 1;
+
+            }
+
+            intervalHelp.textContent =
+                "Enter the number of months between assessments.";
+
+        }
+
+
+        /*
+         * Generate Name + Code only when the user actually
+         * changes the frequency.
+         */
+
+        if (generateIdentity) {
+
+            generatePlanIdentity();
 
         }
 
@@ -1772,22 +2080,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (startDateInput.value) {
 
-            endDateInput.min = startDateInput.value;
+            endDateInput.min =
+                startDateInput.value;
+
 
             if (
                 endDateInput.value &&
-                endDateInput.value < startDateInput.value
+                endDateInput.value <
+                startDateInput.value
             ) {
 
                 endDateInput.value = "";
 
             }
 
-        } else {
+        }
 
-            endDateInput.removeAttribute("min");
+        else {
+
+            endDateInput.removeAttribute(
+                "min"
+            );
 
         }
+
 
         updatePreview();
 
@@ -1804,11 +2120,23 @@ document.addEventListener("DOMContentLoaded", function () {
             return "—";
         }
 
-        const date = new Date(value + "T00:00:00");
 
-        if (Number.isNaN(date.getTime())) {
+        const date =
+            new Date(
+                value + "T00:00:00"
+            );
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
             return value;
+
         }
+
 
         return date.toLocaleDateString(
             undefined,
@@ -1828,17 +2156,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function getFrequencyLabel(value) {
 
-        const labels = {
+        const config =
+            FREQUENCY_CONFIG[value];
 
-            monthly: "Monthly",
-            bi_monthly: "Bi-Monthly",
-            quarterly: "Quarterly",
-            semester: "Semester",
-            custom: "Custom"
 
-        };
-
-        return labels[value] || value || "—";
+        return config
+            ? config.label
+            : value || "—";
 
     }
 
@@ -1850,62 +2174,118 @@ document.addEventListener("DOMContentLoaded", function () {
     function updatePreview() {
 
         const previewName =
-            document.getElementById("preview-name");
+            document.getElementById(
+                "preview-name"
+            );
 
         const previewCode =
-            document.getElementById("preview-code");
+            document.getElementById(
+                "preview-code"
+            );
 
         const previewFrequency =
-            document.getElementById("preview-frequency");
+            document.getElementById(
+                "preview-frequency"
+            );
 
         const previewInterval =
-            document.getElementById("preview-interval");
+            document.getElementById(
+                "preview-interval"
+            );
 
         const previewStart =
-            document.getElementById("preview-start");
+            document.getElementById(
+                "preview-start"
+            );
 
         const previewEnd =
-            document.getElementById("preview-end");
+            document.getElementById(
+                "preview-end"
+            );
 
         const previewAuto =
-            document.getElementById("preview-auto");
+            document.getElementById(
+                "preview-auto"
+            );
 
         const previewStatus =
-            document.getElementById("preview-status");
+            document.getElementById(
+                "preview-status"
+            );
 
         const previewStatusDot =
-            document.getElementById("preview-status-dot");
+            document.getElementById(
+                "preview-status-dot"
+            );
 
 
         previewName.textContent =
-            nameInput.value.trim() || "Assessment Plan";
+            nameInput.value.trim() ||
+            "Assessment Plan";
 
 
         previewCode.textContent =
-            codeInput.value.trim() || "PLAN-CODE";
+            codeInput.value.trim() ||
+            "PLAN-CODE";
 
 
         previewFrequency.textContent =
-            getFrequencyLabel(frequencySelect.value);
+            getFrequencyLabel(
+                frequencySelect.value
+            );
 
 
-        previewInterval.textContent =
-            (intervalInput.value || "0") + " month(s)";
+        const interval =
+            parseInt(
+                intervalInput.value,
+                10
+            );
+
+
+        if (
+            Number.isInteger(interval) &&
+            interval > 0
+        ) {
+
+            previewInterval.textContent =
+                interval +
+                (
+                    interval === 1
+                        ? " month"
+                        : " months"
+                );
+
+        }
+
+        else {
+
+            previewInterval.textContent =
+                "—";
+
+        }
 
 
         previewStart.textContent =
-            formatDate(startDateInput.value);
+            formatDate(
+                startDateInput.value
+            );
 
 
         previewEnd.textContent =
-            formatDate(endDateInput.value);
+            formatDate(
+                endDateInput.value
+            );
 
 
         const autoYes =
-            document.getElementById("auto_yes");
+            document.getElementById(
+                "auto_yes"
+            );
+
 
         previewAuto.textContent =
-            autoYes && autoYes.checked
+            autoYes &&
+            autoYes.checked
                 ? "Yes"
                 : "No";
 
@@ -1914,6 +2294,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.querySelector(
                 'input[name="status"]:checked'
             );
+
 
         const status =
             selectedStatus
@@ -1931,17 +2312,63 @@ document.addEventListener("DOMContentLoaded", function () {
             previewStatusDot.style.background =
                 "#32b73a";
 
-        } else if (status === "inactive") {
+        }
+
+        else if (status === "inactive") {
 
             previewStatusDot.style.background =
                 "#f59e0b";
 
-        } else {
+        }
+
+        else {
 
             previewStatusDot.style.background =
                 "#64748b";
 
         }
+
+    }
+
+
+    /* ========================================================
+       NORMALIZE CODE
+       ======================================================== */
+
+    function normalizeCode() {
+
+        let value =
+            codeInput.value
+                .toUpperCase()
+                .trim();
+
+
+        value =
+            value.replace(
+                /\s+/g,
+                "-"
+            );
+
+
+        value =
+            value.replace(
+                /[^A-Z0-9_-]/g,
+                ""
+            );
+
+
+        value =
+            value.replace(
+                /-+/g,
+                "-"
+            );
+
+
+        codeInput.value =
+            value;
+
+
+        updatePreview();
 
     }
 
@@ -1956,7 +2383,9 @@ document.addEventListener("DOMContentLoaded", function () {
             .querySelectorAll(".invalid")
             .forEach(function (element) {
 
-                element.classList.remove("invalid");
+                element.classList.remove(
+                    "invalid"
+                );
 
             });
 
@@ -1969,7 +2398,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        element.classList.add("invalid");
+
+        element.classList.add(
+            "invalid"
+        );
 
         element.focus();
 
@@ -1983,9 +2415,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!institutionSelect.value) {
 
-            alert("Please select an institution.");
+            alert(
+                "Please select an institution."
+            );
 
-            markInvalid(institutionSelect);
+            markInvalid(
+                institutionSelect
+            );
 
             return false;
 
@@ -1994,9 +2430,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!programSelect.value) {
 
-            alert("Please select a program.");
+            alert(
+                "Please select a program."
+            );
 
-            markInvalid(programSelect);
+            markInvalid(
+                programSelect
+            );
 
             return false;
 
@@ -2005,9 +2445,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!academicYearSelect.value) {
 
-            alert("Please select an academic year.");
+            alert(
+                "Please select an academic year."
+            );
 
-            markInvalid(academicYearSelect);
+            markInvalid(
+                academicYearSelect
+            );
+
+            return false;
+
+        }
+
+
+        if (!frequencySelect.value) {
+
+            alert(
+                "Please select a frequency."
+            );
+
+            markInvalid(
+                frequencySelect
+            );
 
             return false;
 
@@ -2016,9 +2475,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!nameInput.value.trim()) {
 
-            alert("Please enter the assessment plan name.");
+            /*
+             * Safety fallback:
+             * generate name if it is empty.
+             */
 
-            markInvalid(nameInput);
+            generatePlanIdentity();
+
+        }
+
+
+        if (!nameInput.value.trim()) {
+
+            alert(
+                "Please enter the assessment plan name."
+            );
+
+            markInvalid(
+                nameInput
+            );
 
             return false;
 
@@ -2027,9 +2502,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!codeInput.value.trim()) {
 
-            alert("Please enter the assessment plan code.");
+            /*
+             * Safety fallback:
+             * generate code if it is empty.
+             */
 
-            markInvalid(codeInput);
+            generatePlanIdentity();
+
+        }
+
+
+        if (!codeInput.value.trim()) {
+
+            alert(
+                "Please enter the assessment plan code."
+            );
+
+            markInvalid(
+                codeInput
+            );
 
             return false;
 
@@ -2037,17 +2528,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         const interval =
-            parseInt(intervalInput.value, 10);
+            parseInt(
+                intervalInput.value,
+                10
+            );
 
 
         if (
-            !interval ||
+            !Number.isInteger(interval) ||
             interval < 1
         ) {
 
-            alert("Interval months must be greater than 0.");
+            alert(
+                "Interval months must be greater than 0."
+            );
 
-            markInvalid(intervalInput);
+            markInvalid(
+                intervalInput
+            );
+
+            return false;
+
+        }
+
+
+        if (interval > 120) {
+
+            alert(
+                "Interval cannot be greater than 120 months."
+            );
+
+            markInvalid(
+                intervalInput
+            );
 
             return false;
 
@@ -2056,9 +2569,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!startDateInput.value) {
 
-            alert("Please select a start date.");
+            alert(
+                "Please select a start date."
+            );
 
-            markInvalid(startDateInput);
+            markInvalid(
+                startDateInput
+            );
 
             return false;
 
@@ -2067,12 +2584,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (
             endDateInput.value &&
-            endDateInput.value < startDateInput.value
+            endDateInput.value <
+            startDateInput.value
         ) {
 
-            alert("End date cannot be earlier than the start date.");
+            alert(
+                "End date cannot be earlier than the start date."
+            );
 
-            markInvalid(endDateInput);
+            markInvalid(
+                endDateInput
+            );
+
+            return false;
+
+        }
+
+
+        normalizeCode();
+
+
+        if (!codeInput.value.trim()) {
+
+            alert(
+                "Please enter a valid assessment plan code."
+            );
+
+            markInvalid(
+                codeInput
+            );
 
             return false;
 
@@ -2093,6 +2633,7 @@ document.addEventListener("DOMContentLoaded", function () {
         function () {
 
             filterPrograms(false);
+
             filterAcademicYears(false);
 
             updatePreview();
@@ -2103,71 +2644,163 @@ document.addEventListener("DOMContentLoaded", function () {
 
     programSelect.addEventListener(
         "change",
-        updatePreview
+        function () {
+
+            updatePreview();
+
+        }
     );
 
 
     academicYearSelect.addEventListener(
         "change",
-        updatePreview
+        function () {
+
+            updatePreview();
+
+        }
     );
 
+
+    /* ========================================================
+       FREQUENCY CHANGE
+       ======================================================== */
 
     frequencySelect.addEventListener(
         "change",
-        updateFrequency
+        function () {
+
+            frequencyChanged =
+                true;
+
+            updateFrequency(true);
+
+        }
     );
 
+
+    /* ========================================================
+       CUSTOM INTERVAL CHANGE
+       ======================================================== */
 
     intervalInput.addEventListener(
         "input",
-        updatePreview
+        function () {
+
+            /*
+             * Only regenerate Name + Code automatically
+             * for Custom frequency.
+             */
+
+            if (
+                frequencySelect.value === "custom"
+            ) {
+
+                generatePlanIdentity();
+
+            }
+
+            else {
+
+                updatePreview();
+
+            }
+
+        }
     );
 
+
+    /* ========================================================
+       NAME
+       ======================================================== */
 
     nameInput.addEventListener(
         "input",
-        updatePreview
+        function () {
+
+            updatePreview();
+
+        }
     );
 
+
+    /* ========================================================
+       CODE
+       ======================================================== */
 
     codeInput.addEventListener(
         "input",
-        updatePreview
+        function () {
+
+            normalizeCode();
+
+        }
     );
 
 
+    /* ========================================================
+       DATES
+       ======================================================== */
+
     startDateInput.addEventListener(
         "change",
-        updateEndDateMin
+        function () {
+
+            updateEndDateMin();
+
+        }
     );
 
 
     endDateInput.addEventListener(
         "change",
-        updatePreview
+        function () {
+
+            updatePreview();
+
+        }
     );
 
 
+    /* ========================================================
+       AUTO GENERATE
+       ======================================================== */
+
     document
-        .querySelectorAll('input[name="auto_generate"]')
+        .querySelectorAll(
+            'input[name="auto_generate"]'
+        )
         .forEach(function (input) {
 
             input.addEventListener(
                 "change",
-                updatePreview
+                function () {
+
+                    updatePreview();
+
+                }
             );
 
         });
 
 
+    /* ========================================================
+       STATUS
+       ======================================================== */
+
     document
-        .querySelectorAll('input[name="status"]')
+        .querySelectorAll(
+            'input[name="status"]'
+        )
         .forEach(function (input) {
 
             input.addEventListener(
                 "change",
-                updatePreview
+                function () {
+
+                    updatePreview();
+
+                }
             );
 
         });
@@ -2190,7 +2823,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            submitBtn.disabled = true;
+            submitBtn.disabled =
+                true;
+
 
             submitText.textContent =
                 "Updating Assessment Plan...";
@@ -2198,6 +2833,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const icon =
                 submitBtn.querySelector("i");
+
 
             if (icon) {
 
@@ -2218,7 +2854,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     filterAcademicYears(true);
 
-    updateFrequency();
+    /*
+     * IMPORTANT:
+     * false = do NOT replace the existing
+     * Name + Code when editing.
+     */
+
+    updateFrequency(false);
 
     updateEndDateMin();
 

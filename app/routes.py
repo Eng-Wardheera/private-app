@@ -1,30 +1,31 @@
 import csv
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from functools import wraps
 from io import StringIO
 import os
 import re
 import secrets
+import string
 import unicodedata
 from uuid import uuid4
 import uuid
 import bcrypt
 import cloudinary
 from cloudinary import uploader
-from flask import Blueprint, abort, current_app, flash, json, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, abort, app, current_app, flash, json, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_mail import Message
 from openpyxl import load_workbook
 import pytz
 from slugify import slugify
-from sqlalchemy import func, or_
+from sqlalchemy import and_, func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from app import ALLOWED_EXTENSIONS
-from app.model import AcademicYear, AssessmentPlan, Branch, Class, Institution, Program, Section, Student, Subject, Teacher, TeacherSubject, Term, User, UserRole, db
+from app.model import AcademicYear, AssessmentPlan, Branch, Class, Institution, Program, Section, Student, StudentCharge, StudentEnrollment, Subject, Teacher, TeacherSubject, Term, User, UserRole, db
 
 bp = Blueprint('main', __name__)
 
@@ -16766,7 +16767,6 @@ def add_assessment_plan():
 # ============================================================
 # VIEW ASSESSMENT PLAN
 # ============================================================
-
 @bp.route(
     "/assessment-plans/<int:assessment_plan_id>",
     methods=["GET"]
@@ -16787,16 +16787,25 @@ def view_assessment_plan(assessment_plan_id):
     )
 
     # ========================================================
-    # INSTITUTION SECURITY
+    # CURRENT USER INSTITUTION
     # ========================================================
 
     user_institution_id = _get_user_institution_id()
+
+    # ========================================================
+    # INSTITUTION SECURITY
+    #
+    # Superadmin / users without institution restriction:
+    #     Can view the plan.
+    #
+    # Institution users:
+    #     Can only view plans belonging to their institution.
+    # ========================================================
 
     if (
         user_institution_id is not None
         and assessment_plan.institution_id != user_institution_id
     ):
-
         flash(
             "You are not authorized to view this assessment plan.",
             "danger"
@@ -16824,7 +16833,7 @@ def view_assessment_plan(assessment_plan_id):
     #   - Program
     #   - Academic Year
     #
-    # Exclude current plan
+    # Exclude current assessment plan
     # ========================================================
 
     related_query = (
@@ -16869,7 +16878,9 @@ def view_assessment_plan(assessment_plan_id):
     )
 
     # ========================================================
-    # PLAN STATISTICS
+    # TOTAL PLANS
+    #
+    # Related plans + current plan
     # ========================================================
 
     total_related_plans = (
@@ -16888,15 +16899,18 @@ def view_assessment_plan(assessment_plan_id):
         "custom": "Custom"
     }
 
-    frequency_label = frequency_labels.get(
-        assessment_plan.frequency,
-        assessment_plan.frequency.replace(
-            "_",
-            " "
-        ).title()
-        if assessment_plan.frequency
-        else "—"
-    )
+    if assessment_plan.frequency:
+
+        frequency_label = frequency_labels.get(
+            assessment_plan.frequency,
+            assessment_plan.frequency
+            .replace("_", " ")
+            .title()
+        )
+
+    else:
+
+        frequency_label = "—"
 
     # ========================================================
     # STATUS LABEL
@@ -16908,29 +16922,42 @@ def view_assessment_plan(assessment_plan_id):
         "completed": "Completed"
     }
 
-    status_label = status_labels.get(
-        assessment_plan.status,
-        assessment_plan.status.replace(
-            "_",
-            " "
-        ).title()
-        if assessment_plan.status
-        else "—"
+    if assessment_plan.status:
+
+        status_label = status_labels.get(
+            assessment_plan.status,
+            assessment_plan.status
+            .replace("_", " ")
+            .title()
+        )
+
+    else:
+
+        status_label = "—"
+
+    # ========================================================
+    # INTERVAL MONTHS
+    # ========================================================
+
+    interval_months = (
+        assessment_plan.interval_months
+        if assessment_plan.interval_months
+        else 1
     )
 
     # ========================================================
     # INTERVAL LABEL
     # ========================================================
 
-    interval_months = (
-        assessment_plan.interval_months or 1
-    )
+    if interval_months == 1:
 
-    interval_label = (
-        f"{interval_months} Month"
-        if interval_months == 1
-        else f"{interval_months} Months"
-    )
+        interval_label = "1 Month"
+
+    else:
+
+        interval_label = (
+            f"{interval_months} Months"
+        )
 
     # ========================================================
     # RENDER
@@ -16939,24 +16966,39 @@ def view_assessment_plan(assessment_plan_id):
     return render_template(
         "backend/pages/assessment_plans/view_assessment_plan.html",
 
-        # Main object
+        # ====================================================
+        # MAIN OBJECT
+        # ====================================================
+
         assessment_plan=assessment_plan,
 
-        # Related objects
+        # ====================================================
+        # RELATED OBJECTS
+        # ====================================================
+
         institution=institution,
         program=program,
         academic_year=academic_year,
 
-        # Related plans
+        # ====================================================
+        # RELATED PLANS
+        # ====================================================
+
         related_plans=related_plans,
         total_related_plans=total_related_plans,
 
-        # Display helpers
+        # ====================================================
+        # DISPLAY HELPERS
+        # ====================================================
+
         frequency_label=frequency_label,
         status_label=status_label,
         interval_label=interval_label,
 
-        # Current user
+        # ====================================================
+        # CURRENT USER
+        # ====================================================
+
         user=current_user
     )
 
@@ -23094,9 +23136,124 @@ def all_subjects():
 
 
 # ============================================================
+# GENERATE NEXT SUBJECT CODE
+# ============================================================
+def _generate_next_subject_code(
+    institution_id,
+    branch_id=None,
+    program_id=None
+):
+    """
+    Generate sequential subject code.
+
+    Example:
+
+        Program 1:
+            SUB001
+            SUB002
+            SUB003
+
+        Program 2:
+            SUB001
+            SUB002
+
+    Sequence is scoped to:
+        institution + branch + program
+    """
+
+    query = Subject.query.filter(
+        Subject.institution_id == institution_id
+    )
+
+    # --------------------------------------------------------
+    # BRANCH
+    # --------------------------------------------------------
+
+    if branch_id:
+
+        query = query.filter(
+            Subject.branch_id == branch_id
+        )
+
+    else:
+
+        query = query.filter(
+            Subject.branch_id.is_(None)
+        )
+
+    # --------------------------------------------------------
+    # PROGRAM
+    # --------------------------------------------------------
+
+    if program_id:
+
+        query = query.filter(
+            Subject.program_id == program_id
+        )
+
+    else:
+
+        query = query.filter(
+            Subject.program_id.is_(None)
+        )
+
+    subjects = query.with_entities(
+        Subject.code
+    ).all()
+
+    # --------------------------------------------------------
+    # FIND HIGHEST SUB NUMBER
+    # --------------------------------------------------------
+
+    highest_number = 0
+
+    for row in subjects:
+
+        existing_code = (
+            row[0]
+            if row and row[0]
+            else ""
+        )
+
+        existing_code = str(
+            existing_code
+        ).strip().upper()
+
+        # Expected format:
+        # SUB001
+        # SUB002
+        # SUB123
+
+        if existing_code.startswith("SUB"):
+
+            number_part = existing_code[3:]
+
+            if number_part.isdigit():
+
+                number = int(
+                    number_part
+                )
+
+                if number > highest_number:
+
+                    highest_number = number
+
+    # --------------------------------------------------------
+    # NEXT CODE
+    # --------------------------------------------------------
+
+    next_number = highest_number + 1
+
+    return f"SUB{next_number:03d}"
+
+
+# ============================================================
 # ADD SUBJECT
 # ============================================================
-@bp.route("/subjects/add", methods=["GET", "POST"])
+@bp.route(
+    "/subjects/add",
+    methods=["GET", "POST"]
+)
 @login_required
 def add_subject():
 
@@ -23124,7 +23281,8 @@ def add_subject():
     if request.method == "POST":
 
         selected_institution_id = (
-            request.form.get("institution_id") or None
+            request.form.get("institution_id")
+            or None
         )
 
     else:
@@ -23143,32 +23301,33 @@ def add_subject():
 
         errors = {}
 
-        # ----------------------------------------------------
+        # ====================================================
         # FORM VALUES
-        # ----------------------------------------------------
+        # ====================================================
 
         institution_id = (
-            request.form.get("institution_id") or ""
+            request.form.get("institution_id")
+            or ""
         ).strip()
 
         branch_id = (
-            request.form.get("branch_id") or ""
+            request.form.get("branch_id")
+            or ""
         ).strip()
 
         program_id = (
-            request.form.get("program_id") or ""
+            request.form.get("program_id")
+            or ""
         ).strip()
 
         name = (
-            request.form.get("name") or ""
-        ).strip()
-
-        code = (
-            request.form.get("code") or ""
+            request.form.get("name")
+            or ""
         ).strip()
 
         short_name = (
-            request.form.get("short_name") or ""
+            request.form.get("short_name")
+            or ""
         ).strip()
 
         subject_type = (
@@ -23177,11 +23336,13 @@ def add_subject():
         ).strip().lower()
 
         weekly_hours_raw = (
-            request.form.get("weekly_hours") or ""
+            request.form.get("weekly_hours")
+            or ""
         ).strip()
 
         credit_hours_raw = (
-            request.form.get("credit_hours") or ""
+            request.form.get("credit_hours")
+            or ""
         ).strip()
 
         max_marks_raw = (
@@ -23195,7 +23356,8 @@ def add_subject():
         ).strip()
 
         description = (
-            request.form.get("description") or ""
+            request.form.get("description")
+            or ""
         ).strip()
 
         status = (
@@ -23203,16 +23365,18 @@ def add_subject():
             or "active"
         ).strip().lower()
 
-        # ----------------------------------------------------
+        # ====================================================
         # OPTIONAL VALUES
-        # ----------------------------------------------------
+        # ====================================================
 
         branch_id = branch_id or None
         program_id = program_id or None
         short_name = short_name or None
         description = description or None
 
-        selected_institution_id = institution_id or None
+        selected_institution_id = (
+            institution_id or None
+        )
 
         # ====================================================
         # NAME
@@ -23227,28 +23391,9 @@ def add_subject():
         elif len(name) > 150:
 
             errors["name"] = (
-                "Subject name cannot exceed 150 characters."
+                "Subject name cannot exceed "
+                "150 characters."
             )
-
-        # ====================================================
-        # CODE
-        # ====================================================
-
-        if not code:
-
-            errors["code"] = (
-                "Subject code is required."
-            )
-
-        elif len(code) > 50:
-
-            errors["code"] = (
-                "Subject code cannot exceed 50 characters."
-            )
-
-        else:
-
-            code = code.upper()
 
         # ====================================================
         # SHORT NAME
@@ -23257,7 +23402,8 @@ def add_subject():
         if short_name and len(short_name) > 100:
 
             errors["short_name"] = (
-                "Short name cannot exceed 100 characters."
+                "Short name cannot exceed "
+                "100 characters."
             )
 
         # ====================================================
@@ -23387,6 +23533,21 @@ def add_subject():
         )
 
         # ====================================================
+        # PROGRAM REQUIRED
+        # ====================================================
+        #
+        # Since the code sequence belongs to a Program,
+        # require a Program.
+        #
+
+        if not program_id:
+
+            errors["program_id"] = (
+                "Program is required to generate "
+                "the subject code."
+            )
+
+        # ====================================================
         # DUPLICATE NAME
         # ====================================================
 
@@ -23412,6 +23573,18 @@ def add_subject():
                     Subject.branch_id.is_(None)
                 )
 
+            if program_id:
+
+                query = query.filter(
+                    Subject.program_id == program_id
+                )
+
+            else:
+
+                query = query.filter(
+                    Subject.program_id.is_(None)
+                )
+
             query = query.filter(
                 db.func.lower(Subject.name)
                 == name.lower()
@@ -23421,48 +23594,32 @@ def add_subject():
 
                 errors["name"] = (
                     "A subject with this name already "
-                    "exists for the selected institution "
-                    "and branch."
+                    "exists for the selected program."
                 )
 
         # ====================================================
-        # DUPLICATE CODE
+        # GENERATE CODE
         # ====================================================
 
-        if (
-            institution_id
-            and code
-            and not errors.get("institution_id")
-        ):
+        code = None
 
-            query = Subject.query.filter(
-                Subject.institution_id == institution_id
+        if not errors:
+
+            code = _generate_next_subject_code(
+                institution_id=int(
+                    institution_id
+                ),
+                branch_id=(
+                    int(branch_id)
+                    if branch_id
+                    else None
+                ),
+                program_id=(
+                    int(program_id)
+                    if program_id
+                    else None
+                )
             )
-
-            if branch_id:
-
-                query = query.filter(
-                    Subject.branch_id == branch_id
-                )
-
-            else:
-
-                query = query.filter(
-                    Subject.branch_id.is_(None)
-                )
-
-            query = query.filter(
-                db.func.upper(Subject.code)
-                == code.upper()
-            )
-
-            if query.first():
-
-                errors["code"] = (
-                    "A subject with this code already "
-                    "exists for the selected institution "
-                    "and branch."
-                )
 
         # ====================================================
         # CREATE
@@ -23473,6 +23630,7 @@ def add_subject():
             try:
 
                 subject = Subject(
+
                     institution_id=int(
                         institution_id
                     ),
@@ -23490,6 +23648,10 @@ def add_subject():
                     ),
 
                     name=name,
+
+                    # ========================================
+                    # AUTOMATIC CODE
+                    # ========================================
 
                     code=code,
 
@@ -23516,6 +23678,7 @@ def add_subject():
 
                 flash(
                     f'Subject "{subject.name}" '
+                    f'with code "{subject.code}" '
                     f'was created successfully.',
                     "success"
                 )
@@ -23542,9 +23705,8 @@ def add_subject():
                 if "code" in error_text:
 
                     flash(
-                        "A subject with this code already "
-                        "exists for the selected institution "
-                        "and branch.",
+                        "The generated subject code already "
+                        "exists. Please try again.",
                         "danger"
                     )
 
@@ -23552,8 +23714,7 @@ def add_subject():
 
                     flash(
                         "A subject with this name already "
-                        "exists for the selected institution "
-                        "and branch.",
+                        "exists for the selected program.",
                         "danger"
                     )
 
@@ -23601,16 +23762,17 @@ def add_subject():
     )
 
     # ========================================================
-    # IMPORTANT:
-    # DO NOT PASS user=current_user HERE.
-    #
-    # _subject_form_context() ALREADY CONTAINS user.
+    # RENDER
     # ========================================================
 
     return render_template(
         "backend/pages/subjects/add_subject.html",
         **context
     )
+
+
+
+
 
 # ============================================================
 # VIEW SUBJECT
@@ -30367,99 +30529,174 @@ def _student_scoped_query():
 # ============================================================
 # ALL STUDENTS
 # ============================================================
-# ============================================================
-# ALL STUDENTS
-# ============================================================
-
 @bp.route("/students", methods=["GET"])
 @login_required
 def all_students():
+    """
+    ALL STUDENTS
+    ============================================================
+    Student management/list page.
 
-    # ========================================================
+    Supported roles:
+        superadmin
+        school_admin
+        branch_admin
+
+    Features:
+        - Role-based security
+        - Institution filter
+        - Branch filter
+        - Search
+        - Status filter
+        - Pagination
+        - Accurate statistics
+        - Student-only records
+    """
+
+    # ============================================================
+    # IMPORTS
+    # ============================================================
+
+    from flask import (
+        flash,
+        redirect,
+        render_template,
+        request,
+        url_for,
+    )
+
+    from flask_login import (
+        current_user,
+        login_required,
+    )
+
+    from sqlalchemy import or_, func
+
+    # ============================================================
     # ACCESS CONTROL
-    # ========================================================
+    # ============================================================
 
     allowed_roles = {
         "superadmin",
-        "institution_admin",
+        "school_admin",
         "branch_admin",
     }
-
-    if getattr(current_user, "role", None) not in allowed_roles:
-        flash(
-            "You do not have permission to manage students.",
-            "danger"
-        )
-        return redirect(url_for("main.dashboard"))
-
-
-    # ========================================================
-    # CURRENT USER SCOPE
-    # ========================================================
 
     current_role = getattr(
         current_user,
         "role",
-        None
+        None,
     )
+
+    if current_role not in allowed_roles:
+
+        flash(
+            "You do not have permission to manage students.",
+            "danger",
+        )
+
+        return redirect(
+            url_for(
+                "main.dashboard"
+            )
+        )
+
+    # ============================================================
+    # CURRENT USER SCOPE
+    # ============================================================
 
     current_institution_id = getattr(
         current_user,
         "institution_id",
-        None
+        None,
     )
 
     current_branch_id = getattr(
         current_user,
         "branch_id",
-        None
+        None,
     )
 
+    # ============================================================
+    # ROLE SCOPE VALIDATION
+    # ============================================================
 
-    # ========================================================
+    if current_role == "school_admin":
+
+        if not current_institution_id:
+
+            flash(
+                "Your account is not linked to an institution.",
+                "warning",
+            )
+
+            return redirect(
+                url_for(
+                    "main.dashboard"
+                )
+            )
+
+    elif current_role == "branch_admin":
+
+        if (
+            not current_institution_id
+            or not current_branch_id
+        ):
+
+            flash(
+                "Your account is not linked to an institution and branch.",
+                "warning",
+            )
+
+            return redirect(
+                url_for(
+                    "main.dashboard"
+                )
+            )
+
+    # ============================================================
     # REQUEST FILTERS
-    # ========================================================
+    # ============================================================
 
     search = request.args.get(
         "search",
         "",
-        type=str
+        type=str,
     ).strip()
 
-    institution_id = request.args.get(
+    institution_id_raw = request.args.get(
         "institution_id",
         "",
-        type=str
+        type=str,
     ).strip()
 
-    branch_id = request.args.get(
+    branch_id_raw = request.args.get(
         "branch_id",
         "",
-        type=str
+        type=str,
     ).strip()
 
     status = request.args.get(
         "status",
         "",
-        type=str
+        type=str,
     ).strip().lower()
 
     page = request.args.get(
         "page",
         1,
-        type=int
+        type=int,
     )
 
     per_page = request.args.get(
         "per_page",
         20,
-        type=int
+        type=int,
     )
 
-
-    # ========================================================
-    # VALIDATE PAGINATION
-    # ========================================================
+    # ============================================================
+    # PAGINATION VALIDATION
+    # ============================================================
 
     if page < 1:
         page = 1
@@ -30468,16 +30705,15 @@ def all_students():
         10,
         20,
         50,
-        100
+        100,
     }
 
     if per_page not in allowed_per_page:
         per_page = 20
 
-
-    # ========================================================
-    # VALID STATUS VALUES
-    # ========================================================
+    # ============================================================
+    # VALID STUDENT STATUSES
+    # ============================================================
 
     allowed_statuses = {
         "active",
@@ -30485,80 +30721,179 @@ def all_students():
         "graduated",
         "transferred",
         "suspended",
-        "withdrawn"
+        "withdrawn",
     }
 
     if status not in allowed_statuses:
         status = ""
 
+    # ============================================================
+    # PARSE FILTER IDS
+    # ============================================================
 
-    # ========================================================
-    # BASE QUERY
-    # ========================================================
+    selected_institution_id = None
+    selected_branch_id = None
 
-    query = Student.query
+    # ------------------------------------------------------------
+    # Institution
+    # ------------------------------------------------------------
 
+    if institution_id_raw:
 
-    # ========================================================
-    # ROLE-BASED DATA SCOPE
-    # ========================================================
+        try:
+            selected_institution_id = int(
+                institution_id_raw
+            )
+        except (
+            TypeError,
+            ValueError,
+        ):
+            selected_institution_id = None
+
+    # ------------------------------------------------------------
+    # Branch
+    # ------------------------------------------------------------
+
+    if branch_id_raw:
+
+        try:
+            selected_branch_id = int(
+                branch_id_raw
+            )
+        except (
+            TypeError,
+            ValueError,
+        ):
+            selected_branch_id = None
+
+    # ============================================================
+    # ENFORCE ROLE SCOPE ON FILTERS
+    # ============================================================
+
+    # ------------------------------------------------------------
+    # SUPERADMIN
+    # ------------------------------------------------------------
 
     if current_role == "superadmin":
 
-        # Superadmin can see everything.
+        # Superadmin may use the submitted filters.
         pass
 
+    # ------------------------------------------------------------
+    # SCHOOL ADMIN
+    # ------------------------------------------------------------
 
-    elif current_role == "institution_admin":
+    elif current_role == "school_admin":
 
-        if not current_institution_id:
-
-            flash(
-                "Your account is not linked to an institution.",
-                "warning"
-            )
-
-            return redirect(
-                url_for("main.dashboard")
-            )
-
-        query = query.filter(
-            Student.institution_id ==
+        # School admin can ONLY see own institution.
+        selected_institution_id = (
             current_institution_id
         )
 
+        # If selected branch is supplied, verify it belongs
+        # to the current institution.
+        if selected_branch_id:
+
+            valid_branch = (
+                Branch.query
+                .filter(
+                    Branch.id
+                    == selected_branch_id,
+
+                    Branch.institution_id
+                    == current_institution_id,
+                )
+                .first()
+            )
+
+            if not valid_branch:
+
+                selected_branch_id = None
+
+    # ------------------------------------------------------------
+    # BRANCH ADMIN
+    # ------------------------------------------------------------
 
     elif current_role == "branch_admin":
 
-        if not current_institution_id or not current_branch_id:
+        # Branch admin can ONLY see own institution + branch.
+        selected_institution_id = (
+            current_institution_id
+        )
 
-            flash(
-                "Your account is not linked to an institution and branch.",
-                "warning"
-            )
-
-            return redirect(
-                url_for("main.dashboard")
-            )
-
-        query = query.filter(
-            Student.institution_id ==
-            current_institution_id,
-            Student.branch_id ==
+        selected_branch_id = (
             current_branch_id
         )
 
+    # ============================================================
+    # BASE STUDENT QUERY
+    # ============================================================
+    #
+    # Always restrict to actual students.
+    #
 
-    # ========================================================
-    # SEARCH
-    # ========================================================
+    base_query = (
+        Student.query
+        .filter(
+            Student.role == "student"
+        )
+    )
+
+    # ============================================================
+    # APPLY ROLE SCOPE
+    # ============================================================
+
+    if current_role == "school_admin":
+
+        base_query = base_query.filter(
+            Student.institution_id
+            == current_institution_id
+        )
+
+    elif current_role == "branch_admin":
+
+        base_query = base_query.filter(
+            Student.institution_id
+            == current_institution_id,
+
+            Student.branch_id
+            == current_branch_id,
+        )
+
+    # ============================================================
+    # APPLY INSTITUTION FILTER
+    # ============================================================
+
+    if selected_institution_id:
+
+        base_query = base_query.filter(
+            Student.institution_id
+            == selected_institution_id
+        )
+
+    # ============================================================
+    # APPLY BRANCH FILTER
+    # ============================================================
+
+    if selected_branch_id:
+
+        base_query = base_query.filter(
+            Student.branch_id
+            == selected_branch_id
+        )
+
+    # ============================================================
+    # SEARCH FILTER
+    # ============================================================
 
     if search:
 
-        search_pattern = f"%{search}%"
+        search_pattern = (
+            f"%{search}%"
+        )
 
-        query = query.filter(
-            db.or_(
+        base_query = base_query.filter(
+            or_(
                 Student.full_name.ilike(
                     search_pattern
                 ),
@@ -30583,229 +30918,156 @@ def all_students():
                     search_pattern
                 ),
 
+                Student.city.ilike(
+                    search_pattern
+                ),
+
                 Student.parent_name.ilike(
                     search_pattern
                 ),
 
                 Student.parent_phone.ilike(
                     search_pattern
-                )
+                ),
+
+                Student.parent_email.ilike(
+                    search_pattern
+                ),
             )
         )
 
-
-    # ========================================================
-    # INSTITUTION FILTER
-    # ========================================================
-
-    if institution_id:
-
-        try:
-
-            selected_institution_id = int(
-                institution_id
-            )
-
-            # Institution admin cannot select
-            # another institution.
-
-            if (
-                current_role == "institution_admin"
-                and
-                selected_institution_id !=
-                current_institution_id
-            ):
-
-                selected_institution_id = (
-                    current_institution_id
-                )
-
-            elif (
-                current_role == "branch_admin"
-                and
-                selected_institution_id !=
-                current_institution_id
-            ):
-
-                selected_institution_id = (
-                    current_institution_id
-                )
-
-
-            query = query.filter(
-                Student.institution_id ==
-                selected_institution_id
-            )
-
-        except (
-            ValueError,
-            TypeError
-        ):
-
-            institution_id = ""
-
-
-    else:
-
-        selected_institution_id = None
-
-        if current_role in {
-            "institution_admin",
-            "branch_admin"
-        }:
-
-            selected_institution_id = (
-                current_institution_id
-            )
-
-
-    # ========================================================
-    # BRANCH FILTER
-    # ========================================================
-
-    if branch_id:
-
-        try:
-
-            selected_branch_id = int(
-                branch_id
-            )
-
-            # Branch admin is restricted
-            # to his own branch.
-
-            if (
-                current_role == "branch_admin"
-                and
-                selected_branch_id !=
-                current_branch_id
-            ):
-
-                selected_branch_id = (
-                    current_branch_id
-                )
-
-
-            query = query.filter(
-                Student.branch_id ==
-                selected_branch_id
-            )
-
-        except (
-            ValueError,
-            TypeError
-        ):
-
-            branch_id = ""
-
-    else:
-
-        selected_branch_id = None
-
-        if current_role == "branch_admin":
-
-            selected_branch_id = (
-                current_branch_id
-            )
-
-
-    # ========================================================
+    # ============================================================
     # STATUS FILTER
-    # ========================================================
+    # ============================================================
 
     if status:
 
-        query = query.filter(
+        base_query = base_query.filter(
             Student.status == status
         )
 
+    # ============================================================
+    # STATISTICS
+    # ============================================================
+    #
+    # These statistics represent the CURRENT FILTERED RESULT:
+    #
+    # search + institution + branch + status
+    #
+    # This is useful for cards at the top of the page.
+    #
 
-    # ========================================================
-    # ORDERING
-    # ========================================================
-
-    query = query.order_by(
-        Student.full_name.asc(),
-        Student.id.desc()
+    total_students = (
+        base_query
+        .with_entities(
+            func.count(Student.id)
+        )
+        .scalar()
+        or 0
     )
 
+    active_students = (
+        base_query
+        .filter(
+            Student.status == "active"
+        )
+        .with_entities(
+            func.count(Student.id)
+        )
+        .scalar()
+        or 0
+    )
 
-    # ========================================================
+    inactive_students = (
+        base_query
+        .filter(
+            Student.status == "inactive"
+        )
+        .with_entities(
+            func.count(Student.id)
+        )
+        .scalar()
+        or 0
+    )
+
+    graduated_students = (
+        base_query
+        .filter(
+            Student.status == "graduated"
+        )
+        .with_entities(
+            func.count(Student.id)
+        )
+        .scalar()
+        or 0
+    )
+
+    transferred_students = (
+        base_query
+        .filter(
+            Student.status == "transferred"
+        )
+        .with_entities(
+            func.count(Student.id)
+        )
+        .scalar()
+        or 0
+    )
+
+    suspended_students = (
+        base_query
+        .filter(
+            Student.status == "suspended"
+        )
+        .with_entities(
+            func.count(Student.id)
+        )
+        .scalar()
+        or 0
+    )
+
+    withdrawn_students = (
+        base_query
+        .filter(
+            Student.status == "withdrawn"
+        )
+        .with_entities(
+            func.count(Student.id)
+        )
+        .scalar()
+        or 0
+    )
+
+    # ============================================================
+    # ORDERING
+    # ============================================================
+
+    students_query = (
+        base_query
+        .order_by(
+            Student.full_name.asc(),
+            Student.id.desc(),
+        )
+    )
+
+    # ============================================================
     # PAGINATION
-    # ========================================================
+    # ============================================================
 
-    pagination = query.paginate(
-        page=page,
-        per_page=per_page,
-        error_out=False
+    pagination = (
+        students_query
+        .paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False,
+        )
     )
 
     students = pagination.items
 
-
-    # ========================================================
-    # STATISTICS
-    # ========================================================
-
-    # Use the scoped query BEFORE pagination so the statistics
-    # represent the current user's accessible students.
-
-    statistics_query = query.with_entities(
-        Student.id,
-        Student.status
-    ).all()
-
-
-    total_students = len(
-        statistics_query
-    )
-
-
-    active_students = sum(
-        1
-        for student in statistics_query
-        if student.status == "active"
-    )
-
-
-    inactive_students = sum(
-        1
-        for student in statistics_query
-        if student.status == "inactive"
-    )
-
-
-    graduated_students = sum(
-        1
-        for student in statistics_query
-        if student.status == "graduated"
-    )
-
-
-    transferred_students = sum(
-        1
-        for student in statistics_query
-        if student.status == "transferred"
-    )
-
-
-    suspended_students = sum(
-        1
-        for student in statistics_query
-        if student.status == "suspended"
-    )
-
-
-    withdrawn_students = sum(
-        1
-        for student in statistics_query
-        if student.status == "withdrawn"
-    )
-
-
-    # ========================================================
-    # INSTITUTIONS
-    # ========================================================
+    # ============================================================
+    # INSTITUTIONS FOR FILTER
+    # ============================================================
 
     if current_role == "superadmin":
 
@@ -30822,8 +31084,8 @@ def all_students():
         institutions = (
             Institution.query
             .filter(
-                Institution.id ==
-                current_institution_id
+                Institution.id
+                == current_institution_id
             )
             .order_by(
                 Institution.name.asc()
@@ -30831,28 +31093,43 @@ def all_students():
             .all()
         )
 
-
-    # ========================================================
-    # BRANCHES
-    # ========================================================
+    # ============================================================
+    # BRANCHES FOR FILTER
+    # ============================================================
 
     if current_role == "superadmin":
 
-        branches = (
-            Branch.query
-            .order_by(
-                Branch.name.asc()
-            )
-            .all()
-        )
+        if selected_institution_id:
 
-    elif current_role == "institution_admin":
+            branches = (
+                Branch.query
+                .filter(
+                    Branch.institution_id
+                    == selected_institution_id
+                )
+                .order_by(
+                    Branch.name.asc()
+                )
+                .all()
+            )
+
+        else:
+
+            branches = (
+                Branch.query
+                .order_by(
+                    Branch.name.asc()
+                )
+                .all()
+            )
+
+    elif current_role == "school_admin":
 
         branches = (
             Branch.query
             .filter(
-                Branch.institution_id ==
-                current_institution_id
+                Branch.institution_id
+                == current_institution_id
             )
             .order_by(
                 Branch.name.asc()
@@ -30865,8 +31142,11 @@ def all_students():
         branches = (
             Branch.query
             .filter(
-                Branch.id ==
-                current_branch_id
+                Branch.id
+                == current_branch_id,
+
+                Branch.institution_id
+                == current_institution_id,
             )
             .order_by(
                 Branch.name.asc()
@@ -30874,12 +31154,11 @@ def all_students():
             .all()
         )
 
+    # ============================================================
+    # FINAL SELECTED VALUES
+    # ============================================================
 
-    # ========================================================
-    # SELECTED FILTER VALUES
-    # ========================================================
-
-    if current_role == "institution_admin":
+    if current_role == "school_admin":
 
         selected_institution_id = (
             current_institution_id
@@ -30895,410 +31174,1566 @@ def all_students():
             current_branch_id
         )
 
-
-    # ========================================================
+    # ============================================================
     # RENDER
-    # ========================================================
+    # ============================================================
 
     return render_template(
         "backend/pages/students/all_students.html",
+
+        # --------------------------------------------------------
+        # Students
+        # --------------------------------------------------------
 
         students=students,
 
         pagination=pagination,
 
-        institutions=institutions,
-
-        branches=branches,
+        # --------------------------------------------------------
+        # Filters
+        # --------------------------------------------------------
 
         search=search,
 
-        selected_institution_id=
-            selected_institution_id,
+        selected_institution_id=(
+            selected_institution_id
+        ),
 
-        selected_branch_id=
-            selected_branch_id,
+        selected_branch_id=(
+            selected_branch_id
+        ),
 
         selected_status=status,
 
         per_page=per_page,
 
-        # ----------------------------------------------------
-        # STATISTICS
-        # ----------------------------------------------------
+        # --------------------------------------------------------
+        # Filter data
+        # --------------------------------------------------------
 
-        total_students=total_students,
+        institutions=institutions,
 
-        active_students=active_students,
+        branches=branches,
 
-        inactive_students=inactive_students,
+        # --------------------------------------------------------
+        # Statistics
+        # --------------------------------------------------------
 
-        graduated_students=graduated_students,
+        total_students=(
+            total_students
+        ),
 
-        transferred_students=transferred_students,
+        active_students=(
+            active_students
+        ),
 
-        suspended_students=suspended_students,
+        inactive_students=(
+            inactive_students
+        ),
 
-        withdrawn_students=withdrawn_students,
+        graduated_students=(
+            graduated_students
+        ),
 
-        # ----------------------------------------------------
-        # CURRENT USER
-        # ----------------------------------------------------
+        transferred_students=(
+            transferred_students
+        ),
 
-        user=current_user
+        suspended_students=(
+            suspended_students
+        ),
+
+        withdrawn_students=(
+            withdrawn_students
+        ),
+
+        # --------------------------------------------------------
+        # Current user
+        # --------------------------------------------------------
+
+        user=current_user,
+
+        current_role=current_role,
+
+        current_institution_id=(
+            current_institution_id
+        ),
+
+        current_branch_id=(
+            current_branch_id
+        ),
     )
+
 
 
 # ============================================================
 # ADD STUDENT
 # ============================================================
+# ============================================================
+# ADD STUDENT
+# Student + Multiple Enrollments + Multiple Charges
+# ============================================================
 
-@bp.route(
-    "/students/add",
-    methods=["GET", "POST"]
-)
+
+# ============================================================
+# HELPERS
+# ============================================================
+
+def _decimal(value, default=Decimal("0.00")):
+    """
+    Safely convert form values to Decimal.
+    """
+    if value is None:
+        return default
+
+    value = str(value).strip()
+
+    if not value:
+        return default
+
+    try:
+        number = Decimal(value)
+        if number < 0:
+            return default
+        return number.quantize(Decimal("0.01"))
+    except (InvalidOperation, ValueError, TypeError):
+        return default
+
+
+def _clean(value):
+    """
+    Clean normal form strings.
+    """
+    if value is None:
+        return None
+
+    value = str(value).strip()
+
+    return value if value else None
+
+
+def _parse_date(value):
+    """
+    Parse YYYY-MM-DD.
+    """
+    value = _clean(value)
+
+    if not value:
+        return None
+
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _random_password(length=10):
+    """
+    Generate a password when the form doesn't provide one.
+    """
+    alphabet = string.ascii_letters + string.digits
+
+    return "".join(
+        secrets.choice(alphabet)
+        for _ in range(length)
+    )
+
+
+def _institution_prefix(institution):
+    """
+    Build institution prefix.
+
+    Priority:
+        short_name
+        code
+        name initials
+    """
+
+    short_name = getattr(institution, "short_name", None)
+    code = getattr(institution, "code", None)
+    name = getattr(institution, "name", None)
+
+    value = short_name or code
+
+    if value:
+        value = str(value).strip()
+
+    if not value and name:
+        words = str(name).strip().split()
+
+        value = "".join(
+            word[0]
+            for word in words
+            if word
+        )
+
+    if not value:
+        value = "STU"
+
+    # Keep letters/numbers only
+    value = "".join(
+        ch for ch in value.upper()
+        if ch.isalnum()
+    )
+
+    return value or "STU"
+
+
+def _first_name(full_name):
+    """
+    Extract first name.
+    """
+    full_name = _clean(full_name)
+
+    if not full_name:
+        return "STUDENT"
+
+    return full_name.split()[0].upper()
+
+
+def _next_sequence(institution_id):
+    """
+    Generate next 6-digit student sequence.
+
+    This checks existing admission numbers / roll numbers
+    belonging to the institution.
+    """
+
+    institution = db.session.get(
+        Institution,
+        institution_id
+    )
+
+    prefix = _institution_prefix(institution)
+
+    students = (
+        Student.query
+        .filter(
+            Student.institution_id == institution_id
+        )
+        .all()
+    )
+
+    highest = 0
+
+    for student in students:
+
+        candidates = [
+            getattr(student, "admission_no", None),
+            getattr(student, "roll_no", None),
+        ]
+
+        for value in candidates:
+
+            if not value:
+                continue
+
+            value = str(value).strip()
+
+            parts = value.split("-")
+
+            for part in reversed(parts):
+
+                if (
+                    part.isdigit()
+                    and len(part) <= 6
+                ):
+                    try:
+                        number = int(part)
+
+                        if number > highest:
+                            highest = number
+
+                    except ValueError:
+                        pass
+
+                    break
+
+    return prefix, highest + 1
+
+
+def _generate_student_numbers(
+    institution_id,
+    full_name
+):
+    """
+    Generate:
+
+        Admission:
+        PREFIX-ADM-000001
+
+        Roll:
+        PREFIX-FIRSTNAME-000001
+    """
+
+    prefix, sequence = _next_sequence(
+        institution_id
+    )
+
+    first_name = _first_name(full_name)
+
+    sequence_text = f"{sequence:06d}"
+
+    admission_no = (
+        f"{prefix}-ADM-{sequence_text}"
+    )
+
+    roll_no = (
+        f"{prefix}-{first_name}-{sequence_text}"
+    )
+
+    return admission_no, roll_no
+
+
+def _generate_enrollment_no(
+    institution_id,
+    academic_year_id,
+    program_id
+):
+    """
+    Generate unique enrollment number.
+
+    Example:
+
+        ENR-2026-PRG-000001
+    """
+
+    institution = db.session.get(
+        Institution,
+        institution_id
+    )
+
+    prefix = _institution_prefix(institution)
+
+    count = (
+        StudentEnrollment.query
+        .filter(
+            StudentEnrollment.institution_id
+            == institution_id
+        )
+        .count()
+    )
+
+    sequence = count + 1
+
+    while True:
+
+        enrollment_no = (
+            f"{prefix}-ENR-{sequence:06d}"
+        )
+
+        exists = (
+            StudentEnrollment.query
+            .filter_by(
+                institution_id=institution_id,
+                enrollment_no=enrollment_no
+            )
+            .first()
+        )
+
+        if not exists:
+            return enrollment_no
+
+        sequence += 1
+
+# ============================================================
+# ALL COUNTRIES
+# ============================================================
+
+def get_all_countries():
+    """
+    Returns a complete country list with:
+        - name
+        - ISO 2-letter country code
+
+    Used by Add User / Add Student phone-country selector.
+    """
+
+    countries = [
+        ("Afghanistan", "AF"),
+        ("Albania", "AL"),
+        ("Algeria", "DZ"),
+        ("Andorra", "AD"),
+        ("Angola", "AO"),
+        ("Antigua and Barbuda", "AG"),
+        ("Argentina", "AR"),
+        ("Armenia", "AM"),
+        ("Australia", "AU"),
+        ("Austria", "AT"),
+        ("Azerbaijan", "AZ"),
+        ("Bahamas", "BS"),
+        ("Bahrain", "BH"),
+        ("Bangladesh", "BD"),
+        ("Barbados", "BB"),
+        ("Belarus", "BY"),
+        ("Belgium", "BE"),
+        ("Belize", "BZ"),
+        ("Benin", "BJ"),
+        ("Bhutan", "BT"),
+        ("Bolivia", "BO"),
+        ("Bosnia and Herzegovina", "BA"),
+        ("Botswana", "BW"),
+        ("Brazil", "BR"),
+        ("Brunei", "BN"),
+        ("Bulgaria", "BG"),
+        ("Burkina Faso", "BF"),
+        ("Burundi", "BI"),
+        ("Cambodia", "KH"),
+        ("Cameroon", "CM"),
+        ("Canada", "CA"),
+        ("Cape Verde", "CV"),
+        ("Central African Republic", "CF"),
+        ("Chad", "TD"),
+        ("Chile", "CL"),
+        ("China", "CN"),
+        ("Colombia", "CO"),
+        ("Comoros", "KM"),
+        ("Congo", "CG"),
+        ("Costa Rica", "CR"),
+        ("Croatia", "HR"),
+        ("Cuba", "CU"),
+        ("Cyprus", "CY"),
+        ("Czech Republic", "CZ"),
+        ("Denmark", "DK"),
+        ("Djibouti", "DJ"),
+        ("Dominica", "DM"),
+        ("Dominican Republic", "DO"),
+        ("Ecuador", "EC"),
+        ("Egypt", "EG"),
+        ("El Salvador", "SV"),
+        ("Equatorial Guinea", "GQ"),
+        ("Eritrea", "ER"),
+        ("Estonia", "EE"),
+        ("Eswatini", "SZ"),
+        ("Ethiopia", "ET"),
+        ("Fiji", "FJ"),
+        ("Finland", "FI"),
+        ("France", "FR"),
+        ("Gabon", "GA"),
+        ("Gambia", "GM"),
+        ("Georgia", "GE"),
+        ("Germany", "DE"),
+        ("Ghana", "GH"),
+        ("Greece", "GR"),
+        ("Grenada", "GD"),
+        ("Guatemala", "GT"),
+        ("Guinea", "GN"),
+        ("Guinea-Bissau", "GW"),
+        ("Guyana", "GY"),
+        ("Haiti", "HT"),
+        ("Honduras", "HN"),
+        ("Hungary", "HU"),
+        ("Iceland", "IS"),
+        ("India", "IN"),
+        ("Indonesia", "ID"),
+        ("Iran", "IR"),
+        ("Iraq", "IQ"),
+        ("Ireland", "IE"),
+        ("Italy", "IT"),
+        ("Jamaica", "JM"),
+        ("Japan", "JP"),
+        ("Jordan", "JO"),
+        ("Kazakhstan", "KZ"),
+        ("Kenya", "KE"),
+        ("Kiribati", "KI"),
+        ("Kuwait", "KW"),
+        ("Kyrgyzstan", "KG"),
+        ("Laos", "LA"),
+        ("Latvia", "LV"),
+        ("Lebanon", "LB"),
+        ("Lesotho", "LS"),
+        ("Liberia", "LR"),
+        ("Libya", "LY"),
+        ("Liechtenstein", "LI"),
+        ("Lithuania", "LT"),
+        ("Luxembourg", "LU"),
+        ("Madagascar", "MG"),
+        ("Malawi", "MW"),
+        ("Malaysia", "MY"),
+        ("Maldives", "MV"),
+        ("Mali", "ML"),
+        ("Malta", "MT"),
+        ("Marshall Islands", "MH"),
+        ("Mauritania", "MR"),
+        ("Mauritius", "MU"),
+        ("Mexico", "MX"),
+        ("Micronesia", "FM"),
+        ("Moldova", "MD"),
+        ("Monaco", "MC"),
+        ("Mongolia", "MN"),
+        ("Montenegro", "ME"),
+        ("Morocco", "MA"),
+        ("Mozambique", "MZ"),
+        ("Myanmar", "MM"),
+        ("Namibia", "NA"),
+        ("Nauru", "NR"),
+        ("Nepal", "NP"),
+        ("Netherlands", "NL"),
+        ("New Zealand", "NZ"),
+        ("Nicaragua", "NI"),
+        ("Niger", "NE"),
+        ("Nigeria", "NG"),
+        ("North Korea", "KP"),
+        ("North Macedonia", "MK"),
+        ("Norway", "NO"),
+        ("Oman", "OM"),
+        ("Pakistan", "PK"),
+        ("Palau", "PW"),
+        ("Palestine", "PS"),
+        ("Panama", "PA"),
+        ("Papua New Guinea", "PG"),
+        ("Paraguay", "PY"),
+        ("Peru", "PE"),
+        ("Philippines", "PH"),
+        ("Poland", "PL"),
+        ("Portugal", "PT"),
+        ("Qatar", "QA"),
+        ("Romania", "RO"),
+        ("Russia", "RU"),
+        ("Rwanda", "RW"),
+        ("Saint Kitts and Nevis", "KN"),
+        ("Saint Lucia", "LC"),
+        ("Saint Vincent and the Grenadines", "VC"),
+        ("Samoa", "WS"),
+        ("San Marino", "SM"),
+        ("Sao Tome and Principe", "ST"),
+        ("Saudi Arabia", "SA"),
+        ("Senegal", "SN"),
+        ("Serbia", "RS"),
+        ("Seychelles", "SC"),
+        ("Sierra Leone", "SL"),
+        ("Singapore", "SG"),
+        ("Slovakia", "SK"),
+        ("Slovenia", "SI"),
+        ("Solomon Islands", "SB"),
+        ("Somalia", "SO"),
+        ("South Africa", "ZA"),
+        ("South Korea", "KR"),
+        ("South Sudan", "SS"),
+        ("Spain", "ES"),
+        ("Sri Lanka", "LK"),
+        ("Sudan", "SD"),
+        ("Suriname", "SR"),
+        ("Sweden", "SE"),
+        ("Switzerland", "CH"),
+        ("Syria", "SY"),
+        ("Taiwan", "TW"),
+        ("Tajikistan", "TJ"),
+        ("Tanzania", "TZ"),
+        ("Thailand", "TH"),
+        ("Timor-Leste", "TL"),
+        ("Togo", "TG"),
+        ("Tonga", "TO"),
+        ("Trinidad and Tobago", "TT"),
+        ("Tunisia", "TN"),
+        ("Turkey", "TR"),
+        ("Turkmenistan", "TM"),
+        ("Tuvalu", "TV"),
+        ("Uganda", "UG"),
+        ("Ukraine", "UA"),
+        ("United Arab Emirates", "AE"),
+        ("United Kingdom", "GB"),
+        ("United States", "US"),
+        ("Uruguay", "UY"),
+        ("Uzbekistan", "UZ"),
+        ("Vanuatu", "VU"),
+        ("Vatican City", "VA"),
+        ("Venezuela", "VE"),
+        ("Vietnam", "VN"),
+        ("Yemen", "YE"),
+        ("Zambia", "ZM"),
+        ("Zimbabwe", "ZW"),
+    ]
+
+    return [
+        {
+            "name": name,
+            "code": code
+        }
+        for name, code in countries
+    ]
+
+
+# ============================================================
+# PARENT / GUARDIAN PRESELECTOR
+# ============================================================
+
+@bp.route("/student-parent-search", methods=["GET"])
+@login_required
+def student_parent_search():
+
+    # ============================================================
+    # SEARCH TEXT
+    # ============================================================
+
+    q = (request.args.get("q") or "").strip()
+
+    if len(q) < 2:
+        return jsonify({
+            "results": []
+        })
+
+    # ============================================================
+    # CURRENT USER ROLE
+    # ============================================================
+
+    role = getattr(current_user, "role", "")
+
+    if hasattr(role, "value"):
+        role = role.value
+
+    role = str(role).lower().strip()
+
+    # ============================================================
+    # OPTIONAL SELECTED CONTEXT FROM FRONTEND
+    # ============================================================
+
+    selected_institution_id = (
+        request.args.get("institution_id", type=int)
+    )
+
+    selected_branch_id = (
+        request.args.get("branch_id", type=int)
+    )
+
+    # ============================================================
+    # BASE QUERY
+    # ============================================================
+
+    query = Student.query
+
+    # ============================================================
+    # INSTITUTION SECURITY
+    # ============================================================
+
+    if role == "superadmin":
+
+        # Superadmin can search selected institution
+        if selected_institution_id:
+            query = query.filter(
+                Student.institution_id == selected_institution_id
+            )
+
+    else:
+
+        # Non-superadmin must stay inside own institution
+        user_institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        if user_institution_id:
+            query = query.filter(
+                Student.institution_id == user_institution_id
+            )
+
+    # ============================================================
+    # BRANCH SECURITY / FILTER
+    # ============================================================
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    if role == "branch_admin":
+
+        # Branch admin can ONLY search own branch
+        if user_branch_id:
+            query = query.filter(
+                Student.branch_id == user_branch_id
+            )
+
+    elif selected_branch_id:
+
+        # Selected branch for superadmin / school_admin
+        query = query.filter(
+            Student.branch_id == selected_branch_id
+        )
+
+    elif user_branch_id and role != "school_admin":
+
+        # If another role has a fixed branch
+        query = query.filter(
+            Student.branch_id == user_branch_id
+        )
+
+    # ============================================================
+    # SEARCH CONDITIONS
+    # ============================================================
+
+    search_pattern = f"%{q}%"
+
+    search_conditions = [
+        # Parent / Guardian
+        Student.parent_name.ilike(search_pattern),
+        Student.parent_phone.ilike(search_pattern),
+        Student.parent_email.ilike(search_pattern),
+
+        # Student
+        Student.full_name.ilike(search_pattern),
+        Student.admission_no.ilike(search_pattern),
+    ]
+
+    # ============================================================
+    # ROLL NUMBER
+    # ============================================================
+
+    # Student model-kaaga haddii roll_no leeyahay,
+    # search-ka waa lagu daraa.
+    if hasattr(Student, "roll_no"):
+        search_conditions.append(
+            Student.roll_no.ilike(search_pattern)
+        )
+
+    query = query.filter(
+        or_(*search_conditions)
+    )
+
+    # ============================================================
+    # ONLY STUDENTS WITH PARENT/GUARDIAN INFORMATION
+    # ============================================================
+
+    query = query.filter(
+        or_(
+            and_(
+                Student.parent_name.isnot(None),
+                func.trim(Student.parent_name) != ""
+            ),
+            and_(
+                Student.parent_phone.isnot(None),
+                func.trim(Student.parent_phone) != ""
+            ),
+            and_(
+                Student.parent_email.isnot(None),
+                func.trim(Student.parent_email) != ""
+            )
+        )
+    )
+
+    # ============================================================
+    # ORDER + LIMIT
+    # ============================================================
+
+    students = (
+        query
+        .order_by(
+            Student.parent_name.asc(),
+            Student.full_name.asc()
+        )
+        .limit(30)
+        .all()
+    )
+
+    # ============================================================
+    # BUILD RESULTS
+    # ============================================================
+
+    results = []
+
+    # Prevent duplicate parent records
+    seen = set()
+
+    for student in students:
+
+        parent_name = (
+            getattr(student, "parent_name", None)
+            or ""
+        ).strip()
+
+        parent_phone = (
+            getattr(student, "parent_phone", None)
+            or ""
+        ).strip()
+
+        parent_email = (
+            getattr(student, "parent_email", None)
+            or ""
+        ).strip()
+
+        parent_address = (
+            getattr(student, "parent_address", None)
+            or ""
+        ).strip()
+
+        relationship = (
+            getattr(
+                student,
+                "relationship_to_student",
+                None
+            )
+            or ""
+        ).strip()
+
+        student_name = (
+            getattr(student, "full_name", None)
+            or ""
+        ).strip()
+
+        admission_no = (
+            getattr(student, "admission_no", None)
+            or ""
+        ).strip()
+
+        roll_no = (
+            getattr(student, "roll_no", None)
+            or ""
+        ).strip()
+
+        # ========================================================
+        # SKIP EMPTY PARENT
+        # ========================================================
+
+        if not (
+            parent_name
+            or parent_phone
+            or parent_email
+        ):
+            continue
+
+        # ========================================================
+        # UNIQUE PARENT KEY
+        # ========================================================
+
+        unique_key = (
+            parent_email.lower()
+            if parent_email
+            else (
+                parent_phone
+                if parent_phone
+                else parent_name.lower()
+            )
+        )
+
+        if unique_key in seen:
+            continue
+
+        seen.add(unique_key)
+
+        # ========================================================
+        # RESULT
+        # ========================================================
+
+        results.append({
+            "id": student.id,
+
+            # Parent IDs / names
+            "parent_id": student.id,
+            "name": parent_name,
+            "parent_name": parent_name,
+            "full_name": parent_name,
+            "guardian_name": parent_name,
+
+            # Relationship
+            "relationship": relationship,
+            "relationship_to_student": relationship,
+
+            # Contact
+            "phone": parent_phone,
+            "parent_phone": parent_phone,
+
+            "email": parent_email,
+            "parent_email": parent_email,
+
+            "address": parent_address,
+            "parent_address": parent_address,
+
+            # Related student
+            "student_id": student.id,
+            "student_name": student_name,
+            "admission_no": admission_no,
+            "roll_no": roll_no,
+
+            # Institution / branch
+            "institution_id": getattr(
+                student,
+                "institution_id",
+                None
+            ),
+
+            "branch_id": getattr(
+                student,
+                "branch_id",
+                None
+            )
+        })
+
+    # ============================================================
+    # JSON RESPONSE
+    # ============================================================
+
+    return jsonify({
+        "success": True,
+        "results": results,
+        "parents": results,
+        "count": len(results)
+    })
+
+
+
+
+
+
+
+# ============================================================
+# ROUTE
+# ============================================================
+# ============================================================
+# ADD STUDENT
+# Compatible with:
+#   Student
+#   StudentEnrollment
+#   StudentCharge
+# ============================================================
+
+@bp.route("/add-student", methods=["GET", "POST"])
 @login_required
 def add_student():
 
     # ========================================================
-    # PERMISSION
+    # IMPORTS
     # ========================================================
 
-    if not _student_can_manage():
+    import os
+    import secrets
+    import string
+
+    from datetime import date, datetime
+    from decimal import Decimal, InvalidOperation
+
+    from flask import (
+        current_app,
+        flash,
+        redirect,
+        render_template,
+        request,
+        session,
+        url_for,
+    )
+
+    from sqlalchemy import or_
+
+    from werkzeug.utils import secure_filename
+
+    # ========================================================
+    # ACCESS CONTROL
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if getattr(
+        current_user,
+        "role",
+        None
+    ) not in allowed_roles:
 
         flash(
-            "You are not authorized to create students.",
-            "danger",
+            "You do not have permission to add students.",
+            "danger"
         )
 
         return redirect(
-            url_for("main.all_students")
+            url_for("main.dashboard")
         )
 
     # ========================================================
-    # FORM CONTEXT
+    # HELPERS
     # ========================================================
 
-    context = _student_form_context()
+    def _clean(value):
+
+        if value is None:
+            return ""
+
+        return str(value).strip()
+
+    # --------------------------------------------------------
+
+    def _decimal(
+        value,
+        default=Decimal("0.00")
+    ):
+
+        value = _clean(value)
+
+        if not value:
+            return default
+
+        try:
+
+            value = value.replace(",", "")
+
+            return Decimal(
+                value
+            ).quantize(
+                Decimal("0.01")
+            )
+
+        except (
+            InvalidOperation,
+            ValueError,
+        ):
+
+            return default
+
+    # --------------------------------------------------------
+
+    def _parse_date(
+        value,
+        default=None
+    ):
+
+        value = _clean(value)
+
+        if not value:
+            return default
+
+        formats = (
+            "%Y-%m-%d",
+            "%d-%m-%Y",
+            "%d/%m/%Y",
+        )
+
+        for fmt in formats:
+
+            try:
+
+                return datetime.strptime(
+                    value,
+                    fmt
+                ).date()
+
+            except ValueError:
+
+                continue
+
+        return default
+
+    # --------------------------------------------------------
+
+    def _random_password(
+        length=10
+    ):
+
+        chars = (
+            string.ascii_letters
+            + string.digits
+        )
+
+        return "".join(
+            secrets.choice(chars)
+            for _ in range(length)
+        )
+
+    # --------------------------------------------------------
+
+    def _first_name(
+        full_name
+    ):
+
+        name = _clean(
+            full_name
+        )
+
+        if not name:
+            return "student"
+
+        return (
+            name
+            .split()[0]
+            .lower()
+        )
+
+    # --------------------------------------------------------
+
+    def _institution_prefix(
+        institution
+    ):
+
+        if not institution:
+            return "STU"
+
+        short_name = _clean(
+            getattr(
+                institution,
+                "short_name",
+                ""
+            )
+        )
+
+        name = _clean(
+            getattr(
+                institution,
+                "name",
+                ""
+            )
+        )
+
+        source = (
+            short_name
+            or name
+        )
+
+        if not source:
+            return "STU"
+
+        letters = [
+            char.upper()
+            for char in source
+            if char.isalpha()
+        ]
+
+        if len(letters) >= 3:
+
+            return "".join(
+                letters[:3]
+            )
+
+        if letters:
+
+            return "".join(
+                letters
+            ).ljust(
+                3,
+                "X"
+            )
+
+        return "STU"
+
+    # --------------------------------------------------------
+
+    def _next_student_sequence(
+        institution_id
+    ):
+
+        students = (
+            Student.query
+            .filter(
+                Student.institution_id
+                == institution_id
+            )
+            .all()
+        )
+
+        highest = 0
+
+        for student in students:
+
+            value = _clean(
+                getattr(
+                    student,
+                    "admission_no",
+                    ""
+                )
+            )
+
+            if not value:
+                continue
+
+            digits = "".join(
+                char
+                for char in value
+                if char.isdigit()
+            )
+
+            if not digits:
+                continue
+
+            try:
+
+                number = int(
+                    digits
+                )
+
+                if number > highest:
+                    highest = number
+
+            except ValueError:
+
+                continue
+
+        return highest + 1
+
+    # --------------------------------------------------------
+
+    def _generate_student_numbers(
+        institution
+    ):
+
+        prefix = _institution_prefix(
+            institution
+        )
+
+        sequence = (
+            _next_student_sequence(
+                institution.id
+            )
+        )
+
+        year = date.today().year
+
+        admission_no = (
+            f"{prefix}-"
+            f"{year}-"
+            f"{sequence:05d}"
+        )
+
+        roll_no = str(
+            sequence
+        )
+
+        return (
+            admission_no,
+            roll_no
+        )
+
+    # --------------------------------------------------------
+
+    def _generate_username(
+        full_name
+    ):
+
+        base = _first_name(
+            full_name
+        )
+
+        base = "".join(
+            char
+            for char in base
+            if char.isalnum()
+        ).lower()
+
+        if not base:
+            base = "student"
+
+        year = date.today().year
+
+        username = (
+            f"{base}{year}"
+        )
+
+        original = username
+
+        counter = 1
+
+        while (
+            Student.query
+            .filter(
+                Student.username
+                == username
+            )
+            .first()
+            is not None
+        ):
+
+            counter += 1
+
+            username = (
+                f"{original}{counter}"
+            )
+
+        return username
+
+    # --------------------------------------------------------
+
+    def _generate_email(
+        full_name,
+        admission_no
+    ):
+
+        base = _first_name(
+            full_name
+        )
+
+        base = "".join(
+            char
+            for char in base
+            if char.isalnum()
+        ).lower()
+
+        if not base:
+            base = "student"
+
+        domain = (
+            current_app.config.get(
+                "STUDENT_EMAIL_DOMAIN"
+            )
+            or "student.local"
+        )
+
+        email_base = (
+            f"{base}."
+            f"{str(admission_no).lower()}"
+        )
+
+        email = (
+            f"{email_base}@{domain}"
+        )
+
+        counter = 1
+
+        while (
+            Student.query
+            .filter(
+                Student.email
+                == email
+            )
+            .first()
+            is not None
+        ):
+
+            email = (
+                f"{email_base}"
+                f"{counter}@{domain}"
+            )
+
+            counter += 1
+
+        return email
+
+    # --------------------------------------------------------
+
+    def _generate_enrollment_no(
+        admission_no,
+        index
+    ):
+
+        return (
+            f"{admission_no}-"
+            f"E{index + 1:02d}"
+        )
+
+    # --------------------------------------------------------
+
+    def _form_list_value(
+        values,
+        index
+    ):
+
+        if index >= len(values):
+            return ""
+
+        return _clean(
+            values[index]
+        )
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    current_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    current_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # POST
+    # ========================================================
 
     if request.method == "POST":
 
-        # ====================================================
-        # BASIC FORM VALUES
-        # ====================================================
+        try:
 
-        institution_id = request.form.get(
-            "institution_id",
-            type=int,
-        )
+            # ====================================================
+            # STUDENT BASIC INFORMATION
+            # ====================================================
 
-        branch_id = request.form.get(
-            "branch_id",
-            type=int,
-        )
-
-        username = request.form.get(
-            "username",
-            "",
-        ).strip()
-
-        email = request.form.get(
-            "email",
-            "",
-        ).strip().lower() or None
-
-        raw_password = request.form.get(
-            "password",
-            "",
-        )
-
-        confirm_password = request.form.get(
-            "confirm_password",
-            "",
-        )
-
-        admission_no = request.form.get(
-            "admission_no",
-            "",
-        ).strip()
-
-        roll_no = request.form.get(
-            "roll_no",
-            "",
-        ).strip() or None
-
-        full_name = request.form.get(
-            "full_name",
-            "",
-        ).strip()
-
-        gender = request.form.get(
-            "gender",
-            "",
-        ).strip() or None
-
-        date_of_birth_raw = request.form.get(
-            "date_of_birth",
-            "",
-        ).strip()
-
-        place_of_birth = request.form.get(
-            "place_of_birth",
-            "",
-        ).strip() or None
-
-        nationality = request.form.get(
-            "nationality",
-            "",
-        ).strip() or None
-
-        phone = request.form.get(
-            "phone",
-            "",
-        ).strip() or None
-
-        address = request.form.get(
-            "address",
-            "",
-        ).strip() or None
-
-        city = request.form.get(
-            "city",
-            "",
-        ).strip() or None
-
-        parent_name = request.form.get(
-            "parent_name",
-            "",
-        ).strip() or None
-
-        parent_phone = request.form.get(
-            "parent_phone",
-            "",
-        ).strip() or None
-
-        parent_email = request.form.get(
-            "parent_email",
-            "",
-        ).strip().lower() or None
-
-        parent_address = request.form.get(
-            "parent_address",
-            "",
-        ).strip() or None
-
-        relationship_to_student = request.form.get(
-            "relationship_to_student",
-            "",
-        ).strip() or None
-
-        status = request.form.get(
-            "status",
-            "active",
-        ).strip().lower()
-
-        notes = request.form.get(
-            "notes",
-            "",
-        ).strip() or None
-
-        # ====================================================
-        # CHECKBOXES
-        # ====================================================
-
-        is_active = (
-            request.form.get("is_active")
-            in ("1", "true", "on", "yes")
-        )
-
-        is_verified = (
-            request.form.get("is_verified")
-            in ("1", "true", "on", "yes")
-        )
-
-        # ====================================================
-        # ROLE
-        # ====================================================
-
-        role = "student"
-
-        # ====================================================
-        # PHOTO
-        # ====================================================
-
-        photo_file = request.files.get(
-            "photo"
-        )
-
-        # ====================================================
-        # VALIDATION
-        # ====================================================
-
-        errors = []
-
-        if not institution_id:
-            errors.append(
-                "Institution is required."
+            full_name = _clean(
+                request.form.get(
+                    "full_name"
+                )
             )
 
-        if not branch_id:
-            errors.append(
-                "Branch is required."
+            gender = _clean(
+                request.form.get(
+                    "gender"
+                )
             )
 
-        if not username:
-            errors.append(
-                "Username is required."
+            date_of_birth = _parse_date(
+                request.form.get(
+                    "date_of_birth"
+                )
             )
 
-        if not admission_no:
-            errors.append(
-                "Admission number is required."
+            place_of_birth = _clean(
+                request.form.get(
+                    "place_of_birth"
+                )
             )
 
-        if not full_name:
-            errors.append(
-                "Full name is required."
+            nationality = _clean(
+                request.form.get(
+                    "nationality"
+                )
             )
 
-        if not raw_password:
-            errors.append(
-                "Password is required."
+            phone = _clean(
+                request.form.get(
+                    "phone"
+                )
             )
 
-        if not confirm_password:
-            errors.append(
-                "Password confirmation is required."
+            email = _clean(
+                request.form.get(
+                    "email"
+                )
             )
 
-        if (
-            raw_password
-            and confirm_password
-            and raw_password != confirm_password
-        ):
-            errors.append(
-                "Password and confirmation password do not match."
+            address = _clean(
+                request.form.get(
+                    "address"
+                )
             )
 
-        # ====================================================
-        # STATUS
-        # ====================================================
-
-        if status not in STUDENT_STATUSES:
-
-            errors.append(
-                "Invalid student status."
+            city = _clean(
+                request.form.get(
+                    "city"
+                )
             )
 
-        # ====================================================
-        # GENDER
-        # ====================================================
-
-        allowed_genders = {
-            "male",
-            "female",
-        }
-
-        if gender and gender.lower() not in allowed_genders:
-
-            errors.append(
-                "Invalid gender."
+            status = (
+                _clean(
+                    request.form.get(
+                        "status"
+                    )
+                )
+                or "active"
             )
 
-        # ====================================================
-        # EMAIL VALIDATION
-        # ====================================================
+            notes = _clean(
+                request.form.get(
+                    "notes"
+                )
+            )
 
-        if email:
+            # ====================================================
+            # THESE FIELDS MAY EXIST IN TEMPLATE
+            # BUT ARE NOT IN Student MODEL.
+            #
+            # We intentionally READ them only so the form
+            # remains compatible.
+            # ====================================================
 
-            if (
-                "@" not in email
-                or "." not in email.split("@")[-1]
-            ):
-                errors.append(
-                    "Please enter a valid student email address."
+            country = _clean(
+                request.form.get(
+                    "country"
+                )
+            )
+
+            phone_country = _clean(
+                request.form.get(
+                    "phone_country"
+                )
+            )
+
+            state = _clean(
+                request.form.get(
+                    "state"
+                )
+            )
+
+            # ====================================================
+            # PARENT / GUARDIAN
+            # ====================================================
+
+            parent_name = _clean(
+                request.form.get(
+                    "parent_name"
+                )
+            )
+
+            relationship_to_student = _clean(
+                request.form.get(
+                    "relationship_to_student"
+                )
+            )
+
+            parent_phone = _clean(
+                request.form.get(
+                    "parent_phone"
+                )
+            )
+
+            parent_email = _clean(
+                request.form.get(
+                    "parent_email"
+                )
+            )
+
+            parent_address = _clean(
+                request.form.get(
+                    "parent_address"
+                )
+            )
+
+            # ====================================================
+            # VALIDATE NAME
+            # ====================================================
+
+            if not full_name:
+
+                raise ValueError(
+                    "Student full name is required."
                 )
 
-        if parent_email:
+            # ====================================================
+            # INSTITUTION
+            # ====================================================
 
-            if (
-                "@" not in parent_email
-                or "." not in parent_email.split("@")[-1]
-            ):
-                errors.append(
-                    "Please enter a valid parent email address."
+            submitted_institution_id = (
+                request.form.get(
+                    "institution_id",
+                    type=int
+                )
+            )
+
+            if current_user.role == "superadmin":
+
+                institution_id = (
+                    submitted_institution_id
                 )
 
-        # ====================================================
-        # ROLE / USER SCOPE
-        # ====================================================
+            else:
 
-        current_role = getattr(
-            current_user,
-            "role",
-            None,
-        )
-
-        current_institution_id = (
-            _student_user_institution_id()
-        )
-
-        current_branch_id = (
-            _student_user_branch_id()
-        )
-
-        # ----------------------------------------------------
-        # INSTITUTION ADMIN
-        # ----------------------------------------------------
-
-        if current_role == "institution_admin":
-
-            if (
-                institution_id
-                and current_institution_id
-                and institution_id
-                != current_institution_id
-            ):
-
-                errors.append(
-                    "You cannot create a student outside your institution."
+                institution_id = (
+                    current_institution_id
                 )
 
-        # ----------------------------------------------------
-        # BRANCH ADMIN
-        # ----------------------------------------------------
+                if (
+                    submitted_institution_id
+                    and
+                    submitted_institution_id
+                    != institution_id
+                ):
 
-        elif current_role == "branch_admin":
+                    raise ValueError(
+                        "You cannot add a student "
+                        "to another institution."
+                    )
 
-            if (
-                institution_id
-                and current_institution_id
-                and institution_id
-                != current_institution_id
-            ):
+            if not institution_id:
 
-                errors.append(
-                    "You cannot create a student outside your institution."
+                raise ValueError(
+                    "Institution is required."
                 )
 
-            if (
-                branch_id
-                and current_branch_id
-                and branch_id
-                != current_branch_id
-            ):
-
-                errors.append(
-                    "You cannot create a student outside your branch."
-                )
-
-        # ====================================================
-        # INSTITUTION
-        # ====================================================
-
-        institution = None
-
-        if institution_id:
+            # ====================================================
+            # GET INSTITUTION
+            # ====================================================
 
             institution = (
                 Institution.query
@@ -31311,917 +32746,5137 @@ def add_student():
 
             if not institution:
 
-                errors.append(
-                    "Selected institution does not exist."
+                raise ValueError(
+                    "Selected institution was not found."
                 )
 
-        # ====================================================
-        # BRANCH
-        # ====================================================
+            # ====================================================
+            # BRANCH
+            # ====================================================
 
-        branch = None
+            submitted_branch_id = (
+                request.form.get(
+                    "branch_id",
+                    type=int
+                )
+            )
 
-        if branch_id:
+            if (
+                current_user.role
+                == "branch_admin"
+            ):
+
+                branch_id = (
+                    current_branch_id
+                )
+
+            else:
+
+                branch_id = (
+                    submitted_branch_id
+                )
+
+            if not branch_id:
+
+                raise ValueError(
+                    "Branch is required."
+                )
+
+            # ====================================================
+            # GET BRANCH
+            # ====================================================
 
             branch = (
                 Branch.query
                 .filter(
                     Branch.id
-                    == branch_id
+                    == branch_id,
+
+                    Branch.institution_id
+                    == institution_id
                 )
                 .first()
             )
 
             if not branch:
 
-                errors.append(
-                    "Selected branch does not exist."
+                raise ValueError(
+                    "Selected branch does not "
+                    "belong to the selected institution."
                 )
 
-            elif (
-                institution_id
-                and branch.institution_id
-                != institution_id
+            # ====================================================
+            # BRANCH ADMIN SECURITY
+            # ====================================================
+
+            if (
+                current_user.role
+                == "branch_admin"
             ):
 
-                errors.append(
-                    "Selected branch does not belong to the selected institution."
-                )
+                if (
+                    current_institution_id
+                    != institution_id
+                ):
 
-        # ====================================================
-        # USERNAME DUPLICATE
-        # ====================================================
-
-        if username:
-
-            existing_username = (
-                Student.query
-                .filter(
-                    func.lower(
-                        Student.username
+                    raise ValueError(
+                        "Invalid institution access."
                     )
-                    == username.lower()
-                )
-                .first()
+
+                if (
+                    current_branch_id
+                    != branch_id
+                ):
+
+                    raise ValueError(
+                        "Invalid branch access."
+                    )
+
+            # ====================================================
+            # SCHOOL ADMIN SECURITY
+            # ====================================================
+
+            if (
+                current_user.role
+                == "school_admin"
+            ):
+
+                if (
+                    current_institution_id
+                    != institution_id
+                ):
+
+                    raise ValueError(
+                        "You can only add students "
+                        "to your institution."
+                    )
+
+            # ====================================================
+            # STATUS
+            # ====================================================
+
+            allowed_student_statuses = {
+                "active",
+                "inactive",
+                "graduated",
+                "transferred",
+                "suspended",
+                "withdrawn",
+            }
+
+            if (
+                status
+                not in allowed_student_statuses
+            ):
+
+                status = "active"
+
+            # ====================================================
+            # GENERATE STUDENT NUMBERS
+            # ====================================================
+
+            (
+                admission_no,
+                roll_no
+            ) = _generate_student_numbers(
+                institution
             )
 
-            if existing_username:
+            # ====================================================
+            # USERNAME
+            # ====================================================
 
-                errors.append(
-                    "Username already exists."
-                )
+            username = _generate_username(
+                full_name
+            )
 
-        # ====================================================
-        # EMAIL DUPLICATE
-        # ====================================================
+            # ====================================================
+            # PASSWORD
+            # ====================================================
 
-        if email:
+            generated_password = (
+                _random_password(10)
+            )
 
-            existing_email = (
-                Student.query
-                .filter(
-                    func.lower(
+            # ====================================================
+            # EMAIL
+            # ====================================================
+
+            if email:
+
+                existing_email = (
+                    Student.query
+                    .filter(
                         Student.email
+                        == email
                     )
-                    == email.lower()
+                    .first()
                 )
-                .first()
+
+                if existing_email:
+
+                    raise ValueError(
+                        "The email address is already "
+                        "used by another student."
+                    )
+
+            else:
+
+                email = _generate_email(
+                    full_name,
+                    admission_no
+                )
+
+            # ====================================================
+            # CREATE STUDENT
+            #
+            # IMPORTANT:
+            # No country
+            # No phone_country
+            # No state
+            #
+            # because these fields DO NOT EXIST
+            # in the supplied Student model.
+            # ====================================================
+
+            student = Student(
+
+                institution_id=(
+                    institution_id
+                ),
+
+                branch_id=(
+                    branch_id
+                ),
+
+                username=(
+                    username
+                ),
+
+                email=(
+                    email
+                ),
+
+                password="",
+
+                role="student",
+
+                is_active=(
+                    status == "active"
+                ),
+
+                is_verified=False,
+
+                admission_no=(
+                    admission_no
+                ),
+
+                roll_no=(
+                    roll_no
+                ),
+
+                full_name=(
+                    full_name
+                ),
+
+                gender=(
+                    gender or None
+                ),
+
+                date_of_birth=(
+                    date_of_birth
+                ),
+
+                place_of_birth=(
+                    place_of_birth or None
+                ),
+
+                nationality=(
+                    nationality or None
+                ),
+
+                phone=(
+                    phone or None
+                ),
+
+                address=(
+                    address or None
+                ),
+
+                city=(
+                    city or None
+                ),
+
+                parent_name=(
+                    parent_name or None
+                ),
+
+                parent_phone=(
+                    parent_phone or None
+                ),
+
+                parent_email=(
+                    parent_email or None
+                ),
+
+                parent_address=(
+                    parent_address or None
+                ),
+
+                relationship_to_student=(
+                    relationship_to_student
+                    or None
+                ),
+
+                status=(
+                    status
+                ),
+
+                notes=(
+                    notes or None
+                ),
             )
 
-            if existing_email:
+            # ====================================================
+            # PASSWORD HASH
+            # ====================================================
 
-                errors.append(
-                    "Email already exists."
-                )
-
-        # ====================================================
-        # ADMISSION NUMBER DUPLICATE
-        # ====================================================
-
-        if (
-            institution_id
-            and admission_no
-        ):
-
-            existing_admission = (
-                Student.query
-                .filter(
-                    Student.institution_id
-                    == institution_id,
-
-                    func.lower(
-                        Student.admission_no
-                    )
-                    == admission_no.lower(),
-                )
-                .first()
+            student.set_password(
+                generated_password
             )
 
-            if existing_admission:
+            # ====================================================
+            # PHOTO
+            # ====================================================
 
-                errors.append(
-                    "Admission number already exists in this institution."
-                )
+            photo = request.files.get(
+                "photo"
+            )
 
-        # ====================================================
-        # DATE OF BIRTH
-        # ====================================================
-
-        date_of_birth = None
-
-        if date_of_birth_raw:
-
-            try:
-
-                date_of_birth = _parse_student_date(
-                    date_of_birth_raw
-                )
-
-            except ValueError as exc:
-
-                errors.append(
-                    str(exc)
-                )
-
-        # ====================================================
-        # PHOTO VALIDATION
-        # ====================================================
-
-        if (
-            photo_file
-            and photo_file.filename
-        ):
-
-            if not _allowed_student_photo(
-                photo_file
+            if (
+                photo
+                and
+                photo.filename
             ):
 
-                errors.append(
-                    "Photo must be JPG, JPEG, PNG or WEBP."
+                original_filename = (
+                    secure_filename(
+                        photo.filename
+                    )
                 )
 
-        # ====================================================
-        # STOP IF VALIDATION FAILED
-        # ====================================================
+                extension = ""
 
-        if errors:
+                if "." in original_filename:
 
-            # Remove duplicate messages while preserving order
-            errors = list(
-                dict.fromkeys(errors)
-            )
+                    extension = (
+                        original_filename
+                        .rsplit(
+                            ".",
+                            1
+                        )[1]
+                        .lower()
+                    )
 
-            for error in errors:
+                allowed_extensions = {
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "webp",
+                }
 
-                flash(
-                    error,
-                    "danger",
+                if (
+                    extension
+                    not in allowed_extensions
+                ):
+
+                    raise ValueError(
+                        "Invalid photo format. "
+                        "Use JPG, JPEG, PNG or WEBP."
+                    )
+
+                upload_directory = os.path.join(
+                    current_app.root_path,
+                    "static",
+                    "uploads",
+                    "students"
                 )
 
-            return render_template(
-                "backend/pages/students/add_student.html",
-                user=current_user,
-                **context,
+                os.makedirs(
+                    upload_directory,
+                    exist_ok=True
+                )
+
+                filename = (
+                    "student_"
+                    f"{secrets.token_hex(10)}."
+                    f"{extension}"
+                )
+
+                absolute_path = os.path.join(
+                    upload_directory,
+                    filename
+                )
+
+                photo.save(
+                    absolute_path
+                )
+
+                student.photo = (
+                    f"uploads/students/{filename}"
+                )
+
+            # ====================================================
+            # ADD STUDENT
+            # ====================================================
+
+            db.session.add(
+                student
             )
-
-        # ====================================================
-        # CREATE STUDENT
-        # ====================================================
-
-        student = Student(
-
-            institution_id=institution_id,
-
-            branch_id=branch_id,
-
-            username=username,
-
-            email=email,
-
-            role=role,
-
-            is_active=is_active,
-
-            is_verified=is_verified,
-
-            admission_no=admission_no,
-
-            roll_no=roll_no,
-
-            full_name=full_name,
-
-            gender=gender,
-
-            date_of_birth=date_of_birth,
-
-            place_of_birth=place_of_birth,
-
-            nationality=nationality,
-
-            phone=phone,
-
-            address=address,
-
-            city=city,
-
-            parent_name=parent_name,
-
-            parent_phone=parent_phone,
-
-            parent_email=parent_email,
-
-            parent_address=parent_address,
-
-            relationship_to_student=(
-                relationship_to_student
-            ),
-
-            status=status,
-
-            notes=notes,
-        )
-
-        # ====================================================
-        # PASSWORD HASH
-        # ====================================================
-
-        student.set_password(
-            raw_password
-        )
-
-        # ====================================================
-        # ADD TO SESSION
-        # ====================================================
-
-        db.session.add(
-            student
-        )
-
-        try:
-
-            # =================================================
-            # FLUSH
-            # Get student.id before Cloudinary upload
-            # =================================================
 
             db.session.flush()
 
-            # =================================================
-            # CLOUDINARY PHOTO UPLOAD
-            # =================================================
+            # ====================================================
+            # ENROLLMENT ARRAYS
+            # ====================================================
 
-            if (
-                photo_file
-                and photo_file.filename
+            academic_year_ids = (
+                request.form.getlist(
+                    "academic_year_id[]"
+                )
+            )
+
+            program_ids = (
+                request.form.getlist(
+                    "program_id[]"
+                )
+            )
+
+            class_ids = (
+                request.form.getlist(
+                    "class_id[]"
+                )
+            )
+
+            section_ids = (
+                request.form.getlist(
+                    "section_id[]"
+                )
+            )
+
+            enrollment_dates = (
+                request.form.getlist(
+                    "enrollment_date[]"
+                )
+            )
+
+            enrollment_statuses = (
+                request.form.getlist(
+                    "enrollment_status[]"
+                )
+            )
+
+            enrollment_notes = (
+                request.form.getlist(
+                    "enrollment_notes[]"
+                )
+            )
+
+            # ====================================================
+            # ENROLLMENT RECORDS
+            # ====================================================
+
+            enrollment_records = []
+
+            max_enrollments = max(
+                len(academic_year_ids),
+                len(program_ids),
+                len(class_ids),
+                len(section_ids),
+                len(enrollment_dates),
+                len(enrollment_statuses),
+                len(enrollment_notes),
+                0
+            )
+
+            # ====================================================
+            # ENROLLMENT STATUS
+            # ====================================================
+
+            allowed_enrollment_statuses = {
+                "active",
+                "completed",
+                "transferred",
+                "withdrawn",
+                "suspended",
+                "promoted",
+            }
+
+            # ====================================================
+            # PROCESS ENROLLMENTS
+            # ====================================================
+
+            for index in range(
+                max_enrollments
             ):
 
-                photo_url, public_id = (
-                    _upload_student_photo(
-                        photo_file,
-                        student_id=student.id,
-                        institution_id=institution_id,
-                        branch_id=branch_id,
+                academic_year_raw = (
+                    _form_list_value(
+                        academic_year_ids,
+                        index
                     )
                 )
 
-                if not photo_url:
+                program_raw = (
+                    _form_list_value(
+                        program_ids,
+                        index
+                    )
+                )
+
+                class_raw = (
+                    _form_list_value(
+                        class_ids,
+                        index
+                    )
+                )
+
+                section_raw = (
+                    _form_list_value(
+                        section_ids,
+                        index
+                    )
+                )
+
+                enrollment_date_raw = (
+                    _form_list_value(
+                        enrollment_dates,
+                        index
+                    )
+                )
+
+                enrollment_status = (
+                    _form_list_value(
+                        enrollment_statuses,
+                        index
+                    )
+                    or "active"
+                )
+
+                enrollment_note = (
+                    _form_list_value(
+                        enrollment_notes,
+                        index
+                    )
+                )
+
+                # ----------------------------------------------
+                # EMPTY ROW
+                # ----------------------------------------------
+
+                if not (
+                    academic_year_raw
+                    or program_raw
+                    or class_raw
+                    or section_raw
+                ):
+
+                    continue
+
+                # ----------------------------------------------
+                # IDs
+                # ----------------------------------------------
+
+                if not academic_year_raw.isdigit():
 
                     raise ValueError(
-                        "Student photo upload failed."
+                        f"Enrollment #{index + 1}: "
+                        "Academic year is required."
                     )
 
-                student.photo = photo_url
+                if not program_raw.isdigit():
 
-                # ------------------------------------------------
-                # IMPORTANT:
-                # Your current Student model does not show
-                # photo_public_id.
-                #
-                # Therefore we only save student.photo here.
-                #
-                # If you later add:
-                #
-                # photo_public_id = db.Column(...)
-                #
-                # then you can use:
-                #
-                # student.photo_public_id = public_id
-                # ------------------------------------------------
+                    raise ValueError(
+                        f"Enrollment #{index + 1}: "
+                        "Program is required."
+                    )
 
-            # =================================================
+                if not class_raw.isdigit():
+
+                    raise ValueError(
+                        f"Enrollment #{index + 1}: "
+                        "Class is required."
+                    )
+
+                academic_year_id = int(
+                    academic_year_raw
+                )
+
+                program_id = int(
+                    program_raw
+                )
+
+                class_id = int(
+                    class_raw
+                )
+
+                section_id = None
+
+                if section_raw.isdigit():
+
+                    section_id = int(
+                        section_raw
+                    )
+
+                # ----------------------------------------------
+                # ACADEMIC YEAR
+                # ----------------------------------------------
+
+                academic_year = (
+                    AcademicYear.query
+                    .filter(
+                        AcademicYear.id
+                        == academic_year_id,
+
+                        AcademicYear.institution_id
+                        == institution_id
+                    )
+                    .first()
+                )
+
+                if not academic_year:
+
+                    raise ValueError(
+                        f"Enrollment #{index + 1}: "
+                        "Invalid academic year."
+                    )
+
+                # ----------------------------------------------
+                # PROGRAM
+                # ----------------------------------------------
+
+                program = (
+                    Program.query
+                    .filter(
+                        Program.id
+                        == program_id,
+
+                        Program.institution_id
+                        == institution_id,
+
+                        or_(
+                            Program.branch_id
+                            == branch_id,
+
+                            Program.branch_id.is_(None)
+                        )
+                    )
+                    .first()
+                )
+
+                if not program:
+
+                    raise ValueError(
+                        f"Enrollment #{index + 1}: "
+                        "Invalid program for this branch."
+                    )
+
+                # ----------------------------------------------
+                # CLASS
+                # ----------------------------------------------
+
+                selected_class = (
+                    Class.query
+                    .filter(
+                        Class.id
+                        == class_id,
+
+                        Class.institution_id
+                        == institution_id,
+
+                        Class.branch_id
+                        == branch_id
+                    )
+                    .first()
+                )
+
+                if not selected_class:
+
+                    raise ValueError(
+                        f"Enrollment #{index + 1}: "
+                        "Invalid class for this branch."
+                    )
+
+                # ----------------------------------------------
+                # CLASS → PROGRAM
+                # ----------------------------------------------
+
+                class_program_id = getattr(
+                    selected_class,
+                    "program_id",
+                    None
+                )
+
+                if (
+                    class_program_id
+                    and
+                    class_program_id
+                    != program_id
+                ):
+
+                    raise ValueError(
+                        f"Enrollment #{index + 1}: "
+                        "Selected class does not "
+                        "belong to selected program."
+                    )
+
+                # ----------------------------------------------
+                # SECTION
+                # ----------------------------------------------
+
+                if section_id:
+
+                    selected_section = (
+                        Section.query
+                        .filter(
+                            Section.id
+                            == section_id,
+
+                            Section.institution_id
+                            == institution_id,
+
+                            Section.branch_id
+                            == branch_id,
+
+                            Section.class_id
+                            == class_id
+                        )
+                        .first()
+                    )
+
+                    if not selected_section:
+
+                        raise ValueError(
+                            f"Enrollment #{index + 1}: "
+                            "Invalid section for selected class."
+                        )
+
+                # ----------------------------------------------
+                # ENROLLMENT STATUS
+                # ----------------------------------------------
+
+                if (
+                    enrollment_status
+                    not in allowed_enrollment_statuses
+                ):
+
+                    enrollment_status = (
+                        "active"
+                    )
+
+                # ----------------------------------------------
+                # DUPLICATE
+                # ----------------------------------------------
+
+                duplicate = (
+                    StudentEnrollment.query
+                    .filter(
+                        StudentEnrollment.student_id
+                        == student.id,
+
+                        StudentEnrollment.academic_year_id
+                        == academic_year_id
+                    )
+                    .first()
+                )
+
+                if duplicate:
+
+                    raise ValueError(
+                        f"Enrollment #{index + 1}: "
+                        "Student already has an "
+                        "enrollment for this academic year."
+                    )
+
+                # ----------------------------------------------
+                # DATE
+                # ----------------------------------------------
+
+                enrollment_date = (
+                    _parse_date(
+                        enrollment_date_raw,
+                        default=date.today()
+                    )
+                )
+
+                # ----------------------------------------------
+                # ENROLLMENT NUMBER
+                # ----------------------------------------------
+
+                enrollment_no = (
+                    _generate_enrollment_no(
+                        admission_no,
+                        index
+                    )
+                )
+
+                # ----------------------------------------------
+                # SAFETY CHECK
+                # ----------------------------------------------
+
+                existing_enrollment_no = (
+                    StudentEnrollment.query
+                    .filter(
+                        StudentEnrollment.institution_id
+                        == institution_id,
+
+                        StudentEnrollment.enrollment_no
+                        == enrollment_no
+                    )
+                    .first()
+                )
+
+                if existing_enrollment_no:
+
+                    enrollment_no = (
+                        f"{admission_no}-"
+                        f"E{index + 1:02d}-"
+                        f"{secrets.token_hex(2).upper()}"
+                    )
+
+                # ----------------------------------------------
+                # CREATE ENROLLMENT
+                # ----------------------------------------------
+
+                enrollment = StudentEnrollment(
+
+                    institution_id=(
+                        institution_id
+                    ),
+
+                    branch_id=(
+                        branch_id
+                    ),
+
+                    student_id=(
+                        student.id
+                    ),
+
+                    academic_year_id=(
+                        academic_year_id
+                    ),
+
+                    program_id=(
+                        program_id
+                    ),
+
+                    class_id=(
+                        class_id
+                    ),
+
+                    section_id=(
+                        section_id
+                    ),
+
+                    enrollment_no=(
+                        enrollment_no
+                    ),
+
+                    enrollment_date=(
+                        enrollment_date
+                    ),
+
+                    status=(
+                        enrollment_status
+                    ),
+
+                    notes=(
+                        enrollment_note
+                        or None
+                    ),
+                )
+
+                db.session.add(
+                    enrollment
+                )
+
+                enrollment_records.append({
+                    "enrollment": enrollment,
+                    "academic_year": academic_year,
+                    "program": program,
+                    "index": index,
+                })
+
+            # ====================================================
+            # REQUIRE ENROLLMENT
+            # ====================================================
+
+            if not enrollment_records:
+
+                raise ValueError(
+                    "At least one academic enrollment "
+                    "is required."
+                )
+
+            db.session.flush()
+
+            # ====================================================
+            # AUTOMATIC REGISTRATION FEE
+            # ====================================================
+
+            first_record = (
+                enrollment_records[0]
+            )
+
+            first_enrollment = (
+                first_record["enrollment"]
+            )
+
+            first_academic_year = (
+                first_record["academic_year"]
+            )
+
+            first_program = (
+                first_record["program"]
+            )
+
+            registration_amount = (
+                Decimal("5.00")
+            )
+
+            registration_charge = (
+                StudentCharge(
+
+                    institution_id=(
+                        institution_id
+                    ),
+
+                    branch_id=(
+                        branch_id
+                    ),
+
+                    student_id=(
+                        student.id
+                    ),
+
+                    enrollment_id=(
+                        first_enrollment.id
+                    ),
+
+                    academic_year_id=(
+                        first_academic_year.id
+                    ),
+
+                    charge_type=(
+                        "registration"
+                    ),
+
+                    charge_name=(
+                        "Registration Fee"
+                    ),
+
+                    description=(
+                        "Automatic registration fee"
+                    ),
+
+                    amount=(
+                        registration_amount
+                    ),
+
+                    discount=(
+                        Decimal("0.00")
+                    ),
+
+                    net_amount=(
+                        registration_amount
+                    ),
+
+                    paid_amount=(
+                        Decimal("0.00")
+                    ),
+
+                    balance=(
+                        registration_amount
+                    ),
+
+                    due_date=(
+                        date.today()
+                    ),
+
+                    status=(
+                        "unpaid"
+                    ),
+
+                    created_by=(
+                        getattr(
+                            current_user,
+                            "id",
+                            None
+                        )
+                    ),
+                )
+            )
+
+            db.session.add(
+                registration_charge
+            )
+
+            # ====================================================
+            # AUTOMATIC PROGRAM FEE
+            # ====================================================
+
+            program_price = _decimal(
+                getattr(
+                    first_program,
+                    "price",
+                    0
+                )
+            )
+
+            if (
+                program_price
+                > Decimal("0.00")
+            ):
+
+                program_name = (
+                    _clean(
+                        getattr(
+                            first_program,
+                            "name",
+                            ""
+                        )
+                    )
+                    or "Program"
+                )
+
+                program_charge = (
+                    StudentCharge(
+
+                        institution_id=(
+                            institution_id
+                        ),
+
+                        branch_id=(
+                            branch_id
+                        ),
+
+                        student_id=(
+                            student.id
+                        ),
+
+                        enrollment_id=(
+                            first_enrollment.id
+                        ),
+
+                        academic_year_id=(
+                            first_academic_year.id
+                        ),
+
+                        charge_type=(
+                            "program_fee"
+                        ),
+
+                        charge_name=(
+                            f"{program_name} Fee"
+                        ),
+
+                        description=(
+                            "Automatic program fee"
+                        ),
+
+                        amount=(
+                            program_price
+                        ),
+
+                        discount=(
+                            Decimal("0.00")
+                        ),
+
+                        net_amount=(
+                            program_price
+                        ),
+
+                        paid_amount=(
+                            Decimal("0.00")
+                        ),
+
+                        balance=(
+                            program_price
+                        ),
+
+                        due_date=(
+                            date.today()
+                        ),
+
+                        status=(
+                            "unpaid"
+                        ),
+
+                        created_by=(
+                            getattr(
+                                current_user,
+                                "id",
+                                None
+                            )
+                        ),
+                    )
+                )
+
+                db.session.add(
+                    program_charge
+                )
+
+            # ====================================================
+            # MANUAL CHARGES
+            # ====================================================
+
+            charge_types = (
+                request.form.getlist(
+                    "charge_type[]"
+                )
+            )
+
+            charge_names = (
+                request.form.getlist(
+                    "charge_name[]"
+                )
+            )
+
+            charge_amounts = (
+                request.form.getlist(
+                    "charge_amount[]"
+                )
+            )
+
+            charge_discounts = (
+                request.form.getlist(
+                    "charge_discount[]"
+                )
+            )
+
+            charge_paid_amounts = (
+                request.form.getlist(
+                    "charge_paid_amount[]"
+                )
+            )
+
+            charge_due_dates = (
+                request.form.getlist(
+                    "charge_due_date[]"
+                )
+            )
+
+            charge_enrollment_values = (
+                request.form.getlist(
+                    "charge_enrollment[]"
+                )
+            )
+
+            # Compatibility with old template
+
+            if not charge_enrollment_values:
+
+                charge_enrollment_values = (
+                    request.form.getlist(
+                        "charge_enrollment_index[]"
+                    )
+                )
+
+            charge_descriptions = (
+                request.form.getlist(
+                    "charge_description[]"
+                )
+            )
+
+            allowed_charge_types = {
+                "registration",
+                "program_fee",
+                "tuition",
+                "exam",
+                "admission",
+                "id_card",
+                "uniform",
+                "books",
+                "transport",
+                "laboratory",
+                "library",
+                "certificate",
+                "other",
+            }
+
+            max_charges = max(
+                len(charge_types),
+                len(charge_names),
+                len(charge_amounts),
+                len(charge_discounts),
+                len(charge_paid_amounts),
+                len(charge_due_dates),
+                len(charge_enrollment_values),
+                len(charge_descriptions),
+                0
+            )
+
+            for index in range(
+                max_charges
+            ):
+
+                charge_type = (
+                    _form_list_value(
+                        charge_types,
+                        index
+                    )
+                    .lower()
+                )
+
+                charge_name = (
+                    _form_list_value(
+                        charge_names,
+                        index
+                    )
+                )
+
+                amount = _decimal(
+                    _form_list_value(
+                        charge_amounts,
+                        index
+                    )
+                )
+
+                discount = _decimal(
+                    _form_list_value(
+                        charge_discounts,
+                        index
+                    )
+                )
+
+                paid_amount = _decimal(
+                    _form_list_value(
+                        charge_paid_amounts,
+                        index
+                    )
+                )
+
+                due_date = _parse_date(
+                    _form_list_value(
+                        charge_due_dates,
+                        index
+                    ),
+                    default=date.today()
+                )
+
+                description = (
+                    _form_list_value(
+                        charge_descriptions,
+                        index
+                    )
+                )
+
+                enrollment_index_raw = (
+                    _form_list_value(
+                        charge_enrollment_values,
+                        index
+                    )
+                )
+
+                enrollment_index = 0
+
+                if enrollment_index_raw.isdigit():
+
+                    enrollment_index = int(
+                        enrollment_index_raw
+                    )
+
+                # ----------------------------------------------
+                # EMPTY ROW
+                # ----------------------------------------------
+
+                if not (
+                    charge_type
+                    or charge_name
+                    or amount
+                ):
+
+                    continue
+
+                # ----------------------------------------------
+                # AUTO CHARGES
+                # ----------------------------------------------
+
+                if charge_type in {
+                    "registration",
+                    "program_fee",
+                }:
+
+                    continue
+
+                # ----------------------------------------------
+                # VALID TYPE
+                # ----------------------------------------------
+
+                if (
+                    charge_type
+                    not in allowed_charge_types
+                ):
+
+                    charge_type = "other"
+
+                # ----------------------------------------------
+                # NORMALIZE MONEY
+                # ----------------------------------------------
+
+                if amount < 0:
+
+                    raise ValueError(
+                        f"Charge #{index + 1}: "
+                        "Amount cannot be negative."
+                    )
+
+                if discount < 0:
+
+                    discount = Decimal(
+                        "0.00"
+                    )
+
+                if paid_amount < 0:
+
+                    paid_amount = Decimal(
+                        "0.00"
+                    )
+
+                if discount > amount:
+
+                    discount = amount
+
+                net_amount = (
+                    amount - discount
+                )
+
+                if paid_amount > net_amount:
+
+                    paid_amount = net_amount
+
+                balance = (
+                    net_amount
+                    - paid_amount
+                )
+
+                # ----------------------------------------------
+                # STATUS
+                # ----------------------------------------------
+
+                if balance <= 0:
+
+                    charge_status = "paid"
+
+                    balance = Decimal(
+                        "0.00"
+                    )
+
+                elif paid_amount > 0:
+
+                    charge_status = "partial"
+
+                else:
+
+                    charge_status = "unpaid"
+
+                # ----------------------------------------------
+                # ENROLLMENT INDEX
+                # ----------------------------------------------
+
+                if (
+                    enrollment_index < 0
+                    or
+                    enrollment_index
+                    >= len(
+                        enrollment_records
+                    )
+                ):
+
+                    enrollment_index = 0
+
+                charge_enrollment_record = (
+                    enrollment_records[
+                        enrollment_index
+                    ]
+                )
+
+                charge_enrollment = (
+                    charge_enrollment_record[
+                        "enrollment"
+                    ]
+                )
+
+                charge_academic_year = (
+                    charge_enrollment_record[
+                        "academic_year"
+                    ]
+                )
+
+                # ----------------------------------------------
+                # NAME
+                # ----------------------------------------------
+
+                if not charge_name:
+
+                    charge_name = (
+                        charge_type
+                        .replace(
+                            "_",
+                            " "
+                        )
+                        .title()
+                    )
+
+                # ----------------------------------------------
+                # CREATE
+                # ----------------------------------------------
+
+                manual_charge = (
+                    StudentCharge(
+
+                        institution_id=(
+                            institution_id
+                        ),
+
+                        branch_id=(
+                            branch_id
+                        ),
+
+                        student_id=(
+                            student.id
+                        ),
+
+                        enrollment_id=(
+                            charge_enrollment.id
+                        ),
+
+                        academic_year_id=(
+                            charge_academic_year.id
+                        ),
+
+                        charge_type=(
+                            charge_type
+                        ),
+
+                        charge_name=(
+                            charge_name
+                        ),
+
+                        description=(
+                            description
+                            or None
+                        ),
+
+                        amount=(
+                            amount
+                        ),
+
+                        discount=(
+                            discount
+                        ),
+
+                        net_amount=(
+                            net_amount
+                        ),
+
+                        paid_amount=(
+                            paid_amount
+                        ),
+
+                        balance=(
+                            balance
+                        ),
+
+                        due_date=(
+                            due_date
+                        ),
+
+                        status=(
+                            charge_status
+                        ),
+
+                        created_by=(
+                            getattr(
+                                current_user,
+                                "id",
+                                None
+                            )
+                        ),
+                    )
+                )
+
+                db.session.add(
+                    manual_charge
+                )
+
+            # ====================================================
+            # FINAL FLUSH
+            # ====================================================
+
+            db.session.flush()
+
+            # ====================================================
             # COMMIT
-            # =================================================
+            # ====================================================
 
             db.session.commit()
 
-            # =================================================
+            # ====================================================
+            # SAVE GENERATED LOGIN DETAILS
+            # ====================================================
+
+            session[
+                "new_student_credentials"
+            ] = {
+
+                "student_id": student.id,
+
+                "full_name": student.full_name,
+
+                "admission_no": (
+                    student.admission_no
+                ),
+
+                "roll_no": (
+                    student.roll_no
+                ),
+
+                "username": (
+                    student.username
+                ),
+
+                "email": (
+                    student.email
+                ),
+
+                "password": (
+                    generated_password
+                ),
+            }
+
+            # ====================================================
             # SUCCESS
-            # =================================================
+            # ====================================================
 
             flash(
-                f"Student {student.full_name} created successfully.",
-                "success",
+                (
+                    f"Student "
+                    f"{student.full_name} "
+                    f"was added successfully."
+                ),
+                "success"
             )
+
+            # ====================================================
+            # REDIRECT
+            # ====================================================
+
+            if (
+                "main.view_student"
+                in current_app.view_functions
+            ):
+
+                return redirect(
+                    url_for(
+                        "main.view_student",
+                        student_id=student.id
+                    )
+                )
+
+            if (
+                "main.all_students"
+                in current_app.view_functions
+            ):
+
+                return redirect(
+                    url_for(
+                        "main.all_students"
+                    )
+                )
 
             return redirect(
                 url_for(
-                    "main.view_student",
-                    student_id=student.id,
+                    "main.dashboard"
                 )
             )
 
-        # ====================================================
-        # VALUE ERROR
-        # ====================================================
+        # ========================================================
+        # VALIDATION ERROR
+        # ========================================================
 
         except ValueError as exc:
 
             db.session.rollback()
 
             current_app.logger.warning(
-                "Student creation validation/upload error: %s",
-                exc,
+                "Add student validation error: %s",
+                exc
             )
 
             flash(
                 str(exc),
-                "danger",
+                "danger"
             )
 
-        # ====================================================
-        # DATABASE INTEGRITY ERROR
-        # ====================================================
-
-        except IntegrityError as exc:
-
-            db.session.rollback()
-
-            current_app.logger.exception(
-                "Student integrity error: %s",
-                exc,
+            return redirect(
+                url_for(
+                    "main.add_student"
+                )
             )
 
-            flash(
-                "Student could not be created because username, email or admission number already exists.",
-                "danger",
-            )
-
-        # ====================================================
-        # GENERAL ERROR
-        # ====================================================
+        # ========================================================
+        # DATABASE / UNEXPECTED ERROR
+        # ========================================================
 
         except Exception as exc:
 
             db.session.rollback()
 
             current_app.logger.exception(
-                "Student creation failed: %s",
-                exc,
+                "Unexpected error while adding student"
             )
 
             flash(
-                "Unable to create student. Please try again.",
-                "danger",
+                (
+                    "Unable to add student. "
+                    f"Error: {exc}"
+                ),
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_student"
+                )
             )
 
     # ========================================================
     # GET
     # ========================================================
 
+    # ========================================================
+    # INSTITUTIONS
+    # ========================================================
+
+    if current_user.role == "superadmin":
+
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        institutions = []
+
+        if current_institution_id:
+
+            current_institution_for_list = (
+                Institution.query
+                .filter(
+                    Institution.id
+                    == current_institution_id
+                )
+                .first()
+            )
+
+            if current_institution_for_list:
+
+                institutions = [
+                    current_institution_for_list
+                ]
+
+    # ========================================================
+    # BRANCHES
+    # ========================================================
+
+    if (
+        current_user.role
+        == "branch_admin"
+    ):
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.id
+                == current_branch_id,
+
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    elif (
+        current_user.role
+        == "school_admin"
+    ):
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        branches = (
+            Branch.query
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # CURRENT INSTITUTION
+    # ========================================================
+
+    current_institution = None
+
+    if current_institution_id:
+
+        current_institution = (
+            Institution.query
+            .filter(
+                Institution.id
+                == current_institution_id
+            )
+            .first()
+        )
+
+    # ========================================================
+    # CURRENT BRANCH
+    # ========================================================
+
+    current_branch = None
+
+    if current_branch_id:
+
+        current_branch = (
+            Branch.query
+            .filter(
+                Branch.id
+                == current_branch_id
+            )
+            .first()
+        )
+
+    # ========================================================
+    # DEFAULT BRANCH
+    # ========================================================
+
+    default_branch_id = (
+        current_branch_id
+        if current_user.role
+        == "branch_admin"
+        else None
+    )
+
+    # ========================================================
+    # PROGRAMS
+    # ========================================================
+
+    if (
+        current_institution_id
+        and default_branch_id
+    ):
+
+        programs = (
+            Program.query
+            .filter(
+                Program.institution_id
+                == current_institution_id,
+
+                or_(
+                    Program.branch_id
+                    == default_branch_id,
+
+                    Program.branch_id.is_(None)
+                )
+            )
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    elif current_institution_id:
+
+        programs = (
+            Program.query
+            .filter(
+                Program.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        programs = (
+            Program.query
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # CLASSES
+    # ========================================================
+
+    if (
+        current_institution_id
+        and default_branch_id
+    ):
+
+        classes = (
+            Class.query
+            .filter(
+                Class.institution_id
+                == current_institution_id,
+
+                Class.branch_id
+                == default_branch_id
+            )
+            .order_by(
+                Class.name.asc()
+            )
+            .all()
+        )
+
+    elif current_institution_id:
+
+        classes = (
+            Class.query
+            .filter(
+                Class.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Class.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        classes = (
+            Class.query
+            .order_by(
+                Class.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # SECTIONS
+    # ========================================================
+
+    if (
+        current_institution_id
+        and default_branch_id
+    ):
+
+        sections = (
+            Section.query
+            .filter(
+                Section.institution_id
+                == current_institution_id,
+
+                Section.branch_id
+                == default_branch_id
+            )
+            .order_by(
+                Section.name.asc()
+            )
+            .all()
+        )
+
+    elif current_institution_id:
+
+        sections = (
+            Section.query
+            .filter(
+                Section.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Section.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        sections = (
+            Section.query
+            .order_by(
+                Section.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # ACADEMIC YEARS
+    # ========================================================
+
+    if current_institution_id:
+
+        academic_years = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                AcademicYear.is_current.desc(),
+                AcademicYear.id.desc()
+            )
+            .all()
+        )
+
+    else:
+
+        academic_years = (
+            AcademicYear.query
+            .order_by(
+                AcademicYear.is_current.desc(),
+                AcademicYear.id.desc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # COUNTRIES
+    # ========================================================
+
+    try:
+
+        all_countries = (
+            get_all_countries()
+        )
+
+    except Exception:
+
+        all_countries = []
+
+    # ========================================================
+    # TODAY
+    # ========================================================
+
+    today = (
+        date.today()
+        .isoformat()
+    )
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
     return render_template(
         "backend/pages/students/add_student.html",
         user=current_user,
-        **context,
+
+        institutions=institutions,
+
+        branches=branches,
+
+        programs=programs,
+
+        classes=classes,
+
+        sections=sections,
+
+        academic_years=academic_years,
+
+        all_countries=all_countries,
+
+        current_institution=(
+            current_institution
+        ),
+
+        current_branch=(
+            current_branch
+        ),
+
+        current_institution_id=(
+            current_institution_id
+        ),
+
+        current_branch_id=(
+            current_branch_id
+        ),
+
+        default_branch_id=(
+            default_branch_id
+        ),
+
+        today=today,
+
+        registration_fee=(
+            Decimal("5.00")
+        ),
     )
+
+
+
+
 
 # ============================================================
 # VIEW STUDENT
 # ============================================================
-
-@bp.route(
-    "/students/<int:student_id>"
-)
+@bp.route("/students/<int:student_id>", methods=["GET"])
 @login_required
 def view_student(student_id):
+    """
+    View a single student profile.
 
-    if not _student_can_manage():
+    Access:
+        - superadmin   -> all students
+        - school_admin -> students belonging to their institution
+        - branch_admin -> students belonging to their institution + branch
 
-        flash(
-            "You are not authorized to view students.",
-            "danger",
-        )
+    Template:
+        backend/pages/students/view_student.html
+    """
 
-        return redirect(
-            url_for("main.dashboard")
-        )
+    # ============================================================
+    # IMPORTS
+    # ============================================================
 
-    student = (
+    from flask import abort, render_template, flash, redirect, url_for
+    from sqlalchemy.orm import joinedload
+
+    # ============================================================
+    # ALLOWED ROLES
+    # ============================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if current_user.role not in allowed_roles:
+        abort(403)
+
+    # ============================================================
+    # BASIC USER SCOPE VALIDATION
+    # ============================================================
+
+    if current_user.role == "school_admin":
+        if not current_user.institution_id:
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+            return redirect(url_for("main.dashboard"))
+
+    if current_user.role == "branch_admin":
+        if (
+            not current_user.institution_id
+            or not current_user.branch_id
+        ):
+            flash(
+                "Your account is not assigned to an institution and branch.",
+                "danger"
+            )
+            return redirect(url_for("main.dashboard"))
+
+    # ============================================================
+    # GET STUDENT
+    #
+    # Eager-load the relationships needed by view_student.html
+    # ============================================================
+
+    student_query = (
         Student.query
-        .filter(
-            Student.id == student_id
+        .options(
+            joinedload(Student.institution),
+            joinedload(Student.branch),
+
+            joinedload(Student.enrollments)
+                .joinedload(StudentEnrollment.academic_year),
+
+            joinedload(Student.enrollments)
+                .joinedload(StudentEnrollment.program),
+
+            joinedload(Student.enrollments)
+                .joinedload(StudentEnrollment.class_),
+
+            joinedload(Student.enrollments)
+                .joinedload(StudentEnrollment.section),
+
+            joinedload(Student.charges)
+                .joinedload(StudentCharge.academic_year),
+
+            joinedload(Student.charges)
+                .joinedload(StudentCharge.enrollment)
         )
-        .first_or_404()
+        .filter(
+            Student.id == student_id,
+            Student.role == "student"
+        )
     )
 
-    if not _student_has_access(student):
+    # ============================================================
+    # ROLE-BASED SECURITY SCOPE
+    # ============================================================
 
-        abort(403)
+    if current_user.role == "school_admin":
+
+        student_query = student_query.filter(
+            Student.institution_id == current_user.institution_id
+        )
+
+    elif current_user.role == "branch_admin":
+
+        student_query = student_query.filter(
+            Student.institution_id == current_user.institution_id,
+            Student.branch_id == current_user.branch_id
+        )
+
+    # superadmin:
+    # no institution/branch restriction
+
+    # ============================================================
+    # FETCH STUDENT
+    # ============================================================
+
+    student = student_query.first()
+
+    if not student:
+        abort(404)
+
+    # ============================================================
+    # SORT ENROLLMENTS
+    # ============================================================
+
+    enrollments = list(student.enrollments or [])
+
+    enrollments.sort(
+        key=lambda e: (
+            e.enrollment_date is None,
+            e.enrollment_date or date.min,
+            e.id or 0
+        ),
+        reverse=True
+    )
+
+    # ============================================================
+    # SORT CHARGES
+    # ============================================================
+
+    charges = list(student.charges or [])
+
+    charges.sort(
+        key=lambda c: (
+            c.due_date is None,
+            c.due_date or date.min,
+            c.id or 0
+        )
+    )
+
+    # ============================================================
+    # ENROLLMENT STATISTICS
+    # ============================================================
+
+    total_enrollments = len(enrollments)
+
+    active_enrollments = [
+        enrollment
+        for enrollment in enrollments
+        if enrollment.status == "active"
+    ]
+
+    active_enrollment_count = len(active_enrollments)
+
+    # ============================================================
+    # PROGRAM / COURSE COUNT
+    #
+    # Count unique programs from enrollments
+    # ============================================================
+
+    program_ids = {
+        enrollment.program_id
+        for enrollment in enrollments
+        if enrollment.program_id is not None
+    }
+
+    total_programs = len(program_ids)
+
+    # ============================================================
+    # FINANCIAL CALCULATIONS
+    #
+    # Use Decimal for money calculations.
+    # ============================================================
+
+    total_amount = Decimal("0.00")
+    total_discount = Decimal("0.00")
+    total_net_amount = Decimal("0.00")
+    total_paid_amount = Decimal("0.00")
+    total_balance = Decimal("0.00")
+
+    for charge in charges:
+
+        amount = (
+            charge.amount
+            if charge.amount is not None
+            else Decimal("0.00")
+        )
+
+        discount = (
+            charge.discount
+            if charge.discount is not None
+            else Decimal("0.00")
+        )
+
+        net_amount = (
+            charge.net_amount
+            if charge.net_amount is not None
+            else amount - discount
+        )
+
+        paid_amount = (
+            charge.paid_amount
+            if charge.paid_amount is not None
+            else Decimal("0.00")
+        )
+
+        balance = (
+            charge.balance
+            if charge.balance is not None
+            else net_amount - paid_amount
+        )
+
+        total_amount += Decimal(str(amount))
+        total_discount += Decimal(str(discount))
+        total_net_amount += Decimal(str(net_amount))
+        total_paid_amount += Decimal(str(paid_amount))
+        total_balance += Decimal(str(balance))
+
+    # ============================================================
+    # CHARGE STATISTICS
+    # ============================================================
+
+    total_charges = len(charges)
+
+    paid_charges = sum(
+        1
+        for charge in charges
+        if charge.status == "paid"
+    )
+
+    partial_charges = sum(
+        1
+        for charge in charges
+        if charge.status == "partial"
+    )
+
+    unpaid_charges = sum(
+        1
+        for charge in charges
+        if charge.status == "unpaid"
+    )
+
+    overdue_charges = sum(
+        1
+        for charge in charges
+        if charge.status == "overdue"
+    )
+
+    cancelled_charges = sum(
+        1
+        for charge in charges
+        if charge.status == "cancelled"
+    )
+
+    # ============================================================
+    # CURRENT / ACTIVE ENROLLMENT
+    # ============================================================
+
+    current_enrollment = None
+
+    for enrollment in enrollments:
+        if enrollment.status == "active":
+            current_enrollment = enrollment
+            break
+
+    # If there is no active enrollment, use latest enrollment
+    if current_enrollment is None and enrollments:
+        current_enrollment = enrollments[0]
+
+    # ============================================================
+    # CURRENT PROGRAM / CLASS / SECTION
+    # ============================================================
+
+    current_program = None
+    current_class = None
+    current_section = None
+    current_academic_year = None
+
+    if current_enrollment:
+
+        current_program = current_enrollment.program
+
+        current_class = current_enrollment.class_
+
+        current_section = current_enrollment.section
+
+        current_academic_year = current_enrollment.academic_year
+
+    # ============================================================
+    # INSTITUTIONS
+    #
+    # Useful if the template displays institution information.
+    # ============================================================
+
+    institution = student.institution
+    branch = student.branch
+
+    # ============================================================
+    # TODAY
+    # ============================================================
+
+    today = date.today()
+
+    # ============================================================
+    # RENDER
+    # ============================================================
 
     return render_template(
         "backend/pages/students/view_student.html",
+
+        # --------------------------------------------------------
+        # Student
+        # --------------------------------------------------------
+
         student=student,
+        user=current_user,
+
+        # --------------------------------------------------------
+        # Institution / Branch
+        # --------------------------------------------------------
+
+        institution=institution,
+        branch=branch,
+
+        # --------------------------------------------------------
+        # Academic data
+        # --------------------------------------------------------
+
+        enrollments=enrollments,
+        current_enrollment=current_enrollment,
+        current_program=current_program,
+        current_class=current_class,
+        current_section=current_section,
+        current_academic_year=current_academic_year,
+
+        # --------------------------------------------------------
+        # Charges
+        # --------------------------------------------------------
+
+        charges=charges,
+
+        # --------------------------------------------------------
+        # Enrollment statistics
+        # --------------------------------------------------------
+
+        total_enrollments=total_enrollments,
+        active_enrollment_count=active_enrollment_count,
+        total_programs=total_programs,
+
+        # --------------------------------------------------------
+        # Financial statistics
+        # --------------------------------------------------------
+
+        total_charges=total_charges,
+        total_amount=total_amount,
+        total_discount=total_discount,
+        total_net_amount=total_net_amount,
+        total_paid_amount=total_paid_amount,
+        total_balance=total_balance,
+
+        # --------------------------------------------------------
+        # Charge status statistics
+        # --------------------------------------------------------
+
+        paid_charges=paid_charges,
+        partial_charges=partial_charges,
+        unpaid_charges=unpaid_charges,
+        overdue_charges=overdue_charges,
+        cancelled_charges=cancelled_charges,
+
+        # --------------------------------------------------------
+        # Current user
+        # --------------------------------------------------------
+
+        current_role=current_user.role,
+        current_institution_id=current_user.institution_id,
+        current_branch_id=current_user.branch_id,
+
+        # --------------------------------------------------------
+        # Date
+        # --------------------------------------------------------
+
+        today=today,
     )
+
 
 
 # ============================================================
 # EDIT STUDENT
 # ============================================================
-
-@bp.route(
-    "/students/<int:student_id>/edit",
-    methods=["GET", "POST"]
-)
+@bp.route("/edit-student/<int:student_id>", methods=["GET", "POST"])
 @login_required
 def edit_student(student_id):
+    """
+    EDIT STUDENT
+    ============================================================
+    Compatible with:
 
-    if not _student_can_manage():
+        Student
+        StudentEnrollment
+        StudentCharge
+        Institution
+        Branch
+        Program
+        Class
+        Section
+        AcademicYear
 
+    IMPORTANT
+    ------------------------------------------------------------
+    Student DOES NOT have:
+
+        country
+        phone_country
+        state
+
+    Those fields may exist in the HTML form, but they are
+    intentionally NOT saved to Student.
+
+    Student statuses:
+        active
+        inactive
+        graduated
+        transferred
+        suspended
+        withdrawn
+
+    Enrollment statuses:
+        active
+        completed
+        transferred
+        withdrawn
+        suspended
+        promoted
+
+    Charge types:
+        registration
+        program_fee
+        tuition
+        exam
+        admission
+        id_card
+        uniform
+        books
+        transport
+        laboratory
+        library
+        certificate
+        other
+    """
+
+    # ============================================================
+    # IMPORTS
+    # ============================================================
+
+    import os
+    from datetime import date, datetime
+    from decimal import Decimal, InvalidOperation
+
+    from flask import (
+        current_app,
+        flash,
+        redirect,
+        render_template,
+        request,
+        url_for,
+    )
+
+    from flask_login import current_user, login_required
+    from sqlalchemy import or_
+    from werkzeug.utils import secure_filename
+
+    # ============================================================
+    # ROLE SECURITY
+    # ============================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    current_user_role = getattr(
+        current_user,
+        "role",
+        None,
+    )
+
+    if current_user_role not in allowed_roles:
         flash(
-            "You are not authorized to edit students.",
+            "You do not have permission to edit students.",
             "danger",
         )
-
         return redirect(
-            url_for("main.all_students")
+            url_for("main.dashboard")
+        )
+
+    # ============================================================
+    # HELPERS
+    # ============================================================
+
+    def _clean(value):
+        if value is None:
+            return ""
+
+        return str(value).strip()
+
+    def _int_or_none(value):
+        value = _clean(value)
+
+        if not value:
+            return None
+
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _decimal(
+        value,
+        default=Decimal("0.00"),
+    ):
+        value = _clean(value)
+
+        if not value:
+            return default
+
+        try:
+            return Decimal(
+                value
+            ).quantize(
+                Decimal("0.01")
+            )
+        except (
+            InvalidOperation,
+            ValueError,
+            TypeError,
+        ):
+            return default
+
+    def _parse_date(value):
+        value = _clean(value)
+
+        if not value:
+            return None
+
+        try:
+            return datetime.strptime(
+                value,
+                "%Y-%m-%d",
+            ).date()
+
+        except ValueError:
+            return None
+
+    def _valid_student_status(value):
+        return value in {
+            "active",
+            "inactive",
+            "graduated",
+            "transferred",
+            "suspended",
+            "withdrawn",
+        }
+
+    valid_enrollment_statuses = {
+        "active",
+        "completed",
+        "transferred",
+        "withdrawn",
+        "suspended",
+        "promoted",
+    }
+
+    valid_charge_types = {
+        "registration",
+        "program_fee",
+        "tuition",
+        "exam",
+        "admission",
+        "id_card",
+        "uniform",
+        "books",
+        "transport",
+        "laboratory",
+        "library",
+        "certificate",
+        "other",
+    }
+
+    # ============================================================
+    # CURRENT USER SCOPE
+    # ============================================================
+
+    current_user_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None,
+    )
+
+    current_user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None,
+    )
+
+    # ============================================================
+    # GET STUDENT
+    # ============================================================
+
+    student_query = (
+        Student.query
+        .filter(
+            Student.id == student_id,
+            Student.role == "student",
+        )
+    )
+
+    # ============================================================
+    # STUDENT SECURITY SCOPE
+    # ============================================================
+
+    if current_user_role == "school_admin":
+
+        if not current_user_institution_id:
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger",
+            )
+            return redirect(
+                url_for("main.all_students")
+            )
+
+        student_query = student_query.filter(
+            Student.institution_id
+            == current_user_institution_id
+        )
+
+    elif current_user_role == "branch_admin":
+
+        if (
+            not current_user_institution_id
+            or not current_user_branch_id
+        ):
+            flash(
+                "Your account is not assigned to a valid institution and branch.",
+                "danger",
+            )
+            return redirect(
+                url_for("main.all_students")
+            )
+
+        student_query = student_query.filter(
+            Student.institution_id
+            == current_user_institution_id,
+            Student.branch_id
+            == current_user_branch_id,
         )
 
     student = (
-        Student.query
-        .filter(
-            Student.id == student_id
-        )
+        student_query
         .first_or_404()
     )
 
-    if not _student_has_access(student):
-
-        abort(403)
-
-    context = _student_form_context()
+    # ============================================================
+    # POST
+    # ============================================================
 
     if request.method == "POST":
 
-        institution_id = request.form.get(
-            "institution_id",
-            type=int,
-        )
-
-        branch_id = request.form.get(
-            "branch_id",
-            type=int,
-        )
-
-        username = request.form.get(
-            "username",
-            "",
-        ).strip()
-
-        email = request.form.get(
-            "email",
-            "",
-        ).strip() or None
-
-        raw_password = request.form.get(
-            "password",
-            "",
-        )
-
-        admission_no = request.form.get(
-            "admission_no",
-            "",
-        ).strip()
-
-        roll_no = request.form.get(
-            "roll_no",
-            "",
-        ).strip() or None
-
-        full_name = request.form.get(
-            "full_name",
-            "",
-        ).strip()
-
-        gender = request.form.get(
-            "gender",
-            "",
-        ).strip() or None
-
-        place_of_birth = request.form.get(
-            "place_of_birth",
-            "",
-        ).strip() or None
-
-        nationality = request.form.get(
-            "nationality",
-            "",
-        ).strip() or None
-
-        phone = request.form.get(
-            "phone",
-            "",
-        ).strip() or None
-
-        address = request.form.get(
-            "address",
-            "",
-        ).strip() or None
-
-        city = request.form.get(
-            "city",
-            "",
-        ).strip() or None
-
-        parent_name = request.form.get(
-            "parent_name",
-            "",
-        ).strip() or None
-
-        parent_phone = request.form.get(
-            "parent_phone",
-            "",
-        ).strip() or None
-
-        parent_email = request.form.get(
-            "parent_email",
-            "",
-        ).strip() or None
-
-        parent_address = request.form.get(
-            "parent_address",
-            "",
-        ).strip() or None
-
-        relationship_to_student = request.form.get(
-            "relationship_to_student",
-            "",
-        ).strip() or None
-
-        status = request.form.get(
-            "status",
-            "active",
-        ).strip()
-
-        notes = request.form.get(
-            "notes",
-            "",
-        ).strip() or None
-
-        is_active = (
-            request.form.get("is_active")
-            == "1"
-        )
-
-        is_verified = (
-            request.form.get("is_verified")
-            == "1"
-        )
-
-        errors = []
-
-        # ----------------------------------------------------
-        # Required
-        # ----------------------------------------------------
-
-        if not institution_id:
-            errors.append(
-                "Institution is required."
-            )
-
-        if not branch_id:
-            errors.append(
-                "Branch is required."
-            )
-
-        if not username:
-            errors.append(
-                "Username is required."
-            )
-
-        if not admission_no:
-            errors.append(
-                "Admission number is required."
-            )
-
-        if not full_name:
-            errors.append(
-                "Full name is required."
-            )
-
-        if status not in STUDENT_STATUSES:
-
-            errors.append(
-                "Invalid student status."
-            )
-
-        # ----------------------------------------------------
-        # Role security
-        # ----------------------------------------------------
-
-        role = getattr(
-            current_user,
-            "role",
-            None,
-        )
-
-        if role == "institution_admin":
-
-            if institution_id != _student_user_institution_id():
-
-                errors.append(
-                    "You cannot move a student outside your institution."
-                )
-
-        elif role == "branch_admin":
-
-            if institution_id != _student_user_institution_id():
-
-                errors.append(
-                    "Invalid institution."
-                )
-
-            if branch_id != _student_user_branch_id():
-
-                errors.append(
-                    "You cannot move a student outside your branch."
-                )
-
-        # ----------------------------------------------------
-        # Branch belongs to institution
-        # ----------------------------------------------------
-
-        branch = (
-            Branch.query
-            .filter(
-                Branch.id == branch_id
-            )
-            .first()
-        )
-
-        if not branch:
-
-            errors.append(
-                "Selected branch does not exist."
-            )
-
-        elif branch.institution_id != institution_id:
-
-            errors.append(
-                "Selected branch does not belong to selected institution."
-            )
-
-        # ----------------------------------------------------
-        # Username duplicate
-        # ----------------------------------------------------
-
-        existing_username = (
-            Student.query
-            .filter(
-                func.lower(Student.username)
-                == username.lower(),
-                Student.id != student.id,
-            )
-            .first()
-        )
-
-        if existing_username:
-
-            errors.append(
-                "Username already exists."
-            )
-
-        # ----------------------------------------------------
-        # Email duplicate
-        # ----------------------------------------------------
-
-        if email:
-
-            existing_email = (
-                Student.query
-                .filter(
-                    func.lower(Student.email)
-                    == email.lower(),
-                    Student.id != student.id,
-                )
-                .first()
-            )
-
-            if existing_email:
-
-                errors.append(
-                    "Email already exists."
-                )
-
-        # ----------------------------------------------------
-        # Admission duplicate
-        # ----------------------------------------------------
-
-        existing_admission = (
-            Student.query
-            .filter(
-                Student.institution_id ==
-                institution_id,
-
-                func.lower(Student.admission_no)
-                == admission_no.lower(),
-
-                Student.id != student.id,
-            )
-            .first()
-        )
-
-        if existing_admission:
-
-            errors.append(
-                "Admission number already exists in this institution."
-            )
-
-        # ----------------------------------------------------
-        # Date
-        # ----------------------------------------------------
-
-        date_of_birth = None
+        uploaded_photo_path = None
 
         try:
 
-            date_of_birth = _parse_student_date(
+            # ====================================================
+            # BASIC STUDENT INFORMATION
+            # ====================================================
+
+            full_name = _clean(
+                request.form.get(
+                    "full_name"
+                )
+            )
+
+            email = _clean(
+                request.form.get(
+                    "email"
+                )
+            ).lower()
+
+            gender = _clean(
+                request.form.get(
+                    "gender"
+                )
+            )
+
+            date_of_birth = _parse_date(
                 request.form.get(
                     "date_of_birth"
                 )
             )
 
-        except ValueError as exc:
+            place_of_birth = _clean(
+                request.form.get(
+                    "place_of_birth"
+                )
+            )
 
-            errors.append(str(exc))
+            nationality = _clean(
+                request.form.get(
+                    "nationality"
+                )
+            )
 
-        # ----------------------------------------------------
-        # PHOTO
-        # ----------------------------------------------------
+            phone = _clean(
+                request.form.get(
+                    "phone"
+                )
+            )
 
-        photo_file = request.files.get(
-            "photo"
-        )
+            city = _clean(
+                request.form.get(
+                    "city"
+                )
+            )
 
-        if photo_file and photo_file.filename:
+            address = _clean(
+                request.form.get(
+                    "address"
+                )
+            )
 
-            if not _allowed_student_photo(
-                photo_file
-            ):
+            status = _clean(
+                request.form.get(
+                    "status"
+                )
+            ).lower()
 
-                errors.append(
-                    "Photo must be JPG, JPEG, PNG or WEBP."
+            notes = _clean(
+                request.form.get(
+                    "notes"
+                )
+            )
+
+            # ====================================================
+            # FORM FIELDS THAT ARE NOT STUDENT COLUMNS
+            # ====================================================
+            #
+            # These are intentionally read only if the template
+            # sends them. They are NEVER assigned to Student.
+            #
+
+            _country_form = _clean(
+                request.form.get(
+                    "country"
+                )
+            )
+
+            _phone_country_form = _clean(
+                request.form.get(
+                    "phone_country"
+                )
+            )
+
+            _state_form = _clean(
+                request.form.get(
+                    "state"
+                )
+            )
+
+            _parent_id_form = _clean(
+                request.form.get(
+                    "parent_id"
+                )
+            )
+
+            # ====================================================
+            # VALIDATE NAME
+            # ====================================================
+
+            if not full_name:
+                raise ValueError(
+                    "Student full name is required."
                 )
 
-        if errors:
+            # ====================================================
+            # VALIDATE STUDENT STATUS
+            # ====================================================
 
-            for error in errors:
-                flash(error, "danger")
+            if not _valid_student_status(
+                status
+            ):
+                raise ValueError(
+                    "Invalid student status."
+                )
 
-            return render_template(
-                "backend/pages/students/edit_student.html",
-                student=student,
-                **context,
+            # ====================================================
+            # PARENT / GUARDIAN
+            # ====================================================
+
+            parent_name = _clean(
+                request.form.get(
+                    "parent_name"
+                )
             )
 
-        # ----------------------------------------------------
-        # Save old Cloudinary ID
-        # ----------------------------------------------------
-
-        old_public_id = student.photo_public_id
-
-        # ----------------------------------------------------
-        # Update fields
-        # ----------------------------------------------------
-
-        student.institution_id = institution_id
-        student.branch_id = branch_id
-        student.username = username
-        student.email = email
-        student.admission_no = admission_no
-        student.roll_no = roll_no
-        student.full_name = full_name
-        student.gender = gender
-        student.date_of_birth = date_of_birth
-        student.place_of_birth = place_of_birth
-        student.nationality = nationality
-        student.phone = phone
-        student.address = address
-        student.city = city
-        student.parent_name = parent_name
-        student.parent_phone = parent_phone
-        student.parent_email = parent_email
-        student.parent_address = parent_address
-        student.relationship_to_student = (
-            relationship_to_student
-        )
-        student.status = status
-        student.is_active = is_active
-        student.is_verified = is_verified
-        student.notes = notes
-
-        if raw_password:
-
-            student.set_password(
-                raw_password
+            relationship_to_student = _clean(
+                request.form.get(
+                    "relationship_to_student"
+                )
             )
 
-        try:
+            parent_phone = _clean(
+                request.form.get(
+                    "parent_phone"
+                )
+            )
 
-            # ------------------------------------------------
-            # New Cloudinary image
-            # ------------------------------------------------
+            parent_email = _clean(
+                request.form.get(
+                    "parent_email"
+                )
+            ).lower()
 
-            if photo_file and photo_file.filename:
+            parent_address = _clean(
+                request.form.get(
+                    "parent_address"
+                )
+            )
 
-                photo_url, public_id = (
-                    _upload_student_photo(
-                        photo_file,
-                        student_id=student.id,
-                        institution_id=institution_id,
-                        branch_id=branch_id,
+            # ====================================================
+            # INSTITUTION / BRANCH
+            # ====================================================
+
+            submitted_institution_id = (
+                _int_or_none(
+                    request.form.get(
+                        "institution_id"
                     )
                 )
+            )
 
-                student.photo = photo_url
-                student.photo_public_id = public_id
+            submitted_branch_id = (
+                _int_or_none(
+                    request.form.get(
+                        "branch_id"
+                    )
+                )
+            )
 
-            db.session.commit()
+            # ====================================================
+            # DETERMINE NEW INSTITUTION
+            # ====================================================
 
-            # ------------------------------------------------
-            # Delete old image after DB commit
-            # ------------------------------------------------
+            if current_user_role == "superadmin":
+
+                if not submitted_institution_id:
+                    raise ValueError(
+                        "Please select an institution."
+                    )
+
+                new_institution_id = (
+                    submitted_institution_id
+                )
+
+            else:
+
+                if not current_user_institution_id:
+                    raise ValueError(
+                        "Your account is not assigned to an institution."
+                    )
+
+                new_institution_id = (
+                    current_user_institution_id
+                )
+
+            # ====================================================
+            # DETERMINE NEW BRANCH
+            # ====================================================
+
+            if current_user_role == "branch_admin":
+
+                if not current_user_branch_id:
+                    raise ValueError(
+                        "Your account is not assigned to a branch."
+                    )
+
+                new_branch_id = (
+                    current_user_branch_id
+                )
+
+            else:
+
+                if not submitted_branch_id:
+                    raise ValueError(
+                        "Please select a branch."
+                    )
+
+                new_branch_id = (
+                    submitted_branch_id
+                )
+
+            # ====================================================
+            # VERIFY INSTITUTION
+            # ====================================================
+
+            institution = (
+                Institution.query
+                .filter(
+                    Institution.id
+                    == new_institution_id
+                )
+                .first()
+            )
+
+            if not institution:
+                raise ValueError(
+                    "Selected institution was not found."
+                )
+
+            # ====================================================
+            # VERIFY BRANCH
+            # ============================================================
+
+            branch = (
+                Branch.query
+                .filter(
+                    Branch.id
+                    == new_branch_id,
+                    Branch.institution_id
+                    == new_institution_id,
+                )
+                .first()
+            )
+
+            if not branch:
+                raise ValueError(
+                    "Selected branch does not belong to the selected institution."
+                )
+
+            # ====================================================
+            # ROLE-SPECIFIC BRANCH SECURITY
+            # ============================================================
+
+            if current_user_role == "school_admin":
+
+                if (
+                    new_institution_id
+                    != current_user_institution_id
+                ):
+                    raise ValueError(
+                        "You cannot move a student outside your institution."
+                    )
+
+            elif current_user_role == "branch_admin":
+
+                if (
+                    new_institution_id
+                    != current_user_institution_id
+                    or new_branch_id
+                    != current_user_branch_id
+                ):
+                    raise ValueError(
+                        "You cannot move a student outside your branch."
+                    )
+
+            # ====================================================
+            # EMAIL DUPLICATE
+            # ============================================================
+
+            if email:
+
+                duplicate_email = (
+                    Student.query
+                    .filter(
+                        Student.email == email,
+                        Student.id != student.id,
+                    )
+                    .first()
+                )
+
+                if duplicate_email:
+                    raise ValueError(
+                        "This email address is already used by another student."
+                    )
+
+            # ====================================================
+            # UPDATE STUDENT
+            # ============================================================
+
+            student.institution_id = (
+                new_institution_id
+            )
+
+            student.branch_id = (
+                new_branch_id
+            )
+
+            student.full_name = (
+                full_name
+            )
+
+            student.email = (
+                email or None
+            )
+
+            student.gender = (
+                gender or None
+            )
+
+            student.date_of_birth = (
+                date_of_birth
+            )
+
+            student.place_of_birth = (
+                place_of_birth or None
+            )
+
+            student.nationality = (
+                nationality or None
+            )
+
+            student.phone = (
+                phone or None
+            )
+
+            student.city = (
+                city or None
+            )
+
+            student.address = (
+                address or None
+            )
+
+            student.parent_name = (
+                parent_name or None
+            )
+
+            student.relationship_to_student = (
+                relationship_to_student or None
+            )
+
+            student.parent_phone = (
+                parent_phone or None
+            )
+
+            student.parent_email = (
+                parent_email or None
+            )
+
+            student.parent_address = (
+                parent_address or None
+            )
+
+            student.status = (
+                status
+            )
+
+            student.is_active = (
+                status == "active"
+            )
+
+            student.notes = (
+                notes or None
+            )
+
+            # ====================================================
+            # PHOTO UPLOAD
+            # ====================================================
+
+            photo_file = request.files.get(
+                "photo"
+            )
 
             if (
                 photo_file
                 and photo_file.filename
-                and old_public_id
-                and old_public_id != student.photo_public_id
             ):
 
-                _delete_student_photo(
-                    old_public_id
+                original_filename = secure_filename(
+                    photo_file.filename
                 )
 
+                if not original_filename:
+                    raise ValueError(
+                        "Invalid photo filename."
+                    )
+
+                extension = ""
+
+                if "." in original_filename:
+                    extension = (
+                        original_filename
+                        .rsplit(".", 1)[1]
+                        .lower()
+                    )
+
+                allowed_extensions = {
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "webp",
+                }
+
+                if extension not in allowed_extensions:
+                    raise ValueError(
+                        "Invalid photo format. "
+                        "Use JPG, JPEG, PNG or WebP."
+                    )
+
+                upload_folder = os.path.join(
+                    current_app.root_path,
+                    "static",
+                    "uploads",
+                    "students",
+                )
+
+                os.makedirs(
+                    upload_folder,
+                    exist_ok=True,
+                )
+
+                unique_filename = (
+                    f"student_{student.id}_"
+                    f"{int(datetime.utcnow().timestamp())}_"
+                    f"{os.urandom(4).hex()}."
+                    f"{extension}"
+                )
+
+                absolute_photo_path = os.path.join(
+                    upload_folder,
+                    unique_filename,
+                )
+
+                photo_file.save(
+                    absolute_photo_path
+                )
+
+                uploaded_photo_path = (
+                    absolute_photo_path
+                )
+
+                student.photo = (
+                    "uploads/students/"
+                    + unique_filename
+                )
+
+            # ====================================================
+            # ENROLLMENT ARRAYS
+            # ====================================================
+
+            existing_enrollment_ids = (
+                request.form.getlist(
+                    "existing_enrollment_id[]"
+                )
+            )
+
+            academic_year_ids = (
+                request.form.getlist(
+                    "academic_year_id[]"
+                )
+            )
+
+            program_ids = (
+                request.form.getlist(
+                    "program_id[]"
+                )
+            )
+
+            class_ids = (
+                request.form.getlist(
+                    "class_id[]"
+                )
+            )
+
+            section_ids = (
+                request.form.getlist(
+                    "section_id[]"
+                )
+            )
+
+            enrollment_dates = (
+                request.form.getlist(
+                    "enrollment_date[]"
+                )
+            )
+
+            enrollment_statuses = (
+                request.form.getlist(
+                    "enrollment_status[]"
+                )
+            )
+
+            enrollment_notes = (
+                request.form.getlist(
+                    "enrollment_notes[]"
+                )
+            )
+
+            # ====================================================
+            # DETERMINE NUMBER OF ENROLLMENT ROWS
+            # ====================================================
+
+            max_enrollment_rows = max(
+                len(existing_enrollment_ids),
+                len(academic_year_ids),
+                len(program_ids),
+                len(class_ids),
+                len(section_ids),
+                len(enrollment_dates),
+                len(enrollment_statuses),
+                len(enrollment_notes),
+                0,
+            )
+
+            # ====================================================
+            # EXISTING ENROLLMENT MAP
+            # ====================================================
+
+            existing_enrollment_map = {
+                enrollment.id: enrollment
+                for enrollment
+                in list(student.enrollments)
+            }
+
+            submitted_existing_enrollment_ids = set()
+
+            # ====================================================
+            # ENROLLMENT RECORDS
+            # ====================================================
+
+            enrollment_records = []
+
+            # Maps:
+            # row index -> enrollment object
+            enrollment_by_row = {}
+
+            # Maps:
+            # old enrollment id -> enrollment object
+            enrollment_by_old_id = {}
+
+            # ====================================================
+            # PROCESS ENROLLMENTS
+            # ====================================================
+
+            for index in range(
+                max_enrollment_rows
+            ):
+
+                # ------------------------------------------------
+                # SAFE ARRAY ACCESS
+                # ------------------------------------------------
+
+                existing_raw = (
+                    existing_enrollment_ids[index]
+                    if index
+                    < len(existing_enrollment_ids)
+                    else ""
+                )
+
+                academic_year_raw = (
+                    academic_year_ids[index]
+                    if index
+                    < len(academic_year_ids)
+                    else ""
+                )
+
+                program_raw = (
+                    program_ids[index]
+                    if index
+                    < len(program_ids)
+                    else ""
+                )
+
+                class_raw = (
+                    class_ids[index]
+                    if index
+                    < len(class_ids)
+                    else ""
+                )
+
+                section_raw = (
+                    section_ids[index]
+                    if index
+                    < len(section_ids)
+                    else ""
+                )
+
+                enrollment_date_raw = (
+                    enrollment_dates[index]
+                    if index
+                    < len(enrollment_dates)
+                    else ""
+                )
+
+                enrollment_status_raw = (
+                    enrollment_statuses[index]
+                    if index
+                    < len(enrollment_statuses)
+                    else "active"
+                )
+
+                enrollment_note_raw = (
+                    enrollment_notes[index]
+                    if index
+                    < len(enrollment_notes)
+                    else ""
+                )
+
+                # ------------------------------------------------
+                # EXISTING ID
+                # ------------------------------------------------
+
+                existing_id = _int_or_none(
+                    existing_raw
+                )
+
+                # ------------------------------------------------
+                # EMPTY ROW
+                # ------------------------------------------------
+
+                if not any(
+                    [
+                        academic_year_raw,
+                        program_raw,
+                        class_raw,
+                        section_raw,
+                        enrollment_date_raw,
+                        enrollment_note_raw,
+                        existing_id,
+                    ]
+                ):
+                    continue
+
+                # ------------------------------------------------
+                # REQUIRED FIELDS
+                # ------------------------------------------------
+
+                academic_year_id = _int_or_none(
+                    academic_year_raw
+                )
+
+                program_id = _int_or_none(
+                    program_raw
+                )
+
+                class_id = _int_or_none(
+                    class_raw
+                )
+
+                section_id = _int_or_none(
+                    section_raw
+                )
+
+                if not academic_year_id:
+                    raise ValueError(
+                        f"Enrollment row {index + 1}: "
+                        "Academic Year is required."
+                    )
+
+                if not program_id:
+                    raise ValueError(
+                        f"Enrollment row {index + 1}: "
+                        "Program is required."
+                    )
+
+                if not class_id:
+                    raise ValueError(
+                        f"Enrollment row {index + 1}: "
+                        "Class is required."
+                    )
+
+                # ------------------------------------------------
+                # DATE
+                # ------------------------------------------------
+
+                enrollment_date = (
+                    _parse_date(
+                        enrollment_date_raw
+                    )
+                    or date.today()
+                )
+
+                # ------------------------------------------------
+                # STATUS
+                # ------------------------------------------------
+
+                enrollment_status = (
+                    _clean(
+                        enrollment_status_raw
+                    )
+                    or "active"
+                ).lower()
+
+                if (
+                    enrollment_status
+                    not in valid_enrollment_statuses
+                ):
+                    raise ValueError(
+                        f"Enrollment row {index + 1}: "
+                        "Invalid enrollment status."
+                    )
+
+                enrollment_note = (
+                    _clean(
+                        enrollment_note_raw
+                    )
+                    or None
+                )
+
+                # =================================================
+                # ACADEMIC YEAR VALIDATION
+                # =================================================
+
+                academic_year = (
+                    AcademicYear.query
+                    .filter(
+                        AcademicYear.id
+                        == academic_year_id,
+                        AcademicYear.institution_id
+                        == new_institution_id,
+                    )
+                    .first()
+                )
+
+                if not academic_year:
+                    raise ValueError(
+                        f"Enrollment row {index + 1}: "
+                        "Academic Year does not belong to the selected institution."
+                    )
+
+                # =================================================
+                # PROGRAM VALIDATION
+                # =================================================
+
+                program = (
+                    Program.query
+                    .filter(
+                        Program.id
+                        == program_id,
+                        Program.institution_id
+                        == new_institution_id,
+                        or_(
+                            Program.branch_id
+                            == new_branch_id,
+                            Program.branch_id.is_(None),
+                        ),
+                    )
+                    .first()
+                )
+
+                if not program:
+                    raise ValueError(
+                        f"Enrollment row {index + 1}: "
+                        "Program does not belong to the selected institution/branch."
+                    )
+
+                # =================================================
+                # CLASS VALIDATION
+                # =================================================
+
+                selected_class = (
+                    Class.query
+                    .filter(
+                        Class.id
+                        == class_id,
+                        Class.institution_id
+                        == new_institution_id,
+                        Class.branch_id
+                        == new_branch_id,
+                    )
+                    .first()
+                )
+
+                if not selected_class:
+                    raise ValueError(
+                        f"Enrollment row {index + 1}: "
+                        "Class does not belong to the selected branch."
+                    )
+
+                # =================================================
+                # CLASS → PROGRAM VALIDATION
+                # =================================================
+
+                class_program_id = getattr(
+                    selected_class,
+                    "program_id",
+                    None,
+                )
+
+                if (
+                    class_program_id is not None
+                    and class_program_id
+                    != program.id
+                ):
+                    raise ValueError(
+                        f"Enrollment row {index + 1}: "
+                        "Selected class does not belong to selected program."
+                    )
+
+                # =================================================
+                # SECTION VALIDATION
+                # =================================================
+
+                section = None
+
+                if section_id:
+
+                    section = (
+                        Section.query
+                        .filter(
+                            Section.id
+                            == section_id,
+                            Section.institution_id
+                            == new_institution_id,
+                            Section.branch_id
+                            == new_branch_id,
+                            Section.class_id
+                            == class_id,
+                        )
+                        .first()
+                    )
+
+                    if not section:
+                        raise ValueError(
+                            f"Enrollment row {index + 1}: "
+                            "Selected section does not belong to selected class."
+                        )
+
+                # =================================================
+                # EXISTING ENROLLMENT
+                # =================================================
+
+                enrollment = None
+
+                if existing_id:
+
+                    enrollment = (
+                        existing_enrollment_map
+                        .get(existing_id)
+                    )
+
+                    if not enrollment:
+                        raise ValueError(
+                            f"Enrollment row {index + 1}: "
+                            "Invalid existing enrollment."
+                        )
+
+                    submitted_existing_enrollment_ids.add(
+                        existing_id
+                    )
+
+                # =================================================
+                # DUPLICATE ACADEMIC YEAR
+                # =================================================
+
+                duplicate_query = (
+                    StudentEnrollment.query
+                    .filter(
+                        StudentEnrollment.student_id
+                        == student.id,
+                        StudentEnrollment.academic_year_id
+                        == academic_year.id,
+                    )
+                )
+
+                if enrollment:
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            StudentEnrollment.id
+                            != enrollment.id
+                        )
+                    )
+
+                duplicate_enrollment = (
+                    duplicate_query.first()
+                )
+
+                if duplicate_enrollment:
+                    raise ValueError(
+                        f"Enrollment row {index + 1}: "
+                        "This student already has another enrollment for the selected academic year."
+                    )
+
+                # =================================================
+                # UPDATE EXISTING
+                # =================================================
+
+                if enrollment:
+
+                    enrollment.institution_id = (
+                        new_institution_id
+                    )
+
+                    enrollment.branch_id = (
+                        new_branch_id
+                    )
+
+                    enrollment.student_id = (
+                        student.id
+                    )
+
+                    enrollment.academic_year_id = (
+                        academic_year.id
+                    )
+
+                    enrollment.program_id = (
+                        program.id
+                    )
+
+                    enrollment.class_id = (
+                        selected_class.id
+                    )
+
+                    enrollment.section_id = (
+                        section.id
+                        if section
+                        else None
+                    )
+
+                    enrollment.enrollment_date = (
+                        enrollment_date
+                    )
+
+                    enrollment.status = (
+                        enrollment_status
+                    )
+
+                    enrollment.notes = (
+                        enrollment_note
+                    )
+
+                # =================================================
+                # CREATE NEW
+                # =================================================
+
+                else:
+
+                    # --------------------------------------------
+                    # Generate a safer enrollment number
+                    # --------------------------------------------
+
+                    base_enrollment_no = (
+                        f"{student.admission_no}-E"
+                    )
+
+                    enrollment_no = (
+                        base_enrollment_no
+                        + str(index + 1)
+                    )
+
+                    # --------------------------------------------
+                    # Avoid duplicate enrollment number
+                    # --------------------------------------------
+
+                    counter = 1
+
+                    while (
+                        StudentEnrollment.query
+                        .filter(
+                            StudentEnrollment.institution_id
+                            == new_institution_id,
+                            StudentEnrollment.enrollment_no
+                            == enrollment_no,
+                        )
+                        .first()
+                    ):
+
+                        counter += 1
+
+                        enrollment_no = (
+                            f"{base_enrollment_no}"
+                            f"{index + 1}-{counter}"
+                        )
+
+                    enrollment = StudentEnrollment(
+                        institution_id=(
+                            new_institution_id
+                        ),
+                        branch_id=(
+                            new_branch_id
+                        ),
+                        student_id=(
+                            student.id
+                        ),
+                        academic_year_id=(
+                            academic_year.id
+                        ),
+                        program_id=(
+                            program.id
+                        ),
+                        class_id=(
+                            selected_class.id
+                        ),
+                        section_id=(
+                            section.id
+                            if section
+                            else None
+                        ),
+                        enrollment_no=(
+                            enrollment_no
+                        ),
+                        enrollment_date=(
+                            enrollment_date
+                        ),
+                        status=(
+                            enrollment_status
+                        ),
+                        notes=(
+                            enrollment_note
+                        ),
+                    )
+
+                    db.session.add(
+                        enrollment
+                    )
+
+                # ------------------------------------------------
+                # Keep mapping
+                # ------------------------------------------------
+
+                enrollment_by_row[
+                    index
+                ] = enrollment
+
+                if existing_id:
+                    enrollment_by_old_id[
+                        existing_id
+                    ] = enrollment
+
+                enrollment_records.append(
+                    {
+                        "row_index": index,
+                        "enrollment": enrollment,
+                        "academic_year": academic_year,
+                        "program": program,
+                        "class": selected_class,
+                        "section": section,
+                    }
+                )
+
+            # ====================================================
+            # REQUIRE ENROLLMENT
+            # ====================================================
+
+            if not enrollment_records:
+                raise ValueError(
+                    "Student must have at least one enrollment."
+                )
+
+            # ====================================================
+            # FLUSH
+            # ====================================================
+
+            db.session.flush()
+
+            # ====================================================
+            # DELETE REMOVED ENROLLMENTS
+            # ====================================================
+            #
+            # Charges use SET NULL, but before deletion we
+            # explicitly detach them to avoid stale references.
+            #
+
+            for old_enrollment in list(
+                student.enrollments
+            ):
+
+                if (
+                    old_enrollment.id
+                    not in submitted_existing_enrollment_ids
+                    and old_enrollment.id
+                    not in enrollment_by_old_id
+                ):
+
+                    # --------------------------------------------
+                    # Detach charges
+                    # --------------------------------------------
+
+                    for charge in list(
+                        old_enrollment.charges
+                    ):
+                        charge.enrollment_id = None
+
+                        # If possible, attach to first enrollment.
+                        if enrollment_records:
+                            replacement = (
+                                enrollment_records[0]
+                                ["enrollment"]
+                            )
+
+                            charge.enrollment_id = (
+                                replacement.id
+                            )
+
+                            charge.academic_year_id = (
+                                replacement.academic_year_id
+                            )
+
+                    db.session.delete(
+                        old_enrollment
+                    )
+
+            # ====================================================
+            # FLUSH AGAIN
+            # ====================================================
+
+            db.session.flush()
+
+            # ====================================================
+            # FIRST ENROLLMENT
+            # ====================================================
+
+            first_record = (
+                enrollment_records[0]
+            )
+
+            first_enrollment = (
+                first_record["enrollment"]
+            )
+
+            first_academic_year = (
+                first_record["academic_year"]
+            )
+
+            first_program = (
+                first_record["program"]
+            )
+
+            # ====================================================
+            # CHARGE FORM ARRAYS
+            # ====================================================
+
+            existing_charge_ids = (
+                request.form.getlist(
+                    "existing_charge_id[]"
+                )
+            )
+
+            charge_types = (
+                request.form.getlist(
+                    "charge_type[]"
+                )
+            )
+
+            charge_names = (
+                request.form.getlist(
+                    "charge_name[]"
+                )
+            )
+
+            charge_amounts = (
+                request.form.getlist(
+                    "charge_amount[]"
+                )
+            )
+
+            charge_discounts = (
+                request.form.getlist(
+                    "charge_discount[]"
+                )
+            )
+
+            # ----------------------------------------------------
+            # Support BOTH names:
+            #
+            # charge_paid[]
+            # charge_paid_amount[]
+            # ----------------------------------------------------
+
+            charge_paid = (
+                request.form.getlist(
+                    "charge_paid[]"
+                )
+            )
+
+            if not charge_paid:
+                charge_paid = (
+                    request.form.getlist(
+                        "charge_paid_amount[]"
+                    )
+                )
+
+            charge_due_dates = (
+                request.form.getlist(
+                    "charge_due_date[]"
+                )
+            )
+
+            charge_descriptions = (
+                request.form.getlist(
+                    "charge_description[]"
+                )
+            )
+
+            # ----------------------------------------------------
+            # Support:
+            #
+            # charge_enrollment[]
+            #
+            # AND:
+            #
+            # charge_enrollment_index[]
+            # ----------------------------------------------------
+
+            charge_enrollment_values = (
+                request.form.getlist(
+                    "charge_enrollment[]"
+                )
+            )
+
+            if not charge_enrollment_values:
+                charge_enrollment_values = (
+                    request.form.getlist(
+                        "charge_enrollment_index[]"
+                    )
+                )
+
+            # ====================================================
+            # EXISTING CHARGE MAP
+            # ====================================================
+
+            existing_charge_map = {
+                charge.id: charge
+                for charge
+                in list(student.charges)
+            }
+
+            # ====================================================
+            # MANUAL CHARGE IDs SUBMITTED
+            # ====================================================
+
+            submitted_manual_charge_ids = set()
+
+            for raw_charge_id in (
+                existing_charge_ids
+            ):
+
+                charge_id = _int_or_none(
+                    raw_charge_id
+                )
+
+                if charge_id:
+                    submitted_manual_charge_ids.add(
+                        charge_id
+                    )
+
+            # ====================================================
+            # DELETE REMOVED MANUAL CHARGES
+            # ====================================================
+            #
+            # Automatic:
+            #   registration
+            #   program_fee
+            #
+            # are protected and handled below.
+            #
+
+            for existing_charge in list(
+                student.charges
+            ):
+
+                if (
+                    existing_charge.charge_type
+                    in {
+                        "registration",
+                        "program_fee",
+                    }
+                ):
+                    continue
+
+                if (
+                    existing_charge.id
+                    not in submitted_manual_charge_ids
+                ):
+                    db.session.delete(
+                        existing_charge
+                    )
+
+            # ====================================================
+            # REGISTRATION FEE
+            # ====================================================
+
+            registration_charge = (
+                StudentCharge.query
+                .filter(
+                    StudentCharge.student_id
+                    == student.id,
+                    StudentCharge.charge_type
+                    == "registration",
+                )
+                .order_by(
+                    StudentCharge.id.asc()
+                )
+                .first()
+            )
+
+            if registration_charge:
+
+                registration_charge.institution_id = (
+                    new_institution_id
+                )
+
+                registration_charge.branch_id = (
+                    new_branch_id
+                )
+
+                registration_charge.student_id = (
+                    student.id
+                )
+
+                registration_charge.enrollment_id = (
+                    first_enrollment.id
+                )
+
+                registration_charge.academic_year_id = (
+                    first_academic_year.id
+                )
+
+                registration_charge.charge_type = (
+                    "registration"
+                )
+
+                registration_charge.charge_name = (
+                    "Registration Fee"
+                )
+
+                registration_charge.description = (
+                    "Automatic registration fee"
+                )
+
+                registration_charge.amount = (
+                    Decimal("5.00")
+                )
+
+                # Preserve existing discount/paid amount.
+                if registration_charge.discount is None:
+                    registration_charge.discount = (
+                        Decimal("0.00")
+                    )
+
+                if registration_charge.paid_amount is None:
+                    registration_charge.paid_amount = (
+                        Decimal("0.00")
+                    )
+
+                if not registration_charge.due_date:
+                    registration_charge.due_date = (
+                        date.today()
+                    )
+
+            else:
+
+                registration_charge = StudentCharge(
+                    institution_id=(
+                        new_institution_id
+                    ),
+                    branch_id=(
+                        new_branch_id
+                    ),
+                    student_id=(
+                        student.id
+                    ),
+                    enrollment_id=(
+                        first_enrollment.id
+                    ),
+                    academic_year_id=(
+                        first_academic_year.id
+                    ),
+                    charge_type=(
+                        "registration"
+                    ),
+                    charge_name=(
+                        "Registration Fee"
+                    ),
+                    description=(
+                        "Automatic registration fee"
+                    ),
+                    amount=(
+                        Decimal("5.00")
+                    ),
+                    discount=(
+                        Decimal("0.00")
+                    ),
+                    paid_amount=(
+                        Decimal("0.00")
+                    ),
+                    due_date=(
+                        date.today()
+                    ),
+                    created_by=(
+                        current_user.id
+                    ),
+                )
+
+                db.session.add(
+                    registration_charge
+                )
+
+            registration_charge.calculate_balance()
+
+            # ====================================================
+            # PROGRAM FEE
+            # ====================================================
+
+            program_price = _decimal(
+                getattr(
+                    first_program,
+                    "price",
+                    0,
+                )
+            )
+
+            program_charge = (
+                StudentCharge.query
+                .filter(
+                    StudentCharge.student_id
+                    == student.id,
+                    StudentCharge.charge_type
+                    == "program_fee",
+                )
+                .order_by(
+                    StudentCharge.id.asc()
+                )
+                .first()
+            )
+
+            if (
+                program_price
+                > Decimal("0.00")
+            ):
+
+                if program_charge:
+
+                    program_charge.institution_id = (
+                        new_institution_id
+                    )
+
+                    program_charge.branch_id = (
+                        new_branch_id
+                    )
+
+                    program_charge.student_id = (
+                        student.id
+                    )
+
+                    program_charge.enrollment_id = (
+                        first_enrollment.id
+                    )
+
+                    program_charge.academic_year_id = (
+                        first_academic_year.id
+                    )
+
+                    program_charge.charge_type = (
+                        "program_fee"
+                    )
+
+                    program_charge.charge_name = (
+                        "Program Fee"
+                    )
+
+                    program_charge.description = (
+                        "Automatic program fee - "
+                        + str(
+                            getattr(
+                                first_program,
+                                "name",
+                                "Program",
+                            )
+                        )
+                    )
+
+                    program_charge.amount = (
+                        program_price
+                    )
+
+                    if program_charge.discount is None:
+                        program_charge.discount = (
+                            Decimal("0.00")
+                        )
+
+                    if program_charge.paid_amount is None:
+                        program_charge.paid_amount = (
+                            Decimal("0.00")
+                        )
+
+                    if not program_charge.due_date:
+                        program_charge.due_date = (
+                            date.today()
+                        )
+
+                else:
+
+                    program_charge = StudentCharge(
+                        institution_id=(
+                            new_institution_id
+                        ),
+                        branch_id=(
+                            new_branch_id
+                        ),
+                        student_id=(
+                            student.id
+                        ),
+                        enrollment_id=(
+                            first_enrollment.id
+                        ),
+                        academic_year_id=(
+                            first_academic_year.id
+                        ),
+                        charge_type=(
+                            "program_fee"
+                        ),
+                        charge_name=(
+                            "Program Fee"
+                        ),
+                        description=(
+                            "Automatic program fee - "
+                            + str(
+                                getattr(
+                                    first_program,
+                                    "name",
+                                    "Program",
+                                )
+                            )
+                        ),
+                        amount=(
+                            program_price
+                        ),
+                        discount=(
+                            Decimal("0.00")
+                        ),
+                        paid_amount=(
+                            Decimal("0.00")
+                        ),
+                        due_date=(
+                            date.today()
+                        ),
+                        created_by=(
+                            current_user.id
+                        ),
+                    )
+
+                    db.session.add(
+                        program_charge
+                    )
+
+                program_charge.calculate_balance()
+
+            else:
+
+                # ------------------------------------------------
+                # No program price.
+                #
+                # Delete only if nothing has been paid.
+                # ------------------------------------------------
+
+                if program_charge:
+
+                    paid = _decimal(
+                        program_charge.paid_amount
+                    )
+
+                    if paid <= Decimal("0.00"):
+
+                        db.session.delete(
+                            program_charge
+                        )
+
+            # ====================================================
+            # MANUAL CHARGES
+            # ====================================================
+
+            max_charge_rows = max(
+                len(existing_charge_ids),
+                len(charge_types),
+                len(charge_names),
+                len(charge_amounts),
+                len(charge_discounts),
+                len(charge_paid),
+                len(charge_due_dates),
+                len(charge_descriptions),
+                len(charge_enrollment_values),
+                0,
+            )
+
+            for index in range(
+                max_charge_rows
+            ):
+
+                # ------------------------------------------------
+                # SAFE VALUES
+                # ------------------------------------------------
+
+                raw_existing_charge_id = (
+                    existing_charge_ids[index]
+                    if index
+                    < len(existing_charge_ids)
+                    else ""
+                )
+
+                charge_type = _clean(
+                    charge_types[index]
+                    if index
+                    < len(charge_types)
+                    else ""
+                ).lower()
+
+                charge_name = _clean(
+                    charge_names[index]
+                    if index
+                    < len(charge_names)
+                    else ""
+                )
+
+                amount = _decimal(
+                    charge_amounts[index]
+                    if index
+                    < len(charge_amounts)
+                    else "0"
+                )
+
+                discount = _decimal(
+                    charge_discounts[index]
+                    if index
+                    < len(charge_discounts)
+                    else "0"
+                )
+
+                paid_amount = _decimal(
+                    charge_paid[index]
+                    if index
+                    < len(charge_paid)
+                    else "0"
+                )
+
+                due_date = _parse_date(
+                    charge_due_dates[index]
+                    if index
+                    < len(charge_due_dates)
+                    else ""
+                )
+
+                description = _clean(
+                    charge_descriptions[index]
+                    if index
+                    < len(charge_descriptions)
+                    else ""
+                )
+
+                enrollment_value = _clean(
+                    charge_enrollment_values[index]
+                    if index
+                    < len(charge_enrollment_values)
+                    else ""
+                )
+
+                existing_charge_id = (
+                    _int_or_none(
+                        raw_existing_charge_id
+                    )
+                )
+
+                # ------------------------------------------------
+                # EMPTY ROW
+                # ------------------------------------------------
+
+                if not any(
+                    [
+                        charge_type,
+                        charge_name,
+                        amount != Decimal("0.00"),
+                        discount != Decimal("0.00"),
+                        paid_amount != Decimal("0.00"),
+                        due_date,
+                        description,
+                        enrollment_value,
+                        existing_charge_id,
+                    ]
+                ):
+                    continue
+
+                # ------------------------------------------------
+                # AUTOMATIC TYPES
+                # ------------------------------------------------
+
+                if charge_type in {
+                    "registration",
+                    "program_fee",
+                }:
+                    continue
+
+                # ------------------------------------------------
+                # DEFAULT TYPE
+                # ------------------------------------------------
+
+                if not charge_type:
+                    charge_type = "other"
+
+                if (
+                    charge_type
+                    not in valid_charge_types
+                ):
+                    raise ValueError(
+                        f"Charge row {index + 1}: "
+                        "Invalid charge type."
+                    )
+
+                # ------------------------------------------------
+                # NAME
+                # ------------------------------------------------
+
+                if not charge_name:
+                    raise ValueError(
+                        f"Charge row {index + 1}: "
+                        "Charge name is required."
+                    )
+
+                # ------------------------------------------------
+                # AMOUNT
+                # ------------------------------------------------
+
+                if amount < Decimal("0.00"):
+                    raise ValueError(
+                        f"Charge row {index + 1}: "
+                        "Amount cannot be negative."
+                    )
+
+                # ------------------------------------------------
+                # DISCOUNT
+                # ------------------------------------------------
+
+                if discount < Decimal("0.00"):
+                    raise ValueError(
+                        f"Charge row {index + 1}: "
+                        "Discount cannot be negative."
+                    )
+
+                if discount > amount:
+                    raise ValueError(
+                        f"Charge row {index + 1}: "
+                        "Discount cannot be greater than amount."
+                    )
+
+                # ------------------------------------------------
+                # PAID
+                # ------------------------------------------------
+
+                if paid_amount < Decimal("0.00"):
+                    raise ValueError(
+                        f"Charge row {index + 1}: "
+                        "Paid amount cannot be negative."
+                    )
+
+                net_amount = (
+                    amount - discount
+                )
+
+                if paid_amount > net_amount:
+                    raise ValueError(
+                        f"Charge row {index + 1}: "
+                        "Paid amount cannot exceed net amount."
+                    )
+
+                # =================================================
+                # FIND ATTACHED ENROLLMENT
+                # =================================================
+
+                charge_enrollment = None
+
+                if enrollment_value:
+
+                    enrollment_number = (
+                        _int_or_none(
+                            enrollment_value
+                        )
+                    )
+
+                    if enrollment_number is None:
+                        raise ValueError(
+                            f"Charge row {index + 1}: "
+                            "Invalid enrollment selection."
+                        )
+
+                    # ------------------------------------------------
+                    # FIRST:
+                    # Treat value as ROW INDEX.
+                    #
+                    # This matches the current edit template.
+                    # ------------------------------------------------
+
+                    if (
+                        enrollment_number
+                        in enrollment_by_row
+                    ):
+
+                        charge_enrollment = (
+                            enrollment_by_row[
+                                enrollment_number
+                            ]
+                        )
+
+                    # ------------------------------------------------
+                    # SECOND:
+                    # Treat value as actual enrollment ID.
+                    #
+                    # This makes route compatible with a template
+                    # that sends enrollment.id.
+                    # ------------------------------------------------
+
+                    else:
+
+                        charge_enrollment = (
+                            StudentEnrollment.query
+                            .filter(
+                                StudentEnrollment.id
+                                == enrollment_number,
+                                StudentEnrollment.student_id
+                                == student.id,
+                            )
+                            .first()
+                        )
+
+                        if not charge_enrollment:
+
+                            raise ValueError(
+                                f"Charge row {index + 1}: "
+                                "Selected enrollment does not exist."
+                            )
+
+                else:
+
+                    # ------------------------------------------------
+                    # Default to first enrollment
+                    # ------------------------------------------------
+
+                    charge_enrollment = (
+                        first_enrollment
+                    )
+
+                # =================================================
+                # VERIFY ENROLLMENT BELONGS TO STUDENT
+                # =================================================
+
+                if (
+                    not charge_enrollment
+                    or charge_enrollment.student_id
+                    != student.id
+                ):
+                    raise ValueError(
+                        f"Charge row {index + 1}: "
+                        "Selected enrollment does not belong to this student."
+                    )
+
+                # =================================================
+                # FIND EXISTING CHARGE
+                # =================================================
+
+                existing_charge = None
+
+                if existing_charge_id:
+
+                    existing_charge = (
+                        existing_charge_map
+                        .get(
+                            existing_charge_id
+                        )
+                    )
+
+                    if not existing_charge:
+                        raise ValueError(
+                            f"Charge row {index + 1}: "
+                            "Invalid existing charge."
+                        )
+
+                    # --------------------------------------------
+                    # Never allow automatic charge editing through
+                    # manual charge rows.
+                    # --------------------------------------------
+
+                    if (
+                        existing_charge.charge_type
+                        in {
+                            "registration",
+                            "program_fee",
+                        }
+                    ):
+                        continue
+
+                # =================================================
+                # UPDATE EXISTING MANUAL CHARGE
+                # =================================================
+
+                if existing_charge:
+
+                    existing_charge.institution_id = (
+                        new_institution_id
+                    )
+
+                    existing_charge.branch_id = (
+                        new_branch_id
+                    )
+
+                    existing_charge.student_id = (
+                        student.id
+                    )
+
+                    existing_charge.enrollment_id = (
+                        charge_enrollment.id
+                    )
+
+                    existing_charge.academic_year_id = (
+                        charge_enrollment.academic_year_id
+                    )
+
+                    existing_charge.charge_type = (
+                        charge_type
+                    )
+
+                    existing_charge.charge_name = (
+                        charge_name
+                    )
+
+                    existing_charge.description = (
+                        description or None
+                    )
+
+                    existing_charge.amount = (
+                        amount
+                    )
+
+                    existing_charge.discount = (
+                        discount
+                    )
+
+                    existing_charge.paid_amount = (
+                        paid_amount
+                    )
+
+                    existing_charge.due_date = (
+                        due_date
+                    )
+
+                    existing_charge.calculate_balance()
+
+                # =================================================
+                # CREATE NEW MANUAL CHARGE
+                # =================================================
+
+                else:
+
+                    new_charge = StudentCharge(
+                        institution_id=(
+                            new_institution_id
+                        ),
+                        branch_id=(
+                            new_branch_id
+                        ),
+                        student_id=(
+                            student.id
+                        ),
+                        enrollment_id=(
+                            charge_enrollment.id
+                        ),
+                        academic_year_id=(
+                            charge_enrollment
+                            .academic_year_id
+                        ),
+                        charge_type=(
+                            charge_type
+                        ),
+                        charge_name=(
+                            charge_name
+                        ),
+                        description=(
+                            description or None
+                        ),
+                        amount=(
+                            amount
+                        ),
+                        discount=(
+                            discount
+                        ),
+                        paid_amount=(
+                            paid_amount
+                        ),
+                        due_date=(
+                            due_date
+                        ),
+                        created_by=(
+                            current_user.id
+                        ),
+                    )
+
+                    new_charge.calculate_balance()
+
+                    db.session.add(
+                        new_charge
+                    )
+
+            # ====================================================
+            # UPDATE TIMESTAMP
+            # ====================================================
+
+            student.updated_at = (
+                datetime.utcnow()
+            )
+
+            # ====================================================
+            # FINAL FLUSH
+            # ============================================================
+
+            db.session.flush()
+
+            # ====================================================
+            # COMMIT
+            # ============================================================
+
+            db.session.commit()
+
+            # ====================================================
+            # SUCCESS
+            # ============================================================
+
             flash(
-                "Student updated successfully.",
+                f"Student '{student.full_name}' was updated successfully.",
                 "success",
             )
 
+            # ====================================================
+            # REDIRECT
+            # ============================================================
+
+            if (
+                "main.view_student"
+                in current_app.view_functions
+            ):
+
+                return redirect(
+                    url_for(
+                        "main.view_student",
+                        student_id=student.id,
+                    )
+                )
+
+            if (
+                "main.student_profile"
+                in current_app.view_functions
+            ):
+
+                return redirect(
+                    url_for(
+                        "main.student_profile",
+                        student_id=student.id,
+                    )
+                )
+
             return redirect(
                 url_for(
-                    "main.view_student",
-                    student_id=student.id,
+                    "main.all_students"
                 )
             )
+
+        # ========================================================
+        # VALUE / VALIDATION ERROR
+        # ========================================================
 
         except ValueError as exc:
 
             db.session.rollback()
 
+            if (
+                uploaded_photo_path
+                and os.path.exists(
+                    uploaded_photo_path
+                )
+            ):
+
+                try:
+                    os.remove(
+                        uploaded_photo_path
+                    )
+                except OSError:
+                    pass
+
             flash(
-                str(exc),
+                f"Unable to update student. Error: {exc}",
                 "danger",
             )
 
-        except IntegrityError:
-
-            db.session.rollback()
-
-            flash(
-                "Student could not be updated because username, email or admission number already exists.",
-                "danger",
+            return redirect(
+                request.url
             )
+
+        # ========================================================
+        # DATABASE / GENERAL ERROR
+        # ========================================================
 
         except Exception as exc:
 
             db.session.rollback()
 
             current_app.logger.exception(
-                "Student update failed: %s",
-                exc,
+                "Error updating student %s",
+                student_id,
             )
 
+            if (
+                uploaded_photo_path
+                and os.path.exists(
+                    uploaded_photo_path
+                )
+            ):
+
+                try:
+                    os.remove(
+                        uploaded_photo_path
+                    )
+                except OSError:
+                    pass
+
             flash(
-                "Unable to update student.",
+                f"Unable to update student. Error: {exc}",
                 "danger",
             )
 
-    return render_template(
-        "backend/pages/students/edit_student.html",
-        student=student,
-        user=current_user,
-        **context,
+            return redirect(
+                request.url
+            )
+
+    # ============================================================
+    # GET DATA
+    # ============================================================
+
+    # ============================================================
+    # INSTITUTIONS
+    # ============================================================
+
+    if current_user_role == "superadmin":
+
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        institutions = (
+            Institution.query
+            .filter(
+                Institution.id
+                == current_user_institution_id
+            )
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    # ============================================================
+    # BRANCHES
+    # ============================================================
+
+    if current_user_role == "superadmin":
+
+        branches = (
+            Branch.query
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    elif current_user_role == "school_admin":
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.institution_id
+                == current_user_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.id
+                == current_user_branch_id,
+                Branch.institution_id
+                == current_user_institution_id,
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    # ============================================================
+    # PROGRAMS
+    # ============================================================
+
+    programs = (
+        Program.query
+        .filter(
+            Program.institution_id
+            == student.institution_id,
+            or_(
+                Program.branch_id
+                == student.branch_id,
+                Program.branch_id.is_(None),
+            ),
+        )
+        .order_by(
+            Program.name.asc()
+        )
+        .all()
     )
 
+    # ============================================================
+    # CLASSES
+    # ============================================================
+
+    classes = (
+        Class.query
+        .filter(
+            Class.institution_id
+            == student.institution_id,
+            Class.branch_id
+            == student.branch_id,
+        )
+        .order_by(
+            Class.name.asc()
+        )
+        .all()
+    )
+
+    # ============================================================
+    # SECTIONS
+    # ============================================================
+
+    sections = (
+        Section.query
+        .filter(
+            Section.institution_id
+            == student.institution_id,
+            Section.branch_id
+            == student.branch_id,
+        )
+        .order_by(
+            Section.name.asc()
+        )
+        .all()
+    )
+
+    # ============================================================
+    # ACADEMIC YEARS
+    # ============================================================
+
+    academic_years = (
+        AcademicYear.query
+        .filter(
+            AcademicYear.institution_id
+            == student.institution_id
+        )
+        .order_by(
+            AcademicYear.id.desc()
+        )
+        .all()
+    )
+
+    # ============================================================
+    # COUNTRIES
+    # ============================================================
+
+    try:
+
+        countries = get_all_countries()
+
+    except Exception:
+
+        countries = []
+
+    # ============================================================
+    # CURRENT INSTITUTION
+    # ============================================================
+
+    current_institution = (
+        Institution.query
+        .filter(
+            Institution.id
+            == student.institution_id
+        )
+        .first()
+    )
+
+    # ============================================================
+    # CURRENT BRANCH
+    # ============================================================
+
+    current_branch = (
+        Branch.query
+        .filter(
+            Branch.id
+            == student.branch_id
+        )
+        .first()
+    )
+
+    # ============================================================
+    # EXISTING ENROLLMENTS
+    # ============================================================
+
+    enrollments = (
+        StudentEnrollment.query
+        .filter(
+            StudentEnrollment.student_id
+            == student.id
+        )
+        .order_by(
+            StudentEnrollment.id.asc()
+        )
+        .all()
+    )
+
+    # ============================================================
+    # EXISTING CHARGES
+    # ============================================================
+
+    charges = (
+        StudentCharge.query
+        .filter(
+            StudentCharge.student_id
+            == student.id
+        )
+        .order_by(
+            StudentCharge.id.asc()
+        )
+        .all()
+    )
+
+    # ============================================================
+    # RENDER TEMPLATE
+    # ============================================================
+
+    return render_template(
+        "backend/pages/students/edit_student.html",
+
+        # --------------------------------------------------------
+        # Student
+        # --------------------------------------------------------
+
+        student=student,
+
+        # --------------------------------------------------------
+        # Scope
+        # --------------------------------------------------------
+
+        institutions=institutions,
+        branches=branches,
+        programs=programs,
+        classes=classes,
+        sections=sections,
+        academic_years=academic_years,
+
+        # --------------------------------------------------------
+        # Countries
+        # --------------------------------------------------------
+
+        countries=countries,
+        all_countries=countries,
+
+        # --------------------------------------------------------
+        # Current institution / branch
+        # --------------------------------------------------------
+
+        current_institution=current_institution,
+        current_branch=current_branch,
+
+        current_institution_id=(
+            student.institution_id
+        ),
+
+        current_branch_id=(
+            student.branch_id
+        ),
+
+        current_role=current_user_role,
+
+        # --------------------------------------------------------
+        # Existing enrollments
+        # --------------------------------------------------------
+
+        enrollments=enrollments,
+
+        # --------------------------------------------------------
+        # Existing charges
+        # --------------------------------------------------------
+
+        charges=charges,
+
+        # --------------------------------------------------------
+        # Today
+        # --------------------------------------------------------
+
+        today=date.today().isoformat(),
+
+        # --------------------------------------------------------
+        # Logged-in user
+        # --------------------------------------------------------
+
+        user=current_user,
+    )
 
 
 # ============================================================
@@ -32385,7 +38040,6 @@ def toggle_student_status(student_id):
 # ============================================================
 # DELETE STUDENT
 # ============================================================
-
 @bp.route(
     "/students/<int:student_id>/delete",
     methods=["POST"]
@@ -32393,68 +38047,991 @@ def toggle_student_status(student_id):
 @login_required
 def delete_student(student_id):
 
-    if not _student_can_manage():
+    # ============================================================
+    # ALLOWED ROLES
+    # ============================================================
 
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if current_user.role not in allowed_roles:
         abort(403)
 
-    student = (
+    # ============================================================
+    # ROLE VALIDATION
+    # ============================================================
+
+    if current_user.role == "school_admin":
+        if not current_user.institution_id:
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+            return redirect(url_for("main.all_students"))
+
+    if current_user.role == "branch_admin":
+        if (
+            not current_user.institution_id
+            or not current_user.branch_id
+        ):
+            flash(
+                "Your account is not assigned to an institution and branch.",
+                "danger"
+            )
+            return redirect(url_for("main.all_students"))
+
+    # ============================================================
+    # GET STUDENT
+    # ============================================================
+
+    student_query = (
         Student.query
         .filter(
-            Student.id == student_id
+            Student.id == student_id,
+            Student.role == "student"
         )
-        .first_or_404()
     )
 
-    if not _student_has_access(student):
+    # ============================================================
+    # SECURITY SCOPE
+    # ============================================================
 
-        abort(403)
+    if current_user.role == "school_admin":
 
-    old_public_id = student.photo_public_id
+        student_query = student_query.filter(
+            Student.institution_id == current_user.institution_id
+        )
 
-    student_name = student.full_name
+    elif current_user.role == "branch_admin":
+
+        student_query = student_query.filter(
+            Student.institution_id == current_user.institution_id,
+            Student.branch_id == current_user.branch_id
+        )
+
+    # ============================================================
+    # FETCH STUDENT
+    # ============================================================
+
+    student = student_query.first()
+
+    if not student:
+        flash(
+            "Student not found or you do not have permission to delete this student.",
+            "danger"
+        )
+        return redirect(url_for("main.all_students"))
+
+    # ============================================================
+    # KEEP NAME FOR SUCCESS MESSAGE
+    # ============================================================
+
+    student_name = (
+        student.full_name
+        or student.username
+        or f"Student #{student.id}"
+    )
+
+    # ============================================================
+    # DELETE EVERYTHING RELATED TO THE STUDENT
+    # ============================================================
 
     try:
 
+        # --------------------------------------------------------
+        # 1. DELETE STUDENT CHARGES
+        #
+        # StudentCharge has:
+        # student_id -> students.id
+        # enrollment_id -> student_enrollments.id
+        # --------------------------------------------------------
+
+        StudentCharge.query.filter(
+            StudentCharge.student_id == student.id
+        ).delete(
+            synchronize_session=False
+        )
+
+        # --------------------------------------------------------
+        # 2. DELETE STUDENT ENROLLMENTS
+        # --------------------------------------------------------
+
+        StudentEnrollment.query.filter(
+            StudentEnrollment.student_id == student.id
+        ).delete(
+            synchronize_session=False
+        )
+
+        # --------------------------------------------------------
+        # 3. DELETE STUDENT
+        # --------------------------------------------------------
+
         db.session.delete(student)
+
+        # --------------------------------------------------------
+        # 4. COMMIT EVERYTHING
+        # --------------------------------------------------------
 
         db.session.commit()
 
-        if old_public_id:
-
-            _delete_student_photo(
-                old_public_id
-            )
-
         flash(
-            f"Student {student_name} deleted successfully.",
-            "success",
-        )
-
-    except IntegrityError:
-
-        db.session.rollback()
-
-        flash(
-            "Student cannot be deleted because related records exist.",
-            "danger",
+            f"Student '{student_name}' and all related enrollment and charge records were deleted successfully.",
+            "success"
         )
 
     except Exception as exc:
 
+        # --------------------------------------------------------
+        # ROLLBACK
+        # --------------------------------------------------------
+
         db.session.rollback()
 
         current_app.logger.exception(
-            "Student deletion failed: %s",
-            exc,
+            "Failed to delete student ID %s: %s",
+            student_id,
+            exc
         )
 
         flash(
-            "Unable to delete student.",
-            "danger",
+            "Unable to delete the student. No changes were saved.",
+            "danger"
         )
+
+    # ============================================================
+    # RETURN TO STUDENT LIST
+    # ============================================================
 
     return redirect(
         url_for("main.all_students")
+    )
+
+
+
+
+
+# ============================================================
+# STUDENT FULL IMPORT SAMPLE CSV
+# Student + Enrollment + StudentCharge
+# ============================================================
+@bp.route(
+    "/students/import/sample",
+    methods=["GET"]
+)
+@login_required
+def export_student_import_sample():
+
+    import csv
+    import io
+
+    from flask import Response, abort, flash, redirect, url_for
+    from sqlalchemy import or_
+
+    # ============================================================
+    # PERMISSION
+    # ============================================================
+
+    if not _student_can_manage():
+        abort(403)
+
+    # ============================================================
+    # CURRENT USER
+    # ============================================================
+
+    institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    if not institution_id:
+        flash(
+            "Your account is not linked to an institution.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_students")
+        )
+
+    # ============================================================
+    # ACADEMIC YEAR
+    # ============================================================
+    #
+    # Priority:
+    # 1. Current
+    # 2. Active
+    # 3. Latest
+    #
+    # ============================================================
+
+    academic_year = None
+
+    # ------------------------------------------------------------
+    # Try current / active
+    # ------------------------------------------------------------
+
+    try:
+
+        academic_year = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.institution_id == institution_id
+            )
+            .filter(
+                or_(
+                    AcademicYear.is_current.is_(True),
+                    AcademicYear.status == "active"
+                )
+            )
+            .order_by(
+                AcademicYear.id.desc()
+            )
+            .first()
+        )
+
+    except Exception:
+
+        academic_year = None
+
+    # ------------------------------------------------------------
+    # Fallback latest
+    # ------------------------------------------------------------
+
+    if not academic_year:
+
+        academic_year = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.institution_id == institution_id
+            )
+            .order_by(
+                AcademicYear.id.desc()
+            )
+            .first()
+        )
+
+    if not academic_year:
+
+        flash(
+            "No Academic Year was found for this institution.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_students")
+        )
+
+    # ============================================================
+    # ACADEMIC YEAR DISPLAY VALUE
+    # ============================================================
+
+    academic_year_name = (
+        getattr(
+            academic_year,
+            "name",
+            None
+        )
+        or getattr(
+            academic_year,
+            "academic_year",
+            None
+        )
+        or getattr(
+            academic_year,
+            "title",
+            None
+        )
+        or getattr(
+            academic_year,
+            "year_name",
+            None
+        )
+        or getattr(
+            academic_year,
+            "code",
+            None
+        )
+        or str(academic_year.id)
+    )
+
+    # ============================================================
+    # PROGRAM
+    # ============================================================
+    #
+    # Program:
+    #
+    #   institution = current institution
+    #
+    # AND:
+    #
+    #   branch = current branch
+    #
+    # OR:
+    #
+    #   branch = NULL
+    #
+    # NULL = institution-wide program
+    #
+    # ============================================================
+
+    program = None
+
+    if branch_id:
+
+        program_query = (
+            Program.query
+            .filter(
+                Program.institution_id == institution_id
+            )
+            .filter(
+                or_(
+                    Program.branch_id == branch_id,
+                    Program.branch_id.is_(None)
+                )
+            )
+        )
+
+        # --------------------------------------------------------
+        # Prefer active
+        # --------------------------------------------------------
+
+        try:
+
+            program = (
+                program_query
+                .filter(
+                    Program.status == "active"
+                )
+                .order_by(
+                    (Program.branch_id == branch_id).desc(),
+                    Program.id.asc()
+                )
+                .first()
+            )
+
+        except Exception:
+
+            program = None
+
+        # --------------------------------------------------------
+        # Fallback without status
+        # --------------------------------------------------------
+
+        if not program:
+
+            program = (
+                program_query
+                .order_by(
+                    (Program.branch_id == branch_id).desc(),
+                    Program.id.asc()
+                )
+                .first()
+            )
+
+    else:
+
+        # --------------------------------------------------------
+        # Institution-level user
+        # --------------------------------------------------------
+
+        program_query = (
+            Program.query
+            .filter(
+                Program.institution_id == institution_id
+            )
+        )
+
+        try:
+
+            program = (
+                program_query
+                .filter(
+                    Program.status == "active"
+                )
+                .order_by(
+                    Program.id.asc()
+                )
+                .first()
+            )
+
+        except Exception:
+
+            program = None
+
+        if not program:
+
+            program = (
+                program_query
+                .order_by(
+                    Program.id.asc()
+                )
+                .first()
+            )
+
+    if not program:
+
+        flash(
+            "No Program was found for this institution/branch.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_students")
+        )
+
+    # ============================================================
+    # PROGRAM DISPLAY NAME
+    # ============================================================
+
+    program_name = (
+        getattr(
+            program,
+            "name",
+            None
+        )
+        or getattr(
+            program,
+            "title",
+            None
+        )
+        or getattr(
+            program,
+            "short_name",
+            None
+        )
+        or getattr(
+            program,
+            "code",
+            None
+        )
+        or str(program.id)
+    )
+
+    # ============================================================
+    # CLASS
+    # ============================================================
+    #
+    # CLASS IS NOT REQUIRED.
+    #
+    # We try several possibilities:
+    #
+    # 1. Class.program_id = Program.id
+    # 2. Class branch = current branch
+    # 3. Class institution = current institution
+    #
+    # If no class exists:
+    #
+    #   Class = ""
+    #   Section = ""
+    #
+    # ============================================================
+
+    student_class = None
+
+    # ------------------------------------------------------------
+    # Base class query
+    # ------------------------------------------------------------
+
+    class_query = (
+        Class.query
+        .filter(
+            Class.institution_id == institution_id
+        )
+    )
+
+    # ------------------------------------------------------------
+    # Branch filtering
+    # ------------------------------------------------------------
+
+    if branch_id:
+
+        class_query = (
+            class_query
+            .filter(
+                or_(
+                    Class.branch_id == branch_id,
+                    Class.branch_id.is_(None)
+                )
+            )
+        )
+
+    # ============================================================
+    # FIRST TRY:
+    # CLASS -> PROGRAM
+    # ============================================================
+
+    if hasattr(Class, "program_id"):
+
+        try:
+
+            program_class_query = (
+                class_query
+                .filter(
+                    Class.program_id == program.id
+                )
+            )
+
+            # ----------------------------------------------------
+            # Active first
+            # ----------------------------------------------------
+
+            try:
+
+                student_class = (
+                    program_class_query
+                    .filter(
+                        Class.status == "active"
+                    )
+                    .order_by(
+                        (
+                            Class.branch_id == branch_id
+                        ).desc()
+                        if branch_id
+                        else Class.id.asc()
+                    )
+                    .first()
+                )
+
+            except Exception:
+
+                student_class = None
+
+            # ----------------------------------------------------
+            # Fallback
+            # ----------------------------------------------------
+
+            if not student_class:
+
+                student_class = (
+                    program_class_query
+                    .order_by(
+                        Class.id.asc()
+                    )
+                    .first()
+                )
+
+        except Exception:
+
+            student_class = None
+
+    # ============================================================
+    # SECOND TRY:
+    # CLASS WITHOUT PROGRAM RELATIONSHIP
+    # ============================================================
+    #
+    # If Class.program_id does not match anything, we still use
+    # the real Class belonging to current branch.
+    #
+    # ============================================================
+
+    if not student_class:
+
+        try:
+
+            # ----------------------------------------------------
+            # Active class first
+            # ----------------------------------------------------
+
+            try:
+
+                student_class = (
+                    class_query
+                    .filter(
+                        Class.status == "active"
+                    )
+                    .order_by(
+                        (
+                            Class.branch_id == branch_id
+                        ).desc()
+                        if branch_id
+                        else Class.id.asc()
+                    )
+                    .first()
+                )
+
+            except Exception:
+
+                student_class = None
+
+            # ----------------------------------------------------
+            # Fallback
+            # ----------------------------------------------------
+
+            if not student_class:
+
+                student_class = (
+                    class_query
+                    .order_by(
+                        Class.id.asc()
+                    )
+                    .first()
+                )
+
+        except Exception:
+
+            student_class = None
+
+    # ============================================================
+    # CLASS NAME
+    # ============================================================
+
+    class_name = ""
+
+    if student_class:
+
+        class_name = (
+            getattr(
+                student_class,
+                "name",
+                None
+            )
+            or getattr(
+                student_class,
+                "class_name",
+                None
+            )
+            or getattr(
+                student_class,
+                "title",
+                None
+            )
+            or getattr(
+                student_class,
+                "code",
+                None
+            )
+            or str(student_class.id)
+        )
+
+    # ============================================================
+    # SECTION
+    # ============================================================
+    #
+    # SECTION IS OPTIONAL.
+    #
+    # If Class exists:
+    #
+    #     search Section.class_id
+    #
+    # If no section:
+    #
+    #     ""
+    #
+    # ============================================================
+
+    section = None
+
+    if student_class and hasattr(Section, "class_id"):
+
+        try:
+
+            section_query = (
+                Section.query
+                .filter(
+                    Section.class_id == student_class.id
+                )
+                .filter(
+                    Section.institution_id == institution_id
+                )
+            )
+
+            # ----------------------------------------------------
+            # Branch
+            # ----------------------------------------------------
+
+            if branch_id:
+
+                section_query = (
+                    section_query
+                    .filter(
+                        or_(
+                            Section.branch_id == branch_id,
+                            Section.branch_id.is_(None)
+                        )
+                    )
+                )
+
+            # ----------------------------------------------------
+            # Active first
+            # ----------------------------------------------------
+
+            try:
+
+                section = (
+                    section_query
+                    .filter(
+                        Section.status == "active"
+                    )
+                    .order_by(
+                        (
+                            Section.branch_id == branch_id
+                        ).desc()
+                        if branch_id
+                        else Section.id.asc()
+                    )
+                    .first()
+                )
+
+            except Exception:
+
+                section = None
+
+            # ----------------------------------------------------
+            # Fallback
+            # ----------------------------------------------------
+
+            if not section:
+
+                section = (
+                    section_query
+                    .order_by(
+                        Section.id.asc()
+                    )
+                    .first()
+                )
+
+        except Exception:
+
+            section = None
+
+    # ============================================================
+    # SECTION NAME
+    # ============================================================
+
+    section_name = ""
+
+    if section:
+
+        section_name = (
+            getattr(
+                section,
+                "name",
+                None
+            )
+            or getattr(
+                section,
+                "section_name",
+                None
+            )
+            or getattr(
+                section,
+                "title",
+                None
+            )
+            or getattr(
+                section,
+                "code",
+                None
+            )
+            or str(section.id)
+        )
+
+    # ============================================================
+    # EXCEL-SAFE PHONE NUMBERS
+    # ============================================================
+
+    sample_phone = '="0612345678"'
+
+    sample_parent_phone = '="0611111111"'
+
+    # ============================================================
+    # CSV HEADERS
+    # ============================================================
+
+    headers = [
+
+        # --------------------------------------------------------
+        # STUDENT
+        # --------------------------------------------------------
+
+        "Admission No",
+        "Roll No",
+        "Username",
+        "Email",
+        "Full Name",
+        "Gender",
+        "Date of Birth",
+        "Place of Birth",
+        "Nationality",
+        "Phone",
+        "Address",
+        "City",
+
+        # --------------------------------------------------------
+        # PARENT
+        # --------------------------------------------------------
+
+        "Parent Name",
+        "Parent Phone",
+        "Parent Email",
+        "Parent Address",
+        "Relationship to Student",
+
+        # --------------------------------------------------------
+        # STUDENT STATUS
+        # --------------------------------------------------------
+
+        "Student Status",
+        "Student Notes",
+
+        # --------------------------------------------------------
+        # ENROLLMENT
+        # --------------------------------------------------------
+
+        "Academic Year",
+        "Program",
+        "Class",
+        "Section",
+        "Enrollment No",
+        "Enrollment Date",
+        "Enrollment Status",
+        "Enrollment Notes",
+
+        # --------------------------------------------------------
+        # CHARGE
+        # --------------------------------------------------------
+
+        "Charge Type",
+        "Charge Name",
+        "Charge Description",
+        "Amount",
+        "Discount",
+        "Paid Amount",
+        "Due Date",
+    ]
+
+    # ============================================================
+    # SAMPLE ROW
+    # ============================================================
+
+    sample_row = [
+
+        # --------------------------------------------------------
+        # STUDENT
+        # --------------------------------------------------------
+
+        "STU001",
+        "R001",
+        "STU001",
+        "student001@example.com",
+        "Ahmed Mohamed Ali",
+        "Male",
+        "2010-05-15",
+        "Mogadishu",
+        "Somali",
+
+        # Excel-safe phone
+        sample_phone,
+
+        "Hodan",
+        "Mogadishu",
+
+        # --------------------------------------------------------
+        # PARENT
+        # --------------------------------------------------------
+
+        "Mohamed Ali Hassan",
+
+        # Excel-safe parent phone
+        sample_parent_phone,
+
+        "parent001@example.com",
+        "Hodan, Mogadishu",
+        "Father",
+
+        # --------------------------------------------------------
+        # STUDENT STATUS
+        # --------------------------------------------------------
+
+        "active",
+        "New student registration",
+
+        # --------------------------------------------------------
+        # REAL DATABASE RELATIONSHIPS
+        # --------------------------------------------------------
+
+        academic_year_name,
+        program_name,
+        class_name,
+        section_name,
+
+        # --------------------------------------------------------
+        # ENROLLMENT
+        # --------------------------------------------------------
+
+        "ENR001",
+        "2026-09-20",
+        "active",
+        "First enrollment",
+
+        # --------------------------------------------------------
+        # CHARGE
+        # --------------------------------------------------------
+
+        "registration",
+        "Registration Fee",
+        "Student registration fee",
+        "50.00",
+        "0.00",
+        "0.00",
+        "2026-09-30",
+    ]
+
+    # ============================================================
+    # CREATE CSV
+    # ============================================================
+
+    output = io.StringIO(
+        newline=""
+    )
+
+    writer = csv.writer(
+        output,
+        delimiter=",",
+        quotechar='"',
+        quoting=csv.QUOTE_MINIMAL,
+        lineterminator="\r\n"
+    )
+
+    # Header
+    writer.writerow(headers)
+
+    # Real-data sample
+    writer.writerow(sample_row)
+
+    # ============================================================
+    # UTF-8 BOM
+    # ============================================================
+
+    csv_content = (
+        "\ufeff"
+        + output.getvalue()
+    )
+
+    output.close()
+
+    # ============================================================
+    # RESPONSE
+    # ============================================================
+
+    return Response(
+        csv_content,
+        mimetype="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition":
+                "attachment; "
+                "filename=student_import_sample.csv"
+        }
     )
 
 
@@ -32462,614 +39039,1456 @@ def delete_student(student_id):
 # IMPORT STUDENTS
 # ============================================================
 
+# ============================================================
+# IMPORT STUDENTS FULL CSV
+# Student + Enrollment + StudentCharge
+# ============================================================
+
 @bp.route(
     "/students/import",
-    methods=["GET", "POST"]
+    methods=["POST"]
 )
 @login_required
-def import_students():
+def import_students_full():
+
+    import csv
+    import io
+    import secrets
+    from datetime import datetime
+    from decimal import Decimal, InvalidOperation
+
+    from flask import (
+        request,
+        redirect,
+        url_for,
+        flash,
+        current_app,
+    )
+
+    # ========================================================
+    # ACCESS CHECK
+    # ========================================================
 
     if not _student_can_manage():
+        abort(403)
+
+    # ========================================================
+    # GET CURRENT USER / INSTITUTION / BRANCH
+    # ========================================================
+
+    current_user_obj = current_user
+
+    institution_id = getattr(
+        current_user_obj,
+        "institution_id",
+        None
+    )
+
+    branch_id = getattr(
+        current_user_obj,
+        "branch_id",
+        None
+    )
+
+    if not institution_id:
+        flash(
+            "Institution information could not be determined.",
+            "danger"
+        )
+        return redirect(
+            url_for("main.all_students")
+        )
+
+    # ========================================================
+    # FILE
+    # ========================================================
+
+    file = request.files.get("file")
+
+    if not file or not file.filename:
 
         flash(
-            "You are not authorized to import students.",
-            "danger",
+            "Please select a CSV file.",
+            "danger"
         )
 
         return redirect(
             url_for("main.all_students")
         )
 
-    context = _student_form_context()
+    if not file.filename.lower().endswith(".csv"):
 
-    if request.method == "POST":
-
-        uploaded_file = request.files.get(
-            "student_file"
+        flash(
+            "Only CSV files are allowed.",
+            "danger"
         )
 
-        if not uploaded_file or not uploaded_file.filename:
+        return redirect(
+            url_for("main.all_students")
+        )
 
+    # ========================================================
+    # READ FILE
+    # ========================================================
+
+    try:
+
+        raw_data = file.read()
+
+        if not raw_data:
             flash(
-                "Please select a CSV or XLSX file.",
-                "danger",
+                "The CSV file is empty.",
+                "danger"
             )
 
-            return render_template(
-                "backend/pages/students/import_students.html",
-                **context,
+            return redirect(
+                url_for("main.all_students")
             )
 
-        filename = uploaded_file.filename.lower()
+        # ----------------------------------------------------
+        # UTF-8-SIG handles Excel BOM
+        # ----------------------------------------------------
+
+        text_data = raw_data.decode(
+            "utf-8-sig"
+        )
+
+    except UnicodeDecodeError:
+
+        flash(
+            "CSV file must be UTF-8 encoded.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_students")
+        )
+
+    # ========================================================
+    # CSV READER
+    # ========================================================
+
+    stream = io.StringIO(
+        text_data,
+        newline=""
+    )
+
+    reader = csv.DictReader(stream)
+
+    if not reader.fieldnames:
+
+        flash(
+            "CSV file has no header row.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_students")
+        )
+
+    # ========================================================
+    # REQUIRED COLUMNS
+    # ========================================================
+
+    required_columns = {
+
+        "Admission No",
+        "Username",
+        "Full Name",
+
+        "Academic Year",
+        "Program",
+        "Class",
+        "Enrollment No",
+
+        "Charge Type",
+        "Charge Name",
+        "Amount",
+        "Discount",
+        "Paid Amount",
+    }
+
+    actual_columns = {
+        str(column).strip()
+        for column in reader.fieldnames
+        if column
+    }
+
+    missing_columns = (
+        required_columns - actual_columns
+    )
+
+    if missing_columns:
+
+        flash(
+            "Missing CSV columns: "
+            + ", ".join(
+                sorted(missing_columns)
+            ),
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_students")
+        )
+
+    # ========================================================
+    # HELPER FUNCTIONS
+    # ========================================================
+
+    def clean(value):
+
+        if value is None:
+            return None
+
+        value = str(value).strip()
+
+        return value if value else None
+
+    def parse_date(value, field_name):
+
+        value = clean(value)
+
+        if not value:
+            return None
+
+        formats = [
+            "%Y-%m-%d",
+            "%Y/%m/%d",
+            "%d-%m-%Y",
+            "%d/%m/%Y",
+        ]
+
+        for fmt in formats:
+
+            try:
+
+                return datetime.strptime(
+                    value,
+                    fmt
+                ).date()
+
+            except ValueError:
+                continue
+
+        raise ValueError(
+            f"{field_name} has invalid date "
+            f"'{value}'. Use YYYY-MM-DD."
+        )
+
+    def decimal_value(
+        value,
+        field_name,
+        default="0"
+    ):
+
+        value = clean(value)
+
+        if not value:
+            value = default
 
         try:
 
-            rows = []
-
-            # =================================================
-            # CSV
-            # =================================================
-
-            if filename.endswith(".csv"):
-
-                content = (
-                    uploaded_file
-                    .read()
-                    .decode("utf-8-sig")
-                )
-
-                reader = csv.DictReader(
-                    StringIO(content)
-                )
-
-                rows = list(reader)
-
-            # =================================================
-            # XLSX
-            # =================================================
-
-            elif filename.endswith(".xlsx"):
-
-                workbook = load_workbook(
-                    uploaded_file,
-                    read_only=True,
-                    data_only=True,
-                )
-
-                sheet = workbook.active
-
-                values = list(
-                    sheet.iter_rows(
-                        values_only=True
-                    )
-                )
-
-                if not values:
-
-                    raise ValueError(
-                        "The Excel file is empty."
-                    )
-
-                headers = [
-                    str(value).strip()
-                    if value is not None
-                    else ""
-                    for value in values[0]
-                ]
-
-                for row in values[1:]:
-
-                    item = {}
-
-                    for index, header in enumerate(headers):
-
-                        if not header:
-                            continue
-
-                        item[header] = (
-                            row[index]
-                            if index < len(row)
-                            else None
-                        )
-
-                    rows.append(item)
-
-            else:
-
-                raise ValueError(
-                    "Only CSV and XLSX files are supported."
-                )
-
-            if not rows:
-
-                raise ValueError(
-                    "No student records were found."
-                )
-
-            created_count = 0
-            skipped_count = 0
-            errors = []
-
-            role = getattr(
-                current_user,
-                "role",
-                None,
+            amount = Decimal(
+                value.replace(",", "")
             )
 
-            for row_number, row in enumerate(
-                rows,
-                start=2,
+        except (
+            InvalidOperation,
+            ValueError
+        ):
+
+            raise ValueError(
+                f"{field_name} has invalid amount "
+                f"'{value}'."
+            )
+
+        if amount < 0:
+
+            raise ValueError(
+                f"{field_name} cannot be negative."
+            )
+
+        return amount.quantize(
+            Decimal("0.01")
+        )
+
+    def normalize(value):
+
+        value = clean(value)
+
+        if not value:
+            return ""
+
+        return (
+            value
+            .strip()
+            .lower()
+        )
+
+    # ========================================================
+    # GENERIC MODEL NAME RESOLVER
+    # ========================================================
+
+    def resolve_model(
+        model,
+        value,
+        model_name,
+        institution_id=None,
+        branch_id=None,
+    ):
+
+        value = clean(value)
+
+        if not value:
+            raise ValueError(
+                f"{model_name} is required."
+            )
+
+        query = model.query
+
+        # ----------------------------------------------------
+        # Institution filter
+        # ----------------------------------------------------
+
+        if institution_id is not None:
+
+            if hasattr(
+                model,
+                "institution_id"
             ):
 
-                # ---------------------------------------------
-                # Case-insensitive headers
-                # ---------------------------------------------
+                query = query.filter(
+                    model.institution_id
+                    == institution_id
+                )
 
-                normalized = {
-                    str(key).strip().lower():
-                    value
-                    for key, value in row.items()
-                    if key is not None
+        # ----------------------------------------------------
+        # Branch filter
+        # ----------------------------------------------------
+
+        if branch_id is not None:
+
+            if hasattr(
+                model,
+                "branch_id"
+            ):
+
+                query = query.filter(
+                    model.branch_id
+                    == branch_id
+                )
+
+        # ----------------------------------------------------
+        # Try exact fields
+        # ----------------------------------------------------
+
+        possible_fields = [
+            "name",
+            "title",
+            "code",
+            "label",
+            "academic_year",
+        ]
+
+        for field_name in possible_fields:
+
+            column = getattr(
+                model,
+                field_name,
+                None
+            )
+
+            if column is None:
+                continue
+
+            obj = (
+                query
+                .filter(column == value)
+                .first()
+            )
+
+            if obj:
+                return obj
+
+        # ----------------------------------------------------
+        # Case-insensitive lookup
+        # ----------------------------------------------------
+
+        for field_name in possible_fields:
+
+            column = getattr(
+                model,
+                field_name,
+                None
+            )
+
+            if column is None:
+                continue
+
+            try:
+
+                obj = (
+                    query
+                    .filter(
+                        db.func.lower(column)
+                        == normalize(value)
+                    )
+                    .first()
+                )
+
+                if obj:
+                    return obj
+
+            except Exception:
+                continue
+
+        raise ValueError(
+            f"{model_name} '{value}' was not found."
+        )
+
+    # ========================================================
+    # IMPORT COUNTERS
+    # ========================================================
+
+    created_students = 0
+    updated_students = 0
+    created_enrollments = 0
+    created_charges = 0
+    skipped_rows = 0
+
+    errors = []
+
+    # ========================================================
+    # PROCESS CSV
+    # ========================================================
+
+    try:
+
+        rows = list(reader)
+
+        if not rows:
+
+            flash(
+                "CSV file contains no student records.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_students")
+            )
+
+        # ====================================================
+        # TRANSACTION
+        # ====================================================
+
+        for row_number, raw_row in enumerate(
+            rows,
+            start=2
+        ):
+
+            try:
+
+                # --------------------------------------------
+                # CLEAN ROW KEYS
+                # --------------------------------------------
+
+                row = {
+                    str(key).strip(): clean(value)
+                    for key, value in raw_row.items()
+                    if key
                 }
 
-                def value(*names):
+                # --------------------------------------------
+                # STUDENT DATA
+                # --------------------------------------------
 
-                    for name in names:
-
-                        val = normalized.get(
-                            name.lower()
-                        )
-
-                        if val is not None:
-                            return str(val).strip()
-
-                    return ""
-
-                institution_id_raw = value(
-                    "institution_id"
+                admission_no = clean(
+                    row.get("Admission No")
                 )
 
-                branch_id_raw = value(
-                    "branch_id"
+                username = clean(
+                    row.get("Username")
                 )
 
-                username = value(
-                    "username"
+                full_name = clean(
+                    row.get("Full Name")
                 )
 
-                email = value(
-                    "email"
-                ) or None
+                if not admission_no:
+                    raise ValueError(
+                        "Admission No is required."
+                    )
 
-                admission_no = value(
-                    "admission_no",
-                    "admission no",
-                    "admission_number",
-                )
+                if not username:
+                    raise ValueError(
+                        "Username is required."
+                    )
 
-                roll_no = value(
-                    "roll_no",
-                    "roll no",
-                ) or None
+                if not full_name:
+                    raise ValueError(
+                        "Full Name is required."
+                    )
 
-                full_name = value(
-                    "full_name",
-                    "full name",
-                    "name",
-                )
+                # --------------------------------------------
+                # VALIDATE STATUS
+                # --------------------------------------------
 
-                gender = value(
-                    "gender"
-                ) or None
-
-                date_of_birth_raw = value(
-                    "date_of_birth",
-                    "date of birth",
-                    "dob",
-                )
-
-                place_of_birth = value(
-                    "place_of_birth",
-                    "place of birth",
-                ) or None
-
-                nationality = value(
-                    "nationality"
-                ) or None
-
-                phone = value(
-                    "phone"
-                ) or None
-
-                address = value(
-                    "address"
-                ) or None
-
-                city = value(
-                    "city"
-                ) or None
-
-                parent_name = value(
-                    "parent_name",
-                    "parent name",
-                ) or None
-
-                parent_phone = value(
-                    "parent_phone",
-                    "parent phone",
-                ) or None
-
-                parent_email = value(
-                    "parent_email",
-                    "parent email",
-                ) or None
-
-                parent_address = value(
-                    "parent_address",
-                    "parent address",
-                ) or None
-
-                relationship = value(
-                    "relationship_to_student",
-                    "relationship",
-                ) or None
-
-                status = (
-                    value("status")
+                student_status = (
+                    clean(
+                        row.get("Student Status")
+                    )
                     or "active"
                 ).lower()
 
-                password = (
-                    value("password")
-                    or admission_no
-                    or username
-                )
+                allowed_student_statuses = {
+                    "active",
+                    "inactive",
+                    "graduated",
+                    "transferred",
+                    "suspended",
+                    "withdrawn",
+                }
 
-                photo_url = value(
-                    "photo",
-                    "photo_url",
-                    "photo url",
-                ) or None
-
-                # ---------------------------------------------
-                # Institution
-                # ---------------------------------------------
-
-                if institution_id_raw.isdigit():
-
-                    institution_id = int(
-                        institution_id_raw
-                    )
-
-                else:
-
-                    institution_id = (
-                        _student_user_institution_id()
-                    )
-
-                # ---------------------------------------------
-                # Branch
-                # ---------------------------------------------
-
-                if branch_id_raw.isdigit():
-
-                    branch_id = int(
-                        branch_id_raw
-                    )
-
-                else:
-
-                    branch_id = (
-                        _student_user_branch_id()
-                    )
-
-                # ---------------------------------------------
-                # Required
-                # ---------------------------------------------
-
-                if not full_name:
-
-                    errors.append(
-                        f"Row {row_number}: Full name is required."
-                    )
-
-                    continue
-
-                if not username:
-
-                    username = admission_no.lower()
-
-                if not admission_no:
-
-                    errors.append(
-                        f"Row {row_number}: Admission number is required."
-                    )
-
-                    continue
-
-                # ---------------------------------------------
-                # Role restriction
-                # ---------------------------------------------
-
-                if role == "institution_admin":
-
-                    if institution_id != _student_user_institution_id():
-
-                        errors.append(
-                            f"Row {row_number}: Institution access denied."
-                        )
-
-                        continue
-
-                if role == "branch_admin":
-
-                    if (
-                        institution_id
-                        != _student_user_institution_id()
-                    ):
-
-                        errors.append(
-                            f"Row {row_number}: Institution access denied."
-                        )
-
-                        continue
-
-                    if (
-                        branch_id
-                        != _student_user_branch_id()
-                    ):
-
-                        errors.append(
-                            f"Row {row_number}: Branch access denied."
-                        )
-
-                        continue
-
-                # ---------------------------------------------
-                # Branch validation
-                # ---------------------------------------------
-
-                branch = (
-                    Branch.query
-                    .filter(
-                        Branch.id == branch_id
-                    )
-                    .first()
-                )
-
-                if not branch:
-
-                    errors.append(
-                        f"Row {row_number}: Branch not found."
-                    )
-
-                    continue
-
-                if branch.institution_id != institution_id:
-
-                    errors.append(
-                        f"Row {row_number}: Branch does not belong to institution."
-                    )
-
-                    continue
-
-                # ---------------------------------------------
-                # Duplicate username
-                # ---------------------------------------------
-
-                if (
-                    Student.query
-                    .filter(
-                        func.lower(Student.username)
-                        == username.lower()
-                    )
-                    .first()
+                if student_status not in (
+                    allowed_student_statuses
                 ):
 
-                    skipped_count += 1
-
-                    errors.append(
-                        f"Row {row_number}: Username already exists: {username}"
+                    raise ValueError(
+                        f"Invalid Student Status "
+                        f"'{student_status}'."
                     )
 
-                    continue
+                # --------------------------------------------
+                # FIND EXISTING STUDENT
+                # --------------------------------------------
 
-                # ---------------------------------------------
-                # Duplicate email
-                # ---------------------------------------------
+                student = (
+                    Student.query
+                    .filter(
+                        Student.institution_id
+                        == institution_id,
+                        Student.admission_no
+                        == admission_no,
+                    )
+                    .first()
+                )
 
-                if email:
+                # =================================================
+                # CREATE STUDENT
+                # =================================================
 
-                    if (
+                if not student:
+
+                    # --------------------------------------------
+                    # Username collision check
+                    # --------------------------------------------
+
+                    username_exists = (
                         Student.query
                         .filter(
-                            func.lower(Student.email)
-                            == email.lower()
+                            Student.username
+                            == username
                         )
                         .first()
+                    )
+
+                    if username_exists:
+
+                        raise ValueError(
+                            f"Username '{username}' "
+                            f"already exists."
+                        )
+
+                    # --------------------------------------------
+                    # Email collision check
+                    # --------------------------------------------
+
+                    email = clean(
+                        row.get("Email")
+                    )
+
+                    if email:
+
+                        email_exists = (
+                            Student.query
+                            .filter(
+                                Student.email
+                                == email
+                            )
+                            .first()
+                        )
+
+                        if email_exists:
+
+                            raise ValueError(
+                                f"Email '{email}' "
+                                f"already exists."
+                            )
+
+                    # --------------------------------------------
+                    # Generate temporary password
+                    # --------------------------------------------
+
+                    temporary_password = (
+                        "Stu@"
+                        + secrets.token_hex(4)
+                    )
+
+                    student = Student(
+
+                        institution_id=(
+                            institution_id
+                        ),
+
+                        branch_id=(
+                            branch_id
+                            if branch_id
+                            else getattr(
+                                current_user_obj,
+                                "branch_id",
+                                None
+                            )
+                        ),
+
+                        username=username,
+
+                        email=email,
+
+                        admission_no=(
+                            admission_no
+                        ),
+
+                        roll_no=clean(
+                            row.get("Roll No")
+                        ),
+
+                        full_name=full_name,
+
+                        gender=clean(
+                            row.get("Gender")
+                        ),
+
+                        date_of_birth=parse_date(
+                            row.get(
+                                "Date of Birth"
+                            ),
+                            "Date of Birth"
+                        ),
+
+                        place_of_birth=clean(
+                            row.get(
+                                "Place of Birth"
+                            )
+                        ),
+
+                        nationality=clean(
+                            row.get(
+                                "Nationality"
+                            )
+                        ),
+
+                        phone=clean(
+                            row.get("Phone")
+                        ),
+
+                        address=clean(
+                            row.get("Address")
+                        ),
+
+                        city=clean(
+                            row.get("City")
+                        ),
+
+                        parent_name=clean(
+                            row.get(
+                                "Parent Name"
+                            )
+                        ),
+
+                        parent_phone=clean(
+                            row.get(
+                                "Parent Phone"
+                            )
+                        ),
+
+                        parent_email=clean(
+                            row.get(
+                                "Parent Email"
+                            )
+                        ),
+
+                        parent_address=clean(
+                            row.get(
+                                "Parent Address"
+                            )
+                        ),
+
+                        relationship_to_student=clean(
+                            row.get(
+                                "Relationship to Student"
+                            )
+                        ),
+
+                        status=student_status,
+
+                        notes=clean(
+                            row.get(
+                                "Student Notes"
+                            )
+                        ),
+
+                        role="student",
+
+                        is_active=(
+                            student_status
+                            == "active"
+                        ),
+
+                        is_verified=False,
+                    )
+
+                    student.set_password(
+                        temporary_password
+                    )
+
+                    db.session.add(student)
+
+                    db.session.flush()
+
+                    created_students += 1
+
+                # =================================================
+                # EXISTING STUDENT
+                # =================================================
+
+                else:
+
+                    # --------------------------------------------
+                    # Access check
+                    # --------------------------------------------
+
+                    if not _student_has_access(
+                        student
                     ):
 
-                        skipped_count += 1
-
-                        errors.append(
-                            f"Row {row_number}: Email already exists: {email}"
+                        raise ValueError(
+                            f"Access denied for "
+                            f"student '{admission_no}'."
                         )
 
-                        continue
+                    # --------------------------------------------
+                    # Update student information
+                    # --------------------------------------------
 
-                # ---------------------------------------------
-                # Duplicate admission
-                # ---------------------------------------------
-
-                if (
-                    Student.query
-                    .filter(
-                        Student.institution_id ==
-                        institution_id,
-                        func.lower(
-                            Student.admission_no
-                        )
-                        == admission_no.lower(),
+                    student.branch_id = (
+                        branch_id
+                        if branch_id
+                        else student.branch_id
                     )
-                    .first()
+
+                    if clean(
+                        row.get("Roll No")
+                    ):
+                        student.roll_no = clean(
+                            row.get("Roll No")
+                        )
+
+                    student.full_name = (
+                        full_name
+                    )
+
+                    if clean(
+                        row.get("Email")
+                    ):
+
+                        new_email = clean(
+                            row.get("Email")
+                        )
+
+                        email_exists = (
+                            Student.query
+                            .filter(
+                                Student.email
+                                == new_email,
+                                Student.id
+                                != student.id,
+                            )
+                            .first()
+                        )
+
+                        if email_exists:
+
+                            raise ValueError(
+                                f"Email "
+                                f"'{new_email}' "
+                                f"already belongs "
+                                f"to another student."
+                            )
+
+                        student.email = (
+                            new_email
+                        )
+
+                    if clean(
+                        row.get("Gender")
+                    ):
+                        student.gender = clean(
+                            row.get("Gender")
+                        )
+
+                    dob = parse_date(
+                        row.get(
+                            "Date of Birth"
+                        ),
+                        "Date of Birth"
+                    )
+
+                    if dob:
+                        student.date_of_birth = dob
+
+                    student.place_of_birth = (
+                        clean(
+                            row.get(
+                                "Place of Birth"
+                            )
+                        )
+                        or student.place_of_birth
+                    )
+
+                    student.nationality = (
+                        clean(
+                            row.get(
+                                "Nationality"
+                            )
+                        )
+                        or student.nationality
+                    )
+
+                    student.phone = (
+                        clean(
+                            row.get("Phone")
+                        )
+                        or student.phone
+                    )
+
+                    student.address = (
+                        clean(
+                            row.get("Address")
+                        )
+                        or student.address
+                    )
+
+                    student.city = (
+                        clean(
+                            row.get("City")
+                        )
+                        or student.city
+                    )
+
+                    student.parent_name = (
+                        clean(
+                            row.get(
+                                "Parent Name"
+                            )
+                        )
+                        or student.parent_name
+                    )
+
+                    student.parent_phone = (
+                        clean(
+                            row.get(
+                                "Parent Phone"
+                            )
+                        )
+                        or student.parent_phone
+                    )
+
+                    student.parent_email = (
+                        clean(
+                            row.get(
+                                "Parent Email"
+                            )
+                        )
+                        or student.parent_email
+                    )
+
+                    student.parent_address = (
+                        clean(
+                            row.get(
+                                "Parent Address"
+                            )
+                        )
+                        or student.parent_address
+                    )
+
+                    student.relationship_to_student = (
+                        clean(
+                            row.get(
+                                "Relationship to Student"
+                            )
+                        )
+                        or student.relationship_to_student
+                    )
+
+                    student.status = (
+                        student_status
+                    )
+
+                    student.is_active = (
+                        student_status
+                        == "active"
+                    )
+
+                    if clean(
+                        row.get(
+                            "Student Notes"
+                        )
+                    ):
+
+                        student.notes = clean(
+                            row.get(
+                                "Student Notes"
+                            )
+                        )
+
+                    db.session.flush()
+
+                    updated_students += 1
+
+                # =================================================
+                # BRANCH
+                # =================================================
+
+                effective_branch_id = (
+                    student.branch_id
+                )
+
+                if not effective_branch_id:
+
+                    raise ValueError(
+                        "Student branch could not "
+                        "be determined."
+                    )
+
+                # =================================================
+                # ACADEMIC YEAR
+                # =================================================
+
+                academic_year = resolve_model(
+                    AcademicYear,
+                    row.get(
+                        "Academic Year"
+                    ),
+                    "Academic Year",
+                    institution_id=(
+                        institution_id
+                    ),
+                    branch_id=(
+                        effective_branch_id
+                    ),
+                )
+
+                # =================================================
+                # PROGRAM
+                # =================================================
+
+                program = resolve_model(
+                    Program,
+                    row.get("Program"),
+                    "Program",
+                    institution_id=(
+                        institution_id
+                    ),
+                    branch_id=(
+                        effective_branch_id
+                    ),
+                )
+
+                # =================================================
+                # CLASS
+                # =================================================
+
+                class_obj = resolve_model(
+                    Class,
+                    row.get("Class"),
+                    "Class",
+                    institution_id=(
+                        institution_id
+                    ),
+                    branch_id=(
+                        effective_branch_id
+                    ),
+                )
+
+                # =================================================
+                # SECTION
+                # =================================================
+
+                section_value = clean(
+                    row.get("Section")
+                )
+
+                section = None
+
+                if section_value:
+
+                    section = resolve_model(
+                        Section,
+                        section_value,
+                        "Section",
+                        institution_id=(
+                            institution_id
+                        ),
+                        branch_id=(
+                            effective_branch_id
+                        ),
+                    )
+
+                # =================================================
+                # ENROLLMENT
+                # =================================================
+
+                enrollment_no = clean(
+                    row.get(
+                        "Enrollment No"
+                    )
+                )
+
+                if not enrollment_no:
+
+                    raise ValueError(
+                        "Enrollment No is required."
+                    )
+
+                enrollment_date = (
+                    parse_date(
+                        row.get(
+                            "Enrollment Date"
+                        ),
+                        "Enrollment Date"
+                    )
+                    or date.today()
+                )
+
+                enrollment_status = (
+                    clean(
+                        row.get(
+                            "Enrollment Status"
+                        )
+                    )
+                    or "active"
+                ).lower()
+
+                allowed_enrollment_statuses = {
+                    "active",
+                    "completed",
+                    "transferred",
+                    "withdrawn",
+                    "suspended",
+                    "promoted",
+                }
+
+                if enrollment_status not in (
+                    allowed_enrollment_statuses
                 ):
 
-                    skipped_count += 1
-
-                    errors.append(
-                        f"Row {row_number}: Admission number already exists: {admission_no}"
+                    raise ValueError(
+                        f"Invalid Enrollment Status "
+                        f"'{enrollment_status}'."
                     )
 
-                    continue
+                # ------------------------------------------------
+                # Find by student + academic year
+                # ------------------------------------------------
 
-                # ---------------------------------------------
-                # Date
-                # ---------------------------------------------
+                enrollment = (
+                    StudentEnrollment.query
+                    .filter(
+                        StudentEnrollment.student_id
+                        == student.id,
 
-                try:
+                        StudentEnrollment.academic_year_id
+                        == academic_year.id,
+                    )
+                    .first()
+                )
 
-                    date_of_birth = (
-                        _parse_student_date(
-                            date_of_birth_raw
+                if enrollment:
+
+                    # --------------------------------------------
+                    # Update existing enrollment
+                    # --------------------------------------------
+
+                    enrollment.branch_id = (
+                        effective_branch_id
+                    )
+
+                    enrollment.program_id = (
+                        program.id
+                    )
+
+                    enrollment.class_id = (
+                        class_obj.id
+                    )
+
+                    enrollment.section_id = (
+                        section.id
+                        if section
+                        else None
+                    )
+
+                    enrollment.enrollment_no = (
+                        enrollment_no
+                    )
+
+                    enrollment.enrollment_date = (
+                        enrollment_date
+                    )
+
+                    enrollment.status = (
+                        enrollment_status
+                    )
+
+                    enrollment.notes = clean(
+                        row.get(
+                            "Enrollment Notes"
                         )
                     )
 
-                except ValueError:
+                    db.session.flush()
 
-                    errors.append(
-                        f"Row {row_number}: Invalid date of birth."
+                else:
+
+                    # --------------------------------------------
+                    # Check enrollment number
+                    # --------------------------------------------
+
+                    enrollment_no_exists = (
+                        StudentEnrollment.query
+                        .filter(
+                            StudentEnrollment
+                            .institution_id
+                            == institution_id,
+
+                            StudentEnrollment
+                            .enrollment_no
+                            == enrollment_no,
+                        )
+                        .first()
                     )
 
-                    continue
+                    if enrollment_no_exists:
 
-                # ---------------------------------------------
-                # Student
-                # ---------------------------------------------
+                        raise ValueError(
+                            f"Enrollment No "
+                            f"'{enrollment_no}' "
+                            f"already exists."
+                        )
 
-                student = Student(
+                    enrollment = (
+                        StudentEnrollment(
 
-                    institution_id=institution_id,
+                            institution_id=(
+                                institution_id
+                            ),
 
-                    branch_id=branch_id,
+                            branch_id=(
+                                effective_branch_id
+                            ),
 
-                    username=username,
+                            student_id=(
+                                student.id
+                            ),
 
-                    email=email,
+                            academic_year_id=(
+                                academic_year.id
+                            ),
 
-                    role="student",
+                            program_id=(
+                                program.id
+                            ),
 
-                    is_active=(
-                        status == "active"
+                            class_id=(
+                                class_obj.id
+                            ),
+
+                            section_id=(
+                                section.id
+                                if section
+                                else None
+                            ),
+
+                            enrollment_no=(
+                                enrollment_no
+                            ),
+
+                            enrollment_date=(
+                                enrollment_date
+                            ),
+
+                            status=(
+                                enrollment_status
+                            ),
+
+                            notes=clean(
+                                row.get(
+                                    "Enrollment Notes"
+                                )
+                            ),
+                        )
+                    )
+
+                    db.session.add(
+                        enrollment
+                    )
+
+                    db.session.flush()
+
+                    created_enrollments += 1
+
+                # =================================================
+                # CHARGE
+                # =================================================
+
+                charge_type = (
+                    clean(
+                        row.get(
+                            "Charge Type"
+                        )
+                    )
+                    or "other"
+                ).lower()
+
+                allowed_charge_types = {
+                    "registration",
+                    "program_fee",
+                    "tuition",
+                    "exam",
+                    "admission",
+                    "id_card",
+                    "uniform",
+                    "books",
+                    "transport",
+                    "laboratory",
+                    "library",
+                    "certificate",
+                    "other",
+                }
+
+                if charge_type not in (
+                    allowed_charge_types
+                ):
+
+                    raise ValueError(
+                        f"Invalid Charge Type "
+                        f"'{charge_type}'."
+                    )
+
+                charge_name = clean(
+                    row.get(
+                        "Charge Name"
+                    )
+                )
+
+                if not charge_name:
+
+                    raise ValueError(
+                        "Charge Name is required."
+                    )
+
+                amount = decimal_value(
+                    row.get("Amount"),
+                    "Amount"
+                )
+
+                discount = decimal_value(
+                    row.get("Discount"),
+                    "Discount"
+                )
+
+                paid_amount = decimal_value(
+                    row.get("Paid Amount"),
+                    "Paid Amount"
+                )
+
+                if discount > amount:
+
+                    raise ValueError(
+                        "Discount cannot be greater "
+                        "than Amount."
+                    )
+
+                net_amount = (
+                    amount - discount
+                )
+
+                if paid_amount > net_amount:
+
+                    raise ValueError(
+                        "Paid Amount cannot be "
+                        "greater than Net Amount."
+                    )
+
+                balance = (
+                    net_amount - paid_amount
+                )
+
+                if balance <= 0:
+
+                    charge_status = "paid"
+
+                elif paid_amount > 0:
+
+                    charge_status = "partial"
+
+                else:
+
+                    charge_status = "unpaid"
+
+                due_date = parse_date(
+                    row.get("Due Date"),
+                    "Due Date"
+                )
+
+                charge = StudentCharge(
+
+                    institution_id=(
+                        institution_id
                     ),
 
-                    is_verified=False,
-
-                    admission_no=admission_no,
-
-                    roll_no=roll_no,
-
-                    full_name=full_name,
-
-                    gender=gender,
-
-                    date_of_birth=date_of_birth,
-
-                    place_of_birth=place_of_birth,
-
-                    nationality=nationality,
-
-                    phone=phone,
-
-                    address=address,
-
-                    city=city,
-
-                    parent_name=parent_name,
-
-                    parent_phone=parent_phone,
-
-                    parent_email=parent_email,
-
-                    parent_address=parent_address,
-
-                    relationship_to_student=relationship,
-
-                    photo=photo_url,
-
-                    status=(
-                        status
-                        if status in STUDENT_STATUSES
-                        else "active"
+                    branch_id=(
+                        effective_branch_id
                     ),
 
+                    student_id=(
+                        student.id
+                    ),
+
+                    enrollment_id=(
+                        enrollment.id
+                    ),
+
+                    academic_year_id=(
+                        academic_year.id
+                    ),
+
+                    charge_type=(
+                        charge_type
+                    ),
+
+                    charge_name=(
+                        charge_name
+                    ),
+
+                    description=clean(
+                        row.get(
+                            "Charge Description"
+                        )
+                    ),
+
+                    amount=amount,
+
+                    discount=discount,
+
+                    net_amount=net_amount,
+
+                    paid_amount=paid_amount,
+
+                    balance=balance,
+
+                    due_date=due_date,
+
+                    status=charge_status,
+
+                    created_by=(
+                        current_user_obj.id
+                        if getattr(
+                            current_user_obj,
+                            "id",
+                            None
+                        )
+                        else None
+                    ),
                 )
 
-                student.set_password(
-                    password
+                db.session.add(
+                    charge
                 )
 
-                db.session.add(student)
+                db.session.flush()
 
-                created_count += 1
+                created_charges += 1
 
-            # -------------------------------------------------
-            # Commit all
-            # -------------------------------------------------
+            # ====================================================
+            # ROW ERROR
+            # ====================================================
 
-            db.session.commit()
+            except Exception as row_error:
 
-            flash(
-                f"{created_count} students imported successfully.",
-                "success",
-            )
-
-            if skipped_count:
-
-                flash(
-                    f"{skipped_count} students were skipped because of duplicate data.",
-                    "warning",
+                errors.append(
+                    f"Row {row_number}: "
+                    f"{str(row_error)}"
                 )
 
-            if errors:
+                # ----------------------------------------------
+                # Entire import will rollback
+                # ----------------------------------------------
 
-                # Show only first 10 errors
-                for error in errors[:10]:
+                raise
 
-                    flash(
-                        error,
-                        "warning",
-                    )
+        # ========================================================
+        # COMMIT ALL
+        # ========================================================
 
-                if len(errors) > 10:
+        db.session.commit()
 
-                    flash(
-                        f"{len(errors) - 10} additional import errors were hidden.",
-                        "warning",
-                    )
+    except Exception as exc:
 
-            return redirect(
-                url_for(
-                    "main.all_students"
-                )
-            )
+        db.session.rollback()
 
-        except Exception as exc:
+        current_app.logger.exception(
+            "Student full CSV import failed: %s",
+            exc
+        )
 
-            db.session.rollback()
+        # --------------------------------------------------------
+        # Show useful row error
+        # --------------------------------------------------------
 
-            current_app.logger.exception(
-                "Student import failed: %s",
-                exc,
-            )
+        if errors:
 
-            flash(
-                f"Student import failed: {exc}",
-                "danger",
-            )
+            error_message = errors[0]
 
-    return render_template(
-        "backend/pages/students/import_students.html",
-        **context,
+        else:
+
+            error_message = str(exc)
+
+        flash(
+            "Import failed. No records were saved. "
+            + error_message,
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_students")
+        )
+
+    # ========================================================
+    # SUCCESS
+    # ========================================================
+
+    flash(
+        "Student import completed successfully. "
+        f"Students created: {created_students}, "
+        f"students updated: {updated_students}, "
+        f"enrollments created: {created_enrollments}, "
+        f"charges created: {created_charges}.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.all_students")
     )
 
 

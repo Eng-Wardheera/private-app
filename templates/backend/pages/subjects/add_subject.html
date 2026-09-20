@@ -1,3 +1,4 @@
+
 {% extends "backend/home/base.html" %}
 
 {% block content %}
@@ -14,6 +15,7 @@
     margin: 0 auto;
     padding: 4px 0 40px;
 }
+
 
 /* ============================================================
    HEADER
@@ -89,6 +91,7 @@
     background: #f8fafc;
 }
 
+
 /* ============================================================
    GRID
    ============================================================ */
@@ -104,6 +107,7 @@
 .add-subject-sidebar {
     min-width: 0;
 }
+
 
 /* ============================================================
    CARDS
@@ -163,6 +167,7 @@
 .form-card-body {
     padding: 20px;
 }
+
 
 /* ============================================================
    FIELDS
@@ -243,6 +248,7 @@
     line-height: 1.45;
 }
 
+
 /* ============================================================
    AUTO CODE
    ============================================================ */
@@ -257,7 +263,7 @@
     color: #06245f;
     font-weight: 800;
     letter-spacing: .7px;
-    cursor: default;
+    cursor: not-allowed;
 }
 
 .auto-code-badge {
@@ -276,6 +282,7 @@
     font-size: 9px;
     font-weight: 800;
 }
+
 
 /* ============================================================
    ASSIGNMENT
@@ -338,6 +345,7 @@
     flex-shrink: 0;
 }
 
+
 /* ============================================================
    CODE PREVIEW
    ============================================================ */
@@ -392,6 +400,7 @@
     font-size: 10px;
     text-align: right;
 }
+
 
 /* ============================================================
    MARKS
@@ -482,6 +491,7 @@
     font-size: 14px;
 }
 
+
 /* ============================================================
    RADIO
    ============================================================ */
@@ -534,6 +544,7 @@
     color: #24952d;
 }
 
+
 /* ============================================================
    TYPE COLORS
    ============================================================ */
@@ -580,6 +591,7 @@
     color: #b31f1f;
 }
 
+
 /* ============================================================
    SIDEBAR
    ============================================================ */
@@ -599,6 +611,7 @@
 .sidebar-card-body {
     padding: 18px;
 }
+
 
 /* ============================================================
    SUMMARY
@@ -643,6 +656,7 @@
     font-weight: 800;
     letter-spacing: .5px;
 }
+
 
 /* ============================================================
    INFO
@@ -690,6 +704,7 @@
     font-size: 11px;
     line-height: 1.4;
 }
+
 
 /* ============================================================
    ACTIONS
@@ -743,6 +758,7 @@
     color: #06245f;
 }
 
+
 /* ============================================================
    ALERT
    ============================================================ */
@@ -769,6 +785,17 @@
     margin-top: 2px;
     flex-shrink: 0;
 }
+
+
+/* ============================================================
+   REQUIRED FIELD HIGHLIGHT
+   ============================================================ */
+
+.field-error {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, .07) !important;
+}
+
 
 /* ============================================================
    RESPONSIVE
@@ -835,6 +862,7 @@
 
 <div class="add-subject-page">
 
+
     <!-- ========================================================
          HEADER
     ======================================================== -->
@@ -891,6 +919,7 @@
 
         <div class="add-subject-grid">
 
+
             <!-- ==================================================
                  MAIN
             ================================================== -->
@@ -946,7 +975,9 @@
                         <div class="fields-grid">
 
 
-                            <!-- INSTITUTION -->
+                            <!-- ==================================================
+                                 INSTITUTION
+                            ================================================== -->
 
                             <div class="form-group">
 
@@ -1005,7 +1036,9 @@
                             </div>
 
 
-                            <!-- BRANCH -->
+                            <!-- ==================================================
+                                 BRANCH
+                            ================================================== -->
 
                             <div class="form-group">
 
@@ -1057,13 +1090,15 @@
                                 </select>
 
                                 <div class="form-help">
-                                    Leave empty if the subject is shared at institution level.
+                                    Leave empty if the subject belongs to institution level.
                                 </div>
 
                             </div>
 
 
-                            <!-- PROGRAM -->
+                            <!-- ==================================================
+                                 PROGRAM — REQUIRED
+                            ================================================== -->
 
                             <div class="form-group field-full">
 
@@ -1071,13 +1106,20 @@
                                     class="form-label"
                                     for="program_id"
                                 >
+
                                     Program
+
+                                    <span class="required">
+                                        *
+                                    </span>
+
                                 </label>
 
                                 <select
                                     id="program_id"
                                     name="program_id"
                                     class="form-select-custom"
+                                    required
                                 >
 
                                     <option value="">
@@ -1115,13 +1157,18 @@
                                 </select>
 
                                 <div class="form-help">
-                                    Optional. Assign this subject to a specific academic program.
+
+                                    Program is required because subject codes are
+                                    generated sequentially inside each program.
+
                                 </div>
 
                             </div>
 
 
-                            <!-- ASSIGNMENT INFO -->
+                            <!-- ==================================================
+                                 ASSIGNMENT INFO
+                            ================================================== -->
 
                             <div class="form-group field-full">
 
@@ -1153,10 +1200,12 @@
                                         <i class="fas fa-info-circle"></i>
 
                                         <span>
-                                            The institution is required. A branch is optional because
-                                            subjects can be shared across an institution. Programs are
-                                            also optional and can associate the subject with a specific
-                                            academic program.
+
+                                            Institution and Program are required.
+                                            Branch is optional. The subject code is
+                                            generated automatically according to the
+                                            selected Institution, Branch and Program.
+
                                         </span>
 
                                     </div>
@@ -1204,7 +1253,9 @@
                         <div class="fields-grid">
 
 
-                            <!-- NAME -->
+                            <!-- ==================================================
+                                 NAME
+                            ================================================== -->
 
                             <div class="form-group">
 
@@ -1212,8 +1263,13 @@
                                     class="form-label"
                                     for="name"
                                 >
+
                                     Subject Name
-                                    <span class="required">*</span>
+
+                                    <span class="required">
+                                        *
+                                    </span>
+
                                 </label>
 
                                 <input
@@ -1234,7 +1290,9 @@
                             </div>
 
 
-                            <!-- AUTO CODE -->
+                            <!-- ==================================================
+                                 AUTO CODE
+                            ================================================== -->
 
                             <div class="form-group">
 
@@ -1242,8 +1300,13 @@
                                     class="form-label"
                                     for="code"
                                 >
+
                                     Subject Code
-                                    <span class="required">*</span>
+
+                                    <span class="required">
+                                        *
+                                    </span>
+
                                 </label>
 
                                 <div class="auto-code-wrapper">
@@ -1256,7 +1319,6 @@
                                         value="{{ request.form.get('code', '') }}"
                                         maxlength="50"
                                         readonly
-                                        required
                                     >
 
                                     <span class="auto-code-badge">
@@ -1270,13 +1332,18 @@
                                 </div>
 
                                 <div class="form-help">
-                                    Generated automatically from the subject name.
+
+                                    Generated automatically by the system.
+                                    Example: SUB001, SUB002, SUB003.
+
                                 </div>
 
                             </div>
 
 
-                            <!-- SHORT NAME -->
+                            <!-- ==================================================
+                                 SHORT NAME
+                            ================================================== -->
 
                             <div class="form-group">
 
@@ -1304,7 +1371,9 @@
                             </div>
 
 
-                            <!-- CODE PREVIEW -->
+                            <!-- ==================================================
+                                 CODE PREVIEW
+                            ================================================== -->
 
                             <div class="form-group">
 
@@ -1321,20 +1390,20 @@
                                     <div class="code-preview-content">
 
                                         <span class="code-preview-label">
-                                            AUTO SUBJECT CODE
+                                            NEXT SUBJECT CODE
                                         </span>
 
                                         <span
                                             id="code-preview"
                                             class="code-preview-value"
                                         >
-                                            {{ request.form.get('code', '') or 'SUB001' }}
+                                            AUTO
                                         </span>
 
                                     </div>
 
                                     <div class="code-preview-note">
-                                        Automatically generated
+                                        Generated on save
                                     </div>
 
                                 </div>
@@ -1342,7 +1411,9 @@
                             </div>
 
 
-                            <!-- DESCRIPTION -->
+                            <!-- ==================================================
+                                 DESCRIPTION
+                            ================================================== -->
 
                             <div class="form-group field-full">
 
@@ -1512,7 +1583,9 @@
                         <div class="fields-grid">
 
 
-                            <!-- WEEKLY HOURS -->
+                            <!-- ==================================================
+                                 WEEKLY HOURS
+                            ================================================== -->
 
                             <div class="form-group">
 
@@ -1542,7 +1615,9 @@
                             </div>
 
 
-                            <!-- CREDIT HOURS -->
+                            <!-- ==================================================
+                                 CREDIT HOURS — REQUIRED
+                            ================================================== -->
 
                             <div class="form-group">
 
@@ -1550,7 +1625,13 @@
                                     class="form-label"
                                     for="credit_hours"
                                 >
+
                                     Credit Hours
+
+                                    <span class="required">
+                                        *
+                                    </span>
+
                                 </label>
 
                                 <input
@@ -1563,10 +1644,13 @@
                                     min="0"
                                     max="999.99"
                                     step="0.01"
+                                    required
                                 >
 
                                 <div class="form-help">
-                                    Academic credit value assigned to the subject.
+
+                                    Credit hours are required for every subject.
+
                                 </div>
 
                             </div>
@@ -1637,7 +1721,9 @@
                             <div class="marks-fields">
 
 
-                                <!-- MAX MARKS -->
+                                <!-- ==================================================
+                                     MAX MARKS
+                                ================================================== -->
 
                                 <div class="form-group">
 
@@ -1645,8 +1731,13 @@
                                         class="form-label"
                                         for="max_marks"
                                     >
+
                                         Maximum Marks
-                                        <span class="required">*</span>
+
+                                        <span class="required">
+                                            *
+                                        </span>
+
                                     </label>
 
                                     <input
@@ -1665,7 +1756,9 @@
                                 </div>
 
 
-                                <!-- PASS MARKS -->
+                                <!-- ==================================================
+                                     PASS MARKS
+                                ================================================== -->
 
                                 <div class="form-group">
 
@@ -1673,8 +1766,13 @@
                                         class="form-label"
                                         for="pass_marks"
                                     >
+
                                         Pass Marks
-                                        <span class="required">*</span>
+
+                                        <span class="required">
+                                            *
+                                        </span>
+
                                     </label>
 
                                     <input
@@ -1787,7 +1885,7 @@
                                 id="summary-code"
                                 class="subject-summary-code"
                             >
-                                {{ request.form.get('code', '') or 'SUB001' }}
+                                AUTO
                             </div>
 
                         </div>
@@ -1951,7 +2049,7 @@
                                 </strong>
 
                                 <span>
-                                    Program assignment is optional and can organize curriculum subjects.
+                                    Program is required for sequential subject code generation.
                                 </span>
 
                             </div>
@@ -1972,7 +2070,28 @@
                                 </strong>
 
                                 <span>
-                                    Subject code is generated automatically from the subject name.
+                                    Code is generated by the server when the subject is saved.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Credit Hours
+                                </strong>
+
+                                <span>
+                                    Credit hours are required for every subject.
                                 </span>
 
                             </div>
@@ -2104,6 +2223,11 @@ const summaryCode =
         "summary-code"
     );
 
+const creditHoursInput =
+    document.getElementById(
+        "credit_hours"
+    );
+
 const maxMarksInput =
     document.getElementById(
         "max_marks"
@@ -2201,7 +2325,7 @@ const SUBJECT_PROGRAMS = [
 
 
 /* ============================================================
-   SHOW ERROR
+   SHOW FORM ERROR
    ============================================================ */
 
 function showFormError(message) {
@@ -2229,7 +2353,7 @@ function showFormError(message) {
 
 
 /* ============================================================
-   HIDE ERROR
+   HIDE FORM ERROR
    ============================================================ */
 
 function hideFormError() {
@@ -2241,6 +2365,48 @@ function hideFormError() {
     formAlert.classList.remove(
         "show"
     );
+
+}
+
+
+/* ============================================================
+   CLEAR FIELD ERRORS
+   ============================================================ */
+
+function clearFieldErrors() {
+
+    document
+        .querySelectorAll(
+            ".field-error"
+        )
+        .forEach(
+            function(element) {
+
+                element.classList.remove(
+                    "field-error"
+                );
+
+            }
+        );
+
+}
+
+
+/* ============================================================
+   FIELD ERROR
+   ============================================================ */
+
+function markFieldError(element) {
+
+    if (!element) {
+        return;
+    }
+
+    element.classList.add(
+        "field-error"
+    );
+
+    element.focus();
 
 }
 
@@ -2307,7 +2473,9 @@ function filterSubjectBranches(
                 String(
                     branch.institution_id
                 ) !==
-                String(institutionId)
+                String(
+                    institutionId
+                )
             ) {
                 return;
             }
@@ -2371,10 +2539,8 @@ function filterSubjectPrograms(
         return;
     }
 
-
     const institutionId =
         institutionSelect.value.trim();
-
 
     const previousProgram =
         preserveSelected
@@ -2420,7 +2586,9 @@ function filterSubjectPrograms(
                 String(
                     program.institution_id
                 ) !==
-                String(institutionId)
+                String(
+                    institutionId
+                )
             ) {
                 return;
             }
@@ -2470,242 +2638,45 @@ function filterSubjectPrograms(
 
 
 /* ============================================================
-   INSTITUTION CHANGE
+   CODE PREVIEW
    ============================================================ */
 
-if (institutionSelect) {
+function resetSubjectCodePreview() {
 
-    institutionSelect.addEventListener(
-        "change",
-        function() {
+    /*
+     * Code is NOT generated from subject name.
+     *
+     * Backend generates:
+     *
+     * SUB001
+     * SUB002
+     * SUB003
+     *
+     * based on the selected Program.
+     */
 
-            filterSubjectBranches(
-                false
-            );
-
-            filterSubjectPrograms(
-                false
-            );
-
-            hideFormError();
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   AUTO CODE PREFIX
-   ============================================================ */
-
-function generateSubjectPrefix(
-    subjectName
-) {
-
-    if (!subjectName) {
-        return "SUB";
-    }
-
-
-    let words =
-        subjectName
-            .trim()
-            .toUpperCase()
-            .replace(
-                /[^A-Z0-9\s]/g,
-                ""
-            )
-            .split(/\s+/)
-            .filter(Boolean);
-
-
-    if (!words.length) {
-        return "SUB";
-    }
-
-
-    const ignoredWords = [
-        "AND",
-        "OF",
-        "THE",
-        "IN",
-        "FOR",
-        "TO",
-        "A",
-        "AN"
-    ];
-
-
-    words =
-        words.filter(
-            function(word) {
-
-                return !ignoredWords.includes(
-                    word
-                );
-
-            }
-        );
-
-
-    if (!words.length) {
-        return "SUB";
-    }
-
-
-    let prefix = "";
-
-
-    /* --------------------------------------------------------
-       ONE WORD
-
-       Mathematics -> MAT
-       Biology     -> BIO
-       Physics     -> PHY
-       -------------------------------------------------------- */
-
-    if (words.length === 1) {
-
-        prefix =
-            words[0].substring(
-                0,
-                3
-            );
-
-    }
-
-
-    /* --------------------------------------------------------
-       TWO OR MORE WORDS
-
-       English Language -> EL
-       Computer Science -> CS
-       Islamic Studies  -> IS
-       General Science  -> GS
-       -------------------------------------------------------- */
-
-    else {
-
-        prefix =
-            words
-                .map(
-                    function(word) {
-                        return word.charAt(0);
-                    }
-                )
-                .join("")
-                .substring(
-                    0,
-                    4
-                );
-
-    }
-
-
-    if (
-        prefix.length < 3
-    ) {
-
-        prefix =
-            words[0].substring(
-                0,
-                3
-            );
-
-    }
-
-
-    prefix =
-        prefix
-            .replace(
-                /[^A-Z0-9]/g,
-                ""
-            )
-            .substring(
-                0,
-                10
-            );
-
-
-    return prefix || "SUB";
-
-}
-
-
-/* ============================================================
-   AUTO SUBJECT CODE
-   ============================================================ */
-
-function generateSubjectCode(
-    subjectName
-) {
-
-    const prefix =
-        generateSubjectPrefix(
-            subjectName
-        );
-
-
-    return `${prefix}001`;
-
-}
-
-
-/* ============================================================
-   UPDATE AUTO CODE
-   ============================================================ */
-
-function updateAutoSubjectCode() {
-
-    if (
-        !nameInput ||
-        !codeInput
-    ) {
-        return;
-    }
-
-
-    const subjectName =
-        nameInput.value.trim();
-
-
-    if (!subjectName) {
+    if (codeInput) {
 
         codeInput.value =
             "";
 
-    } else {
+    }
 
-        codeInput.value =
-            generateSubjectCode(
-                subjectName
-            );
+
+    if (codePreview) {
+
+        codePreview.textContent =
+            "AUTO";
 
     }
 
 
-    updateSubjectPreview();
+    if (summaryCode) {
 
-}
+        summaryCode.textContent =
+            "AUTO";
 
-
-/* ============================================================
-   NAME INPUT
-   ============================================================ */
-
-if (nameInput) {
-
-    nameInput.addEventListener(
-        "input",
-        function() {
-
-            updateAutoSubjectCode();
-
-            hideFormError();
-
-        }
-    );
+    }
 
 }
 
@@ -2722,12 +2693,6 @@ function updateSubjectPreview() {
             : "";
 
 
-    const code =
-        codeInput
-            ? codeInput.value.trim().toUpperCase()
-            : "";
-
-
     if (summaryName) {
 
         summaryName.textContent =
@@ -2740,8 +2705,7 @@ function updateSubjectPreview() {
     if (summaryCode) {
 
         summaryCode.textContent =
-            code ||
-            "SUB001";
+            "AUTO";
 
     }
 
@@ -2749,8 +2713,7 @@ function updateSubjectPreview() {
     if (codePreview) {
 
         codePreview.textContent =
-            code ||
-            "SUB001";
+            "AUTO";
 
     }
 
@@ -2829,30 +2792,6 @@ function updateMarksPreview() {
 
 
 /* ============================================================
-   MARK EVENTS
-   ============================================================ */
-
-if (maxMarksInput) {
-
-    maxMarksInput.addEventListener(
-        "input",
-        updateMarksPreview
-    );
-
-}
-
-
-if (passMarksInput) {
-
-    passMarksInput.addEventListener(
-        "input",
-        updateMarksPreview
-    );
-
-}
-
-
-/* ============================================================
    VALIDATE RELATIONSHIPS
    ============================================================ */
 
@@ -2876,16 +2815,25 @@ function validateRelationships() {
             : "";
 
 
+    /* --------------------------------------------------------
+       INSTITUTION
+    -------------------------------------------------------- */
+
     if (!institutionId) {
 
         return {
             valid: false,
+            field: institutionSelect,
             message:
                 "Please select an institution."
         };
 
     }
 
+
+    /* --------------------------------------------------------
+       BRANCH
+    -------------------------------------------------------- */
 
     if (branchId) {
 
@@ -2916,6 +2864,7 @@ function validateRelationships() {
 
             return {
                 valid: false,
+                field: branchSelect,
                 message:
                     "The selected branch does not belong to the selected institution."
             };
@@ -2925,40 +2874,139 @@ function validateRelationships() {
     }
 
 
-    if (programId) {
+    /* --------------------------------------------------------
+       PROGRAM REQUIRED
+    -------------------------------------------------------- */
 
-        const program =
-            SUBJECT_PROGRAMS.find(
-                function(item) {
+    if (!programId) {
 
-                    return String(
-                        item.id
-                    ) ===
-                    String(
-                        programId
-                    );
+        return {
+            valid: false,
+            field: programSelect,
+            message:
+                "Please select a program. Program is required for subject code generation."
+        };
 
-                }
-            );
+    }
 
 
-        if (
-            !program ||
-            String(
-                program.institution_id
-            ) !==
-            String(
-                institutionId
-            )
-        ) {
+    /* --------------------------------------------------------
+       PROGRAM OWNERSHIP
+    -------------------------------------------------------- */
 
-            return {
-                valid: false,
-                message:
-                    "The selected program does not belong to the selected institution."
-            };
+    const program =
+        SUBJECT_PROGRAMS.find(
+            function(item) {
 
-        }
+                return String(
+                    item.id
+                ) ===
+                String(
+                    programId
+                );
+
+            }
+        );
+
+
+    if (
+        !program ||
+        String(
+            program.institution_id
+        ) !==
+        String(
+            institutionId
+        )
+    ) {
+
+        return {
+            valid: false,
+            field: programSelect,
+            message:
+                "The selected program does not belong to the selected institution."
+        };
+
+    }
+
+
+    return {
+        valid: true
+    };
+
+}
+
+
+/* ============================================================
+   VALIDATE CREDIT HOURS
+   ============================================================ */
+
+function validateCreditHours() {
+
+    if (!creditHoursInput) {
+
+        return {
+            valid: false,
+            message:
+                "Credit hours field is missing."
+        };
+
+    }
+
+
+    const raw =
+        creditHoursInput.value.trim();
+
+
+    if (!raw) {
+
+        return {
+            valid: false,
+            field: creditHoursInput,
+            message:
+                "Credit Hours are required."
+        };
+
+    }
+
+
+    const credit =
+        parseFloat(raw);
+
+
+    if (
+        !Number.isFinite(credit)
+    ) {
+
+        return {
+            valid: false,
+            field: creditHoursInput,
+            message:
+                "Please enter a valid credit hours value."
+        };
+
+    }
+
+
+    if (credit < 0) {
+
+        return {
+            valid: false,
+            field: creditHoursInput,
+            message:
+                "Credit Hours cannot be negative."
+        };
+
+    }
+
+
+    if (credit > 999.99) {
+
+        return {
+            valid: false,
+            field: creditHoursInput,
+            message:
+                "Credit Hours cannot exceed 999.99."
+        };
 
     }
 
@@ -2975,6 +3023,20 @@ function validateRelationships() {
    ============================================================ */
 
 function validateMarks() {
+
+    if (
+        !maxMarksInput ||
+        !passMarksInput
+    ) {
+
+        return {
+            valid: false,
+            message:
+                "Marking fields are missing."
+        };
+
+    }
+
 
     const max =
         parseFloat(
@@ -2995,6 +3057,7 @@ function validateMarks() {
 
         return {
             valid: false,
+            field: maxMarksInput,
             message:
                 "Maximum marks must be greater than 0."
         };
@@ -3009,6 +3072,7 @@ function validateMarks() {
 
         return {
             valid: false,
+            field: passMarksInput,
             message:
                 "Pass marks cannot be negative."
         };
@@ -3020,6 +3084,7 @@ function validateMarks() {
 
         return {
             valid: false,
+            field: passMarksInput,
             message:
                 "Pass marks cannot be greater than maximum marks."
         };
@@ -3046,38 +3111,40 @@ function validateHours() {
         );
 
 
-    const creditInput =
-        document.getElementById(
-            "credit_hours"
-        );
+    if (!weeklyInput) {
+
+        return {
+            valid: true
+        };
+
+    }
+
+
+    const raw =
+        weeklyInput.value.trim();
+
+
+    if (!raw) {
+
+        return {
+            valid: true
+        };
+
+    }
 
 
     const weekly =
-        weeklyInput.value.trim()
-            ? parseFloat(
-                weeklyInput.value
-            )
-            : null;
-
-
-    const credit =
-        creditInput.value.trim()
-            ? parseFloat(
-                creditInput.value
-            )
-            : null;
+        parseFloat(raw);
 
 
     if (
-        weekly !== null &&
-        (
-            !Number.isFinite(weekly) ||
-            weekly < 0
-        )
+        !Number.isFinite(weekly) ||
+        weekly < 0
     ) {
 
         return {
             valid: false,
+            field: weeklyInput,
             message:
                 "Weekly hours must be zero or greater."
         };
@@ -3085,18 +3152,13 @@ function validateHours() {
     }
 
 
-    if (
-        credit !== null &&
-        (
-            !Number.isFinite(credit) ||
-            credit < 0
-        )
-    ) {
+    if (weekly > 999.99) {
 
         return {
             valid: false,
+            field: weeklyInput,
             message:
-                "Credit hours must be zero or greater."
+                "Weekly hours cannot exceed 999.99."
         };
 
     }
@@ -3105,6 +3167,166 @@ function validateHours() {
     return {
         valid: true
     };
+
+}
+
+
+/* ============================================================
+   INSTITUTION CHANGE
+   ============================================================ */
+
+if (institutionSelect) {
+
+    institutionSelect.addEventListener(
+        "change",
+        function() {
+
+            clearFieldErrors();
+
+            filterSubjectBranches(
+                false
+            );
+
+            filterSubjectPrograms(
+                false
+            );
+
+            resetSubjectCodePreview();
+
+            hideFormError();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   PROGRAM CHANGE
+   ============================================================ */
+
+if (programSelect) {
+
+    programSelect.addEventListener(
+        "change",
+        function() {
+
+            clearFieldErrors();
+
+            resetSubjectCodePreview();
+
+            hideFormError();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   BRANCH CHANGE
+   ============================================================ */
+
+if (branchSelect) {
+
+    branchSelect.addEventListener(
+        "change",
+        function() {
+
+            clearFieldErrors();
+
+            resetSubjectCodePreview();
+
+            hideFormError();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   NAME CHANGE
+   ============================================================ */
+
+if (nameInput) {
+
+    nameInput.addEventListener(
+        "input",
+        function() {
+
+            updateSubjectPreview();
+
+            hideFormError();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   CREDIT HOURS CHANGE
+   ============================================================ */
+
+if (creditHoursInput) {
+
+    creditHoursInput.addEventListener(
+        "input",
+        function() {
+
+            creditHoursInput.classList.remove(
+                "field-error"
+            );
+
+            hideFormError();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   MARK EVENTS
+   ============================================================ */
+
+if (maxMarksInput) {
+
+    maxMarksInput.addEventListener(
+        "input",
+        function() {
+
+            maxMarksInput.classList.remove(
+                "field-error"
+            );
+
+            updateMarksPreview();
+
+            hideFormError();
+
+        }
+    );
+
+}
+
+
+if (passMarksInput) {
+
+    passMarksInput.addEventListener(
+        "input",
+        function() {
+
+            passMarksInput.classList.remove(
+                "field-error"
+            );
+
+            updateMarksPreview();
+
+            hideFormError();
+
+        }
+    );
 
 }
 
@@ -3119,15 +3341,19 @@ if (addSubjectForm) {
         "submit",
         function(event) {
 
+            clearFieldErrors();
+
             hideFormError();
 
 
-            /* ------------------------------------------------
+            /* =================================================
                NAME
-            ------------------------------------------------ */
+            ================================================= */
 
             const subjectName =
-                nameInput.value.trim();
+                nameInput
+                    ? nameInput.value.trim()
+                    : "";
 
 
             if (!subjectName) {
@@ -3138,7 +3364,9 @@ if (addSubjectForm) {
                     "Please enter the subject name."
                 );
 
-                nameInput.focus();
+                markFieldError(
+                    nameInput
+                );
 
                 return;
 
@@ -3155,42 +3383,18 @@ if (addSubjectForm) {
                     "Subject name cannot exceed 150 characters."
                 );
 
-                nameInput.focus();
-
-                return;
-
-            }
-
-
-            /* ------------------------------------------------
-               AUTO CODE
-            ------------------------------------------------ */
-
-            updateAutoSubjectCode();
-
-
-            const subjectCode =
-                codeInput.value.trim();
-
-
-            if (!subjectCode) {
-
-                event.preventDefault();
-
-                showFormError(
-                    "Unable to generate a subject code."
+                markFieldError(
+                    nameInput
                 );
 
-                nameInput.focus();
-
                 return;
 
             }
 
 
-            /* ------------------------------------------------
+            /* =================================================
                RELATIONSHIPS
-            ------------------------------------------------ */
+            ================================================= */
 
             const relationshipResult =
                 validateRelationships();
@@ -3206,24 +3410,45 @@ if (addSubjectForm) {
                     relationshipResult.message
                 );
 
-
-                if (
-                    !institutionSelect.value
-                ) {
-
-                    institutionSelect.focus();
-
-                }
-
+                markFieldError(
+                    relationshipResult.field
+                );
 
                 return;
 
             }
 
 
-            /* ------------------------------------------------
+            /* =================================================
+               CREDIT HOURS — REQUIRED
+            ================================================= */
+
+            const creditResult =
+                validateCreditHours();
+
+
+            if (
+                !creditResult.valid
+            ) {
+
+                event.preventDefault();
+
+                showFormError(
+                    creditResult.message
+                );
+
+                markFieldError(
+                    creditResult.field
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
                MARKS
-            ------------------------------------------------ */
+            ================================================= */
 
             const marksResult =
                 validateMarks();
@@ -3239,22 +3464,18 @@ if (addSubjectForm) {
                     marksResult.message
                 );
 
-
-                if (passMarksInput) {
-
-                    passMarksInput.focus();
-
-                }
-
+                markFieldError(
+                    marksResult.field
+                );
 
                 return;
 
             }
 
 
-            /* ------------------------------------------------
-               HOURS
-            ------------------------------------------------ */
+            /* =================================================
+               WEEKLY HOURS
+            ================================================= */
 
             const hoursResult =
                 validateHours();
@@ -3270,14 +3491,18 @@ if (addSubjectForm) {
                     hoursResult.message
                 );
 
+                markFieldError(
+                    hoursResult.field
+                );
+
                 return;
 
             }
 
 
-            /* ------------------------------------------------
-               SHORT NAME
-            ------------------------------------------------ */
+            /* =================================================
+               CLEAN OPTIONAL FIELDS
+            ================================================= */
 
             if (shortNameInput) {
 
@@ -3286,10 +3511,6 @@ if (addSubjectForm) {
 
             }
 
-
-            /* ------------------------------------------------
-               DESCRIPTION
-            ------------------------------------------------ */
 
             const description =
                 document.getElementById(
@@ -3305,15 +3526,33 @@ if (addSubjectForm) {
             }
 
 
-            /* ------------------------------------------------
+            /* =================================================
+               IMPORTANT:
+               CODE IS GENERATED SERVER-SIDE
+            ================================================= */
+
+            if (codeInput) {
+
+                /*
+                 * The Flask route generates the actual code.
+                 *
+                 * Do not generate anything from subject name.
+                 */
+
+                codeInput.value =
+                    "";
+
+            }
+
+
+            /* =================================================
                DISABLE DOUBLE SUBMIT
-            ------------------------------------------------ */
+            ================================================= */
 
             if (createSubjectButton) {
 
                 createSubjectButton.disabled =
                     true;
-
 
                 createSubjectButton.innerHTML =
                     `
@@ -3337,45 +3576,41 @@ document.addEventListener(
     "DOMContentLoaded",
     function() {
 
-        /* ----------------------------------------------
+        /* ----------------------------------------------------
            Branches
-        ---------------------------------------------- */
+        ---------------------------------------------------- */
 
         filterSubjectBranches(
             true
         );
 
 
-        /* ----------------------------------------------
+        /* ----------------------------------------------------
            Programs
-        ---------------------------------------------- */
+        ---------------------------------------------------- */
 
         filterSubjectPrograms(
             true
         );
 
 
-        /* ----------------------------------------------
-           Auto Code
-        ---------------------------------------------- */
+        /* ----------------------------------------------------
+           Reset Code
+        ---------------------------------------------------- */
 
-        if (
-            nameInput &&
-            nameInput.value.trim()
-        ) {
-
-            updateAutoSubjectCode();
-
-        } else {
-
-            updateSubjectPreview();
-
-        }
+        resetSubjectCodePreview();
 
 
-        /* ----------------------------------------------
+        /* ----------------------------------------------------
+           Subject Preview
+        ---------------------------------------------------- */
+
+        updateSubjectPreview();
+
+
+        /* ----------------------------------------------------
            Marks
-        ---------------------------------------------- */
+        ---------------------------------------------------- */
 
         updateMarksPreview();
 
@@ -3385,3 +3620,5 @@ document.addEventListener(
 </script>
 
 {% endblock %}
+
+

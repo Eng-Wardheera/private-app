@@ -121,7 +121,12 @@
     margin-bottom: 20px;
 }
 
-.form-card-header {
+.sidebar-card {
+    margin-bottom: 20px;
+}
+
+.form-card-header,
+.sidebar-card-header {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -141,7 +146,8 @@
     flex-shrink: 0;
 }
 
-.form-card-header h3 {
+.form-card-header h3,
+.sidebar-card-header h3 {
     margin: 0;
     color: #1d2636;
     font-size: 15px;
@@ -154,7 +160,8 @@
     font-size: 12px;
 }
 
-.form-card-body {
+.form-card-body,
+.sidebar-card-body {
     padding: 20px;
 }
 
@@ -230,11 +237,45 @@
     cursor: not-allowed;
 }
 
+.form-control-custom[readonly] {
+    background: #f5f7fa;
+    color: #697386;
+}
+
 .form-help {
     margin-top: 6px;
     color: #9299a7;
     font-size: 11px;
     line-height: 1.45;
+}
+
+/* ============================================================
+   AUTO GENERATED FIELD
+   ============================================================ */
+
+.auto-generated-wrapper {
+    position: relative;
+}
+
+.auto-generated-badge {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 7px;
+    border-radius: 20px;
+    background: rgba(6, 36, 95, .07);
+    color: #06245f;
+    font-size: 9px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+.auto-generated-wrapper .form-control-custom {
+    padding-right: 95px;
 }
 
 /* ============================================================
@@ -576,6 +617,8 @@
     font-size: 11px;
     font-weight: 700;
     text-align: right;
+    max-width: 190px;
+    word-break: break-word;
 }
 
 .preview-badge {
@@ -745,7 +788,8 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .form-card-body {
+    .form-card-body,
+    .sidebar-card-body {
         padding: 15px;
     }
 }
@@ -786,6 +830,7 @@
             </div>
 
         </div>
+
 
         <div class="add-assessment-header-actions">
 
@@ -836,10 +881,15 @@
                         </div>
 
                         <div>
-                            <h3>Academic Assignment</h3>
+
+                            <h3>
+                                Academic Assignment
+                            </h3>
+
                             <p>
                                 Select the institution, program and academic year.
                             </p>
+
                         </div>
 
                     </div>
@@ -907,11 +957,13 @@
                                                     selected
                                                 {% endif %}
                                             >
+
                                                 {{ institution.name }}
 
                                                 {% if institution.short_name %}
                                                     — {{ institution.short_name }}
                                                 {% endif %}
+
                                             </option>
 
                                         {% endfor %}
@@ -1064,10 +1116,15 @@
                         </div>
 
                         <div>
-                            <h3>Plan Information</h3>
+
+                            <h3>
+                                Plan Information
+                            </h3>
+
                             <p>
-                                Define the name, unique code and description of the assessment plan.
+                                Name and code are automatically generated from the selected frequency.
                             </p>
+
                         </div>
 
                     </div>
@@ -1089,19 +1146,31 @@
                                     <span class="required">*</span>
                                 </label>
 
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    class="form-control-custom"
-                                    placeholder="e.g. Monthly Continuous Assessment"
-                                    value="{{ request.form.get('name', '') }}"
-                                    maxlength="150"
-                                    required
-                                >
+                                <div class="auto-generated-wrapper">
+
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        class="form-control-custom"
+                                        placeholder="Select assessment frequency"
+                                        value="{{ request.form.get('name', '') }}"
+                                        maxlength="150"
+                                        required
+                                    >
+
+                                    <span
+                                        class="auto-generated-badge"
+                                        id="name-generated-badge"
+                                    >
+                                        <i class="fas fa-magic"></i>
+                                        Auto
+                                    </span>
+
+                                </div>
 
                                 <div class="form-help">
-                                    Enter a clear name that identifies this assessment plan.
+                                    Automatically generated from the selected frequency. You may edit it if needed.
                                 </div>
 
                             </div>
@@ -1119,19 +1188,31 @@
                                     <span class="required">*</span>
                                 </label>
 
-                                <input
-                                    type="text"
-                                    id="code"
-                                    name="code"
-                                    class="form-control-custom"
-                                    placeholder="e.g. CAP-MONTHLY"
-                                    value="{{ request.form.get('code', '') }}"
-                                    maxlength="50"
-                                    required
-                                >
+                                <div class="auto-generated-wrapper">
+
+                                    <input
+                                        type="text"
+                                        id="code"
+                                        name="code"
+                                        class="form-control-custom"
+                                        placeholder="Select assessment frequency"
+                                        value="{{ request.form.get('code', '') }}"
+                                        maxlength="50"
+                                        required
+                                    >
+
+                                    <span
+                                        class="auto-generated-badge"
+                                        id="code-generated-badge"
+                                    >
+                                        <i class="fas fa-magic"></i>
+                                        Auto
+                                    </span>
+
+                                </div>
 
                                 <div class="form-help">
-                                    Code must be unique within the institution.
+                                    Automatically generated code. The code must be unique within the institution.
                                 </div>
 
                             </div>
@@ -1178,10 +1259,15 @@
                         </div>
 
                         <div>
-                            <h3>Assessment Frequency</h3>
+
+                            <h3>
+                                Assessment Frequency
+                            </h3>
+
                             <p>
                                 Choose how often assessments should be generated.
                             </p>
+
                         </div>
 
                     </div>
@@ -1214,9 +1300,17 @@
                                     for="frequency_monthly"
                                     class="frequency-label"
                                 >
+
                                     <i class="fas fa-calendar-day"></i>
-                                    <strong>Monthly</strong>
-                                    <span>Every 1 month</span>
+
+                                    <strong>
+                                        Monthly
+                                    </strong>
+
+                                    <span>
+                                        Every 1 month
+                                    </span>
+
                                 </label>
 
                             </div>
@@ -1240,9 +1334,17 @@
                                     for="frequency_bi_monthly"
                                     class="frequency-label"
                                 >
+
                                     <i class="fas fa-calendar-week"></i>
-                                    <strong>Bi-Monthly</strong>
-                                    <span>Every 2 months</span>
+
+                                    <strong>
+                                        Bi-Monthly
+                                    </strong>
+
+                                    <span>
+                                        Every 2 months
+                                    </span>
+
                                 </label>
 
                             </div>
@@ -1266,9 +1368,17 @@
                                     for="frequency_quarterly"
                                     class="frequency-label"
                                 >
+
                                     <i class="fas fa-calendar-check"></i>
-                                    <strong>Quarterly</strong>
-                                    <span>Every 3 months</span>
+
+                                    <strong>
+                                        Quarterly
+                                    </strong>
+
+                                    <span>
+                                        Every 3 months
+                                    </span>
+
                                 </label>
 
                             </div>
@@ -1292,9 +1402,17 @@
                                     for="frequency_semester"
                                     class="frequency-label"
                                 >
+
                                     <i class="fas fa-calendar"></i>
-                                    <strong>Semester</strong>
-                                    <span>Every 6 months</span>
+
+                                    <strong>
+                                        Semester
+                                    </strong>
+
+                                    <span>
+                                        Every 6 months
+                                    </span>
+
                                 </label>
 
                             </div>
@@ -1318,9 +1436,17 @@
                                     for="frequency_custom"
                                     class="frequency-label"
                                 >
+
                                     <i class="fas fa-sliders-h"></i>
-                                    <strong>Custom</strong>
-                                    <span>Choose interval</span>
+
+                                    <strong>
+                                        Custom
+                                    </strong>
+
+                                    <span>
+                                        Choose interval
+                                    </span>
+
                                 </label>
 
                             </div>
@@ -1394,10 +1520,15 @@
                         </div>
 
                         <div>
-                            <h3>Assessment Period</h3>
+
+                            <h3>
+                                Assessment Period
+                            </h3>
+
                             <p>
                                 Define when the assessment plan starts and optionally ends.
                             </p>
+
                         </div>
 
                     </div>
@@ -1484,7 +1615,6 @@
 
                 </div>
 
-
             </div>
 
 
@@ -1502,8 +1632,13 @@
                 <div class="sidebar-card">
 
                     <div class="sidebar-card-header">
-                        <h3>Plan Preview</h3>
+
+                        <h3>
+                            Plan Preview
+                        </h3>
+
                     </div>
+
 
                     <div class="sidebar-card-body">
 
@@ -1627,8 +1762,11 @@
                                     </span>
 
                                     <span class="preview-badge">
+
                                         <i class="fas fa-circle"></i>
+
                                         Active
+
                                     </span>
 
                                 </div>
@@ -1649,8 +1787,13 @@
                 <div class="sidebar-card">
 
                     <div class="sidebar-card-header">
-                        <h3>Automation</h3>
+
+                        <h3>
+                            Automation
+                        </h3>
+
                     </div>
+
 
                     <div class="sidebar-card-body">
 
@@ -1699,14 +1842,20 @@
                 <div class="sidebar-card">
 
                     <div class="sidebar-card-header">
-                        <h3>Plan Status</h3>
+
+                        <h3>
+                            Plan Status
+                        </h3>
+
                     </div>
+
 
                     <div class="sidebar-card-body">
 
                         {% set selected_status =
                             request.form.get('status', 'active')
                         %}
+
 
                         <div class="option-group">
 
@@ -1726,8 +1875,11 @@
                                     for="status_active"
                                     class="option-label active-green"
                                 >
+
                                     <i class="fas fa-check-circle"></i>
+
                                     Active
+
                                 </label>
 
                             </div>
@@ -1749,8 +1901,11 @@
                                     for="status_inactive"
                                     class="option-label"
                                 >
+
                                     <i class="fas fa-pause-circle"></i>
+
                                     Inactive
+
                                 </label>
 
                             </div>
@@ -1772,8 +1927,11 @@
                                     for="status_completed"
                                     class="option-label"
                                 >
+
                                     <i class="fas fa-flag-checkered"></i>
+
                                     Completed
+
                                 </label>
 
                             </div>
@@ -1792,8 +1950,13 @@
                 <div class="sidebar-card">
 
                     <div class="sidebar-card-header">
-                        <h3>Important Information</h3>
+
+                        <h3>
+                            Important Information
+                        </h3>
+
                     </div>
+
 
                     <div class="sidebar-card-body">
 
@@ -1805,7 +1968,9 @@
 
                             <div class="info-content">
 
-                                <strong>Unique Code</strong>
+                                <strong>
+                                    Unique Code
+                                </strong>
 
                                 <span>
                                     The plan code must be unique within the institution.
@@ -1824,10 +1989,13 @@
 
                             <div class="info-content">
 
-                                <strong>Frequency</strong>
+                                <strong>
+                                    Frequency
+                                </strong>
 
                                 <span>
-                                    Monthly, bi-monthly, quarterly and semester intervals are automatically configured.
+                                    Frequency automatically determines the assessment name,
+                                    code and standard interval.
                                 </span>
 
                             </div>
@@ -1843,7 +2011,9 @@
 
                             <div class="info-content">
 
-                                <strong>Custom Interval</strong>
+                                <strong>
+                                    Custom Interval
+                                </strong>
 
                                 <span>
                                     Use Custom when you need an interval other than the standard periods.
@@ -1862,7 +2032,9 @@
 
                             <div class="info-content">
 
-                                <strong>Auto Generate</strong>
+                                <strong>
+                                    Auto Generate
+                                </strong>
 
                                 <span>
                                     When enabled, future assessments can be generated automatically.
@@ -1881,7 +2053,9 @@
 
                             <div class="info-content">
 
-                                <strong>Date Range</strong>
+                                <strong>
+                                    Date Range
+                                </strong>
 
                                 <span>
                                     End date is optional, but when provided it cannot be before the start date.
@@ -1909,8 +2083,13 @@
                             id="create-assessment-btn"
                             class="create-assessment-btn"
                         >
+
                             <i class="fas fa-plus-circle"></i>
-                            <span>Create Assessment Plan</span>
+
+                            <span>
+                                Create Assessment Plan
+                            </span>
+
                         </button>
 
 
@@ -1918,7 +2097,9 @@
                             href="{{ url_for('main.all_assessment_plans') }}"
                             class="cancel-assessment-btn"
                         >
+
                             Cancel
+
                         </a>
 
                     </div>
@@ -1935,6 +2116,50 @@
 
 
 <script>
+/* ============================================================
+   FREQUENCY CONFIGURATION
+   ============================================================ */
+
+const FREQUENCY_CONFIG = {
+
+    monthly: {
+        label: "Monthly",
+        name: "Monthly Assessment Plan",
+        code: "CAP-MONTHLY",
+        interval: 1
+    },
+
+    bi_monthly: {
+        label: "Bi-Monthly",
+        name: "Bi-Monthly Assessment Plan",
+        code: "CAP-BI-MONTHLY",
+        interval: 2
+    },
+
+    quarterly: {
+        label: "Quarterly",
+        name: "Quarterly Assessment Plan",
+        code: "CAP-QUARTERLY",
+        interval: 3
+    },
+
+    semester: {
+        label: "Semester",
+        name: "Semester Assessment Plan",
+        code: "CAP-SEMESTER",
+        interval: 6
+    },
+
+    custom: {
+        label: "Custom",
+        name: "Custom Assessment Plan",
+        code: "CAP-CUSTOM",
+        interval: 1
+    }
+
+};
+
+
 /* ============================================================
    DOM ELEMENTS
    ============================================================ */
@@ -1982,6 +2207,16 @@ const createAssessmentButton =
         "create-assessment-btn"
     );
 
+const nameGeneratedBadge =
+    document.getElementById(
+        "name-generated-badge"
+    );
+
+const codeGeneratedBadge =
+    document.getElementById(
+        "code-generated-badge"
+    );
+
 
 /* ============================================================
    OLD FORM VALUES
@@ -1998,43 +2233,46 @@ const OLD_ACADEMIC_YEAR_ID =
 
 
 /* ============================================================
-   FREQUENCY INTERVALS
+   AUTO-GENERATION STATE
    ============================================================ */
 
-const FREQUENCY_INTERVALS = {
+let nameWasAutoGenerated =
+    !nameInput.value.trim();
 
-    monthly: 1,
-
-    bi_monthly: 2,
-
-    quarterly: 3,
-
-    semester: 6
-
-};
+let codeWasAutoGenerated =
+    !codeInput.value.trim();
 
 
 /* ============================================================
-   FREQUENCY LABELS
+   UPDATE AUTO BADGES
    ============================================================ */
 
-const FREQUENCY_LABELS = {
+function updateGeneratedBadges() {
 
-    monthly: "Monthly",
+    if (nameGeneratedBadge) {
 
-    bi_monthly: "Bi-Monthly",
+        nameGeneratedBadge.style.display =
+            nameWasAutoGenerated
+                ? "inline-flex"
+                : "none";
 
-    quarterly: "Quarterly",
+    }
 
-    semester: "Semester",
 
-    custom: "Custom"
+    if (codeGeneratedBadge) {
 
-};
+        codeGeneratedBadge.style.display =
+            codeWasAutoGenerated
+                ? "inline-flex"
+                : "none";
+
+    }
+
+}
 
 
 /* ============================================================
-   FILTER SELECT OPTIONS
+   FILTER ACADEMIC OPTIONS
    ============================================================ */
 
 function filterAcademicOptions() {
@@ -2074,8 +2312,7 @@ function filterAcademicOptions() {
             institutionId &&
             String(
                 option.dataset.institutionId
-            ) ===
-            String(institutionId);
+            ) === String(institutionId);
 
 
         option.hidden = !matches;
@@ -2089,8 +2326,7 @@ function filterAcademicOptions() {
             institutionId &&
             String(
                 option.dataset.institutionId
-            ) ===
-            String(institutionId);
+            ) === String(institutionId);
 
 
         option.hidden = !matches;
@@ -2105,10 +2341,6 @@ function filterAcademicOptions() {
     academicYearSelect.disabled =
         !institutionId;
 
-
-    /*
-     * Validate current program.
-     */
 
     const selectedProgram =
         programSelect.options[
@@ -2125,10 +2357,6 @@ function filterAcademicOptions() {
 
     }
 
-
-    /*
-     * Validate current academic year.
-     */
 
     const selectedYear =
         academicYearSelect.options[
@@ -2147,6 +2375,7 @@ function filterAcademicOptions() {
 
 
     updatePreview();
+
 }
 
 
@@ -2160,11 +2389,6 @@ if (institutionSelect) {
         "change",
         function() {
 
-            /*
-             * Changing institution invalidates
-             * program and academic year selections.
-             */
-
             programSelect.value = "";
 
             academicYearSelect.value = "";
@@ -2173,11 +2397,12 @@ if (institutionSelect) {
 
         }
     );
+
 }
 
 
 /* ============================================================
-   FREQUENCY
+   GET SELECTED FREQUENCY
    ============================================================ */
 
 function getSelectedFrequency() {
@@ -2187,11 +2412,82 @@ function getSelectedFrequency() {
             'input[name="frequency"]:checked'
         );
 
+
     return selected
         ? selected.value
         : "monthly";
+
 }
 
+
+/* ============================================================
+   GET FREQUENCY CONFIG
+   ============================================================ */
+
+function getFrequencyConfig() {
+
+    const frequency =
+        getSelectedFrequency();
+
+
+    return (
+        FREQUENCY_CONFIG[frequency] ||
+        FREQUENCY_CONFIG.monthly
+    );
+
+}
+
+
+/* ============================================================
+   GENERATE NAME + CODE
+   ============================================================ */
+
+function generateNameAndCodeFromFrequency() {
+
+    const frequency =
+        getSelectedFrequency();
+
+
+    const config =
+        FREQUENCY_CONFIG[frequency];
+
+
+    if (!config) {
+        return;
+    }
+
+
+    /*
+     * Always generate the Name.
+     */
+
+    nameInput.value =
+        config.name;
+
+
+    /*
+     * Always generate the Code.
+     */
+
+    codeInput.value =
+        config.code;
+
+
+    nameWasAutoGenerated = true;
+
+    codeWasAutoGenerated = true;
+
+
+    updateGeneratedBadges();
+
+    updatePreview();
+
+}
+
+
+/* ============================================================
+   UPDATE INTERVAL
+   ============================================================ */
 
 function updateIntervalFromFrequency() {
 
@@ -2199,21 +2495,23 @@ function updateIntervalFromFrequency() {
         getSelectedFrequency();
 
 
-    if (
-        Object.prototype.hasOwnProperty.call(
-            FREQUENCY_INTERVALS,
-            frequency
-        )
-    ) {
+    const config =
+        FREQUENCY_CONFIG[frequency];
 
-        const interval =
-            FREQUENCY_INTERVALS[
-                frequency
-            ];
 
+    if (!config) {
+        return;
+    }
+
+
+    /*
+     * STANDARD FREQUENCIES
+     */
+
+    if (frequency !== "custom") {
 
         intervalInput.value =
-            interval;
+            config.interval;
 
 
         intervalInput.readOnly =
@@ -2225,13 +2523,16 @@ function updateIntervalFromFrequency() {
 
 
         intervalHelp.textContent =
-            `${FREQUENCY_LABELS[frequency]} assessment uses a ${interval}-month interval.`;
+            `${config.label} assessment uses a ${config.interval}-month interval.`;
 
-    } else {
+    }
 
-        /*
-         * Custom interval.
-         */
+
+    /*
+     * CUSTOM
+     */
+
+    else {
 
         intervalInput.readOnly =
             false;
@@ -2241,6 +2542,19 @@ function updateIntervalFromFrequency() {
             "#fff";
 
 
+        if (
+            !intervalInput.value ||
+            parseInt(
+                intervalInput.value,
+                10
+            ) < 1
+        ) {
+
+            intervalInput.value = 1;
+
+        }
+
+
         intervalHelp.textContent =
             "Enter the number of months between assessments.";
 
@@ -2248,6 +2562,7 @@ function updateIntervalFromFrequency() {
 
 
     updatePreview();
+
 }
 
 
@@ -2261,7 +2576,25 @@ frequencyInputs.forEach(function(input) {
         "change",
         function() {
 
+            /*
+             * Generate Name + Code.
+             */
+
+            generateNameAndCodeFromFrequency();
+
+
+            /*
+             * Generate interval.
+             */
+
             updateIntervalFromFrequency();
+
+
+            /*
+             * Refresh preview.
+             */
+
+            updatePreview();
 
         }
     );
@@ -2315,23 +2648,26 @@ function validateDates(showAlert = false) {
 
         }
 
+
         return false;
+
     }
 
 
     return true;
+
 }
 
+
+/* ============================================================
+   START DATE
+   ============================================================ */
 
 if (startDateInput) {
 
     startDateInput.addEventListener(
         "change",
         function() {
-
-            /*
-             * Keep minimum end date synchronized.
-             */
 
             if (endDateInput) {
 
@@ -2351,6 +2687,10 @@ if (startDateInput) {
 }
 
 
+/* ============================================================
+   END DATE
+   ============================================================ */
+
 if (endDateInput) {
 
     endDateInput.addEventListener(
@@ -2368,7 +2708,7 @@ if (endDateInput) {
 
 
 /* ============================================================
-   PREVIEW HELPERS
+   SELECT TEXT
    ============================================================ */
 
 function getSelectedText(selectElement) {
@@ -2377,7 +2717,9 @@ function getSelectedText(selectElement) {
         !selectElement ||
         selectElement.selectedIndex < 0
     ) {
+
         return "—";
+
     }
 
 
@@ -2391,13 +2733,20 @@ function getSelectedText(selectElement) {
         !option ||
         !option.value
     ) {
+
         return "—";
+
     }
 
 
     return option.textContent.trim();
+
 }
 
+
+/* ============================================================
+   UPDATE PREVIEW
+   ============================================================ */
 
 function updatePreview() {
 
@@ -2437,6 +2786,10 @@ function updatePreview() {
         );
 
 
+    /*
+     * NAME
+     */
+
     if (previewName) {
 
         previewName.textContent =
@@ -2446,6 +2799,10 @@ function updatePreview() {
     }
 
 
+    /*
+     * CODE
+     */
+
     if (previewCode) {
 
         previewCode.textContent =
@@ -2454,6 +2811,10 @@ function updatePreview() {
 
     }
 
+
+    /*
+     * INSTITUTION
+     */
 
     if (previewInstitution) {
 
@@ -2465,6 +2826,10 @@ function updatePreview() {
     }
 
 
+    /*
+     * PROGRAM
+     */
+
     if (previewProgram) {
 
         previewProgram.textContent =
@@ -2474,6 +2839,10 @@ function updatePreview() {
 
     }
 
+
+    /*
+     * ACADEMIC YEAR
+     */
 
     if (previewYear) {
 
@@ -2485,19 +2854,31 @@ function updatePreview() {
     }
 
 
+    /*
+     * FREQUENCY
+     */
+
     const frequency =
         getSelectedFrequency();
+
+
+    const config =
+        FREQUENCY_CONFIG[frequency];
 
 
     if (previewFrequency) {
 
         previewFrequency.textContent =
-            FREQUENCY_LABELS[
-                frequency
-            ] || frequency;
+            config
+                ? config.label
+                : "—";
 
     }
 
+
+    /*
+     * INTERVAL
+     */
 
     if (previewInterval) {
 
@@ -2517,62 +2898,18 @@ function updatePreview() {
 
 
 /* ============================================================
-   NAME / CODE PREVIEW
+   MANUAL NAME EDIT
    ============================================================ */
 
 if (nameInput) {
 
     nameInput.addEventListener(
         "input",
-        updatePreview
-    );
-
-}
-
-
-if (codeInput) {
-
-    codeInput.addEventListener(
-        "input",
-        updatePreview
-    );
-
-}
-
-
-if (intervalInput) {
-
-    intervalInput.addEventListener(
-        "input",
-        updatePreview
-    );
-
-}
-
-
-/* ============================================================
-   CODE NORMALIZATION
-   ============================================================ */
-
-if (codeInput) {
-
-    codeInput.addEventListener(
-        "input",
         function() {
 
-            /*
-             * Convert spaces to hyphens
-             * and normalize uppercase.
-             */
+            nameWasAutoGenerated = false;
 
-            this.value =
-                this.value
-                    .toUpperCase()
-                    .replace(/\s+/g, "-")
-                    .replace(
-                        /[^A-Z0-9_-]/g,
-                        ""
-                    );
+            updateGeneratedBadges();
 
             updatePreview();
 
@@ -2583,7 +2920,68 @@ if (codeInput) {
 
 
 /* ============================================================
-   FORM SUBMIT VALIDATION
+   MANUAL CODE EDIT
+   ============================================================ */
+
+if (codeInput) {
+
+    codeInput.addEventListener(
+        "input",
+        function() {
+
+            this.value =
+                this.value
+                    .toUpperCase()
+                    .replace(/\s+/g, "-")
+                    .replace(
+                        /[^A-Z0-9_-]/g,
+                        ""
+                    );
+
+
+            codeWasAutoGenerated = false;
+
+            updateGeneratedBadges();
+
+            updatePreview();
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   INTERVAL INPUT
+   ============================================================ */
+
+if (intervalInput) {
+
+    intervalInput.addEventListener(
+        "input",
+        function() {
+
+            /*
+             * Custom interval only.
+             */
+
+            if (
+                getSelectedFrequency() ===
+                "custom"
+            ) {
+
+                updatePreview();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   FORM SUBMIT
    ============================================================ */
 
 if (assessmentForm) {
@@ -2616,7 +3014,7 @@ if (assessmentForm) {
 
 
             /*
-             * Institution.
+             * Institution
              */
 
             if (!institutionId) {
@@ -2635,7 +3033,7 @@ if (assessmentForm) {
 
 
             /*
-             * Program.
+             * Program
              */
 
             if (!programId) {
@@ -2654,7 +3052,7 @@ if (assessmentForm) {
 
 
             /*
-             * Academic year.
+             * Academic Year
              */
 
             if (!academicYearId) {
@@ -2673,22 +3071,12 @@ if (assessmentForm) {
 
 
             /*
-             * Frequency.
+             * Frequency
              */
 
-            const allowedFrequencies = [
-
-                "monthly",
-                "bi_monthly",
-                "quarterly",
-                "semester",
-                "custom"
-
-            ];
-
-
             if (
-                !allowedFrequencies.includes(
+                !Object.prototype.hasOwnProperty.call(
+                    FREQUENCY_CONFIG,
                     frequency
                 )
             ) {
@@ -2705,18 +3093,19 @@ if (assessmentForm) {
 
 
             /*
-             * Interval.
+             * Interval
              */
 
             if (
                 !Number.isInteger(interval) ||
-                interval < 1
+                interval < 1 ||
+                interval > 120
             ) {
 
                 event.preventDefault();
 
                 alert(
-                    "Assessment interval must be at least 1 month."
+                    "Assessment interval must be between 1 and 120 months."
                 );
 
                 intervalInput.focus();
@@ -2727,7 +3116,7 @@ if (assessmentForm) {
 
 
             /*
-             * Start date.
+             * Start Date
              */
 
             if (!startDateInput.value) {
@@ -2746,7 +3135,7 @@ if (assessmentForm) {
 
 
             /*
-             * End date.
+             * End Date
              */
 
             if (!validateDates(true)) {
@@ -2759,13 +3148,51 @@ if (assessmentForm) {
 
 
             /*
-             * Normalize code.
+             * Name
+             */
+
+            nameInput.value =
+                nameInput.value.trim();
+
+
+            if (!nameInput.value) {
+
+                event.preventDefault();
+
+                alert(
+                    "Assessment plan name is required."
+                );
+
+                nameInput.focus();
+
+                return;
+
+            }
+
+
+            /*
+             * Code
              */
 
             codeInput.value =
                 codeInput.value
                     .trim()
                     .toUpperCase();
+
+
+            if (!codeInput.value) {
+
+                event.preventDefault();
+
+                alert(
+                    "Assessment plan code is required."
+                );
+
+                codeInput.focus();
+
+                return;
+
+            }
 
 
             /*
@@ -2777,7 +3204,8 @@ if (assessmentForm) {
 
 
             createAssessmentButton.innerHTML =
-                '<i class="fas fa-spinner fa-spin"></i><span>Creating Assessment Plan...</span>';
+                '<i class="fas fa-spinner fa-spin"></i>' +
+                '<span>Creating Assessment Plan...</span>';
 
         }
     );
@@ -2794,15 +3222,29 @@ document.addEventListener(
     function() {
 
         /*
-         * Filter program and academic year.
+         * Filter academic options.
          */
 
         filterAcademicOptions();
 
 
         /*
-         * Set interval according to
-         * selected frequency.
+         * If Name and Code are empty,
+         * generate them from selected frequency.
+         */
+
+        if (
+            !nameInput.value.trim() &&
+            !codeInput.value.trim()
+        ) {
+
+            generateNameAndCodeFromFrequency();
+
+        }
+
+
+        /*
+         * Configure interval.
          */
 
         updateIntervalFromFrequency();
@@ -2821,6 +3263,13 @@ document.addEventListener(
                 startDateInput.value || "";
 
         }
+
+
+        /*
+         * Update generated badges.
+         */
+
+        updateGeneratedBadges();
 
 
         /*

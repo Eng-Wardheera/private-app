@@ -10,11 +10,10 @@
 
 .view-student-page {
     width: 100%;
-    max-width: 1500px;
+    max-width: 1550px;
     margin: 0 auto;
-    padding: 0 0 40px;
+    padding: 0 0 45px;
 }
-
 
 /* ============================================================
    PAGE HEADER
@@ -68,9 +67,8 @@
     flex-wrap: wrap;
 }
 
-
 /* ============================================================
-   HEADER BUTTONS
+   BUTTONS
    ============================================================ */
 
 .view-student-btn {
@@ -105,7 +103,6 @@
 
 .view-student-btn.primary:hover {
     background: #041c4a;
-    color: #ffffff;
 }
 
 .view-student-btn.green {
@@ -116,12 +113,10 @@
 
 .view-student-btn.green:hover {
     background: #27972e;
-    color: #ffffff;
 }
 
-
 /* ============================================================
-   TOP PROFILE AREA
+   PROFILE GRID
    ============================================================ */
 
 .student-profile-grid {
@@ -130,7 +125,6 @@
     gap: 20px;
     align-items: start;
 }
-
 
 /* ============================================================
    PROFILE CARD
@@ -231,7 +225,6 @@
     margin-top: 13px;
 }
 
-
 /* ============================================================
    STATUS BADGES
    ============================================================ */
@@ -278,9 +271,8 @@
     color: #b56c00;
 }
 
-
 /* ============================================================
-   PROFILE QUICK INFO
+   QUICK INFO
    ============================================================ */
 
 .profile-quick-info {
@@ -328,7 +320,6 @@
     word-break: break-word;
 }
 
-
 /* ============================================================
    PROFILE ACTIONS
    ============================================================ */
@@ -367,11 +358,6 @@
     color: #ffffff;
 }
 
-.profile-action-btn.primary:hover {
-    background: #041c4a;
-}
-
-
 /* ============================================================
    RIGHT CONTENT
    ============================================================ */
@@ -381,7 +367,6 @@
     display: grid;
     gap: 18px;
 }
-
 
 /* ============================================================
    DETAIL CARD
@@ -425,7 +410,6 @@
     padding: 20px;
 }
 
-
 /* ============================================================
    DETAIL GRID
    ============================================================ */
@@ -439,11 +423,6 @@
 .student-detail-grid.two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-
-.student-detail-grid.one {
-    grid-template-columns: 1fr;
-}
-
 
 /* ============================================================
    DETAIL ITEM
@@ -471,20 +450,19 @@
     word-break: break-word;
 }
 
-.student-detail-value.muted {
-    color: #9aa3b2;
-    font-weight: 500;
-}
-
 .student-detail-value i {
     color: #06245f;
     width: 17px;
     margin-right: 3px;
 }
 
+.muted {
+    color: #9aa3b2;
+    font-weight: 500;
+}
 
 /* ============================================================
-   OVERVIEW HIGHLIGHTS
+   OVERVIEW
    ============================================================ */
 
 .student-overview-grid {
@@ -517,27 +495,11 @@
     font-size: 12px;
 }
 
-
 /* ============================================================
-   ACCOUNT BADGES
+   ACCOUNT
    ============================================================ */
 
-.account-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.account-status.active {
-    color: #32b73a;
-}
-
-.account-status.inactive {
-    color: #d18a00;
-}
-
+.account-status,
 .verification-status {
     display: inline-flex;
     align-items: center;
@@ -546,14 +508,15 @@
     font-weight: 700;
 }
 
+.account-status.active,
 .verification-status.verified {
     color: #32b73a;
 }
 
+.account-status.inactive,
 .verification-status.unverified {
     color: #d18a00;
 }
-
 
 /* ============================================================
    NOTES
@@ -571,14 +534,13 @@
     word-break: break-word;
 }
 
-
 /* ============================================================
-   RELATIONSHIP SUMMARY
+   SUMMARY
    ============================================================ */
 
 .student-summary-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -610,6 +572,16 @@
     color: #32b73a;
 }
 
+.student-summary-icon.purple {
+    background: #f2effb;
+    color: #33206f;
+}
+
+.student-summary-icon.orange {
+    background: #fff6e8;
+    color: #b56c00;
+}
+
 .student-summary-number {
     color: #06245f;
     font-size: 20px;
@@ -622,22 +594,349 @@
     margin-top: 2px;
 }
 
-
 /* ============================================================
-   EMPTY
+   TABLE WRAPPER
    ============================================================ */
 
-.student-empty {
-    color: #9aa3b2;
-    font-size: 13px;
+.student-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e8ecf2;
+    border-radius: 11px;
 }
 
+.student-table {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.student-table th {
+    background: #f7f9fc;
+    color: #697487;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .35px;
+    padding: 12px 13px;
+    border-bottom: 1px solid #e5e9f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.student-table td {
+    padding: 13px;
+    border-bottom: 1px solid #eef1f5;
+    color: #3c4656;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.student-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.student-table tbody tr:hover {
+    background: #fbfcfe;
+}
+
+.table-primary {
+    color: #06245f;
+    font-weight: 750;
+}
+
+.table-secondary {
+    margin-top: 3px;
+    color: #929bab;
+    font-size: 10px;
+}
+
+.table-strong {
+    color: #303a4b;
+    font-weight: 750;
+}
+
+.table-muted {
+    color: #9aa3b2;
+}
+
+.table-money {
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.money-green {
+    color: #24952c;
+}
+
+.money-orange {
+    color: #bd7800;
+}
+
+.money-red {
+    color: #c52d38;
+}
+
+/* ============================================================
+   TABLE BADGES
+   ============================================================ */
+
+.table-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 25px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.badge-active {
+    color: #23852c;
+    background: #eaf8ec;
+}
+
+.badge-completed {
+    color: #33206f;
+    background: #f2effb;
+}
+
+.badge-transferred {
+    color: #06245f;
+    background: #eaf0fa;
+}
+
+.badge-withdrawn {
+    color: #b56c00;
+    background: #fff6e8;
+}
+
+.badge-suspended {
+    color: #c52d38;
+    background: #fff0f0;
+}
+
+.badge-promoted {
+    color: #207b87;
+    background: #eaf8fa;
+}
+
+.badge-unpaid {
+    color: #b56c00;
+    background: #fff6e8;
+}
+
+.badge-partial {
+    color: #8a6200;
+    background: #fff9dc;
+}
+
+.badge-paid {
+    color: #23852c;
+    background: #eaf8ec;
+}
+
+.badge-cancelled {
+    color: #687386;
+    background: #f0f2f5;
+}
+
+.badge-overdue {
+    color: #c52d38;
+    background: #fff0f0;
+}
+
+/* ============================================================
+   CHARGE TYPE
+   ============================================================ */
+
+.charge-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #06245f;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.charge-type i {
+    width: 25px;
+    height: 25px;
+    border-radius: 7px;
+    background: #eef3fb;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+/* ============================================================
+   ENROLLMENT NUMBER
+   ============================================================ */
+
+.enrollment-number {
+    color: #06245f;
+    font-weight: 800;
+    font-size: 11px;
+}
+
+.enrollment-date {
+    color: #8d96a5;
+    font-size: 10px;
+    margin-top: 3px;
+}
+
+/* ============================================================
+   CHARGE SUMMARY
+   ============================================================ */
+
+.charge-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 17px;
+}
+
+.charge-summary-box {
+    border: 1px solid #e8ecf2;
+    background: #fafbfd;
+    border-radius: 9px;
+    padding: 12px;
+}
+
+.charge-summary-label {
+    color: #8a94a5;
+    font-size: 9px;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.charge-summary-value {
+    margin-top: 5px;
+    color: #06245f;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.charge-summary-value.green {
+    color: #24952c;
+}
+
+.charge-summary-value.orange {
+    color: #bd7800;
+}
+
+.charge-summary-value.red {
+    color: #c52d38;
+}
+
+/* ============================================================
+   ENROLLMENT CARD
+   ============================================================ */
+
+.enrollment-card-list {
+    display: grid;
+    gap: 12px;
+}
+
+.enrollment-card {
+    border: 1px solid #e7ebf1;
+    border-radius: 11px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.enrollment-card-header {
+    padding: 13px 15px;
+    background: #fafbfd;
+    border-bottom: 1px solid #e8ecf2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.enrollment-card-title {
+    color: #06245f;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.enrollment-card-subtitle {
+    color: #929baa;
+    font-size: 10px;
+    margin-top: 3px;
+}
+
+.enrollment-card-body {
+    padding: 14px;
+}
+
+.enrollment-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.enrollment-mini-label {
+    color: #8c96a5;
+    font-size: 9px;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.enrollment-mini-value {
+    margin-top: 4px;
+    color: #354052;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   EMPTY TABLE
+   ============================================================ */
+
+.student-table-empty {
+    padding: 35px 20px;
+    text-align: center;
+    color: #9aa3b2;
+}
+
+.student-table-empty-icon {
+    width: 46px;
+    height: 46px;
+    margin: 0 auto 10px;
+    border-radius: 12px;
+    background: #f3f5f9;
+    color: #9aa3b2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.student-table-empty-title {
+    color: #687386;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.student-table-empty-text {
+    margin-top: 4px;
+    color: #9aa3b2;
+    font-size: 11px;
+}
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
 
-@media (max-width: 1200px) {
+@media (max-width: 1250px) {
 
     .student-profile-grid {
         grid-template-columns: 280px minmax(0, 1fr);
@@ -647,10 +946,17 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .student-detail-grid {
+    .student-summary-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .charge-summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .enrollment-mini-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 900px) {
@@ -667,7 +973,6 @@
     .student-detail-grid.two {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
 }
 
 @media (max-width: 650px) {
@@ -688,7 +993,9 @@
     .student-detail-grid,
     .student-detail-grid.two,
     .student-overview-grid,
-    .student-summary-grid {
+    .student-summary-grid,
+    .charge-summary-grid,
+    .enrollment-mini-grid {
         grid-template-columns: 1fr;
     }
 
@@ -704,14 +1011,12 @@
     .view-student-title {
         font-size: 21px;
     }
-
 }
 
 </style>
 
 
 <div class="view-student-page">
-
 
     <!-- ========================================================
          PAGE HEADER
@@ -732,14 +1037,13 @@
                 </h1>
 
                 <p class="view-student-subtitle">
-                    View complete student information, account,
-                    contact and guardian details.
+                    View complete student information, enrollment,
+                    program, course, charges and account details.
                 </p>
 
             </div>
 
         </div>
-
 
         <div class="view-student-header-actions">
 
@@ -751,12 +1055,8 @@
                 Back to Students
             </a>
 
-
             <a
-                href="{{ url_for(
-                    'main.edit_student',
-                    student_id=student.id
-                ) }}"
+                href="{{ url_for('main.edit_student', student_id=student.id) }}"
                 class="view-student-btn primary"
             >
                 <i class="fas fa-pen"></i>
@@ -781,11 +1081,7 @@
 
         <aside class="student-profile-card">
 
-
             <div class="student-profile-cover"></div>
-
-
-            <!-- PHOTO -->
 
             <div class="student-profile-photo-wrapper">
 
@@ -818,6 +1114,7 @@
                 {% else %}
 
                     <div class="student-profile-photo-fallback">
+
                         {{
                             (
                                 student.full_name
@@ -825,6 +1122,7 @@
                                 or "S"
                             )[0]|upper
                         }}
+
                     </div>
 
                 {% endif %}
@@ -833,9 +1131,6 @@
 
 
             <div class="student-profile-body">
-
-
-                <!-- NAME -->
 
                 <h2 class="student-profile-name">
 
@@ -847,8 +1142,6 @@
 
                 </h2>
 
-
-                <!-- USERNAME -->
 
                 {% if student.username %}
 
@@ -863,8 +1156,6 @@
                 {% endif %}
 
 
-                <!-- ADMISSION -->
-
                 <div class="student-profile-admission">
 
                     <i class="fas fa-id-card"></i>
@@ -873,8 +1164,6 @@
 
                 </div>
 
-
-                <!-- STATUS -->
 
                 {% set status_value =
                     student.status|default("active")|lower
@@ -895,34 +1184,20 @@
 
                 <div class="student-profile-status">
 
-                    <span
-                        class="student-status-badge {{ status_class }}"
-                    >
+                    <span class="student-status-badge {{ status_class }}">
 
                         {% if status_value == "active" %}
-
                             <i class="fas fa-circle-check"></i>
-
                         {% elif status_value == "graduated" %}
-
                             <i class="fas fa-graduation-cap"></i>
-
                         {% elif status_value == "transferred" %}
-
                             <i class="fas fa-right-left"></i>
-
                         {% elif status_value == "suspended" %}
-
                             <i class="fas fa-ban"></i>
-
                         {% elif status_value == "withdrawn" %}
-
                             <i class="fas fa-user-minus"></i>
-
                         {% else %}
-
                             <i class="fas fa-circle-xmark"></i>
-
                         {% endif %}
 
                         {{ status_value|replace('_', ' ')|title }}
@@ -935,9 +1210,6 @@
                 <!-- QUICK INFO -->
 
                 <div class="profile-quick-info">
-
-
-                    <!-- INSTITUTION -->
 
                     <div class="profile-quick-item">
 
@@ -954,17 +1226,11 @@
                             <div class="profile-quick-value">
 
                                 {% if student.institution %}
-
                                     {{ student.institution.name }}
-
                                 {% elif student.institution_id %}
-
                                     Institution #{{ student.institution_id }}
-
                                 {% else %}
-
                                     —
-
                                 {% endif %}
 
                             </div>
@@ -973,8 +1239,6 @@
 
                     </div>
 
-
-                    <!-- BRANCH -->
 
                     <div class="profile-quick-item">
 
@@ -991,17 +1255,11 @@
                             <div class="profile-quick-value">
 
                                 {% if student.branch %}
-
                                     {{ student.branch.name }}
-
                                 {% elif student.branch_id %}
-
                                     Branch #{{ student.branch_id }}
-
                                 {% else %}
-
                                     —
-
                                 {% endif %}
 
                             </div>
@@ -1010,8 +1268,6 @@
 
                     </div>
 
-
-                    <!-- PHONE -->
 
                     <div class="profile-quick-item">
 
@@ -1026,17 +1282,13 @@
                             </div>
 
                             <div class="profile-quick-value">
-
                                 {{ student.phone or "—" }}
-
                             </div>
 
                         </div>
 
                     </div>
 
-
-                    <!-- EMAIL -->
 
                     <div class="profile-quick-item">
 
@@ -1051,9 +1303,7 @@
                             </div>
 
                             <div class="profile-quick-value">
-
                                 {{ student.email or "—" }}
-
                             </div>
 
                         </div>
@@ -1063,34 +1313,22 @@
                 </div>
 
 
-                <!-- ACTIONS -->
-
                 <div class="profile-actions">
 
                     <a
-                        href="{{ url_for(
-                            'main.edit_student',
-                            student_id=student.id
-                        ) }}"
+                        href="{{ url_for('main.edit_student', student_id=student.id) }}"
                         class="profile-action-btn primary"
                     >
-
                         <i class="fas fa-pen"></i>
-
                         Edit Student
-
                     </a>
-
 
                     <a
                         href="{{ url_for('main.all_students') }}"
                         class="profile-action-btn"
                     >
-
                         <i class="fas fa-list"></i>
-
                         All Students
-
                     </a>
 
                 </div>
@@ -1118,11 +1356,8 @@
                     <div>
 
                         <h3 class="student-detail-title">
-
                             <i class="fas fa-chart-simple"></i>
-
                             Student Overview
-
                         </h3>
 
                         <p class="student-detail-description">
@@ -1137,7 +1372,6 @@
                 <div class="student-detail-body">
 
                     <div class="student-overview-grid">
-
 
                         <div class="student-overview-box">
 
@@ -1208,11 +1442,8 @@
                     <div>
 
                         <h3 class="student-detail-title">
-
                             <i class="fas fa-user"></i>
-
                             Personal Information
-
                         </h3>
 
                         <p class="student-detail-description">
@@ -1228,9 +1459,6 @@
 
                     <div class="student-detail-grid">
 
-
-                        <!-- FULL NAME -->
-
                         <div class="student-detail-item">
 
                             <span class="student-detail-label">
@@ -1238,17 +1466,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-user"></i>
-
                                 {{ student.full_name or "—" }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- GENDER -->
 
                         <div class="student-detail-item">
 
@@ -1261,17 +1484,11 @@
                                 {% if student.gender %}
 
                                     {% if student.gender|lower == "male" %}
-
                                         <i class="fas fa-mars"></i>
-
                                     {% elif student.gender|lower == "female" %}
-
                                         <i class="fas fa-venus"></i>
-
                                     {% else %}
-
                                         <i class="fas fa-user"></i>
-
                                     {% endif %}
 
                                     {{ student.gender|title }}
@@ -1287,8 +1504,6 @@
                         </div>
 
 
-                        <!-- DATE OF BIRTH -->
-
                         <div class="student-detail-item">
 
                             <span class="student-detail-label">
@@ -1300,21 +1515,15 @@
                                 <i class="fas fa-calendar"></i>
 
                                 {% if student.date_of_birth %}
-
                                     {{ student.date_of_birth.strftime('%d %b %Y') }}
-
                                 {% else %}
-
                                     —
-
                                 {% endif %}
 
                             </div>
 
                         </div>
 
-
-                        <!-- PLACE OF BIRTH -->
 
                         <div class="student-detail-item">
 
@@ -1323,17 +1532,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-location-dot"></i>
-
                                 {{ student.place_of_birth or "—" }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- NATIONALITY -->
 
                         <div class="student-detail-item">
 
@@ -1342,17 +1546,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-flag"></i>
-
                                 {{ student.nationality or "—" }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- ROLL -->
 
                         <div class="student-detail-item">
 
@@ -1361,11 +1560,8 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-hashtag"></i>
-
                                 {{ student.roll_no or "—" }}
-
                             </div>
 
                         </div>
@@ -1388,11 +1584,8 @@
                     <div>
 
                         <h3 class="student-detail-title">
-
                             <i class="fas fa-building-columns"></i>
-
                             Institution Assignment
-
                         </h3>
 
                         <p class="student-detail-description">
@@ -1408,9 +1601,6 @@
 
                     <div class="student-detail-grid two">
 
-
-                        <!-- INSTITUTION -->
-
                         <div class="student-detail-item">
 
                             <span class="student-detail-label">
@@ -1422,25 +1612,17 @@
                                 <i class="fas fa-building"></i>
 
                                 {% if student.institution %}
-
                                     {{ student.institution.name }}
-
                                 {% elif student.institution_id %}
-
                                     Institution #{{ student.institution_id }}
-
                                 {% else %}
-
                                     —
-
                                 {% endif %}
 
                             </div>
 
                         </div>
 
-
-                        <!-- BRANCH -->
 
                         <div class="student-detail-item">
 
@@ -1453,17 +1635,11 @@
                                 <i class="fas fa-code-branch"></i>
 
                                 {% if student.branch %}
-
                                     {{ student.branch.name }}
-
                                 {% elif student.branch_id %}
-
                                     Branch #{{ student.branch_id }}
-
                                 {% else %}
-
                                     —
-
                                 {% endif %}
 
                             </div>
@@ -1478,7 +1654,7 @@
 
 
             <!-- =================================================
-                 CONTACT & LOCATION
+                 CONTACT
                  ================================================= -->
 
             <section class="student-detail-card">
@@ -1488,11 +1664,8 @@
                     <div>
 
                         <h3 class="student-detail-title">
-
                             <i class="fas fa-address-book"></i>
-
                             Contact & Location
-
                         </h3>
 
                         <p class="student-detail-description">
@@ -1508,9 +1681,6 @@
 
                     <div class="student-detail-grid">
 
-
-                        <!-- EMAIL -->
-
                         <div class="student-detail-item">
 
                             <span class="student-detail-label">
@@ -1518,17 +1688,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-envelope"></i>
-
                                 {{ student.email or "—" }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- PHONE -->
 
                         <div class="student-detail-item">
 
@@ -1537,17 +1702,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-phone"></i>
-
                                 {{ student.phone or "—" }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- CITY -->
 
                         <div class="student-detail-item">
 
@@ -1556,17 +1716,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-city"></i>
-
                                 {{ student.city or "—" }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- ADDRESS -->
 
                         <div class="student-detail-item">
 
@@ -1575,11 +1730,8 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-location-dot"></i>
-
                                 {{ student.address or "—" }}
-
                             </div>
 
                         </div>
@@ -1602,11 +1754,8 @@
                     <div>
 
                         <h3 class="student-detail-title">
-
                             <i class="fas fa-user-shield"></i>
-
                             Parent / Guardian Information
-
                         </h3>
 
                         <p class="student-detail-description">
@@ -1622,9 +1771,6 @@
 
                     <div class="student-detail-grid">
 
-
-                        <!-- PARENT NAME -->
-
                         <div class="student-detail-item">
 
                             <span class="student-detail-label">
@@ -1632,17 +1778,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-user-shield"></i>
-
                                 {{ student.parent_name or "—" }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- RELATIONSHIP -->
 
                         <div class="student-detail-item">
 
@@ -1651,17 +1792,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-people-arrows"></i>
-
                                 {{ student.relationship_to_student or "—" }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- PHONE -->
 
                         <div class="student-detail-item">
 
@@ -1670,17 +1806,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-phone"></i>
-
                                 {{ student.parent_phone or "—" }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- EMAIL -->
 
                         <div class="student-detail-item">
 
@@ -1689,21 +1820,16 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-envelope"></i>
-
                                 {{ student.parent_email or "—" }}
-
                             </div>
 
                         </div>
 
 
-                        <!-- ADDRESS -->
-
                         <div
                             class="student-detail-item"
-                            style="grid-column: 1 / -1;"
+                            style="grid-column:1/-1;"
                         >
 
                             <span class="student-detail-label">
@@ -1711,11 +1837,8 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-location-dot"></i>
-
                                 {{ student.parent_address or "—" }}
-
                             </div>
 
                         </div>
@@ -1728,7 +1851,7 @@
 
 
             <!-- =================================================
-                 ACCOUNT & SECURITY
+                 ACCOUNT
                  ================================================= -->
 
             <section class="student-detail-card">
@@ -1738,11 +1861,8 @@
                     <div>
 
                         <h3 class="student-detail-title">
-
                             <i class="fas fa-shield-halved"></i>
-
                             Account & Security
-
                         </h3>
 
                         <p class="student-detail-description">
@@ -1758,9 +1878,6 @@
 
                     <div class="student-detail-grid">
 
-
-                        <!-- ACCOUNT STATUS -->
-
                         <div class="student-detail-item">
 
                             <span class="student-detail-label">
@@ -1772,21 +1889,15 @@
                                 {% if student.is_active %}
 
                                     <span class="account-status active">
-
                                         <i class="fas fa-circle-check"></i>
-
                                         Active
-
                                     </span>
 
                                 {% else %}
 
                                     <span class="account-status inactive">
-
                                         <i class="fas fa-circle-xmark"></i>
-
                                         Inactive
-
                                     </span>
 
                                 {% endif %}
@@ -1796,12 +1907,10 @@
                         </div>
 
 
-                        <!-- VERIFICATION -->
-
                         <div class="student-detail-item">
 
                             <span class="student-detail-label">
-                                Email / Account Verification
+                                Verification
                             </span>
 
                             <div class="student-detail-value">
@@ -1809,21 +1918,15 @@
                                 {% if student.is_verified %}
 
                                     <span class="verification-status verified">
-
                                         <i class="fas fa-circle-check"></i>
-
                                         Verified
-
                                     </span>
 
                                 {% else %}
 
                                     <span class="verification-status unverified">
-
                                         <i class="fas fa-clock"></i>
-
                                         Unverified
-
                                     </span>
 
                                 {% endif %}
@@ -1832,8 +1935,6 @@
 
                         </div>
 
-
-                        <!-- ROLE -->
 
                         <div class="student-detail-item">
 
@@ -1842,17 +1943,12 @@
                             </span>
 
                             <div class="student-detail-value">
-
                                 <i class="fas fa-user-tag"></i>
-
                                 {{ student.role|default("student")|title }}
-
                             </div>
 
                         </div>
 
-
-                        <!-- LAST LOGIN -->
 
                         <div class="student-detail-item">
 
@@ -1865,23 +1961,17 @@
                                 <i class="fas fa-right-to-bracket"></i>
 
                                 {% if student.last_login %}
-
                                     {{ student.last_login.strftime('%d %b %Y, %I:%M %p') }}
-
                                 {% else %}
-
                                     <span class="muted">
                                         Never logged in
                                     </span>
-
                                 {% endif %}
 
                             </div>
 
                         </div>
 
-
-                        <!-- LAST ACTIVE -->
 
                         <div class="student-detail-item">
 
@@ -1894,21 +1984,15 @@
                                 <i class="fas fa-clock"></i>
 
                                 {% if student.last_active %}
-
                                     {{ student.last_active.strftime('%d %b %Y, %I:%M %p') }}
-
                                 {% else %}
-
                                     —
-
                                 {% endif %}
 
                             </div>
 
                         </div>
 
-
-                        <!-- LOGIN TIME -->
 
                         <div class="student-detail-item">
 
@@ -1921,13 +2005,9 @@
                                 <i class="fas fa-calendar-check"></i>
 
                                 {% if student.login_time %}
-
                                     {{ student.login_time.strftime('%d %b %Y, %I:%M %p') }}
-
                                 {% else %}
-
                                     —
-
                                 {% endif %}
 
                             </div>
@@ -1952,15 +2032,12 @@
                     <div>
 
                         <h3 class="student-detail-title">
-
                             <i class="fas fa-layer-group"></i>
-
-                            Student Records
-
+                            Student Records Summary
                         </h3>
 
                         <p class="student-detail-description">
-                            Related records currently associated with this student.
+                            Enrollment and financial records associated with this student.
                         </p>
 
                     </div>
@@ -1970,25 +2047,52 @@
 
                 <div class="student-detail-body">
 
+                    {% set enrollment_count = student.enrollments|length %}
+                    {% set charge_count = student.charges|length %}
+
+                    {% set total_amount = namespace(value=0) %}
+                    {% set total_discount = namespace(value=0) %}
+                    {% set total_net = namespace(value=0) %}
+                    {% set total_paid = namespace(value=0) %}
+                    {% set total_balance = namespace(value=0) %}
+
+                    {% for charge in student.charges %}
+
+                        {% set total_amount.value =
+                            total_amount.value + (charge.amount or 0)
+                        %}
+
+                        {% set total_discount.value =
+                            total_discount.value + (charge.discount or 0)
+                        %}
+
+                        {% set total_net.value =
+                            total_net.value + (charge.net_amount or 0)
+                        %}
+
+                        {% set total_paid.value =
+                            total_paid.value + (charge.paid_amount or 0)
+                        %}
+
+                        {% set total_balance.value =
+                            total_balance.value + (charge.balance or 0)
+                        %}
+
+                    {% endfor %}
+
+
                     <div class="student-summary-grid">
-
-
-                        <!-- ENROLLMENTS -->
 
                         <div class="student-summary-box">
 
                             <div class="student-summary-icon">
-
                                 <i class="fas fa-book-open"></i>
-
                             </div>
 
                             <div>
 
                                 <div class="student-summary-number">
-
-                                    {{ student.enrollments|length }}
-
+                                    {{ enrollment_count }}
                                 </div>
 
                                 <div class="student-summary-label">
@@ -2000,26 +2104,62 @@
                         </div>
 
 
-                        <!-- CHARGES -->
-
                         <div class="student-summary-box">
 
                             <div class="student-summary-icon green">
-
                                 <i class="fas fa-file-invoice-dollar"></i>
-
                             </div>
 
                             <div>
 
                                 <div class="student-summary-number">
-
-                                    {{ student.charges|length }}
-
+                                    {{ charge_count }}
                                 </div>
 
                                 <div class="student-summary-label">
-                                    Student Charges
+                                    Charges
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="student-summary-box">
+
+                            <div class="student-summary-icon purple">
+                                <i class="fas fa-coins"></i>
+                            </div>
+
+                            <div>
+
+                                <div class="student-summary-number">
+                                    ${{ "%.2f"|format(total_net.value|float) }}
+                                </div>
+
+                                <div class="student-summary-label">
+                                    Net Charges
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="student-summary-box">
+
+                            <div class="student-summary-icon orange">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+
+                            <div>
+
+                                <div class="student-summary-number">
+                                    ${{ "%.2f"|format(total_balance.value|float) }}
+                                </div>
+
+                                <div class="student-summary-label">
+                                    Outstanding Balance
                                 </div>
 
                             </div>
@@ -2027,6 +2167,962 @@
                         </div>
 
                     </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 ENROLLMENTS
+                 ================================================= -->
+
+            <section class="student-detail-card">
+
+                <div class="student-detail-header">
+
+                    <div>
+
+                        <h3 class="student-detail-title">
+                            <i class="fas fa-graduation-cap"></i>
+                            Student Enrollments
+                        </h3>
+
+                        <p class="student-detail-description">
+                            Academic year, program, class, section and enrollment information.
+                        </p>
+
+                    </div>
+
+                    <div>
+
+                        <span class="table-badge badge-active">
+                            {{ student.enrollments|length }} Records
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="student-detail-body">
+
+                    {% if student.enrollments %}
+
+                        <div class="enrollment-card-list">
+
+                            {% for enrollment in student.enrollments %}
+
+                                <div class="enrollment-card">
+
+                                    <div class="enrollment-card-header">
+
+                                        <div>
+
+                                            <div class="enrollment-card-title">
+
+                                                <i class="fas fa-id-badge"></i>
+
+                                                {{ enrollment.enrollment_no or "Enrollment #" ~ enrollment.id }}
+
+                                            </div>
+
+                                            <div class="enrollment-card-subtitle">
+
+                                                {% if enrollment.enrollment_date %}
+
+                                                    Enrolled:
+                                                    {{ enrollment.enrollment_date.strftime('%d %b %Y') }}
+
+                                                {% else %}
+
+                                                    Enrollment date not available
+
+                                                {% endif %}
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {% set enrollment_status =
+                                            enrollment.status|default("active")|lower
+                                        %}
+
+                                        {% set enrollment_badge = {
+                                            "active": "badge-active",
+                                            "completed": "badge-completed",
+                                            "transferred": "badge-transferred",
+                                            "withdrawn": "badge-withdrawn",
+                                            "suspended": "badge-suspended",
+                                            "promoted": "badge-promoted"
+                                        }.get(
+                                            enrollment_status,
+                                            "badge-active"
+                                        ) %}
+
+                                        <span class="table-badge {{ enrollment_badge }}">
+
+                                            {% if enrollment_status == "active" %}
+                                                <i class="fas fa-circle-check"></i>
+                                            {% elif enrollment_status == "completed" %}
+                                                <i class="fas fa-check-double"></i>
+                                            {% elif enrollment_status == "promoted" %}
+                                                <i class="fas fa-arrow-up"></i>
+                                            {% elif enrollment_status == "transferred" %}
+                                                <i class="fas fa-right-left"></i>
+                                            {% elif enrollment_status == "withdrawn" %}
+                                                <i class="fas fa-user-minus"></i>
+                                            {% elif enrollment_status == "suspended" %}
+                                                <i class="fas fa-ban"></i>
+                                            {% endif %}
+
+                                            {{ enrollment_status|replace('_', ' ')|title }}
+
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="enrollment-card-body">
+
+                                        <div class="enrollment-mini-grid">
+
+
+                                            <!-- ACADEMIC YEAR -->
+
+                                            <div>
+
+                                                <div class="enrollment-mini-label">
+                                                    Academic Year
+                                                </div>
+
+                                                <div class="enrollment-mini-value">
+
+                                                    {% if enrollment.academic_year %}
+
+                                                        {{ enrollment.academic_year.name }}
+
+                                                    {% elif enrollment.academic_year_id %}
+
+                                                        Academic Year #{{ enrollment.academic_year_id }}
+
+                                                    {% else %}
+
+                                                        —
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- PROGRAM -->
+
+                                            <div>
+
+                                                <div class="enrollment-mini-label">
+                                                    Program
+                                                </div>
+
+                                                <div class="enrollment-mini-value">
+
+                                                    {% if enrollment.program %}
+
+                                                        {{ enrollment.program.name }}
+
+                                                        {% if enrollment.program.code %}
+
+                                                            <div class="table-secondary">
+                                                                {{ enrollment.program.code }}
+                                                            </div>
+
+                                                        {% endif %}
+
+                                                    {% elif enrollment.program_id %}
+
+                                                        Program #{{ enrollment.program_id }}
+
+                                                    {% else %}
+
+                                                        —
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- CLASS -->
+
+                                            <div>
+
+                                                <div class="enrollment-mini-label">
+                                                    Class
+                                                </div>
+
+                                                <div class="enrollment-mini-value">
+
+                                                    {% if enrollment.class_ %}
+
+                                                        {{ enrollment.class_.name }}
+
+                                                    {% elif enrollment.class_id %}
+
+                                                        Class #{{ enrollment.class_id }}
+
+                                                    {% else %}
+
+                                                        —
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- SECTION -->
+
+                                            <div>
+
+                                                <div class="enrollment-mini-label">
+                                                    Section
+                                                </div>
+
+                                                <div class="enrollment-mini-value">
+
+                                                    {% if enrollment.section %}
+
+                                                        {{ enrollment.section.name }}
+
+                                                    {% elif enrollment.section_id %}
+
+                                                        Section #{{ enrollment.section_id }}
+
+                                                    {% else %}
+
+                                                        —
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- BRANCH -->
+
+                                            <div>
+
+                                                <div class="enrollment-mini-label">
+                                                    Branch
+                                                </div>
+
+                                                <div class="enrollment-mini-value">
+
+                                                    {% if enrollment.branch %}
+
+                                                        {{ enrollment.branch.name }}
+
+                                                    {% elif enrollment.branch_id %}
+
+                                                        Branch #{{ enrollment.branch_id }}
+
+                                                    {% else %}
+
+                                                        —
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- ENROLLMENT DATE -->
+
+                                            <div>
+
+                                                <div class="enrollment-mini-label">
+                                                    Enrollment Date
+                                                </div>
+
+                                                <div class="enrollment-mini-value">
+
+                                                    {% if enrollment.enrollment_date %}
+
+                                                        {{ enrollment.enrollment_date.strftime('%d %b %Y') }}
+
+                                                    {% else %}
+
+                                                        —
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- ENROLLMENT ID -->
+
+                                            <div>
+
+                                                <div class="enrollment-mini-label">
+                                                    Record ID
+                                                </div>
+
+                                                <div class="enrollment-mini-value">
+                                                    #{{ enrollment.id }}
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- NOTES -->
+
+                                            <div>
+
+                                                <div class="enrollment-mini-label">
+                                                    Notes
+                                                </div>
+
+                                                <div class="enrollment-mini-value">
+
+                                                    {% if enrollment.notes %}
+                                                        {{ enrollment.notes }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="student-table-empty">
+
+                            <div class="student-table-empty-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+
+                            <div class="student-table-empty-title">
+                                No Enrollment Records
+                            </div>
+
+                            <div class="student-table-empty-text">
+                                This student has no enrollment records yet.
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 CHARGES
+                 ================================================= -->
+
+            <section class="student-detail-card">
+
+                <div class="student-detail-header">
+
+                    <div>
+
+                        <h3 class="student-detail-title">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            Student Charges
+                        </h3>
+
+                        <p class="student-detail-description">
+                            Registration, program fees and all other charges assigned to this student.
+                        </p>
+
+                    </div>
+
+                    <div>
+
+                        <span class="table-badge badge-active">
+                            {{ student.charges|length }} Charges
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="student-detail-body">
+
+
+                    <!-- =================================================
+                         CHARGE TOTALS
+                         ================================================= -->
+
+                    <div class="charge-summary-grid">
+
+                        <div class="charge-summary-box">
+
+                            <div class="charge-summary-label">
+                                Gross Amount
+                            </div>
+
+                            <div class="charge-summary-value">
+
+                                ${{ "%.2f"|format(total_amount.value|float) }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="charge-summary-box">
+
+                            <div class="charge-summary-label">
+                                Discount
+                            </div>
+
+                            <div class="charge-summary-value orange">
+
+                                ${{ "%.2f"|format(total_discount.value|float) }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="charge-summary-box">
+
+                            <div class="charge-summary-label">
+                                Net Amount
+                            </div>
+
+                            <div class="charge-summary-value">
+
+                                ${{ "%.2f"|format(total_net.value|float) }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="charge-summary-box">
+
+                            <div class="charge-summary-label">
+                                Paid Amount
+                            </div>
+
+                            <div class="charge-summary-value green">
+
+                                ${{ "%.2f"|format(total_paid.value|float) }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="charge-summary-box">
+
+                            <div class="charge-summary-label">
+                                Balance
+                            </div>
+
+                            <div class="charge-summary-value red">
+
+                                ${{ "%.2f"|format(total_balance.value|float) }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         CHARGE TABLE
+                         ================================================= -->
+
+                    {% if student.charges %}
+
+                        <div class="student-table-wrapper">
+
+                            <table class="student-table">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Charge
+                                        </th>
+
+                                        <th>
+                                            Enrollment / Program
+                                        </th>
+
+                                        <th>
+                                            Academic Year
+                                        </th>
+
+                                        <th>
+                                            Amount
+                                        </th>
+
+                                        <th>
+                                            Discount
+                                        </th>
+
+                                        <th>
+                                            Net Amount
+                                        </th>
+
+                                        <th>
+                                            Paid
+                                        </th>
+
+                                        <th>
+                                            Balance
+                                        </th>
+
+                                        <th>
+                                            Due Date
+                                        </th>
+
+                                        <th>
+                                            Status
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {% for charge in student.charges %}
+
+                                        <tr>
+
+
+                                            <!-- CHARGE -->
+
+                                            <td>
+
+                                                <div class="charge-type">
+
+                                                    {% if charge.charge_type == "registration" %}
+
+                                                        <i class="fas fa-user-plus"></i>
+
+                                                    {% elif charge.charge_type == "program_fee" %}
+
+                                                        <i class="fas fa-graduation-cap"></i>
+
+                                                    {% elif charge.charge_type == "tuition" %}
+
+                                                        <i class="fas fa-school"></i>
+
+                                                    {% elif charge.charge_type == "exam" %}
+
+                                                        <i class="fas fa-file-pen"></i>
+
+                                                    {% elif charge.charge_type == "admission" %}
+
+                                                        <i class="fas fa-door-open"></i>
+
+                                                    {% elif charge.charge_type == "id_card" %}
+
+                                                        <i class="fas fa-id-card"></i>
+
+                                                    {% elif charge.charge_type == "uniform" %}
+
+                                                        <i class="fas fa-shirt"></i>
+
+                                                    {% elif charge.charge_type == "books" %}
+
+                                                        <i class="fas fa-book"></i>
+
+                                                    {% elif charge.charge_type == "transport" %}
+
+                                                        <i class="fas fa-bus"></i>
+
+                                                    {% elif charge.charge_type == "laboratory" %}
+
+                                                        <i class="fas fa-flask"></i>
+
+                                                    {% elif charge.charge_type == "library" %}
+
+                                                        <i class="fas fa-book-open"></i>
+
+                                                    {% elif charge.charge_type == "certificate" %}
+
+                                                        <i class="fas fa-certificate"></i>
+
+                                                    {% else %}
+
+                                                        <i class="fas fa-file-invoice"></i>
+
+                                                    {% endif %}
+
+                                                    {{
+                                                        charge.charge_name
+                                                        or charge.charge_type
+                                                        or "Charge"
+                                                    }}
+
+                                                </div>
+
+
+                                                <div class="table-secondary">
+
+                                                    Type:
+
+                                                    {{
+                                                        charge.charge_type
+                                                        |default("other")
+                                                        |replace('_', ' ')
+                                                        |title
+                                                    }}
+
+                                                </div>
+
+
+                                                {% if charge.description %}
+
+                                                    <div class="table-secondary">
+
+                                                        {{ charge.description }}
+
+                                                    </div>
+
+                                                {% endif %}
+
+                                            </td>
+
+
+                                            <!-- ENROLLMENT / PROGRAM -->
+
+                                            <td>
+
+                                                {% if charge.enrollment %}
+
+                                                    <div class="table-primary">
+
+                                                        {{
+                                                            charge.enrollment.enrollment_no
+                                                            or
+                                                            ("Enrollment #" ~ charge.enrollment.id)
+                                                        }}
+
+                                                    </div>
+
+
+                                                    <div class="table-secondary">
+
+                                                        {% if charge.enrollment.program %}
+
+                                                            {{ charge.enrollment.program.name }}
+
+                                                        {% elif charge.enrollment.program_id %}
+
+                                                            Program #{{ charge.enrollment.program_id }}
+
+                                                        {% else %}
+
+                                                            No Program
+
+                                                        {% endif %}
+
+                                                    </div>
+
+
+                                                    {% if charge.enrollment.class_ %}
+
+                                                        <div class="table-secondary">
+
+                                                            Class:
+                                                            {{ charge.enrollment.class_.name }}
+
+                                                        </div>
+
+                                                    {% endif %}
+
+                                                {% elif charge.enrollment_id %}
+
+                                                    <div class="table-primary">
+                                                        Enrollment #{{ charge.enrollment_id }}
+                                                    </div>
+
+                                                {% else %}
+
+                                                    <span class="table-muted">
+                                                        No Enrollment
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+
+                                            <!-- ACADEMIC YEAR -->
+
+                                            <td>
+
+                                                {% if charge.academic_year %}
+
+                                                    <div class="table-strong">
+
+                                                        {{ charge.academic_year.name }}
+
+                                                    </div>
+
+                                                    {% if charge.academic_year.code %}
+
+                                                        <div class="table-secondary">
+                                                            {{ charge.academic_year.code }}
+                                                        </div>
+
+                                                    {% endif %}
+
+                                                {% elif charge.academic_year_id %}
+
+                                                    Academic Year #{{ charge.academic_year_id }}
+
+                                                {% else %}
+
+                                                    —
+
+                                                {% endif %}
+
+                                            </td>
+
+
+                                            <!-- AMOUNT -->
+
+                                            <td>
+
+                                                <span class="table-money">
+
+                                                    ${{ "%.2f"|format(
+                                                        (charge.amount or 0)|float
+                                                    ) }}
+
+                                                </span>
+
+                                            </td>
+
+
+                                            <!-- DISCOUNT -->
+
+                                            <td>
+
+                                                {% if charge.discount and charge.discount > 0 %}
+
+                                                    <span class="table-money money-orange">
+
+                                                        -${{ "%.2f"|format(
+                                                            charge.discount|float
+                                                        ) }}
+
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="table-muted">
+                                                        $0.00
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+
+                                            <!-- NET -->
+
+                                            <td>
+
+                                                <span class="table-money">
+
+                                                    ${{ "%.2f"|format(
+                                                        (charge.net_amount or 0)|float
+                                                    ) }}
+
+                                                </span>
+
+                                            </td>
+
+
+                                            <!-- PAID -->
+
+                                            <td>
+
+                                                {% if charge.paid_amount and charge.paid_amount > 0 %}
+
+                                                    <span class="table-money money-green">
+
+                                                        ${{ "%.2f"|format(
+                                                            charge.paid_amount|float
+                                                        ) }}
+
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="table-muted">
+                                                        $0.00
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+
+                                            <!-- BALANCE -->
+
+                                            <td>
+
+                                                {% set charge_balance =
+                                                    (charge.balance or 0)|float
+                                                %}
+
+                                                {% if charge_balance > 0 %}
+
+                                                    <span class="table-money money-red">
+
+                                                        ${{ "%.2f"|format(
+                                                            charge_balance
+                                                        ) }}
+
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="table-money money-green">
+
+                                                        $0.00
+
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+
+                                            <!-- DUE DATE -->
+
+                                            <td>
+
+                                                {% if charge.due_date %}
+
+                                                    {{ charge.due_date.strftime('%d %b %Y') }}
+
+                                                {% else %}
+
+                                                    <span class="table-muted">
+                                                        No Due Date
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+
+                                            <!-- STATUS -->
+
+                                            <td>
+
+                                                {% set charge_status =
+                                                    charge.status|default("unpaid")|lower
+                                                %}
+
+                                                {% set charge_badge = {
+                                                    "unpaid": "badge-unpaid",
+                                                    "partial": "badge-partial",
+                                                    "paid": "badge-paid",
+                                                    "cancelled": "badge-cancelled",
+                                                    "overdue": "badge-overdue"
+                                                }.get(
+                                                    charge_status,
+                                                    "badge-unpaid"
+                                                ) %}
+
+
+                                                <span class="table-badge {{ charge_badge }}">
+
+                                                    {% if charge_status == "paid" %}
+
+                                                        <i class="fas fa-circle-check"></i>
+
+                                                    {% elif charge_status == "partial" %}
+
+                                                        <i class="fas fa-circle-half-stroke"></i>
+
+                                                    {% elif charge_status == "overdue" %}
+
+                                                        <i class="fas fa-triangle-exclamation"></i>
+
+                                                    {% elif charge_status == "cancelled" %}
+
+                                                        <i class="fas fa-ban"></i>
+
+                                                    {% else %}
+
+                                                        <i class="fas fa-clock"></i>
+
+                                                    {% endif %}
+
+                                                    {{ charge_status|title }}
+
+                                                </span>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="student-table-empty">
+
+                            <div class="student-table-empty-icon">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+
+                            <div class="student-table-empty-title">
+                                No Charges Found
+                            </div>
+
+                            <div class="student-table-empty-text">
+                                This student does not have any financial charges yet.
+                            </div>
+
+                        </div>
+
+                    {% endif %}
 
                 </div>
 
@@ -2039,42 +3135,39 @@
 
             {% if student.notes %}
 
-            <section class="student-detail-card">
+                <section class="student-detail-card">
 
-                <div class="student-detail-header">
+                    <div class="student-detail-header">
 
-                    <div>
+                        <div>
 
-                        <h3 class="student-detail-title">
+                            <h3 class="student-detail-title">
+                                <i class="fas fa-note-sticky"></i>
+                                Notes
+                            </h3>
 
-                            <i class="fas fa-note-sticky"></i>
-
-                            Notes
-
-                        </h3>
-
-                    </div>
-
-                </div>
-
-
-                <div class="student-detail-body">
-
-                    <div class="student-notes">
-
-                        {{ student.notes }}
+                        </div>
 
                     </div>
 
-                </div>
 
-            </section>
+                    <div class="student-detail-body">
+
+                        <div class="student-notes">
+
+                            {{ student.notes }}
+
+                        </div>
+
+                    </div>
+
+                </section>
 
             {% endif %}
 
 
             <!-- =================================================
-                 RECORD DATES
+                 RECORD INFORMATION
                  ================================================= -->
 
             <section class="student-detail-card">
@@ -2084,11 +3177,8 @@
                     <div>
 
                         <h3 class="student-detail-title">
-
                             <i class="fas fa-clock-rotate-left"></i>
-
                             Record Information
-
                         </h3>
 
                         <p class="student-detail-description">
@@ -2104,9 +3194,6 @@
 
                     <div class="student-detail-grid two">
 
-
-                        <!-- CREATED -->
-
                         <div class="student-detail-item">
 
                             <span class="student-detail-label">
@@ -2118,21 +3205,15 @@
                                 <i class="fas fa-calendar-plus"></i>
 
                                 {% if student.created_at %}
-
                                     {{ student.created_at.strftime('%d %b %Y, %I:%M %p') }}
-
                                 {% else %}
-
                                     —
-
                                 {% endif %}
 
                             </div>
 
                         </div>
 
-
-                        <!-- UPDATED -->
 
                         <div class="student-detail-item">
 
@@ -2145,13 +3226,9 @@
                                 <i class="fas fa-calendar-pen"></i>
 
                                 {% if student.updated_at %}
-
                                     {{ student.updated_at.strftime('%d %b %Y, %I:%M %p') }}
-
                                 {% else %}
-
                                     —
-
                                 {% endif %}
 
                             </div>
