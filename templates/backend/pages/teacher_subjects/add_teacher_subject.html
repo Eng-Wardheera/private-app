@@ -1,1100 +1,1104 @@
 {% extends "backend/home/base.html" %}
 
-{% block title %}
-Add Teacher Subject Assignments
-{% endblock %}
-
 {% block content %}
 
 <style>
 
 /* ============================================================
-   ADD TEACHER SUBJECT ASSIGNMENTS
+   TEACHER ASSIGNMENT PAGE
    ============================================================ */
 
-.ts-page{
-    width:100%;
-    max-width:1550px;
-    margin:0 auto;
-    padding:5px 0 40px;
+.teacher-assignment-page {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 8px 0 40px;
+    box-sizing: border-box;
 }
 
 /* ============================================================
-   HEADER
+   PAGE HEADER
    ============================================================ */
 
-.ts-header{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:20px;
-    margin-bottom:22px;
+.page-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 22px;
+    box-sizing: border-box;
 }
 
-.ts-header-left{
-    min-width:0;
+.page-header-left {
+    flex: 1;
+    min-width: 0;
 }
 
-.ts-breadcrumb{
-    display:flex;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:7px;
-    margin-bottom:8px;
-    color:#8995a6;
-    font-size:12px;
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #7b8494;
 }
 
-.ts-breadcrumb a{
-    color:#06245f;
-    text-decoration:none;
-    font-weight:700;
+.breadcrumb a {
+    color: #06245f;
+    text-decoration: none;
+    font-weight: 700;
 }
 
-.ts-breadcrumb a:hover{
-    text-decoration:underline;
+.breadcrumb a:hover {
+    text-decoration: underline;
 }
 
-.ts-breadcrumb i{
-    color:#b0bac8;
-    font-size:9px;
+.breadcrumb span {
+    color: #b3bac5;
 }
 
-.ts-title{
-    margin:0;
-    color:#06245f;
-    font-size:25px;
-    line-height:1.25;
-    font-weight:850;
-    letter-spacing:-.4px;
+.page-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 27px;
+    line-height: 1.25;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
-.ts-subtitle{
-    margin:7px 0 0;
-    color:#7d899b;
-    font-size:13px;
-    line-height:1.6;
+.page-subtitle {
+    margin: 7px 0 0;
+    color: #727b8b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 /* ============================================================
    BUTTONS
    ============================================================ */
 
-.ts-btn{
-    min-height:40px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:0 15px;
-    border-radius:9px;
-    border:1px solid transparent;
-    cursor:pointer;
-    text-decoration:none;
-    font-family:inherit;
-    font-size:12.5px;
-    font-weight:750;
-    transition:.18s ease;
+.btn {
+    border: 0;
+    border-radius: 10px;
+    min-height: 42px;
+    padding: 0 16px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    text-decoration: none;
+    cursor: pointer;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        color .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
+
+    box-sizing: border-box;
 }
 
-.ts-btn:hover{
-    transform:translateY(-1px);
+.btn-secondary {
+    background: #f2f5f9;
+    color: #263247;
+    border: 1px solid #e1e6ee;
 }
 
-.ts-btn:disabled{
-    opacity:.55;
-    cursor:not-allowed;
-    transform:none;
+.btn-secondary:hover {
+    background: #e8edf4;
 }
 
-.ts-btn-primary{
-    color:#fff;
-    background:#06245f;
-    border-color:#06245f;
-    box-shadow:0 5px 16px rgba(6,36,95,.14);
+.btn-primary {
+    background: #06245f;
+    color: #fff;
 }
 
-.ts-btn-primary:hover{
-    background:#041b49;
+.btn-primary:hover {
+    background: #041b49;
+    transform: translateY(-1px);
 }
 
-.ts-btn-green{
-    color:#fff;
-    background:#32b73a;
-    border-color:#32b73a;
+.btn-success {
+    background: #32b73a;
+    color: #fff;
 }
 
-.ts-btn-green:hover{
-    background:#279b2f;
+.btn-success:hover {
+    background: #289a30;
+    transform: translateY(-1px);
 }
 
-.ts-btn-secondary{
-    color:#42516a;
-    background:#fff;
-    border-color:#dce3ec;
+.btn-danger {
+    background: #fff1f1;
+    color: #c62828;
+    border: 1px solid #ffd5d5;
 }
 
-.ts-btn-secondary:hover{
-    color:#06245f;
-    background:#f7f9fc;
+.btn-danger:hover {
+    background: #ffe4e4;
 }
 
-.ts-btn-danger{
-    color:#b42318;
-    background:#fff5f5;
-    border-color:#efc9c5;
-}
-
-.ts-btn-danger:hover{
-    background:#ffe9e7;
-}
-
-.ts-btn-small{
-    min-height:33px;
-    padding:0 10px;
-    font-size:11px;
-    border-radius:7px;
-}
-
-/* ============================================================
-   ALERTS
-   ============================================================ */
-
-.ts-alerts{
-    display:grid;
-    gap:9px;
-    margin-bottom:18px;
-}
-
-.ts-alert{
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-    padding:12px 14px;
-    border-radius:10px;
-    border:1px solid;
-    font-size:12.5px;
-    line-height:1.5;
-}
-
-.ts-alert-success{
-    color:#176b35;
-    background:#f1fbf4;
-    border-color:#bee7ca;
-}
-
-.ts-alert-danger{
-    color:#9b1c1c;
-    background:#fff4f4;
-    border-color:#f3caca;
-}
-
-.ts-alert-warning{
-    color:#805b00;
-    background:#fff9e8;
-    border-color:#efdfa2;
-}
-
-.ts-alert-info{
-    color:#14507b;
-    background:#f1f8fd;
-    border-color:#c8e1f2;
+.btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* ============================================================
    MAIN LAYOUT
    ============================================================ */
 
-.ts-layout{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 330px;
-    gap:20px;
-    align-items:start;
+.assignment-layout {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+    align-items: start;
+    box-sizing: border-box;
 }
 
-.ts-card{
-    background:#fff;
-    border:1px solid #e1e7ef;
-    border-radius:14px;
-    box-shadow:0 5px 22px rgba(20,42,78,.045);
-    overflow:hidden;
+.main-column {
+    min-width: 0;
 }
 
-/* ============================================================
-   CARD HEADER
-   ============================================================ */
-
-.ts-card-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:15px;
-    padding:17px 20px;
-    border-bottom:1px solid #edf1f6;
-}
-
-.ts-card-title{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    margin:0;
-    color:#06245f;
-    font-size:15px;
-    font-weight:850;
-}
-
-.ts-card-title i{
-    width:29px;
-    height:29px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:8px;
-    background:#edf3ff;
-    color:#06245f;
-    font-size:12px;
-}
-
-.ts-card-description{
-    margin:5px 0 0 38px;
-    color:#8793a5;
-    font-size:11.5px;
-    line-height:1.5;
+.side-column {
+    min-width: 0;
 }
 
 /* ============================================================
-   CARD BODY
+   CARD
    ============================================================ */
 
-.ts-card-body{
-    padding:20px;
+.card {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e4e8ef;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(6, 36, 95, .055);
+    margin-bottom: 18px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.card-header {
+    width: 100%;
+    padding: 17px 20px;
+    border-bottom: 1px solid #edf0f4;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    box-sizing: border-box;
+}
+
+.card-header-left {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+
+    border-radius: 11px;
+
+    background: #eef3ff;
+    color: #06245f;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.card-icon.green {
+    background: #ecf9ed;
+    color: #32b73a;
+}
+
+.card-icon.purple {
+    background: #f2efff;
+    color: #33206f;
+}
+
+.card-title {
+    margin: 0;
+    color: #172033;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.card-description {
+    margin: 3px 0 0;
+    color: #7a8392;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.card-body {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 /* ============================================================
-   SECTION TITLE
+   FORM GRID
    ============================================================ */
 
-.ts-section-title{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    margin:4px 0 16px;
+.form-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 17px;
+
+    box-sizing: border-box;
 }
 
-.ts-section-title-text{
-    flex-shrink:0;
-    color:#06245f;
-    font-size:11.5px;
-    font-weight:850;
-    letter-spacing:.55px;
-    text-transform:uppercase;
+.form-grid.three {
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
 }
 
-.ts-section-line{
-    height:1px;
-    flex:1;
-    background:#edf1f6;
+.form-group {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
 }
 
 /* ============================================================
-   FORM
+   FORM LABEL
    ============================================================ */
 
-.ts-grid{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:16px;
+.form-label {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+
+    margin-bottom: 7px;
+
+    color: #30394b;
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 800;
 }
 
-.ts-grid-3{
-    display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:14px;
+.required {
+    color: #e53935;
 }
 
-.ts-field{
-    min-width:0;
-}
-
-.ts-field-full{
-    grid-column:1 / -1;
-}
-
-.ts-label{
-    display:flex;
-    align-items:center;
-    gap:4px;
-    margin-bottom:7px;
-    color:#34435a;
-    font-size:12px;
-    font-weight:750;
-}
-
-.ts-required{
-    color:#d72e2e;
-}
-
-.ts-optional{
-    margin-left:2px;
-    color:#9ba6b5;
-    font-size:10px;
-    font-weight:500;
-}
-
-.ts-select,
-.ts-input,
-.ts-textarea{
-    width:100%;
-    box-sizing:border-box;
-    border:1px solid #dce3ec;
-    border-radius:9px;
-    background:#fff;
-    color:#26364d;
-    outline:none;
-    font-family:inherit;
-    font-size:13px;
-    transition:.18s ease;
-}
-
-.ts-select,
-.ts-input{
-    height:42px;
-    padding:0 12px;
-}
-
-.ts-textarea{
-    min-height:92px;
-    padding:11px 12px;
-    resize:vertical;
-    line-height:1.55;
-}
-
-.ts-select:focus,
-.ts-input:focus,
-.ts-textarea:focus{
-    border-color:#315b9f;
-    box-shadow:0 0 0 3px rgba(6,36,95,.08);
-}
-
-.ts-select:disabled,
-.ts-input:disabled{
-    background:#f5f7fa;
-    color:#9ba6b5;
-    cursor:not-allowed;
-}
-
-.ts-help{
-    margin-top:5px;
-    color:#8995a6;
-    font-size:10.5px;
-    line-height:1.45;
+.optional {
+    color: #9aa2ae;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 /* ============================================================
-   DEFAULT BOX
+   INPUT / SELECT / TEXTAREA
+   IMPORTANT:
+   ALL FORM CONTROLS SAME SIZE
    ============================================================ */
 
-.ts-default-box{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    min-height:42px;
-    box-sizing:border-box;
-    padding:8px 11px;
-    border:1px solid #dce3ec;
-    border-radius:9px;
-    background:#fbfcfe;
+.form-control {
+    display: block;
+
+    width: 100%;
+    max-width: 100%;
+
+    height: 44px;
+    min-height: 44px;
+
+    padding: 0 13px;
+
+    border: 1px solid #dfe4eb;
+    border-radius: 10px;
+
+    background: #fff;
+    color: #202938;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+
+    outline: none;
+
+    box-sizing: border-box;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
 }
 
-.ts-default-icon{
-    width:28px;
-    height:28px;
-    min-width:28px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:7px;
-    background:#edf3ff;
-    color:#06245f;
-    font-size:11px;
+.form-control::placeholder {
+    color: #a4acb8;
+    opacity: 1;
 }
 
-.ts-default-name{
-    color:#253650;
-    font-size:12px;
-    font-weight:800;
+.form-control:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
 }
 
-.ts-default-meta{
-    margin-top:2px;
-    color:#8995a6;
-    font-size:10px;
+.form-control:disabled {
+    background: #f5f7fa;
+    color: #9ca4b1;
+    cursor: not-allowed;
+}
+
+.form-control:read-only {
+    background: #f8fafc;
 }
 
 /* ============================================================
-   LOCKED FIELD
+   SELECT SIZE
    ============================================================ */
 
-.ts-locked{
-    position:relative;
+select.form-control {
+    width: 100%;
+    height: 44px;
+    min-height: 44px;
+
+    padding-left: 13px;
+    padding-right: 38px;
+
+    cursor: pointer;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-color: #fff;
+
+    background-image:
+        linear-gradient(45deg, transparent 50%, #6f7887 50%),
+        linear-gradient(135deg, #6f7887 50%, transparent 50%);
+
+    background-position:
+        calc(100% - 17px) 18px,
+        calc(100% - 12px) 18px;
+
+    background-size:
+        5px 5px,
+        5px 5px;
+
+    background-repeat: no-repeat;
 }
 
-.ts-locked .ts-select{
-    padding-right:35px;
-}
+select.form-control:disabled {
+    background-color: #f5f7fa;
 
-.ts-lock-icon{
-    position:absolute;
-    right:12px;
-    bottom:13px;
-    color:#8995a6;
-    font-size:11px;
-    pointer-events:none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #aeb5c0 50%),
+        linear-gradient(135deg, #aeb5c0 50%, transparent 50%);
 }
 
 /* ============================================================
-   TEACHERS
+   DATE INPUT
    ============================================================ */
 
-.ts-teacher-box{
-    border:1px solid #dce3ec;
-    border-radius:11px;
-    background:#fff;
-    overflow:hidden;
-}
-
-.ts-teacher-toolbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    padding:9px 10px;
-    border-bottom:1px solid #edf1f6;
-    background:#fbfcfe;
-}
-
-.ts-teacher-toolbar-left{
-    display:flex;
-    align-items:center;
-    gap:7px;
-}
-
-.ts-teacher-count{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    min-width:25px;
-    height:24px;
-    padding:0 7px;
-    border-radius:7px;
-    background:#edf3ff;
-    color:#06245f;
-    font-size:10px;
-    font-weight:850;
-}
-
-.ts-teacher-toolbar button{
-    border:0;
-    background:transparent;
-    color:#52627a;
-    cursor:pointer;
-    font-family:inherit;
-    font-size:10.5px;
-    font-weight:700;
-}
-
-.ts-teacher-toolbar button:hover{
-    color:#06245f;
-}
-
-.ts-teacher-options{
-    max-height:260px;
-    overflow-y:auto;
-}
-
-.ts-teacher-option{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:10px 12px;
-    border-bottom:1px solid #f0f3f7;
-    cursor:pointer;
-    transition:.15s ease;
-}
-
-.ts-teacher-option:last-child{
-    border-bottom:0;
-}
-
-.ts-teacher-option:hover{
-    background:#f8faff;
-}
-
-.ts-teacher-option.selected{
-    background:#f2f6ff;
-}
-
-.ts-teacher-option.filtered-out{
-    display:none;
-}
-
-.ts-teacher-check{
-    width:17px;
-    height:17px;
-    accent-color:#06245f;
-    cursor:pointer;
-    flex-shrink:0;
-}
-
-.ts-teacher-avatar{
-    width:34px;
-    height:34px;
-    min-width:34px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:50%;
-    overflow:hidden;
-    background:#edf3ff;
-    border:1px solid #dce6f3;
-    color:#06245f;
-    font-size:12px;
-    font-weight:850;
-}
-
-.ts-teacher-avatar img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
-
-.ts-teacher-name{
-    color:#34435a;
-    font-size:12px;
-    font-weight:750;
-}
-
-.ts-teacher-meta{
-    margin-top:2px;
-    color:#8995a6;
-    font-size:10px;
-}
-
-.ts-teacher-empty{
-    padding:25px 15px;
-    text-align:center;
-    color:#8995a6;
-    font-size:11px;
+input[type="date"].form-control {
+    height: 44px;
+    min-height: 44px;
 }
 
 /* ============================================================
-   SELECTED TEACHERS PANEL
+   TEXTAREA
    ============================================================ */
 
-.ts-selected-teachers{
-    display:grid;
-    gap:8px;
-    margin-top:12px;
+textarea.form-control {
+    width: 100%;
+    min-height: 105px;
+    height: auto;
+
+    padding: 12px 13px;
+
+    line-height: 1.5;
+    resize: vertical;
 }
 
-.ts-selected-teacher{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    padding:8px 10px;
-    border:1px solid #dce6f3;
-    border-radius:9px;
-    background:#f8faff;
+/* ============================================================
+   FORM HELP
+   ============================================================ */
+
+.form-help {
+    margin-top: 6px;
+
+    color: #8a93a2;
+    font-size: 11px;
+    line-height: 1.5;
 }
 
-.ts-selected-teacher-avatar{
-    width:30px;
-    height:30px;
-    min-width:30px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-    background:#edf3ff;
-    color:#06245f;
-    font-size:10px;
-    font-weight:850;
-}
+/* ============================================================
+   ASSIGNMENT LIST
+   ============================================================ */
 
-.ts-selected-teacher-avatar img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
+.assignment-list {
+    width: 100%;
 
-.ts-selected-teacher-name{
-    color:#34435a;
-    font-size:11px;
-    font-weight:800;
-}
-
-.ts-selected-teacher-meta{
-    color:#8995a6;
-    font-size:9px;
-    margin-top:2px;
-}
-
-.ts-selected-empty{
-    padding:12px;
-    text-align:center;
-    border:1px dashed #ccd7e5;
-    border-radius:9px;
-    color:#8995a6;
-    font-size:10.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 /* ============================================================
    ASSIGNMENT ROW
    ============================================================ */
 
-.ts-assignments{
-    display:grid;
-    gap:14px;
+.assignment-row {
+    position: relative;
+
+    width: 100%;
+
+    border: 1px solid #dfe5ed;
+    border-radius: 15px;
+
+    background: #fbfcfe;
+
+    padding: 18px;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+
+    box-sizing: border-box;
 }
 
-.ts-assignment-row{
-    border:1px solid #dfe6ef;
-    border-radius:13px;
-    overflow:hidden;
-    background:#fbfcfe;
-    transition:.18s ease;
+.assignment-row:hover {
+    border-color: #cbd5e4;
+    box-shadow: 0 5px 18px rgba(6, 36, 95, .05);
 }
 
-.ts-assignment-row:hover{
-    border-color:#c9d5e5;
-    box-shadow:0 5px 18px rgba(20,42,78,.05);
-}
-
-.ts-assignment-row.invalid{
-    border-color:#e4a5a5;
-    box-shadow:0 0 0 2px rgba(211,47,47,.05);
-}
-
-.ts-assignment-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding:12px 14px;
-    border-bottom:1px solid #e8edf4;
-    background:#fff;
-}
-
-.ts-assignment-head-left{
-    display:flex;
-    align-items:center;
-    gap:9px;
-}
-
-.ts-row-number{
-    width:27px;
-    height:27px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:7px;
-    background:#edf3ff;
-    color:#06245f;
-    font-size:11px;
-    font-weight:850;
-}
-
-.ts-row-title{
-    color:#34435a;
-    font-size:12px;
-    font-weight:800;
-}
-
-.ts-row-subtitle{
-    margin-top:2px;
-    color:#8995a6;
-    font-size:9.5px;
-}
-
-.ts-assignment-actions{
-    display:flex;
-    align-items:center;
-    gap:6px;
-}
-
-.ts-full-scope-badge{
-    display:none;
-    margin-left:7px;
-    padding:3px 7px;
-    border-radius:5px;
-    background:#eaf8ec;
-    color:#21802a;
-    font-size:9px;
-    font-weight:800;
-}
-
-.ts-assignment-body{
-    padding:16px;
+.assignment-row.first-row {
+    border-color: #d7dfec;
 }
 
 /* ============================================================
-   SCOPE
+   ROW HEADER
    ============================================================ */
 
-.ts-scope-box{
-    margin-top:14px;
-    padding:13px;
-    border:1px solid #dce5f0;
-    border-radius:10px;
-    background:#f9fbff;
+.assignment-row-top {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+    margin-bottom: 16px;
 }
 
-.ts-scope-check{
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-    cursor:pointer;
+.assignment-number {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
 }
 
-.ts-scope-check input{
-    width:17px;
-    height:17px;
-    margin-top:1px;
-    accent-color:#06245f;
-    cursor:pointer;
+.assignment-number-badge {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+
+    border-radius: 9px;
+
+    background: #06245f;
+    color: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 12px;
+    font-weight: 900;
 }
 
-.ts-scope-title{
-    color:#06245f;
-    font-size:12px;
-    font-weight:850;
+.assignment-number-text {
+    color: #172033;
+    font-size: 14px;
+    font-weight: 800;
 }
 
-.ts-scope-description{
-    margin-top:3px;
-    color:#7f8b9d;
-    font-size:10.5px;
-    line-height:1.45;
+.assignment-number-text small {
+    display: block;
+
+    color: #8a93a2;
+    font-size: 11px;
+    font-weight: 600;
+
+    margin-top: 2px;
 }
 
 /* ============================================================
-   ADD BAR
+   REMOVE BUTTON
    ============================================================ */
 
-.ts-add-bar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-top:15px;
-    padding:13px;
-    border:1px dashed #cbd7e7;
-    border-radius:10px;
-    background:#fbfcff;
-}
+.remove-assignment {
+    width: 38px;
+    min-width: 38px;
 
-.ts-add-text{
-    color:#7d899b;
-    font-size:11px;
-    line-height:1.45;
-}
+    height: 38px;
+    min-height: 38px;
 
-.ts-add-text strong{
-    color:#34435a;
+    padding: 0;
+
+    border-radius: 9px;
+    flex-shrink: 0;
 }
 
 /* ============================================================
-   EMPTY
+   ASSIGNMENT TYPE BOX
    ============================================================ */
 
-.ts-empty{
-    display:none;
-    text-align:center;
-    padding:34px 20px;
-    border:1px dashed #cbd6e4;
-    border-radius:11px;
-    background:#fbfcfe;
+.assignment-type-box {
+    width: 100%;
+
+    background: #f1f5fb;
+    border: 1px solid #dbe4f0;
+    border-radius: 12px;
+
+    padding: 14px;
+    margin-bottom: 16px;
+
+    box-sizing: border-box;
 }
 
-.ts-empty i{
-    margin-bottom:9px;
-    color:#a4afbf;
-    font-size:27px;
+.assignment-type-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    margin-bottom: 7px;
+
+    color: #06245f;
+
+    font-size: 12px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+    letter-spacing: .35px;
 }
 
-.ts-empty-title{
-    color:#52627a;
-    font-size:13px;
-    font-weight:800;
+.assignment-type-select {
+    width: 100% !important;
+    height: 46px !important;
+    min-height: 46px !important;
+
+    border-color: #cfd9e8 !important;
+    font-weight: 800 !important;
 }
 
-.ts-empty-text{
-    margin-top:4px;
-    color:#909baa;
-    font-size:10.5px;
+.assignment-type-help {
+    margin-top: 7px;
+
+    color: #697589;
+    font-size: 11px;
+    line-height: 1.5;
 }
 
 /* ============================================================
-   FOOTER
+   FIELD VISIBILITY
    ============================================================ */
 
-.ts-footer{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding:16px 20px;
-    border-top:1px solid #edf1f6;
-    background:#fbfcfe;
+.assignment-field {
+    width: 100%;
+    transition: opacity .2s ease;
+    box-sizing: border-box;
 }
 
-.ts-footer-left,
-.ts-footer-right{
-    display:flex;
-    align-items:center;
-    gap:8px;
+.assignment-field.is-hidden {
+    display: none !important;
+}
+
+/* ============================================================
+   ADD MORE
+   ============================================================ */
+
+.add-more-wrapper {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+
+    padding: 5px 0 0;
+    box-sizing: border-box;
+}
+
+.add-more-btn {
+    width: 100%;
+    min-height: 48px;
+
+    border: 2px dashed #cdd7e6;
+    border-radius: 12px;
+
+    background: #f9fbfe;
+    color: #06245f;
+
+    cursor: pointer;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 900;
+
+    transition:
+        border-color .2s ease,
+        background .2s ease,
+        transform .2s ease;
+}
+
+.add-more-btn:hover {
+    border-color: #06245f;
+    background: #f2f6fc;
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+
+.switch-row {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    min-height: 44px;
+
+    padding: 10px 12px;
+
+    background: #f8fafc;
+    border: 1px solid #e4e8ee;
+    border-radius: 10px;
+
+    box-sizing: border-box;
+}
+
+.switch-info {
+    min-width: 0;
+}
+
+.switch-info strong {
+    display: block;
+
+    color: #30394b;
+    font-size: 12px;
+}
+
+.switch-info span {
+    display: block;
+
+    color: #8a93a2;
+    font-size: 10px;
+
+    margin-top: 2px;
+}
+
+.switch {
+    position: relative;
+
+    width: 44px;
+    height: 24px;
+
+    min-width: 44px;
+
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+
+    cursor: pointer;
+
+    background: #cbd2dc;
+    border-radius: 30px;
+
+    transition: .2s;
+}
+
+.slider:before {
+    content: "";
+
+    position: absolute;
+
+    width: 18px;
+    height: 18px;
+
+    left: 3px;
+    top: 3px;
+
+    background: #fff;
+    border-radius: 50%;
+
+    transition: .2s;
+
+    box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+
+.switch input:checked + .slider {
+    background: #32b73a;
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(20px);
 }
 
 /* ============================================================
    SIDEBAR
    ============================================================ */
 
-.ts-sidebar{
-    display:grid;
-    gap:18px;
+.summary-card {
+    position: sticky;
+    top: 20px;
 }
 
-.ts-preview{
-    text-align:center;
+.summary-item {
+    padding: 13px 0;
+    border-bottom: 1px solid #edf0f4;
 }
 
-.ts-preview-body{
-    padding:20px;
+.summary-item:last-child {
+    border-bottom: 0;
 }
 
-.ts-preview-avatar{
-    width:88px;
-    height:88px;
-    margin:0 auto 14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:50%;
-    overflow:hidden;
-    border:2px solid #dce6f3;
-    background:#edf3ff;
-    color:#06245f;
-    font-size:28px;
-    font-weight:850;
+.summary-label {
+    color: #8a93a2;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    text-transform: uppercase;
+    letter-spacing: .4px;
+
+    margin-bottom: 4px;
 }
 
-.ts-preview-avatar img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
+.summary-value {
+    color: #202938;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    word-break: break-word;
 }
 
-.ts-preview-name{
-    margin:0;
-    color:#06245f;
-    font-size:16px;
-    font-weight:850;
+.summary-value.empty {
+    color: #a1a9b5;
+    font-weight: 600;
 }
 
-.ts-preview-text{
-    margin:6px 0 0;
-    color:#8995a6;
-    font-size:11px;
-    line-height:1.5;
+.assignment-summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
 }
 
-.ts-stat{
-    padding:18px;
+.assignment-summary-item {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 8px;
+
+    padding: 8px 9px;
+
+    background: #f7f9fc;
+    border-radius: 8px;
+
+    color: #364052;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    line-height: 1.45;
 }
 
-.ts-stat-label{
-    color:#8995a6;
-    font-size:10px;
-    text-transform:uppercase;
-    letter-spacing:.45px;
-    font-weight:750;
-}
+.assignment-summary-dot {
+    width: 7px;
+    height: 7px;
 
-.ts-stat-value{
-    margin-top:4px;
-    color:#06245f;
-    font-size:30px;
-    line-height:1;
-    font-weight:900;
-}
+    margin-top: 4px;
 
-.ts-stat-help{
-    margin-top:6px;
-    color:#8995a6;
-    font-size:10px;
-}
+    border-radius: 50%;
 
-/* ============================================================
-   GUIDE
-   ============================================================ */
+    background: #32b73a;
 
-.ts-guide-item{
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-    padding:13px 0;
-    border-bottom:1px solid #edf1f6;
-}
-
-.ts-guide-item:first-child{
-    padding-top:0;
-}
-
-.ts-guide-item:last-child{
-    padding-bottom:0;
-    border-bottom:0;
-}
-
-.ts-guide-icon{
-    width:30px;
-    height:30px;
-    min-width:30px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:8px;
-    background:#f1f5fb;
-    color:#06245f;
-    font-size:11px;
-}
-
-.ts-guide-label{
-    margin-bottom:3px;
-    color:#8995a6;
-    font-size:10px;
-}
-
-.ts-guide-value{
-    color:#35445b;
-    font-size:11.5px;
-    font-weight:700;
-    line-height:1.45;
+    flex-shrink: 0;
 }
 
 /* ============================================================
-   VALIDATION MESSAGE
+   RULES
    ============================================================ */
 
-.ts-validation-box{
-    display:none;
-    margin-top:15px;
-    padding:12px 14px;
-    border:1px solid #efcaca;
-    border-radius:10px;
-    background:#fff5f5;
-    color:#9b1c1c;
-    font-size:11px;
-    line-height:1.55;
+.rules-list {
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
 }
 
-.ts-validation-box.show{
-    display:block;
+.rules-list li {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 9px;
+
+    padding: 9px 0;
+
+    border-bottom: 1px solid #edf0f4;
+
+    color: #697384;
+
+    font-size: 11px;
+    line-height: 1.5;
 }
 
-.ts-validation-box ul{
-    margin:6px 0 0;
-    padding-left:18px;
+.rules-list li:last-child {
+    border-bottom: 0;
+}
+
+.rule-icon {
+    width: 19px;
+    height: 19px;
+
+    min-width: 19px;
+
+    border-radius: 50%;
+
+    background: #ecf9ed;
+    color: #32b73a;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 10px;
+    font-weight: 900;
+}
+
+/* ============================================================
+   FORM FOOTER
+   ============================================================ */
+
+.form-footer {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding-top: 5px;
+
+    box-sizing: border-box;
+}
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.field-error {
+    border-color: #e53935 !important;
+
+    box-shadow:
+        0 0 0 3px rgba(229, 57, 53, .08) !important;
+}
+
+/* ============================================================
+   NO OPTIONS
+   ============================================================ */
+
+.no-options {
+    display: none;
+}
+
+.no-options.show {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #c62828;
+
+    font-size: 10px;
+    font-weight: 700;
 }
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
 
-@media(max-width:1150px){
+@media (max-width: 1200px) {
 
-    .ts-layout{
-        grid-template-columns:minmax(0,1fr) 285px;
-    }
-
-    .ts-grid-3{
-        grid-template-columns:repeat(2,minmax(0,1fr));
+    .assignment-layout {
+        grid-template-columns:
+            minmax(0, 1fr) 300px;
     }
 
 }
 
-@media(max-width:950px){
+@media (max-width: 1050px) {
 
-    .ts-layout{
-        grid-template-columns:1fr;
+    .assignment-layout {
+        grid-template-columns: 1fr;
     }
 
-    .ts-sidebar{
-        grid-template-columns:repeat(2,minmax(0,1fr));
-    }
-
-    .ts-preview{
-        grid-column:1 / -1;
+    .summary-card {
+        position: static;
     }
 
 }
 
-@media(max-width:760px){
+@media (max-width: 800px) {
 
-    .ts-header{
-        flex-direction:column;
+    .teacher-assignment-page {
+        padding-left: 8px;
+        padding-right: 8px;
     }
 
-    .ts-grid,
-    .ts-grid-3{
-        grid-template-columns:1fr;
+    .page-header {
+        flex-direction: column;
     }
 
-    .ts-sidebar{
-        grid-template-columns:1fr;
+    .header-actions {
+        width: 100%;
     }
 
-    .ts-footer{
-        flex-direction:column;
-        align-items:stretch;
+    .header-actions .btn {
+        flex: 1;
     }
 
-    .ts-footer-left,
-    .ts-footer-right{
-        width:100%;
+    .form-grid,
+    .form-grid.three {
+        grid-template-columns: 1fr;
     }
 
-    .ts-footer .ts-btn{
-        flex:1;
+    .card-header {
+        padding: 15px;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    .assignment-row {
+        padding: 14px;
     }
 
 }
 
-@media(max-width:500px){
+@media (max-width: 520px) {
 
-    .ts-title{
-        font-size:21px;
+    .teacher-assignment-page {
+        padding-left: 6px;
+        padding-right: 6px;
     }
 
-    .ts-card-body{
-        padding:15px;
+    .page-title {
+        font-size: 22px;
     }
 
-    .ts-card-header{
-        padding:15px;
+    .page-subtitle {
+        font-size: 13px;
     }
 
-    .ts-add-bar{
-        flex-direction:column;
-        align-items:stretch;
+    .card {
+        border-radius: 13px;
     }
 
-    .ts-add-bar .ts-btn{
-        width:100%;
+    .card-header-left {
+        align-items: flex-start;
     }
 
-    .ts-assignment-head{
-        align-items:flex-start;
+    .card-icon {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 9px;
+    }
+
+    .assignment-row-top {
+        align-items: flex-start;
+    }
+
+    .form-footer {
+        flex-direction: column-reverse;
+    }
+
+    .form-footer .btn {
+        width: 100%;
+    }
+
+    .switch-row {
+        align-items: flex-start;
+    }
+
+}
+
+/* ============================================================
+   VERY SMALL DEVICES
+   ============================================================ */
+
+@media (max-width: 380px) {
+
+    .card-header {
+        gap: 9px;
+    }
+
+    .card-title {
+        font-size: 14px;
+    }
+
+    .card-description {
+        font-size: 11px;
+    }
+
+    .assignment-row {
+        padding: 12px;
+    }
+
+    .form-control {
+        font-size: 12px;
     }
 
 }
@@ -1102,4460 +1106,3151 @@ Add Teacher Subject Assignments
 </style>
 
 
-<div class="ts-page">
+<div class="teacher-assignment-page">
 
-<!-- ============================================================
-     HEADER
-     ============================================================ -->
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
 
-<div class="ts-header">
+    <div class="page-header">
 
-    <div class="ts-header-left">
+        <div class="page-header-left">
 
-        <div class="ts-breadcrumb">
+            <div class="breadcrumb">
 
-            <a href="{{ url_for('main.dashboard') }}">
-                Dashboard
-            </a>
+                <a href="{{ url_for('main.dashboard') }}">
+                    Dashboard
+                </a>
 
-            <i class="fa-solid fa-chevron-right"></i>
+                <span>/</span>
 
-            <a href="{{ url_for('main.all_teacher_subjects') }}">
-                Teacher Subjects
-            </a>
+                <a href="{{ url_for('main.all_teacher_subjects') }}">
+                    Teacher Assignments
+                </a>
 
-            <i class="fa-solid fa-chevron-right"></i>
+                <span>/</span>
 
-            <span>Add Assignments</span>
+                <span>Add Assignment</span>
+
+            </div>
+
+            <h1 class="page-title">
+                Add Teacher Assignment
+            </h1>
+
+            <p class="page-subtitle">
+                Assign one or more teachers to programs, classes,
+                subjects, or sections.
+            </p>
 
         </div>
 
-        <h1 class="ts-title">
-            Add Teacher Subject Assignments
-        </h1>
 
-        <p class="ts-subtitle">
-            Assign multiple teachers to different programs, classes,
-            sections and subjects from one page.
-        </p>
+        <div class="header-actions">
+
+            <a
+                href="{{ url_for('main.all_teacher_subjects') }}"
+                class="btn btn-secondary"
+            >
+                ← Back
+            </a>
+
+        </div>
 
     </div>
 
-    <a
-        href="{{ url_for('main.all_teacher_subjects') }}"
-        class="ts-btn ts-btn-secondary"
-    >
-        <i class="fa-solid fa-arrow-left"></i>
-        Back
-    </a>
 
-</div>
+    <!-- ========================================================
+         MAIN LAYOUT
+         ======================================================== -->
+
+    <div class="assignment-layout">
+
+        <!-- ====================================================
+             MAIN COLUMN
+             ==================================================== -->
+
+        <div class="main-column">
+
+            <form
+                method="POST"
+                action="{{ url_for('main.add_teacher_subject') }}"
+                id="teacherAssignmentForm"
+                novalidate
+            >
+
+                <!-- ====================================================
+                     BASIC INFORMATION
+                     ==================================================== -->
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div class="card-header-left">
+
+                            <div class="card-icon">
+                                👨‍🏫
+                            </div>
+
+                            <div>
+
+                                <h2 class="card-title">
+                                    Assignment Information
+                                </h2>
+
+                                <p class="card-description">
+                                    Select the institution, branch and academic year.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
 
 
-<!-- ============================================================
-     FLASH
-     ============================================================ -->
+                    <div class="card-body">
 
-{% with messages = get_flashed_messages(with_categories=true) %}
+                        <div class="form-grid">
 
-    {% if messages %}
+                            <!-- Institution -->
 
-        <div class="ts-alerts">
+                            <div class="form-group">
 
-            {% for category, message in messages %}
+                                <label
+                                    class="form-label"
+                                    for="institution_id"
+                                >
+                                    Institution
 
-                <div class="
-                    ts-alert
-                    {% if category == 'success' %}
-                        ts-alert-success
-                    {% elif category == 'danger' %}
-                        ts-alert-danger
-                    {% elif category == 'warning' %}
-                        ts-alert-warning
-                    {% else %}
-                        ts-alert-info
-                    {% endif %}
-                ">
+                                    <span class="required">
+                                        *
+                                    </span>
 
-                    <i class="
-                        fa-solid
-                        {% if category == 'success' %}
-                            fa-circle-check
-                        {% elif category == 'danger' %}
-                            fa-circle-exclamation
-                        {% elif category == 'warning' %}
-                            fa-triangle-exclamation
-                        {% else %}
-                            fa-circle-info
-                        {% endif %}
-                    "></i>
+                                </label>
 
-                    <span>{{ message }}</span>
+
+                                <select
+                                    class="form-control"
+                                    id="institution_id"
+                                    name="institution_id"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select Institution
+                                    </option>
+
+                                    {% for institution in institutions %}
+
+                                        <option
+                                            value="{{ institution.id }}"
+                                            {% if current_institution_id and institution.id|string == current_institution_id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ institution.name }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Branch -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="branch_id"
+                                >
+                                    Branch
+
+                                    <span class="required">
+                                        *
+                                    </span>
+
+                                </label>
+
+
+                                <select
+                                    class="form-control"
+                                    id="branch_id"
+                                    name="branch_id"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select Branch
+                                    </option>
+
+                                    {% for branch in branches %}
+
+                                        <option
+                                            value="{{ branch.id }}"
+                                            data-institution-id="{{ branch.institution_id }}"
+                                            {% if current_branch_id and branch.id|string == current_branch_id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {{ branch.name }}
+
+                                            {% if branch.code %}
+                                                — {{ branch.code }}
+                                            {% endif %}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Academic Year -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="academic_year_id"
+                                >
+                                    Academic Year
+
+                                    <span class="required">
+                                        *
+                                    </span>
+
+                                </label>
+
+
+                                <select
+                                    class="form-control"
+                                    id="academic_year_id"
+                                    name="academic_year_id"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select Academic Year
+                                    </option>
+
+                                    {% for year in academic_years %}
+
+                                        <option
+                                            value="{{ year.id }}"
+                                            data-institution-id="{{ year.institution_id }}"
+                                            {% if current_academic_year_id and year.id|string == current_academic_year_id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ year.name }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
-            {% endfor %}
+
+                <!-- ====================================================
+                     TEACHER ASSIGNMENTS
+                     ==================================================== -->
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div class="card-header-left">
+
+                            <div class="card-icon green">
+                                📚
+                            </div>
+
+                            <div>
+
+                                <h2 class="card-title">
+                                    Teacher Assignments
+                                </h2>
+
+                                <p class="card-description">
+                                    Each row represents one teacher assignment.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <span
+                                id="assignmentCount"
+                                style="
+                                    display:inline-flex;
+                                    align-items:center;
+                                    justify-content:center;
+                                    min-width:30px;
+                                    height:28px;
+                                    padding:0 8px;
+                                    border-radius:8px;
+                                    background:#eef3ff;
+                                    color:#06245f;
+                                    font-size:11px;
+                                    font-weight:900;
+                                "
+                            >
+                                1
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <div
+                            class="assignment-list"
+                            id="assignmentList"
+                        >
+
+                            <!-- ==================================================
+                                 FIRST ASSIGNMENT ROW
+                                 ================================================== -->
+
+                            <div
+                                class="assignment-row first-row"
+                                data-row-index="0"
+                            >
+
+                                <!-- ROW HEADER -->
+
+                                <div class="assignment-row-top">
+
+                                    <div class="assignment-number">
+
+                                        <div class="assignment-number-badge">
+                                            1
+                                        </div>
+
+                                        <div class="assignment-number-text">
+
+                                            Assignment 1
+
+                                            <small>
+                                                Choose the teacher and assignment level.
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger remove-assignment"
+                                        title="Remove Assignment"
+                                        style="display:none;"
+                                    >
+                                        ×
+                                    </button>
+
+                                </div>
+
+
+                                <!-- ==================================================
+                                     TEACHER
+                                     ================================================== -->
+
+                                <div
+                                    class="form-group"
+                                    style="margin-bottom:16px;"
+                                >
+
+                                    <label class="form-label">
+
+                                        Teacher
+
+                                        <span class="required">
+                                            *
+                                        </span>
+
+                                    </label>
+
+
+                                    <select
+                                        class="form-control teacher-select"
+                                        name="teacher_ids"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Teacher
+                                        </option>
+
+                                        {% for teacher in teachers %}
+
+                                            <option
+                                                value="{{ teacher.id }}"
+                                                data-institution-id="{{ teacher.institution_id }}"
+                                                data-branch-id="{{ teacher.branch_id }}"
+                                            >
+
+                                                {{ teacher.full_name }}
+
+                                                {% if teacher.username %}
+                                                    — {{ teacher.username }}
+                                                {% endif %}
+
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+
+                                    <div class="form-help">
+                                        Select the teacher responsible for this assignment.
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ==================================================
+                                     ASSIGNMENT TYPE
+                                     ================================================== -->
+
+                                <div class="assignment-type-box">
+
+                                    <label class="assignment-type-label">
+
+                                        Assignment Type
+
+                                        <span class="required">
+                                            *
+                                        </span>
+
+                                    </label>
+
+
+                                    <select
+                                        class="form-control assignment-type-select"
+                                        name="assignment_type"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Select Assignment Type
+                                        </option>
+
+                                        <option value="program">
+                                            Program
+                                        </option>
+
+                                        <option value="class">
+                                            Class
+                                        </option>
+
+                                        <option value="subject">
+                                            Subject
+                                        </option>
+
+                                        <option value="section">
+                                            Section
+                                        </option>
+
+                                    </select>
+
+
+                                    <div
+                                        class="assignment-type-help"
+                                        data-type-help
+                                    >
+                                        Choose the level at which the teacher
+                                        will be assigned.
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ==================================================
+                                     PROGRAM
+                                     ================================================== -->
+
+                                <div
+                                    class="assignment-field program-field is-hidden"
+                                    data-field="program"
+                                >
+
+                                    <div class="form-group">
+
+                                        <label class="form-label">
+
+                                            Program
+
+                                            <span
+                                                class="required program-required"
+                                                style="display:none;"
+                                            >
+                                                *
+                                            </span>
+
+                                        </label>
+
+
+                                        <select
+                                            class="form-control program-select"
+                                            name="program_ids"
+                                        >
+
+                                            <option value="">
+                                                Select Program
+                                            </option>
+
+                                            {% for program in programs %}
+
+                                                <option
+                                                    value="{{ program.id }}"
+                                                    data-institution-id="{{ program.institution_id }}"
+                                                    data-branch-id="{{ program.branch_id or '' }}"
+                                                >
+
+                                                    {{ program.name }}
+
+                                                    {% if program.code %}
+                                                        — {{ program.code }}
+                                                    {% endif %}
+
+                                                </option>
+
+                                            {% endfor %}
+
+                                        </select>
+
+
+                                        <div class="form-help">
+                                            Select the program for this assignment.
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ==================================================
+                                     CLASS
+                                     ================================================== -->
+
+                                <div
+                                    class="assignment-field class-field is-hidden"
+                                    data-field="class"
+                                >
+
+                                    <div class="form-group">
+
+                                        <label class="form-label">
+
+                                            Class
+
+                                            <span
+                                                class="required class-required"
+                                                style="display:none;"
+                                            >
+                                                *
+                                            </span>
+
+                                        </label>
+
+
+                                        <select
+                                            class="form-control class-select"
+                                            name="class_ids"
+                                        >
+
+                                            <option value="">
+                                                Select Class
+                                            </option>
+
+                                            {% for cls in classes %}
+
+                                                <option
+                                                    value="{{ cls.id }}"
+                                                    data-institution-id="{{ cls.institution_id }}"
+                                                    data-branch-id="{{ cls.branch_id }}"
+                                                    data-program-id="{{ cls.program_id }}"
+                                                    data-academic-year-id="{{ cls.academic_year_id }}"
+                                                >
+
+                                                    {{ cls.name }}
+
+                                                    {% if cls.code %}
+                                                        — {{ cls.code }}
+                                                    {% endif %}
+
+                                                </option>
+
+                                            {% endfor %}
+
+                                        </select>
+
+
+                                        <div class="form-help">
+                                            Select the class under the selected program.
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ==================================================
+                                     SUBJECT
+                                     ================================================== -->
+
+                                <div
+                                    class="assignment-field subject-field is-hidden"
+                                    data-field="subject"
+                                >
+
+                                    <div class="form-group">
+
+                                        <label class="form-label">
+
+                                            Subject
+
+                                            <span
+                                                class="required subject-required"
+                                                style="display:none;"
+                                            >
+                                                *
+                                            </span>
+
+                                        </label>
+
+
+                                        <select
+                                            class="form-control subject-select"
+                                            name="subject_ids"
+                                        >
+
+                                            <option value="">
+                                                Select Subject
+                                            </option>
+
+                                            {% for subject in subjects %}
+
+                                                <option
+                                                    value="{{ subject.id }}"
+                                                    data-institution-id="{{ subject.institution_id }}"
+                                                    data-branch-id="{{ subject.branch_id or '' }}"
+                                                    data-program-id="{{ subject.program_id or '' }}"
+                                                >
+
+                                                    {{ subject.name }}
+
+                                                    {% if subject.code %}
+                                                        — {{ subject.code }}
+                                                    {% endif %}
+
+                                                </option>
+
+                                            {% endfor %}
+
+                                        </select>
+
+
+                                        <div class="form-help">
+                                            Select the subject taught by this teacher.
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ==================================================
+                                     SECTION
+                                     ================================================== -->
+
+                                <div
+                                    class="assignment-field section-field is-hidden"
+                                    data-field="section"
+                                >
+
+                                    <div class="form-group">
+
+                                        <label class="form-label">
+
+                                            Section
+
+                                            <span
+                                                class="required section-required"
+                                                style="display:none;"
+                                            >
+                                                *
+                                            </span>
+
+                                        </label>
+
+
+                                        <select
+                                            class="form-control section-select"
+                                            name="section_ids"
+                                        >
+
+                                            <option value="">
+                                                Select Section
+                                            </option>
+
+                                            {% for section in sections %}
+
+                                                <option
+                                                    value="{{ section.id }}"
+                                                    data-institution-id="{{ section.institution_id }}"
+                                                    data-branch-id="{{ section.branch_id }}"
+                                                    data-class-id="{{ section.class_id }}"
+                                                    data-academic-year-id="{{ section.academic_year_id }}"
+                                                >
+
+                                                    {{ section.name }}
+
+                                                    {% if section.code %}
+                                                        — {{ section.code }}
+                                                    {% endif %}
+
+                                                </option>
+
+                                            {% endfor %}
+
+                                        </select>
+
+
+                                        <div class="form-help">
+                                            Select the section under the selected class.
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ==================================================
+                                     RULE DISPLAY
+                                     ================================================== -->
+
+                                <div
+                                    class="assignment-rule-display"
+                                    style="
+                                        margin-top:4px;
+                                        padding:10px 12px;
+                                        background:#f8fafc;
+                                        border-radius:9px;
+                                        border:1px solid #e9edf2;
+                                        color:#697384;
+                                        font-size:11px;
+                                        line-height:1.5;
+                                    "
+                                >
+
+                                    <strong style="color:#06245f;">
+                                        Required fields:
+                                    </strong>
+
+                                    <span data-required-text>
+                                        Select Assignment Type first.
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ==================================================
+                             ADD MORE
+                             ================================================== -->
+
+                        <div class="add-more-wrapper">
+
+                            <button
+                                type="button"
+                                class="add-more-btn"
+                                id="addMoreAssignment"
+                            >
+                                ＋ Add More Assignment
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ====================================================
+                     ASSIGNMENT SETTINGS
+                     ==================================================== -->
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div class="card-header-left">
+
+                            <div class="card-icon purple">
+                                ⚙
+                            </div>
+
+                            <div>
+
+                                <h2 class="card-title">
+                                    Assignment Settings
+                                </h2>
+
+                                <p class="card-description">
+                                    Configure teaching type, status and teaching period.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <div class="form-grid">
+
+                            <!-- Teaching Type -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="teaching_type"
+                                >
+                                    Teaching Type
+                                </label>
+
+
+                                <select
+                                    class="form-control"
+                                    id="teaching_type"
+                                    name="teaching_type"
+                                >
+
+                                    <option value="teacher">
+                                        Teacher
+                                    </option>
+
+                                    <option value="assistant">
+                                        Assistant
+                                    </option>
+
+                                    <option value="coordinator">
+                                        Coordinator
+                                    </option>
+
+                                    <option value="substitute">
+                                        Substitute
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Status -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="status"
+                                >
+                                    Status
+                                </label>
+
+
+                                <select
+                                    class="form-control"
+                                    id="status"
+                                    name="status"
+                                >
+
+                                    <option value="active" selected>
+                                        Active
+                                    </option>
+
+                                    <option value="inactive">
+                                        Inactive
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Start Date -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="start_date"
+                                >
+
+                                    Start Date
+
+                                    <span class="optional">
+                                        Optional
+                                    </span>
+
+                                </label>
+
+
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="start_date"
+                                    name="start_date"
+                                >
+
+                            </div>
+
+
+                            <!-- End Date -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="end_date"
+                                >
+
+                                    End Date
+
+                                    <span class="optional">
+                                        Optional
+                                    </span>
+
+                                </label>
+
+
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="end_date"
+                                    name="end_date"
+                                >
+
+                            </div>
+
+
+                            <!-- Primary Assignment -->
+
+                            <div class="form-group full">
+
+                                <div class="switch-row">
+
+                                    <div class="switch-info">
+
+                                        <strong>
+                                            Primary Assignment
+                                        </strong>
+
+                                        <span>
+                                            Mark this teacher assignment as the primary assignment.
+                                        </span>
+
+                                    </div>
+
+
+                                    <label class="switch">
+
+                                        <input
+                                            type="checkbox"
+                                            name="is_primary"
+                                            value="1"
+                                            checked
+                                        >
+
+                                        <span class="slider"></span>
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- Notes -->
+
+                            <div class="form-group full">
+
+                                <label
+                                    class="form-label"
+                                    for="notes"
+                                >
+
+                                    Notes
+
+                                    <span class="optional">
+                                        Optional
+                                    </span>
+
+                                </label>
+
+
+                                <textarea
+                                    class="form-control"
+                                    id="notes"
+                                    name="notes"
+                                    placeholder="Enter any additional notes..."
+                                ></textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ====================================================
+                     SCOPE
+                     ==================================================== -->
+
+                <input
+                    type="hidden"
+                    name="scope"
+                    value="specific"
+                >
+
+
+                <!-- ====================================================
+                     FORM FOOTER
+                     ==================================================== -->
+
+                <div class="form-footer">
+
+                    <a
+                        href="{{ url_for('main.all_teacher_subjects') }}"
+                        class="btn btn-secondary"
+                    >
+                        Cancel
+                    </a>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                        id="submitBtn"
+                    >
+
+                        <span id="submitText">
+                            Save Assignments
+                        </span>
+
+                        <span
+                            id="submitSpinner"
+                            style="display:none;"
+                        >
+                            Saving...
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </form>
 
         </div>
 
-    {% endif %}
 
-{% endwith %}
+        <!-- ====================================================
+             SIDE COLUMN
+             ==================================================== -->
+
+        <div class="side-column">
+
+            <!-- ==================================================
+                 LIVE SUMMARY
+                 ================================================== -->
+
+            <div class="card summary-card">
+
+                <div class="card-header">
+
+                    <div class="card-header-left">
+
+                        <div class="card-icon">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <h2 class="card-title">
+                                Live Summary
+                            </h2>
+
+                            <p class="card-description">
+                                Current assignment details.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
 
-<!-- ============================================================
-     LAYOUT
-     ============================================================ -->
+                <div class="card-body">
 
-<div class="ts-layout">
+                    <div class="summary-item">
 
-<div class="ts-card">
+                        <div class="summary-label">
+                            Institution
+                        </div>
 
-<div class="ts-card-header">
+                        <div
+                            class="summary-value empty"
+                            id="summaryInstitution"
+                        >
+                            Not selected
+                        </div>
 
-    <div>
+                    </div>
 
-        <h2 class="ts-card-title">
 
-            <i class="fa-solid fa-user-plus"></i>
+                    <div class="summary-item">
 
-            Teacher Assignments
+                        <div class="summary-label">
+                            Branch
+                        </div>
 
-        </h2>
+                        <div
+                            class="summary-value empty"
+                            id="summaryBranch"
+                        >
+                            Not selected
+                        </div>
 
-        <p class="ts-card-description">
-            Select multiple teachers and create different assignment
-            scopes for them.
-        </p>
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <div class="summary-label">
+                            Academic Year
+                        </div>
+
+                        <div
+                            class="summary-value empty"
+                            id="summaryAcademicYear"
+                        >
+                            Not selected
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <div class="summary-label">
+                            Assignments
+                        </div>
+
+                        <div
+                            class="summary-value"
+                            id="summaryAssignmentCount"
+                        >
+                            1
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <div class="summary-label">
+                            Assignment List
+                        </div>
+
+
+                        <div
+                            class="assignment-summary-list"
+                            id="assignmentSummaryList"
+                        >
+
+                            <div class="assignment-summary-item">
+
+                                <span class="assignment-summary-dot"></span>
+
+                                <span>
+                                    Select assignment type
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 RULES
+                 ================================================== -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="card-header-left">
+
+                        <div class="card-icon green">
+                            ℹ
+                        </div>
+
+                        <div>
+
+                            <h2 class="card-title">
+                                Assignment Rules
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <ul class="rules-list">
+
+                        <li>
+
+                            <span class="rule-icon">
+                                ✓
+                            </span>
+
+                            <span>
+                                <strong>Program:</strong>
+                                Teacher + Program.
+                            </span>
+
+                        </li>
+
+
+                        <li>
+
+                            <span class="rule-icon">
+                                ✓
+                            </span>
+
+                            <span>
+                                <strong>Class:</strong>
+                                Teacher + Program + Class.
+                            </span>
+
+                        </li>
+
+
+                        <li>
+
+                            <span class="rule-icon">
+                                ✓
+                            </span>
+
+                            <span>
+                                <strong>Subject:</strong>
+                                Teacher + Program + Class + Subject.
+                            </span>
+
+                        </li>
+
+
+                        <li>
+
+                            <span class="rule-icon">
+                                ✓
+                            </span>
+
+                            <span>
+                                <strong>Section:</strong>
+                                Teacher + Program + Class + Subject + Section.
+                            </span>
+
+                        </li>
+
+
+                        <li>
+
+                            <span class="rule-icon">
+                                +
+                            </span>
+
+                            <span>
+                                Use <strong>Add More Assignment</strong>
+                                to create additional assignments.
+                            </span>
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </div>
 
     </div>
-
-</div>
-
-
-<form
-    method="POST"
-    action="{{ url_for('main.add_teacher_subject') }}"
-    id="teacherSubjectForm"
-    novalidate
->
-
-{% if csrf_token is defined %}
-
-<input
-    type="hidden"
-    name="csrf_token"
-    value="{{ csrf_token() }}"
->
-
-{% endif %}
-
-
-<div class="ts-card-body">
-
-
-<!-- ============================================================
-     ORGANIZATION
-     ============================================================ -->
-
-<div class="ts-section-title">
-
-    <span class="ts-section-title-text">
-        Organization
-    </span>
-
-    <span class="ts-section-line"></span>
-
-</div>
-
-
-<div class="ts-grid">
-
-
-<!-- INSTITUTION -->
-
-<div class="ts-field">
-
-<label
-    for="institution_id"
-    class="ts-label"
->
-
-    Institution
-    <span class="ts-required">*</span>
-
-</label>
-
-
-<select
-    id="institution_id"
-    name="institution_id"
-    class="ts-select"
-    required
-
-    {% if current_user is defined
-          and current_user.role != 'superadmin' %}
-
-        disabled
-
-    {% endif %}
->
-
-<option value="">
-    Select institution
-</option>
-
-
-{% for institution in institutions|default([], true) %}
-
-    {% set institution_name =
-        institution.name
-        or institution.institution_name
-        or institution.title
-        or ('Institution #' ~ institution.id)
-    %}
-
-    <option
-        value="{{ institution.id }}"
-
-        {% if
-            (
-                request.form.get('institution_id', '')|string
-                ==
-                (
-                    selected_institution_id
-                    if selected_institution_id is defined
-                    else (
-                        current_user.institution_id
-                        if current_user is defined
-                        else ''
-                    )
-                )|string
-            )
-        %}
-            selected
-        {% endif %}
-    >
-
-        {{ institution_name }}
-
-    </option>
-
-{% endfor %}
-
-</select>
-
-
-{% if current_user is defined
-      and current_user.role != 'superadmin' %}
-
-<input
-    type="hidden"
-    name="institution_id"
-    value="{{
-        selected_institution_id
-        if selected_institution_id is defined
-        else current_user.institution_id
-    }}"
->
-
-{% endif %}
-
-
-<div class="ts-help">
-
-    {% if current_user is defined
-          and current_user.role == 'branch_admin' %}
-
-        Institution is locked to your account.
-
-    {% else %}
-
-        Institution determines which branches,
-        programs and teachers are available.
-
-    {% endif %}
-
-</div>
-
-</div>
-
-
-<!-- BRANCH -->
-
-<div class="ts-field">
-
-<label
-    for="branch_id"
-    class="ts-label"
->
-
-    Branch
-    <span class="ts-required">*</span>
-
-</label>
-
-
-<select
-    id="branch_id"
-    name="branch_id"
-    class="ts-select"
-    required
-
-    {% if current_user is defined
-          and current_user.role == 'branch_admin' %}
-
-        disabled
-
-    {% endif %}
->
-
-<option value="">
-    Select branch
-</option>
-
-
-{% for branch in branches|default([], true) %}
-
-    {% set branch_name =
-        branch.name
-        or branch.branch_name
-        or branch.title
-        or ('Branch #' ~ branch.id)
-    %}
-
-    <option
-        value="{{ branch.id }}"
-        data-institution-id="{{ branch.institution_id|default('', true) }}"
-
-        {% if
-            (
-                request.form.get('branch_id', '')|string
-                ==
-                (
-                    selected_branch_id
-                    if selected_branch_id is defined
-                    else (
-                        current_user.branch_id
-                        if current_user is defined
-                        else ''
-                    )
-                )|string
-            )
-        %}
-            selected
-        {% endif %}
-    >
-
-        {{ branch_name }}
-
-    </option>
-
-{% endfor %}
-
-</select>
-
-
-{% if current_user is defined
-      and current_user.role == 'branch_admin' %}
-
-<input
-    type="hidden"
-    name="branch_id"
-    value="{{
-        selected_branch_id
-        if selected_branch_id is defined
-        else current_user.branch_id
-    }}"
->
-
-{% endif %}
-
-
-<div class="ts-help">
-
-{% if current_user is defined
-      and current_user.role == 'branch_admin' %}
-
-    Branch is locked to your current branch.
-
-{% else %}
-
-    Only branches belonging to the selected institution are shown.
-
-{% endif %}
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- ============================================================
-     ACADEMIC YEAR
-     ============================================================ -->
-
-<div
-    class="ts-grid"
-    style="margin-top:16px;"
->
-
-<div class="ts-field">
-
-<label
-    for="academic_year_id"
-    class="ts-label"
->
-
-    Academic Year
-    <span class="ts-required">*</span>
-
-</label>
-
-
-<select
-    id="academic_year_id"
-    name="academic_year_id"
-    class="ts-select"
-    required
->
-
-<option value="">
-    Select academic year
-</option>
-
-
-{% for year in academic_years|default([], true) %}
-
-    {% set year_name =
-        year.name
-        or year.title
-        or year.year
-        or year.academic_year
-        or ('Academic Year #' ~ year.id)
-    %}
-
-    <option
-        value="{{ year.id }}"
-
-        {% if
-            request.form.get(
-                'academic_year_id',
-                selected_academic_year_id|default('', true)
-            )|string
-            ==
-            year.id|string
-        %}
-            selected
-        {% endif %}
-    >
-
-        {{ year_name }}
-
-        {% if year.is_current %}
-            — Current
-        {% endif %}
-
-    </option>
-
-{% endfor %}
-
-</select>
-
-</div>
-
-
-<div class="ts-field">
-
-<label class="ts-label">
-    Assignment Structure
-</label>
-
-<div class="ts-default-box">
-
-<div class="ts-default-icon">
-    <i class="fa-solid fa-diagram-project"></i>
-</div>
-
-<div>
-
-<div class="ts-default-name">
-    Multiple scope assignments
-</div>
-
-<div class="ts-default-meta">
-    Each row can use a different Program, Class,
-    Section and Subject.
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- ============================================================
-     TEACHERS
-     ============================================================ -->
-
-<div
-    class="ts-section-title"
-    style="margin-top:28px;"
->
-
-<span class="ts-section-title-text">
-    Teachers
-</span>
-
-<span class="ts-section-line"></span>
-
-</div>
-
-
-<div class="ts-field">
-
-<label class="ts-label">
-
-    Teacher Assignments
-
-    <span class="ts-required">*</span>
-
-</label>
-
-
-<div class="ts-teacher-box">
-
-
-<div class="ts-teacher-toolbar">
-
-<div class="ts-teacher-toolbar-left">
-
-<span>
-    Select one or more teachers
-</span>
-
-<span
-    class="ts-teacher-count"
-    id="teacherSelectedCount"
->
-    0
-</span>
-
-</div>
-
-
-<div>
-
-<button
-    type="button"
-    id="selectAllTeachers"
->
-    Select All
-</button>
-
-<span style="color:#c3cad4;margin:0 5px;">
-    |
-</span>
-
-<button
-    type="button"
-    id="clearAllTeachers"
->
-    Clear
-</button>
-
-</div>
-
-</div>
-
-
-<div
-    class="ts-teacher-options"
-    id="teacherOptions"
->
-
-
-{% for teacher in teachers|default([], true) %}
-
-{% set teacher_name =
-    teacher.full_name
-    or teacher.name
-    or teacher.username
-    or teacher.email
-    or ('Teacher #' ~ teacher.id)
-%}
-
-
-{% set teacher_photo =
-    teacher.photo_url
-    or teacher.profile_photo_url
-    or teacher.profile_photo
-    or teacher.image_url
-    or teacher.avatar_url
-    or teacher.photo
-    or teacher.image
-    or teacher.cloudinary_secure_url
-    or teacher.cloudinary_url
-    or ''
-%}
-
-
-<label
-    class="ts-teacher-option"
-
-    data-institution-id="
-        {{ teacher.institution_id|default('', true) }}
-    "
-
-    data-branch-id="
-        {{ teacher.branch_id|default('', true) }}
-    "
->
-
-
-<input
-    type="checkbox"
-    class="ts-teacher-check"
-    name="teacher_ids"
-    value="{{ teacher.id }}"
-
-    data-teacher-id="{{ teacher.id }}"
-
-    data-teacher-name="{{ teacher_name }}"
-
-    data-photo="{{ teacher_photo }}"
-
-    {% if
-        teacher.id|string in
-        request.form.getlist('teacher_ids')
-    %}
-        checked
-    {% endif %}
->
-
-
-<div class="ts-teacher-avatar">
-
-{% if teacher_photo %}
-
-<img
-    src="{{ teacher_photo }}"
-    alt="{{ teacher_name }}"
-    onerror="
-        this.style.display='none';
-        this.parentNode.innerText='{{ teacher_name[:1]|upper }}';
-    "
->
-
-{% else %}
-
-{{ teacher_name[:1]|upper }}
-
-{% endif %}
-
-</div>
-
-
-<div>
-
-<div class="ts-teacher-name">
-    {{ teacher_name }}
-</div>
-
-<div class="ts-teacher-meta">
-
-{% if teacher.roll_no %}
-
-    {{ teacher.roll_no }}
-
-{% elif teacher.username %}
-
-    @{{ teacher.username }}
-
-{% elif teacher.email %}
-
-    {{ teacher.email }}
-
-{% else %}
-
-    Teacher
-
-{% endif %}
-
-</div>
-
-</div>
-
-</label>
-
-
-{% else %}
-
-<div class="ts-teacher-empty">
-
-<i class="fa-solid fa-user-slash"></i>
-
-<div>
-    No teachers available for the selected organization.
-</div>
-
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-
-<div class="ts-help">
-    Select two or more teachers if they should receive the same assignment rows.
-</div>
-
-
-<!-- SELECTED TEACHERS -->
-
-<div
-    id="selectedTeachersList"
-    class="ts-selected-teachers"
-></div>
-
-</div>
-
-
-<!-- ============================================================
-     ASSIGNMENT SCOPE
-     ============================================================ -->
-
-<div
-    class="ts-section-title"
-    style="margin-top:30px;"
->
-
-<span class="ts-section-title-text">
-    Assignment Scope
-</span>
-
-<span class="ts-section-line"></span>
-
-</div>
-
-
-<div
-    id="assignmentList"
-    class="ts-assignments"
-></div>
-
-
-<div
-    id="assignmentEmpty"
-    class="ts-empty"
->
-
-<i class="fa-solid fa-layer-group"></i>
-
-<div class="ts-empty-title">
-    No assignment rows
-</div>
-
-<div class="ts-empty-text">
-    Add an assignment and select its Program.
-</div>
-
-</div>
-
-
-<!-- VALIDATION BOX -->
-
-<div
-    id="validationBox"
-    class="ts-validation-box"
->
-
-<strong>
-    Please correct the following:
-</strong>
-
-<ul id="validationList"></ul>
-
-</div>
-
-
-<!-- ADD BAR -->
-
-<div class="ts-add-bar">
-
-<div class="ts-add-text">
-
-<strong id="assignmentCountText">
-    0 assignments
-</strong>
-
-<br>
-
-Each assignment can have a different
-Program, Class, Section and Subject.
-
-</div>
-
-
-<button
-    type="button"
-    id="addAssignmentBtn"
-    class="ts-btn ts-btn-green"
->
-
-<i class="fa-solid fa-plus"></i>
-
-Add Assignment
-
-</button>
-
-</div>
-
-
-<!-- ============================================================
-     DEFAULT SETTINGS
-     ============================================================ -->
-
-<div
-    class="ts-section-title"
-    style="margin-top:30px;"
->
-
-<span class="ts-section-title-text">
-    Default Settings
-</span>
-
-<span class="ts-section-line"></span>
-
-</div>
-
-
-<div class="ts-grid-3">
-
-
-<!-- TEACHING TYPE -->
-
-<div class="ts-field">
-
-<label
-    for="teaching_type"
-    class="ts-label"
->
-
-    Teaching Type
-
-    <span class="ts-optional">
-        optional
-    </span>
-
-</label>
-
-
-<select
-    id="teaching_type"
-    name="teaching_type"
-    class="ts-select"
->
-
-<option value="">
-    Select teaching type
-</option>
-
-<option
-    value="teacher"
-    {% if request.form.get('teaching_type') == 'teacher' %}
-        selected
-    {% endif %}
->
-    Teacher
-</option>
-
-<option
-    value="assistant"
-    {% if request.form.get('teaching_type') == 'assistant' %}
-        selected
-    {% endif %}
->
-    Assistant
-</option>
-
-<option
-    value="coordinator"
-    {% if request.form.get('teaching_type') == 'coordinator' %}
-        selected
-    {% endif %}
->
-    Coordinator
-</option>
-
-<option
-    value="substitute"
-    {% if request.form.get('teaching_type') == 'substitute' %}
-        selected
-    {% endif %}
->
-    Substitute
-</option>
-
-</select>
-
-</div>
-
-
-<!-- STATUS -->
-
-<div class="ts-field">
-
-<label
-    for="status"
-    class="ts-label"
->
-    Status
-</label>
-
-
-<select
-    id="status"
-    name="status"
-    class="ts-select"
->
-
-<option
-    value="active"
-    {% if request.form.get('status','active') == 'active' %}
-        selected
-    {% endif %}
->
-    Active
-</option>
-
-<option
-    value="inactive"
-    {% if request.form.get('status') == 'inactive' %}
-        selected
-    {% endif %}
->
-    Inactive
-</option>
-
-<option
-    value="suspended"
-    {% if request.form.get('status') == 'suspended' %}
-        selected
-    {% endif %}
->
-    Suspended
-</option>
-
-</select>
-
-</div>
-
-
-<!-- PRIMARY -->
-
-<div class="ts-field">
-
-<label class="ts-label">
-    Primary Assignment
-</label>
-
-
-<label class="ts-status-row">
-
-<input
-    type="checkbox"
-    name="is_primary"
-    value="1"
-
-    {% if request.form.get('is_primary') %}
-        checked
-    {% endif %}
->
-
-<span class="ts-status-dot"></span>
-
-<span class="ts-status-text">
-    Mark as primary
-</span>
-
-</label>
-
-</div>
-
-
-<!-- START DATE -->
-
-<div class="ts-field">
-
-<label
-    for="start_date"
-    class="ts-label"
->
-
-    Start Date
-
-    <span class="ts-optional">
-        optional
-    </span>
-
-</label>
-
-
-<input
-    type="date"
-    id="start_date"
-    name="start_date"
-    class="ts-input"
-    value="{{ request.form.get('start_date','') }}"
->
-
-</div>
-
-
-<!-- END DATE -->
-
-<div class="ts-field">
-
-<label
-    for="end_date"
-    class="ts-label"
->
-
-    End Date
-
-    <span class="ts-optional">
-        optional
-    </span>
-
-</label>
-
-
-<input
-    type="date"
-    id="end_date"
-    name="end_date"
-    class="ts-input"
-    value="{{ request.form.get('end_date','') }}"
->
-
-</div>
-
-
-<!-- NOTES -->
-
-<div class="ts-field ts-field-full">
-
-<label
-    for="notes"
-    class="ts-label"
->
-
-    Notes
-
-    <span class="ts-optional">
-        optional
-    </span>
-
-</label>
-
-
-<textarea
-    id="notes"
-    name="notes"
-    class="ts-textarea"
-    placeholder="Optional notes about these assignments..."
->{{ request.form.get('notes','') }}</textarea>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- ============================================================
-     FOOTER
-     ============================================================ -->
-
-<div class="ts-footer">
-
-<div class="ts-footer-left">
-
-<span
-    id="footerAssignmentText"
-    class="ts-add-text"
->
-    No assignments added.
-</span>
-
-</div>
-
-
-<div class="ts-footer-right">
-
-<button
-    type="button"
-    id="resetFormBtn"
-    class="ts-btn ts-btn-secondary"
->
-
-<i class="fa-solid fa-rotate-left"></i>
-
-Reset
-
-</button>
-
-
-<a
-    href="{{ url_for('main.all_teacher_subjects') }}"
-    class="ts-btn ts-btn-secondary"
->
-
-Cancel
-
-</a>
-
-
-<button
-    type="submit"
-    id="saveBtn"
-    class="ts-btn ts-btn-primary"
->
-
-<i class="fa-solid fa-floppy-disk"></i>
-
-Create Assignments
-
-</button>
-
-</div>
-
-</div>
-
-</form>
-
-</div>
-
-
-<!-- ============================================================
-     SIDEBAR
-     ============================================================ -->
-
-<div class="ts-sidebar">
-
-
-<!-- SELECTED TEACHER PREVIEW -->
-
-<div class="ts-card ts-preview">
-
-<div class="ts-card-header">
-
-<h2 class="ts-card-title">
-
-<i class="fa-solid fa-user-tie"></i>
-
-Selected Teachers
-
-</h2>
-
-</div>
-
-
-<div class="ts-preview-body">
-
-<div
-    id="previewAvatar"
-    class="ts-preview-avatar"
->
-    T
-</div>
-
-
-<h3
-    id="previewTeacherName"
-    class="ts-preview-name"
->
-    No teacher selected
-</h3>
-
-
-<p
-    id="previewTeacherText"
-    class="ts-preview-text"
->
-    Select one or more teachers.
-</p>
-
-</div>
-
-</div>
-
-
-<!-- ASSIGNMENT COUNT -->
-
-<div class="ts-card ts-stat">
-
-<div class="ts-stat-label">
-    Assignment Rows
-</div>
-
-<div
-    id="assignmentCount"
-    class="ts-stat-value"
->
-    0
-</div>
-
-<div
-    id="assignmentCountHelp"
-    class="ts-stat-help"
->
-    No assignment rows created.
-</div>
-
-</div>
-
-
-<!-- TEACHER COUNT -->
-
-<div class="ts-card ts-stat">
-
-<div class="ts-stat-label">
-    Selected Teachers
-</div>
-
-<div
-    id="teacherCount"
-    class="ts-stat-value"
->
-    0
-</div>
-
-<div class="ts-stat-help">
-    Every selected teacher receives every assignment row.
-</div>
-
-</div>
-
-
-<!-- RECORD ESTIMATE -->
-
-<div class="ts-card ts-stat">
-
-<div class="ts-stat-label">
-    Record Estimate
-</div>
-
-<div
-    id="recordEstimate"
-    class="ts-stat-value"
->
-    0
-</div>
-
-<div class="ts-stat-help">
-    Teachers × Assignment Rows
-</div>
-
-</div>
-
-
-<!-- GUIDE -->
-
-<div class="ts-card">
-
-<div class="ts-card-header">
-
-<h2 class="ts-card-title">
-
-<i class="fa-solid fa-circle-info"></i>
-
-Assignment Guide
-
-</h2>
-
-</div>
-
-
-<div class="ts-card-body">
-
-
-<div class="ts-guide-item">
-
-<div class="ts-guide-icon">
-    <i class="fa-solid fa-school"></i>
-</div>
-
-<div>
-
-<div class="ts-guide-label">
-    Institution
-</div>
-
-<div class="ts-guide-value">
-    Institution controls the available branches and teachers.
-</div>
-
-</div>
-
-</div>
-
-
-<div class="ts-guide-item">
-
-<div class="ts-guide-icon">
-    <i class="fa-solid fa-code-branch"></i>
-</div>
-
-<div>
-
-<div class="ts-guide-label">
-    Branch
-</div>
-
-<div class="ts-guide-value">
-    Branch filters teachers and academic scope.
-</div>
-
-</div>
-
-</div>
-
-
-<div class="ts-guide-item">
-
-<div class="ts-guide-icon">
-    <i class="fa-solid fa-users"></i>
-</div>
-
-<div>
-
-<div class="ts-guide-label">
-    Multiple Teachers
-</div>
-
-<div class="ts-guide-value">
-    Select several teachers at once.
-</div>
-
-</div>
-
-</div>
-
-
-<div class="ts-guide-item">
-
-<div class="ts-guide-icon">
-    <i class="fa-solid fa-graduation-cap"></i>
-</div>
-
-<div>
-
-<div class="ts-guide-label">
-    Program
-</div>
-
-<div class="ts-guide-value">
-    Every assignment requires a program.
-</div>
-
-</div>
-
-</div>
-
-
-<div class="ts-guide-item">
-
-<div class="ts-guide-icon">
-    <i class="fa-solid fa-layer-group"></i>
-</div>
-
-<div>
-
-<div class="ts-guide-label">
-    Different Scopes
-</div>
-
-<div class="ts-guide-value">
-    Each row can use a different class, section and subject.
-</div>
-
-</div>
-
-</div>
-
-
-<div class="ts-guide-item">
-
-<div class="ts-guide-icon">
-    <i class="fa-solid fa-check-double"></i>
-</div>
-
-<div>
-
-<div class="ts-guide-label">
-    Full Scope
-</div>
-
-<div class="ts-guide-value">
-    Program + Class + Section + Subject.
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
 
 </div>
 
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function(){
-
-"use strict";
-
-
 /* ============================================================
-   ELEMENTS
+   TEACHER ASSIGNMENT JAVASCRIPT
    ============================================================ */
 
-const form =
-    document.getElementById("teacherSubjectForm");
-
-const institutionSelect =
-    document.getElementById("institution_id");
-
-const branchSelect =
-    document.getElementById("branch_id");
-
-const teacherOptions =
-    Array.from(
-        document.querySelectorAll(".ts-teacher-option")
-    );
-
-const teacherChecks =
-    Array.from(
-        document.querySelectorAll(".ts-teacher-check")
-    );
-
-const teacherSelectedCount =
-    document.getElementById("teacherSelectedCount");
-
-const teacherCount =
-    document.getElementById("teacherCount");
-
-const selectedTeachersList =
-    document.getElementById("selectedTeachersList");
-
-const selectAllTeachers =
-    document.getElementById("selectAllTeachers");
-
-const clearAllTeachers =
-    document.getElementById("clearAllTeachers");
-
-const assignmentList =
-    document.getElementById("assignmentList");
-
-const assignmentEmpty =
-    document.getElementById("assignmentEmpty");
-
-const addAssignmentBtn =
-    document.getElementById("addAssignmentBtn");
-
-const assignmentCount =
-    document.getElementById("assignmentCount");
-
-const assignmentCountText =
-    document.getElementById("assignmentCountText");
-
-const assignmentCountHelp =
-    document.getElementById("assignmentCountHelp");
-
-const footerAssignmentText =
-    document.getElementById("footerAssignmentText");
-
-const previewAvatar =
-    document.getElementById("previewAvatar");
-
-const previewTeacherName =
-    document.getElementById("previewTeacherName");
-
-const previewTeacherText =
-    document.getElementById("previewTeacherText");
-
-const recordEstimate =
-    document.getElementById("recordEstimate");
-
-const resetFormBtn =
-    document.getElementById("resetFormBtn");
-
-const saveBtn =
-    document.getElementById("saveBtn");
-
-const validationBox =
-    document.getElementById("validationBox");
-
-const validationList =
-    document.getElementById("validationList");
-
-
-/* ============================================================
-   SERVER DATA
-   ============================================================ */
-
-const programs = [
-
-{% for program in programs|default([], true) %}
-
-{
-    id: "{{ program.id }}",
-
-    name: {{
-        (
-            program.name
-            or program.title
-            or program.short_name
-            or ('Program #' ~ program.id)
-        )|tojson
-    }},
-
-    code: {{
-        (
-            program.code
-            or program.short_name
-            or ''
-        )|tojson
-    }},
-
-    institution_id:
-        "{{ program.institution_id|default('', true) }}",
-
-    branch_id:
-        "{{ program.branch_id|default('', true) }}"
-
-}
-
-{% if not loop.last %},{% endif %}
-
-{% endfor %}
-
-];
-
-
-const classesData = [
-
-{% for class_obj in classes|default([], true) %}
-
-{
-    id: "{{ class_obj.id }}",
-
-    name: {{
-        (
-            class_obj.name
-            or class_obj.title
-            or ('Class #' ~ class_obj.id)
-        )|tojson
-    }},
-
-    code: {{
-        (
-            class_obj.code
-            or ''
-        )|tojson
-    }},
-
-    program_id:
-        "{{ class_obj.program_id|default('', true) }}",
-
-    institution_id:
-        "{{ class_obj.institution_id|default('', true) }}",
-
-    branch_id:
-        "{{ class_obj.branch_id|default('', true) }}"
-
-}
-
-{% if not loop.last %},{% endif %}
-
-{% endfor %}
-
-];
-
-
-const sectionsData = [
-
-{% for section in sections|default([], true) %}
-
-{
-    id: "{{ section.id }}",
-
-    name: {{
-        (
-            section.name
-            or section.title
-            or ('Section #' ~ section.id)
-        )|tojson
-    }},
-
-    code: {{
-        (
-            section.code
-            or ''
-        )|tojson
-    }},
-
-    class_id:
-        "{{ section.class_id|default('', true) }}",
-
-    institution_id:
-        "{{ section.institution_id|default('', true) }}",
-
-    branch_id:
-        "{{ section.branch_id|default('', true) }}"
-
-}
-
-{% if not loop.last %},{% endif %}
-
-{% endfor %}
-
-];
-
-
-const subjectsData = [
-
-{% for subject in subjects|default([], true) %}
-
-{
-    id: "{{ subject.id }}",
-
-    name: {{
-        (
-            subject.name
-            or subject.title
-            or ('Subject #' ~ subject.id)
-        )|tojson
-    }},
-
-    code: {{
-        (
-            subject.code
-            or ''
-        )|tojson
-    }},
-
-    program_id:
-        "{{ subject.program_id|default('', true) }}",
-
-    institution_id:
-        "{{ subject.institution_id|default('', true) }}",
-
-    branch_id:
-        "{{ subject.branch_id|default('', true) }}"
-
-}
-
-{% if not loop.last %},{% endif %}
-
-{% endfor %}
-
-];
-
-
-const currentUserRole =
-    {{ (
-        current_user.role
-        if current_user is defined
-        else ''
-    )|tojson }};
-
-
-const currentUserInstitutionId =
-    {{ (
-        current_user.institution_id
-        if current_user is defined
-        else ''
-    )|tojson }};
-
-
-const currentUserBranchId =
-    {{ (
-        current_user.branch_id
-        if current_user is defined
-        else ''
-    )|tojson }};
-
-
-/* ============================================================
-   STATE
-   ============================================================ */
-
-let assignmentIndex = 0;
-
-
-/* ============================================================
-   HELPERS
-   ============================================================ */
-
-function escapeHtml(value){
-
-    return String(value ?? "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
-
-}
-
-
-function getSelectedTeachers(){
-
-    return teacherChecks
-        .filter(check => check.checked)
-        .map(check => {
-
-            return {
-
-                id:
-                    check.value,
-
-                name:
-                    check.dataset.teacherName || "Teacher",
-
-                photo:
-                    check.dataset.photo || "",
-
-                institutionId:
-                    check.closest(".ts-teacher-option")
-                        ?.dataset.institutionId || "",
-
-                branchId:
-                    check.closest(".ts-teacher-option")
-                        ?.dataset.branchId || ""
-
-            };
-
-        });
-
-}
-
-
-/* ============================================================
-   ORGANIZATION FILTER
-   ============================================================ */
-
-function getInstitutionId(){
-
-    return institutionSelect?.value || "";
-
-}
-
-
-function getBranchId(){
-
-    return branchSelect?.value || "";
-
-}
-
-
-/* ============================================================
-   FILTER TEACHERS
-   ============================================================ */
-
-function filterTeachers(){
-
-    const institutionId =
-        getInstitutionId();
-
-    const branchId =
-        getBranchId();
-
-
-    teacherOptions.forEach(option => {
-
-        const teacherInstitution =
-            option.dataset.institutionId || "";
-
-        const teacherBranch =
-            option.dataset.branchId || "";
-
-
-        let visible = true;
-
-
-        if (
-            institutionId &&
-            teacherInstitution &&
-            teacherInstitution !== institutionId
-        ){
-
-            visible = false;
-
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ========================================================
+       MAIN ELEMENTS
+       ======================================================== */
+
+    const form =
+        document.getElementById("teacherAssignmentForm");
+
+    const assignmentList =
+        document.getElementById("assignmentList");
+
+    const addMoreButton =
+        document.getElementById("addMoreAssignment");
+
+    const institutionSelect =
+        document.getElementById("institution_id");
+
+    const branchSelect =
+        document.getElementById("branch_id");
+
+    const academicYearSelect =
+        document.getElementById("academic_year_id");
+
+    const assignmentCount =
+        document.getElementById("assignmentCount");
+
+    const summaryAssignmentCount =
+        document.getElementById("summaryAssignmentCount");
+
+    const summaryInstitution =
+        document.getElementById("summaryInstitution");
+
+    const summaryBranch =
+        document.getElementById("summaryBranch");
+
+    const summaryAcademicYear =
+        document.getElementById("summaryAcademicYear");
+
+    const assignmentSummaryList =
+        document.getElementById("assignmentSummaryList");
+
+
+    /* ========================================================
+       ASSIGNMENT RULES
+       ======================================================== */
+
+    const assignmentRules = {
+
+        program: {
+            label: "Program",
+            fields: ["program"],
+            required: ["program"],
+            text: "Program"
+        },
+
+        class: {
+            label: "Class",
+            fields: ["program", "class"],
+            required: ["program", "class"],
+            text: "Program + Class"
+        },
+
+        subject: {
+            label: "Subject",
+            fields: ["program", "class", "subject"],
+            required: ["program", "class", "subject"],
+            text: "Program + Class + Subject"
+        },
+
+        section: {
+            label: "Section",
+            fields: [
+                "program",
+                "class",
+                "subject",
+                "section"
+            ],
+            required: [
+                "program",
+                "class",
+                "subject",
+                "section"
+            ],
+            text: "Program + Class + Subject + Section"
         }
 
+    };
 
-        if (
-            branchId &&
-            teacherBranch &&
-            teacherBranch !== branchId
-        ){
 
-            visible = false;
+    /* ========================================================
+       GET ROWS
+       ======================================================== */
 
+    function getRows() {
+
+        return Array.from(
+            assignmentList.querySelectorAll(
+                ".assignment-row"
+            )
+        );
+
+    }
+
+
+    /* ========================================================
+       GET ROW FIELDS
+       ======================================================== */
+
+    function getRowFields(row) {
+
+        return {
+
+            teacher:
+                row.querySelector(".teacher-select"),
+
+            type:
+                row.querySelector(".assignment-type-select"),
+
+            program:
+                row.querySelector(".program-select"),
+
+            class:
+                row.querySelector(".class-select"),
+
+            subject:
+                row.querySelector(".subject-select"),
+
+            section:
+                row.querySelector(".section-select"),
+
+            programField:
+                row.querySelector(".program-field"),
+
+            classField:
+                row.querySelector(".class-field"),
+
+            subjectField:
+                row.querySelector(".subject-field"),
+
+            sectionField:
+                row.querySelector(".section-field"),
+
+            programRequired:
+                row.querySelector(".program-required"),
+
+            classRequired:
+                row.querySelector(".class-required"),
+
+            subjectRequired:
+                row.querySelector(".subject-required"),
+
+            sectionRequired:
+                row.querySelector(".section-required"),
+
+            requiredText:
+                row.querySelector(
+                    "[data-required-text]"
+                )
+
+        };
+
+    }
+
+
+    /* ========================================================
+       FILTER OPTIONS
+       ======================================================== */
+
+    function filterOptions(select, predicate) {
+
+        if (!select) {
+            return;
         }
 
+        Array.from(select.options).forEach(
+            function (option, index) {
 
-        option.classList.toggle(
-            "filtered-out",
-            !visible
+                if (index === 0) {
+                    option.hidden = false;
+                    return;
+                }
+
+                option.hidden =
+                    !predicate(option);
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       APPLY ASSIGNMENT TYPE
+       ======================================================== */
+
+    function applyAssignmentType(row) {
+
+        const fields =
+            getRowFields(row);
+
+        const type =
+            fields.type.value;
+
+        const rule =
+            assignmentRules[type];
+
+
+        const fieldMap = {
+
+            program:
+                fields.programField,
+
+            class:
+                fields.classField,
+
+            subject:
+                fields.subjectField,
+
+            section:
+                fields.sectionField
+
+        };
+
+
+        /* ----------------------------------------------------
+           HIDE ALL
+           ---------------------------------------------------- */
+
+        Object.values(fieldMap).forEach(
+            function (field) {
+
+                if (field) {
+                    field.classList.add(
+                        "is-hidden"
+                    );
+                }
+
+            }
         );
 
 
-        const checkbox =
-            option.querySelector(
-                ".ts-teacher-check"
-            );
-
-
-        if (!visible && checkbox){
-
-            checkbox.checked = false;
-
-        }
-
-    });
-
-
-    updateTeacherUI();
-
-}
-
-
-/* ============================================================
-   FILTER BRANCHES
-   ============================================================ */
-
-function filterBranches(){
-
-    if(!institutionSelect || !branchSelect){
-
-        return;
-
-    }
-
-
-    const institutionId =
-        institutionSelect.value;
-
-
-    Array.from(branchSelect.options)
-        .forEach(option => {
-
-            if(!option.value){
-
-                return;
-
-            }
-
-
-            const branchInstitution =
-                option.dataset.institutionId || "";
-
-
-            const visible =
-                !institutionId ||
-                branchInstitution === institutionId;
-
-
-            option.hidden =
-                !visible;
-
-        });
-
-
-    const selected =
-        branchSelect.options[
-            branchSelect.selectedIndex
-        ];
-
-
-    if(
-        selected &&
-        selected.value &&
-        selected.hidden
-    ){
-
-        branchSelect.value = "";
-
-    }
-
-
-    filterTeachers();
-
-}
-
-
-/* ============================================================
-   PROGRAM DATA FILTER
-   ============================================================ */
-
-function filteredPrograms(){
-
-    const institutionId =
-        getInstitutionId();
-
-    const branchId =
-        getBranchId();
-
-
-    return programs.filter(program => {
-
-        if(
-            institutionId &&
-            program.institution_id &&
-            String(program.institution_id) !==
-            String(institutionId)
-        ){
-
-            return false;
-
-        }
-
-
-        /*
-         * Programs may have branch_id NULL
-         * because they can be offered by multiple branches.
-         */
-
-        if(
-            branchId &&
-            program.branch_id &&
-            String(program.branch_id) !==
-            String(branchId)
-        ){
-
-            return false;
-
-        }
-
-
-        return true;
-
-    });
-
-}
-
-
-/* ============================================================
-   PROGRAM OPTIONS
-   ============================================================ */
-
-function programOptions(selectedValue=""){
-
-    let html = `
-        <option value="">
-            Select program
-        </option>
-    `;
-
-
-    filteredPrograms().forEach(program => {
-
-        html += `
-
-            <option
-                value="${escapeHtml(program.id)}"
-
-                ${
-                    String(selectedValue) ===
-                    String(program.id)
-                    ? "selected"
-                    : ""
-                }
-            >
-
-                ${escapeHtml(program.name)}
-
-                ${
-                    program.code
-                    ? " — " + escapeHtml(program.code)
-                    : ""
+        /* ----------------------------------------------------
+           RESET REQUIRED
+           ---------------------------------------------------- */
+
+        [
+            fields.program,
+            fields.class,
+            fields.subject,
+            fields.section
+        ].forEach(
+            function (select) {
+
+                if (select) {
+                    select.required = false;
                 }
 
-            </option>
-
-        `;
-
-    });
-
-
-    return html;
-
-}
-
-
-/* ============================================================
-   CLASS OPTIONS
-   ============================================================ */
-
-function classOptions(
-    programId="",
-    selectedValue=""
-){
-
-    let html = `
-        <option value="">
-            Select class
-        </option>
-    `;
-
-
-    if(!programId){
-
-        return html;
-
-    }
-
-
-    const institutionId =
-        getInstitutionId();
-
-    const branchId =
-        getBranchId();
-
-
-    classesData
-        .filter(item => {
-
-            if(
-                String(item.program_id) !==
-                String(programId)
-            ){
-
-                return false;
-
             }
-
-
-            if(
-                institutionId &&
-                item.institution_id &&
-                String(item.institution_id) !==
-                String(institutionId)
-            ){
-
-                return false;
-
-            }
-
-
-            if(
-                branchId &&
-                item.branch_id &&
-                String(item.branch_id) !==
-                String(branchId)
-            ){
-
-                return false;
-
-            }
-
-
-            return true;
-
-        })
-        .forEach(item => {
-
-            html += `
-
-                <option
-                    value="${escapeHtml(item.id)}"
-
-                    ${
-                        String(selectedValue) ===
-                        String(item.id)
-                        ? "selected"
-                        : ""
-                    }
-                >
-
-                    ${escapeHtml(item.name)}
-
-                    ${
-                        item.code
-                        ? " — " + escapeHtml(item.code)
-                        : ""
-                    }
-
-                </option>
-
-            `;
-
-        });
-
-
-    return html;
-
-}
-
-
-/* ============================================================
-   SECTION OPTIONS
-   ============================================================ */
-
-function sectionOptions(
-    classId="",
-    selectedValue=""
-){
-
-    let html = `
-        <option value="">
-            Select section
-        </option>
-    `;
-
-
-    if(!classId){
-
-        return html;
-
-    }
-
-
-    const institutionId =
-        getInstitutionId();
-
-    const branchId =
-        getBranchId();
-
-
-    sectionsData
-        .filter(item => {
-
-            if(
-                String(item.class_id) !==
-                String(classId)
-            ){
-
-                return false;
-
-            }
-
-
-            if(
-                institutionId &&
-                item.institution_id &&
-                String(item.institution_id) !==
-                String(institutionId)
-            ){
-
-                return false;
-
-            }
-
-
-            if(
-                branchId &&
-                item.branch_id &&
-                String(item.branch_id) !==
-                String(branchId)
-            ){
-
-                return false;
-
-            }
-
-
-            return true;
-
-        })
-        .forEach(item => {
-
-            html += `
-
-                <option
-                    value="${escapeHtml(item.id)}"
-
-                    ${
-                        String(selectedValue) ===
-                        String(item.id)
-                        ? "selected"
-                        : ""
-                    }
-                >
-
-                    ${escapeHtml(item.name)}
-
-                    ${
-                        item.code
-                        ? " — " + escapeHtml(item.code)
-                        : ""
-                    }
-
-                </option>
-
-            `;
-
-        });
-
-
-    return html;
-
-}
-
-
-/* ============================================================
-   SUBJECT OPTIONS
-   ============================================================ */
-
-function subjectOptions(
-    programId="",
-    selectedValue=""
-){
-
-    let html = `
-        <option value="">
-            Select subject
-        </option>
-    `;
-
-
-    if(!programId){
-
-        return html;
-
-    }
-
-
-    const institutionId =
-        getInstitutionId();
-
-    const branchId =
-        getBranchId();
-
-
-    subjectsData
-        .filter(item => {
-
-            /*
-             * Subject must belong to selected program
-             * unless it is a global subject.
-             */
-
-            if(
-                item.program_id &&
-                String(item.program_id) !==
-                String(programId)
-            ){
-
-                return false;
-
-            }
-
-
-            if(
-                institutionId &&
-                item.institution_id &&
-                String(item.institution_id) !==
-                String(institutionId)
-            ){
-
-                return false;
-
-            }
-
-
-            if(
-                branchId &&
-                item.branch_id &&
-                String(item.branch_id) !==
-                String(branchId)
-            ){
-
-                return false;
-
-            }
-
-
-            return true;
-
-        })
-        .forEach(item => {
-
-            html += `
-
-                <option
-                    value="${escapeHtml(item.id)}"
-
-                    ${
-                        String(selectedValue) ===
-                        String(item.id)
-                        ? "selected"
-                        : ""
-                    }
-                >
-
-                    ${escapeHtml(item.name)}
-
-                    ${
-                        item.code
-                        ? " — " + escapeHtml(item.code)
-                        : ""
-                    }
-
-                </option>
-
-            `;
-
-        });
-
-
-    return html;
-
-}
-
-
-/* ============================================================
-   SELECTED TEACHERS UI
-   ============================================================ */
-
-function updateSelectedTeachersPanel(){
-
-    const selected =
-        getSelectedTeachers();
-
-
-    selectedTeachersList.innerHTML =
-        "";
-
-
-    if(!selected.length){
-
-        selectedTeachersList.innerHTML = `
-
-            <div class="ts-selected-empty">
-
-                <i class="fa-solid fa-user-plus"></i>
-
-                <br>
-
-                No teachers selected.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    selected.forEach(teacher => {
-
-        const item =
-            document.createElement("div");
-
-        item.className =
-            "ts-selected-teacher";
-
-
-        const avatar =
-            document.createElement("div");
-
-        avatar.className =
-            "ts-selected-teacher-avatar";
-
-
-        if(teacher.photo){
-
-            avatar.innerHTML = `
-
-                <img
-                    src="${escapeHtml(teacher.photo)}"
-                    alt="${escapeHtml(teacher.name)}"
-                >
-
-            `;
-
-        }else{
-
-            avatar.textContent =
-                teacher.name
-                    .charAt(0)
-                    .toUpperCase();
-
-        }
-
-
-        const text =
-            document.createElement("div");
-
-
-        text.innerHTML = `
-
-            <div class="ts-selected-teacher-name">
-
-                ${escapeHtml(teacher.name)}
-
-            </div>
-
-            <div class="ts-selected-teacher-meta">
-
-                Teacher ID: ${escapeHtml(teacher.id)}
-
-            </div>
-
-        `;
-
-
-        item.appendChild(avatar);
-
-        item.appendChild(text);
-
-        selectedTeachersList.appendChild(item);
-
-    });
-
-}
-
-
-/* ============================================================
-   TEACHER UI
-   ============================================================ */
-
-function updateTeacherUI(){
-
-    const selected =
-        getSelectedTeachers();
-
-    const count =
-        selected.length;
-
-
-    teacherSelectedCount.textContent =
-        count;
-
-    teacherCount.textContent =
-        count;
-
-
-    teacherOptions.forEach(option => {
-
-        const checkbox =
-            option.querySelector(
-                ".ts-teacher-check"
-            );
-
-
-        option.classList.toggle(
-            "selected",
-            !!checkbox?.checked
         );
 
-    });
 
+        /* ----------------------------------------------------
+           RESET REQUIRED MARKERS
+           ---------------------------------------------------- */
 
-    updateSelectedTeachersPanel();
+        [
+            fields.programRequired,
+            fields.classRequired,
+            fields.subjectRequired,
+            fields.sectionRequired
+        ].forEach(
+            function (marker) {
 
+                if (marker) {
+                    marker.style.display =
+                        "none";
+                }
 
-    if(!selected.length){
+            }
+        );
 
-        previewAvatar.innerHTML =
-            "T";
 
-        previewTeacherName.textContent =
-            "No teacher selected";
+        /* ----------------------------------------------------
+           NO TYPE
+           ---------------------------------------------------- */
 
-        previewTeacherText.textContent =
-            "Select one or more teachers.";
+        if (!rule) {
 
-    }
+            if (fields.requiredText) {
 
-    else if(selected.length === 1){
+                fields.requiredText.textContent =
+                    "Select Assignment Type first.";
 
-        const teacher =
-            selected[0];
-
-
-        previewTeacherName.textContent =
-            teacher.name;
-
-
-        previewTeacherText.textContent =
-            "1 teacher selected.";
-
-
-        if(teacher.photo){
-
-            previewAvatar.innerHTML = `
-
-                <img
-                    src="${escapeHtml(teacher.photo)}"
-                    alt="${escapeHtml(teacher.name)}"
-                >
-
-            `;
-
-        }else{
-
-            previewAvatar.textContent =
-                teacher.name
-                    .charAt(0)
-                    .toUpperCase();
-
-        }
-
-    }
-
-    else{
-
-        previewAvatar.innerHTML = `
-
-            <i class="fa-solid fa-users"></i>
-
-        `;
-
-
-        previewTeacherName.textContent =
-            `${selected.length} teachers selected`;
-
-
-        previewTeacherText.textContent =
-            "All selected teachers will receive the assignment rows.";
-
-    }
-
-
-    updateAssignmentCount();
-
-}
-
-
-/* ============================================================
-   CREATE ASSIGNMENT
-   ============================================================ */
-
-function createAssignmentRow(){
-
-    assignmentIndex++;
-
-    const index =
-        assignmentIndex;
-
-
-    const row =
-        document.createElement("div");
-
-
-    row.className =
-        "ts-assignment-row";
-
-
-    row.dataset.index =
-        index;
-
-
-    row.innerHTML = `
-
-<div class="ts-assignment-head">
-
-<div class="ts-assignment-head-left">
-
-<div class="ts-row-number">
-    ${index}
-</div>
-
-<div>
-
-<div class="ts-row-title">
-    Assignment ${index}
-</div>
-
-<div class="ts-row-subtitle">
-    Program is required
-</div>
-
-</div>
-
-</div>
-
-
-<div class="ts-assignment-actions">
-
-<span
-    class="ts-full-scope-badge"
-    data-full-badge
->
-    Full Scope
-</span>
-
-
-<button
-    type="button"
-    class="ts-btn ts-btn-danger ts-btn-small remove-assignment"
->
-
-<i class="fa-solid fa-trash"></i>
-
-Remove
-
-</button>
-
-</div>
-
-</div>
-
-
-<div class="ts-assignment-body">
-
-<div class="ts-grid-3">
-
-
-<!-- PROGRAM -->
-
-<div class="ts-field">
-
-<label
-    class="ts-label"
-    for="program_${index}"
->
-
-    Program
-
-    <span class="ts-required">*</span>
-
-</label>
-
-
-<select
-    id="program_${index}"
-    name="program_ids[]"
-    class="ts-select assignment-program"
-    required
->
-
-    ${programOptions()}
-
-</select>
-
-
-<div class="ts-help">
-    Required.
-</div>
-
-</div>
-
-
-<!-- CLASS -->
-
-<div class="ts-field">
-
-<label
-    class="ts-label"
-    for="class_${index}"
->
-
-    Class
-
-    <span class="ts-optional">
-        optional
-    </span>
-
-</label>
-
-
-<select
-    id="class_${index}"
-    name="class_ids[]"
-    class="ts-select assignment-class"
->
-
-    ${classOptions()}
-
-</select>
-
-
-<div class="ts-help">
-    Filtered by Program.
-</div>
-
-</div>
-
-
-<!-- SECTION -->
-
-<div class="ts-field">
-
-<label
-    class="ts-label"
-    for="section_${index}"
->
-
-    Section
-
-    <span class="ts-optional">
-        optional
-    </span>
-
-</label>
-
-
-<select
-    id="section_${index}"
-    name="section_ids[]"
-    class="ts-select assignment-section"
->
-
-    ${sectionOptions()}
-
-</select>
-
-
-<div class="ts-help">
-    Filtered by Class.
-</div>
-
-</div>
-
-
-<!-- SUBJECT -->
-
-<div class="ts-field">
-
-<label
-    class="ts-label"
-    for="subject_${index}"
->
-
-    Subject
-
-    <span class="ts-optional">
-        optional
-    </span>
-
-</label>
-
-
-<select
-    id="subject_${index}"
-    name="subject_ids[]"
-    class="ts-select assignment-subject"
->
-
-    ${subjectOptions()}
-
-</select>
-
-
-<div class="ts-help">
-    Filtered by Program.
-</div>
-
-</div>
-
-
-<!-- MODE -->
-
-<div class="ts-field">
-
-<label
-    class="ts-label"
-    for="mode_${index}"
->
-
-    Scope Mode
-
-</label>
-
-
-<select
-    id="mode_${index}"
-    name="assignment_modes[]"
-    class="ts-select assignment-mode"
->
-
-<option value="program">
-    Program Scope
-</option>
-
-<option value="class">
-    Program + Class
-</option>
-
-<option value="section">
-    Program + Class + Section
-</option>
-
-<option value="subject">
-    Program + Subject
-</option>
-
-<option value="class_subject">
-    Program + Class + Subject
-</option>
-
-<option value="section_subject">
-    Program + Class + Section + Subject
-</option>
-
-</select>
-
-
-<div class="ts-help">
-    Defines assignment specificity.
-</div>
-
-</div>
-
-
-<!-- PREVIEW -->
-
-<div class="ts-field">
-
-<label class="ts-label">
-    Scope Preview
-</label>
-
-
-<div class="ts-default-box scope-preview">
-
-<div class="ts-default-icon">
-
-<i class="fa-solid fa-diagram-project"></i>
-
-</div>
-
-
-<div>
-
-<div class="ts-default-name">
-    Program
-</div>
-
-<div class="ts-default-meta">
-    Select the assignment scope.
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- FULL SCOPE -->
-
-<div class="ts-scope-box">
-
-<label class="ts-scope-check">
-
-<input
-    type="checkbox"
-    class="full-scope-checkbox"
-    name="full_scope[]"
-    value="1"
->
-
-
-<span>
-
-<span class="ts-scope-title">
-    Full Scope
-</span>
-
-<span class="ts-scope-description">
-
-Program + Class + Section + Subject.
-This means the teacher is assigned to
-the exact subject inside the exact section.
-
-</span>
-
-</span>
-
-</label>
-
-</div>
-
-</div>
-
-`;
-
-
-    assignmentList.appendChild(row);
-
-
-    bindAssignmentRow(row);
-
-
-    updateAssignmentNumbers();
-
-    updateAssignmentCount();
-
-
-    return row;
-
-}
-
-
-/* ============================================================
-   BIND ASSIGNMENT
-   ============================================================ */
-
-function bindAssignmentRow(row){
-
-    const programSelect =
-        row.querySelector(".assignment-program");
-
-    const classSelect =
-        row.querySelector(".assignment-class");
-
-    const sectionSelect =
-        row.querySelector(".assignment-section");
-
-    const subjectSelect =
-        row.querySelector(".assignment-subject");
-
-    const modeSelect =
-        row.querySelector(".assignment-mode");
-
-    const fullScope =
-        row.querySelector(".full-scope-checkbox");
-
-    const fullBadge =
-        row.querySelector("[data-full-badge]");
-
-    const preview =
-        row.querySelector(".scope-preview");
-
-    const removeBtn =
-        row.querySelector(".remove-assignment");
-
-
-    function refreshClasses(){
-
-        const current =
-            classSelect.value;
-
-
-        classSelect.innerHTML =
-            classOptions(
-                programSelect.value,
-                current
-            );
-
-
-        if(
-            current &&
-            !Array.from(classSelect.options)
-                .some(
-                    option =>
-                        option.value === current
-                )
-        ){
-
-            classSelect.value = "";
-
-        }
-
-
-        refreshSections();
-
-        refreshSubjects();
-
-        updatePreview();
-
-    }
-
-
-    function refreshSections(){
-
-        const current =
-            sectionSelect.value;
-
-
-        sectionSelect.innerHTML =
-            sectionOptions(
-                classSelect.value,
-                current
-            );
-
-
-        if(
-            current &&
-            !Array.from(sectionSelect.options)
-                .some(
-                    option =>
-                        option.value === current
-                )
-        ){
-
-            sectionSelect.value = "";
-
-        }
-
-    }
-
-
-    function refreshSubjects(){
-
-        const current =
-            subjectSelect.value;
-
-
-        subjectSelect.innerHTML =
-            subjectOptions(
-                programSelect.value,
-                current
-            );
-
-
-        if(
-            current &&
-            !Array.from(subjectSelect.options)
-                .some(
-                    option =>
-                        option.value === current
-                )
-        ){
-
-            subjectSelect.value = "";
-
-        }
-
-    }
-
-
-    function updateModeFields(){
-
-        const mode =
-            modeSelect.value;
-
-
-        /*
-         * Program
-         */
-
-        if(mode === "program"){
-
-            classSelect.value = "";
-
-            sectionSelect.value = "";
-
-            subjectSelect.value = "";
-
-        }
-
-
-        /*
-         * Program + Class
-         */
-
-        if(mode === "class"){
-
-            sectionSelect.value = "";
-
-            subjectSelect.value = "";
-
-        }
-
-
-        /*
-         * Program + Class + Section
-         */
-
-        if(mode === "section"){
-
-            subjectSelect.value = "";
-
-        }
-
-
-        /*
-         * Program + Subject
-         */
-
-        if(mode === "subject"){
-
-            classSelect.value = "";
-
-            sectionSelect.value = "";
-
-        }
-
-
-        /*
-         * Program + Class + Subject
-         */
-
-        if(mode === "class_subject"){
-
-            sectionSelect.value = "";
-
-        }
-
-
-        updatePreview();
-
-    }
-
-
-    function updateFullScope(){
-
-        if(fullScope.checked){
-
-            modeSelect.value =
-                "section_subject";
-
-            modeSelect.disabled =
-                true;
-
-            classSelect.required =
-                true;
-
-            sectionSelect.required =
-                true;
-
-            subjectSelect.required =
-                true;
-
-            fullBadge.style.display =
-                "inline-block";
-
-        }else{
-
-            modeSelect.disabled =
-                false;
-
-            classSelect.required =
-                false;
-
-            sectionSelect.required =
-                false;
-
-            subjectSelect.required =
-                false;
-
-            fullBadge.style.display =
-                "none";
-
-        }
-
-
-        updatePreview();
-
-    }
-
-
-    function updatePreview(){
-
-        const programText =
-            programSelect.options[
-                programSelect.selectedIndex
-            ]?.text?.trim() || "";
-
-
-        const classText =
-            classSelect.options[
-                classSelect.selectedIndex
-            ]?.text?.trim() || "";
-
-
-        const sectionText =
-            sectionSelect.options[
-                sectionSelect.selectedIndex
-            ]?.text?.trim() || "";
-
-
-        const subjectText =
-            subjectSelect.options[
-                subjectSelect.selectedIndex
-            ]?.text?.trim() || "";
-
-
-        const parts = [];
-
-
-        if(programSelect.value){
-
-            parts.push(programText);
-
-        }
-
-
-        if(classSelect.value){
-
-            parts.push(classText);
-
-        }
-
-
-        if(sectionSelect.value){
-
-            parts.push(sectionText);
-
-        }
-
-
-        if(subjectSelect.value){
-
-            parts.push(subjectText);
-
-        }
-
-
-        if(!parts.length){
-
-            preview.innerHTML = `
-
-                <div class="ts-default-icon">
-
-                    <i class="fa-solid fa-diagram-project"></i>
-
-                </div>
-
-                <div>
-
-                    <div class="ts-default-name">
-                        Program
-                    </div>
-
-                    <div class="ts-default-meta">
-                        Select scope fields.
-                    </div>
-
-                </div>
-
-            `;
+            }
 
             return;
 
         }
 
 
-        preview.innerHTML = `
+        /* ----------------------------------------------------
+           SHOW FIELDS
+           ---------------------------------------------------- */
 
-            <div class="ts-default-icon">
+        rule.fields.forEach(
+            function (fieldName) {
 
-                <i class="fa-solid fa-check"></i>
+                const field =
+                    fieldMap[fieldName];
 
-            </div>
+                if (field) {
 
-            <div>
+                    field.classList.remove(
+                        "is-hidden"
+                    );
 
-                <div class="ts-default-name">
+                }
 
-                    ${escapeHtml(
-                        parts.join(" → ")
-                    )}
-
-                </div>
-
-                <div class="ts-default-meta">
-
-                    Assignment scope selected.
-
-                </div>
-
-            </div>
-
-        `;
-
-    }
-
-
-    programSelect.addEventListener(
-        "change",
-        refreshClasses
-    );
-
-
-    classSelect.addEventListener(
-        "change",
-        function(){
-
-            refreshSections();
-
-            updatePreview();
-
-        }
-    );
-
-
-    sectionSelect.addEventListener(
-        "change",
-        updatePreview
-    );
-
-
-    subjectSelect.addEventListener(
-        "change",
-        updatePreview
-    );
-
-
-    modeSelect.addEventListener(
-        "change",
-        updateModeFields
-    );
-
-
-    fullScope.addEventListener(
-        "change",
-        function(){
-
-            updateFullScope();
-
-        }
-    );
-
-
-    removeBtn.addEventListener(
-        "click",
-        function(){
-
-            row.remove();
-
-            updateAssignmentNumbers();
-
-            updateAssignmentCount();
-
-        }
-    );
-
-
-    refreshClasses();
-
-    refreshSubjects();
-
-    updateFullScope();
-
-}
-
-
-/* ============================================================
-   UPDATE NUMBERS
-   ============================================================ */
-
-function updateAssignmentNumbers(){
-
-    const rows =
-        Array.from(
-            assignmentList.querySelectorAll(
-                ".ts-assignment-row"
-            )
+            }
         );
 
 
-    rows.forEach((row,index)=>{
+        /* ----------------------------------------------------
+           REQUIRED FIELDS
+           ---------------------------------------------------- */
 
-        const number =
-            row.querySelector(".ts-row-number");
+        rule.required.forEach(
+            function (fieldName) {
 
-        const title =
-            row.querySelector(".ts-row-title");
+                const select =
+                    fields[fieldName];
 
-
-        if(number){
-
-            number.textContent =
-                index + 1;
-
-        }
+                if (select) {
+                    select.required = true;
+                }
 
 
-        if(title){
+                const marker =
+                    fields[
+                        fieldName +
+                        "Required"
+                    ];
 
-            title.textContent =
-                `Assignment ${index + 1}`;
+                if (marker) {
+                    marker.style.display =
+                        "inline";
+                }
 
-        }
-
-    });
-
-}
-
-
-/* ============================================================
-   COUNT
-   ============================================================ */
-
-function updateAssignmentCount(){
-
-    const rows =
-        assignmentList.querySelectorAll(
-            ".ts-assignment-row"
-        ).length;
-
-
-    const teachers =
-        getSelectedTeachers().length;
-
-
-    assignmentCount.textContent =
-        rows;
-
-
-    assignmentCountText.textContent =
-        `${rows} assignment${rows === 1 ? "" : "s"}`;
-
-
-    recordEstimate.textContent =
-        rows * teachers;
-
-
-    if(!rows){
-
-        assignmentCountHelp.textContent =
-            "No assignment rows created.";
-
-        footerAssignmentText.textContent =
-            "No assignments added.";
-
-        assignmentEmpty.style.display =
-            "block";
-
-    }else{
-
-        assignmentCountHelp.textContent =
-            `${rows} scope row${rows === 1 ? "" : "s"} × ${teachers} teacher${teachers === 1 ? "" : "s"}.`;
-
-        footerAssignmentText.textContent =
-            `${rows} assignment row${rows === 1 ? "" : "s"} ready.`;
-
-        assignmentEmpty.style.display =
-            "none";
-
-    }
-
-}
-
-
-/* ============================================================
-   ADD
-   ============================================================ */
-
-addAssignmentBtn.addEventListener(
-    "click",
-    function(){
-
-        const row =
-            createAssignmentRow();
-
-
-        setTimeout(
-            function(){
-
-                row.querySelector(
-                    ".assignment-program"
-                )?.focus();
-
-            },
-            50
+            }
         );
 
-    }
-);
+
+        /* ----------------------------------------------------
+           RULE TEXT
+           ---------------------------------------------------- */
+
+        if (fields.requiredText) {
+
+            fields.requiredText.textContent =
+                rule.text;
+
+        }
 
 
-/* ============================================================
-   TEACHER EVENTS
-   ============================================================ */
+        /* ----------------------------------------------------
+           CLEAR HIDDEN VALUES
+           ---------------------------------------------------- */
 
-teacherChecks.forEach(
-    checkbox => {
+        Object.keys(fieldMap).forEach(
+            function (fieldName) {
 
-        checkbox.addEventListener(
-            "change",
-            function(){
+                if (
+                    !rule.fields.includes(
+                        fieldName
+                    )
+                ) {
 
-                updateTeacherUI();
+                    const select =
+                        fields[fieldName];
+
+                    if (select) {
+                        select.value = "";
+                    }
+
+                }
 
             }
         );
 
     }
-);
 
 
-/* ============================================================
-   SELECT ALL
-   ============================================================ */
+    /* ========================================================
+       FILTER BRANCHES
+       ======================================================== */
 
-selectAllTeachers.addEventListener(
-    "click",
-    function(){
+    function filterBranches() {
 
-        teacherOptions.forEach(option=>{
+        const institutionId =
+            institutionSelect.value;
 
-            if(
-                option.classList.contains(
-                    "filtered-out"
+        filterOptions(
+            branchSelect,
+            function (option) {
+
+                return (
+                    !institutionId ||
+                    option.dataset.institutionId ===
+                        institutionId
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FILTER ACADEMIC YEARS
+       ======================================================== */
+
+    function filterAcademicYears() {
+
+        const institutionId =
+            institutionSelect.value;
+
+        filterOptions(
+            academicYearSelect,
+            function (option) {
+
+                return (
+                    !institutionId ||
+                    option.dataset.institutionId ===
+                        institutionId
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FILTER TEACHERS
+       ======================================================== */
+
+    function filterTeachers(row) {
+
+        const fields =
+            getRowFields(row);
+
+        const institutionId =
+            institutionSelect.value;
+
+        const branchId =
+            branchSelect.value;
+
+
+        filterOptions(
+            fields.teacher,
+            function (option) {
+
+                if (!option.value) {
+                    return true;
+                }
+
+
+                if (
+                    institutionId &&
+                    option.dataset.institutionId !==
+                        institutionId
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    branchId &&
+                    option.dataset.branchId !==
+                        branchId
+                ) {
+                    return false;
+                }
+
+
+                return true;
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FILTER PROGRAMS
+       ======================================================== */
+
+    function filterPrograms(row) {
+
+        const fields =
+            getRowFields(row);
+
+        const institutionId =
+            institutionSelect.value;
+
+        const branchId =
+            branchSelect.value;
+
+
+        filterOptions(
+            fields.program,
+            function (option) {
+
+                if (!option.value) {
+                    return true;
+                }
+
+
+                if (
+                    institutionId &&
+                    option.dataset.institutionId !==
+                        institutionId
+                ) {
+                    return false;
+                }
+
+
+                const optionBranch =
+                    option.dataset.branchId;
+
+
+                /*
+                 * NULL branch means
+                 * institution-wide program.
+                 */
+
+                if (
+                    branchId &&
+                    optionBranch &&
+                    optionBranch !== branchId
+                ) {
+                    return false;
+                }
+
+
+                return true;
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FILTER CLASSES
+       ======================================================== */
+
+    function filterClasses(row) {
+
+        const fields =
+            getRowFields(row);
+
+        const institutionId =
+            institutionSelect.value;
+
+        const branchId =
+            branchSelect.value;
+
+        const academicYearId =
+            academicYearSelect.value;
+
+        const programId =
+            fields.program.value;
+
+
+        filterOptions(
+            fields.class,
+            function (option) {
+
+                if (!option.value) {
+                    return true;
+                }
+
+
+                if (
+                    institutionId &&
+                    option.dataset.institutionId !==
+                        institutionId
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    branchId &&
+                    option.dataset.branchId !==
+                        branchId
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    academicYearId &&
+                    option.dataset.academicYearId !==
+                        academicYearId
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    programId &&
+                    option.dataset.programId !==
+                        programId
+                ) {
+                    return false;
+                }
+
+
+                return true;
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FILTER SUBJECTS
+       ======================================================== */
+
+    function filterSubjects(row) {
+
+        const fields =
+            getRowFields(row);
+
+        const institutionId =
+            institutionSelect.value;
+
+        const branchId =
+            branchSelect.value;
+
+        const programId =
+            fields.program.value;
+
+
+        filterOptions(
+            fields.subject,
+            function (option) {
+
+                if (!option.value) {
+                    return true;
+                }
+
+
+                if (
+                    institutionId &&
+                    option.dataset.institutionId !==
+                        institutionId
+                ) {
+                    return false;
+                }
+
+
+                const subjectBranch =
+                    option.dataset.branchId;
+
+
+                /*
+                 * NULL branch means
+                 * institution-wide subject.
+                 */
+
+                if (
+                    branchId &&
+                    subjectBranch &&
+                    subjectBranch !== branchId
+                ) {
+                    return false;
+                }
+
+
+                const subjectProgram =
+                    option.dataset.programId;
+
+
+                /*
+                 * NULL program means
+                 * institution/branch-wide subject.
+                 */
+
+                if (
+                    programId &&
+                    subjectProgram &&
+                    subjectProgram !== programId
+                ) {
+                    return false;
+                }
+
+
+                return true;
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FILTER SECTIONS
+       ======================================================== */
+
+    function filterSections(row) {
+
+        const fields =
+            getRowFields(row);
+
+        const institutionId =
+            institutionSelect.value;
+
+        const branchId =
+            branchSelect.value;
+
+        const academicYearId =
+            academicYearSelect.value;
+
+        const classId =
+            fields.class.value;
+
+
+        filterOptions(
+            fields.section,
+            function (option) {
+
+                if (!option.value) {
+                    return true;
+                }
+
+
+                if (
+                    institutionId &&
+                    option.dataset.institutionId !==
+                        institutionId
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    branchId &&
+                    option.dataset.branchId !==
+                        branchId
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    academicYearId &&
+                    option.dataset.academicYearId !==
+                        academicYearId
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    classId &&
+                    option.dataset.classId !==
+                        classId
+                ) {
+                    return false;
+                }
+
+
+                return true;
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       REFRESH ROW
+       ======================================================== */
+
+    function refreshRow(row) {
+
+        filterTeachers(row);
+
+        filterPrograms(row);
+
+        filterClasses(row);
+
+        filterSubjects(row);
+
+        filterSections(row);
+
+        applyAssignmentType(row);
+
+    }
+
+
+    /* ========================================================
+       UPDATE ROW NUMBERS
+       ======================================================== */
+
+    function updateRowNumbers() {
+
+        const rows =
+            getRows();
+
+
+        rows.forEach(
+            function (row, index) {
+
+                row.dataset.rowIndex =
+                    index;
+
+
+                const badge =
+                    row.querySelector(
+                        ".assignment-number-badge"
+                    );
+
+                if (badge) {
+
+                    badge.textContent =
+                        index + 1;
+
+                }
+
+
+                const title =
+                    row.querySelector(
+                        ".assignment-number-text"
+                    );
+
+                if (title) {
+
+                    const small =
+                        title.querySelector(
+                            "small"
+                        );
+
+                    title.childNodes[0].nodeValue =
+                        "Assignment " +
+                        (index + 1) +
+                        " ";
+
+                }
+
+
+                const removeButton =
+                    row.querySelector(
+                        ".remove-assignment"
+                    );
+
+                if (removeButton) {
+
+                    removeButton.style.display =
+                        rows.length > 1
+                            ? "inline-flex"
+                            : "none";
+
+                }
+
+            }
+        );
+
+
+        assignmentCount.textContent =
+            rows.length;
+
+        summaryAssignmentCount.textContent =
+            rows.length;
+
+    }
+
+
+    /* ========================================================
+       SET SUMMARY VALUE
+       ======================================================== */
+
+    function setSummaryValue(
+        element,
+        value
+    ) {
+
+        if (!element) {
+            return;
+        }
+
+
+        if (value) {
+
+            element.textContent =
+                value;
+
+            element.classList.remove(
+                "empty"
+            );
+
+        } else {
+
+            element.textContent =
+                "Not selected";
+
+            element.classList.add(
+                "empty"
+            );
+
+        }
+
+    }
+
+
+    /* ========================================================
+       SELECTED TEXT
+       ======================================================== */
+
+    function getSelectedText(select) {
+
+        if (
+            !select ||
+            !select.value
+        ) {
+            return "";
+        }
+
+
+        const option =
+            select.options[
+                select.selectedIndex
+            ];
+
+
+        return option
+            ? option.textContent.trim()
+            : "";
+
+    }
+
+
+    /* ========================================================
+       UPDATE SUMMARY
+       ======================================================== */
+
+    function updateSummary() {
+
+        const institutionOption =
+            institutionSelect.options[
+                institutionSelect.selectedIndex
+            ];
+
+        const branchOption =
+            branchSelect.options[
+                branchSelect.selectedIndex
+            ];
+
+        const yearOption =
+            academicYearSelect.options[
+                academicYearSelect.selectedIndex
+            ];
+
+
+        setSummaryValue(
+            summaryInstitution,
+            institutionOption &&
+            institutionOption.value
+                ? institutionOption.textContent.trim()
+                : ""
+        );
+
+
+        setSummaryValue(
+            summaryBranch,
+            branchOption &&
+            branchOption.value
+                ? branchOption.textContent.trim()
+                : ""
+        );
+
+
+        setSummaryValue(
+            summaryAcademicYear,
+            yearOption &&
+            yearOption.value
+                ? yearOption.textContent.trim()
+                : ""
+        );
+
+
+        assignmentSummaryList.innerHTML =
+            "";
+
+
+        const rows =
+            getRows();
+
+
+        rows.forEach(
+            function (row, index) {
+
+                const fields =
+                    getRowFields(row);
+
+                const type =
+                    fields.type.value;
+
+
+                let text =
+                    "Assignment " +
+                    (index + 1);
+
+
+                if (type) {
+
+                    const rule =
+                        assignmentRules[type];
+
+                    text =
+                        rule.label;
+
+
+                    const values = [];
+
+
+                    if (
+                        fields.program.value &&
+                        rule.fields.includes(
+                            "program"
+                        )
+                    ) {
+
+                        values.push(
+                            getSelectedText(
+                                fields.program
+                            )
+                        );
+
+                    }
+
+
+                    if (
+                        fields.class.value &&
+                        rule.fields.includes(
+                            "class"
+                        )
+                    ) {
+
+                        values.push(
+                            getSelectedText(
+                                fields.class
+                            )
+                        );
+
+                    }
+
+
+                    if (
+                        fields.subject.value &&
+                        rule.fields.includes(
+                            "subject"
+                        )
+                    ) {
+
+                        values.push(
+                            getSelectedText(
+                                fields.subject
+                            )
+                        );
+
+                    }
+
+
+                    if (
+                        fields.section.value &&
+                        rule.fields.includes(
+                            "section"
+                        )
+                    ) {
+
+                        values.push(
+                            getSelectedText(
+                                fields.section
+                            )
+                        );
+
+                    }
+
+
+                    if (values.length) {
+
+                        text +=
+                            " — " +
+                            values.join(
+                                " / "
+                            );
+
+                    }
+
+                }
+
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+                item.className =
+                    "assignment-summary-item";
+
+
+                const dot =
+                    document.createElement(
+                        "span"
+                    );
+
+                dot.className =
+                    "assignment-summary-dot";
+
+
+                const label =
+                    document.createElement(
+                        "span"
+                    );
+
+                label.textContent =
+                    text;
+
+
+                item.appendChild(dot);
+
+                item.appendChild(label);
+
+                assignmentSummaryList.appendChild(
+                    item
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       ADD MORE ASSIGNMENT
+       ======================================================== */
+
+    addMoreButton.addEventListener(
+        "click",
+        function () {
+
+            const rows =
+                getRows();
+
+            const sourceRow =
+                rows[0];
+
+
+            const newRow =
+                sourceRow.cloneNode(true);
+
+
+            /* ------------------------------------------------
+               CLEAR VALUES
+               ------------------------------------------------ */
+
+            newRow.querySelectorAll(
+                "select"
+            ).forEach(
+                function (select) {
+
+                    select.value = "";
+
+                }
+            );
+
+
+            /* ------------------------------------------------
+               CLEAR ERROR STATES
+               ------------------------------------------------ */
+
+            newRow.querySelectorAll(
+                ".field-error"
+            ).forEach(
+                function (element) {
+
+                    element.classList.remove(
+                        "field-error"
+                    );
+
+                }
+            );
+
+
+            /* ------------------------------------------------
+               REMOVE FIRST ROW CLASS
+               ------------------------------------------------ */
+
+            newRow.classList.remove(
+                "first-row"
+            );
+
+
+            /* ------------------------------------------------
+               APPEND
+               ------------------------------------------------ */
+
+            assignmentList.appendChild(
+                newRow
+            );
+
+
+            /* ------------------------------------------------
+               REFRESH
+               ------------------------------------------------ */
+
+            refreshRow(newRow);
+
+            updateRowNumbers();
+
+            updateSummary();
+
+
+            /* ------------------------------------------------
+               SCROLL
+               ------------------------------------------------ */
+
+            setTimeout(
+                function () {
+
+                    newRow.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+
+                },
+                50
+            );
+
+        }
+    );
+
+
+    /* ========================================================
+       REMOVE ASSIGNMENT
+       ======================================================== */
+
+    assignmentList.addEventListener(
+        "click",
+        function (event) {
+
+            const removeButton =
+                event.target.closest(
+                    ".remove-assignment"
+                );
+
+
+            if (!removeButton) {
+                return;
+            }
+
+
+            const rows =
+                getRows();
+
+
+            if (rows.length <= 1) {
+                return;
+            }
+
+
+            const row =
+                removeButton.closest(
+                    ".assignment-row"
+                );
+
+
+            if (row) {
+
+                row.remove();
+
+                updateRowNumbers();
+
+                updateSummary();
+
+            }
+
+        }
+    );
+
+
+    /* ========================================================
+       ASSIGNMENT LIST CHANGE
+       ======================================================== */
+
+    assignmentList.addEventListener(
+        "change",
+        function (event) {
+
+            const row =
+                event.target.closest(
+                    ".assignment-row"
+                );
+
+
+            if (!row) {
+                return;
+            }
+
+
+            const fields =
+                getRowFields(row);
+
+
+            /* ------------------------------------------------
+               TYPE
+               ------------------------------------------------ */
+
+            if (
+                event.target.classList.contains(
+                    "assignment-type-select"
                 )
-            ){
+            ) {
+
+                applyAssignmentType(row);
+
+                updateSummary();
 
                 return;
 
             }
 
 
-            const checkbox =
-                option.querySelector(
-                    ".ts-teacher-check"
-                );
+            /* ------------------------------------------------
+               PROGRAM
+               ------------------------------------------------ */
+
+            if (
+                event.target.classList.contains(
+                    "program-select"
+                )
+            ) {
+
+                fields.class.value =
+                    "";
+
+                fields.subject.value =
+                    "";
+
+                fields.section.value =
+                    "";
 
 
-            if(checkbox){
+                filterClasses(row);
 
-                checkbox.checked =
-                    true;
+                filterSubjects(row);
+
+                filterSections(row);
+
+                updateSummary();
+
+                return;
+
+            }
+
+
+            /* ------------------------------------------------
+               CLASS
+               ------------------------------------------------ */
+
+            if (
+                event.target.classList.contains(
+                    "class-select"
+                )
+            ) {
+
+                fields.section.value =
+                    "";
+
+
+                filterSections(row);
+
+                updateSummary();
+
+                return;
 
             }
 
-        });
+
+            /* ------------------------------------------------
+               OTHER
+               ------------------------------------------------ */
+
+            updateSummary();
+
+        }
+    );
 
 
-        updateTeacherUI();
-
-    }
-);
-
-
-/* ============================================================
-   CLEAR ALL
-   ============================================================ */
-
-clearAllTeachers.addEventListener(
-    "click",
-    function(){
-
-        teacherChecks.forEach(
-            checkbox => {
-
-                checkbox.checked =
-                    false;
-
-            }
-        );
-
-
-        updateTeacherUI();
-
-    }
-);
-
-
-/* ============================================================
-   ORGANIZATION EVENTS
-   ============================================================ */
-
-if(institutionSelect){
+    /* ========================================================
+       INSTITUTION CHANGE
+       ======================================================== */
 
     institutionSelect.addEventListener(
         "change",
-        function(){
+        function () {
 
             filterBranches();
 
-
-            /*
-             * Rebuild all assignment program options
-             * because institution has changed.
-             */
-
-            assignmentList
-                .querySelectorAll(
-                    ".ts-assignment-row"
-                )
-                .forEach(row=>{
-
-                    const program =
-                        row.querySelector(
-                            ".assignment-program"
-                        );
+            filterAcademicYears();
 
 
-                    if(program){
+            const branchOption =
+                branchSelect.options[
+                    branchSelect.selectedIndex
+                ];
 
-                        const current =
-                            program.value;
+
+            if (
+                branchOption &&
+                branchOption.value &&
+                branchOption.hidden
+            ) {
+
+                branchSelect.value =
+                    "";
+
+            }
 
 
-                        program.innerHTML =
-                            programOptions(
-                                current
-                            );
+            getRows().forEach(
+                function (row) {
 
-                    }
+                    const fields =
+                        getRowFields(row);
 
-                });
+
+                    fields.teacher.value =
+                        "";
+
+                    fields.program.value =
+                        "";
+
+                    fields.class.value =
+                        "";
+
+                    fields.subject.value =
+                        "";
+
+                    fields.section.value =
+                        "";
+
+
+                    refreshRow(row);
+
+                }
+            );
+
+
+            updateSummary();
 
         }
     );
 
-}
 
-
-if(branchSelect){
+    /* ========================================================
+       BRANCH CHANGE
+       ======================================================== */
 
     branchSelect.addEventListener(
         "change",
-        function(){
+        function () {
 
-            filterTeachers();
+            getRows().forEach(
+                function (row) {
 
+                    const fields =
+                        getRowFields(row);
 
-            assignmentList
-                .querySelectorAll(
-                    ".ts-assignment-row"
-                )
-                .forEach(row=>{
 
-                    const program =
-                        row.querySelector(
-                            ".assignment-program"
-                        );
+                    fields.teacher.value =
+                        "";
 
-                    const classSelect =
-                        row.querySelector(
-                            ".assignment-class"
-                        );
+                    fields.program.value =
+                        "";
 
-                    const sectionSelect =
-                        row.querySelector(
-                            ".assignment-section"
-                        );
+                    fields.class.value =
+                        "";
 
-                    const subjectSelect =
-                        row.querySelector(
-                            ".assignment-subject"
-                        );
+                    fields.subject.value =
+                        "";
 
+                    fields.section.value =
+                        "";
 
-                    const currentProgram =
-                        program?.value || "";
 
+                    refreshRow(row);
 
-                    const currentClass =
-                        classSelect?.value || "";
-
-
-                    const currentSection =
-                        sectionSelect?.value || "";
-
-
-                    const currentSubject =
-                        subjectSelect?.value || "";
-
-
-                    if(program){
-
-                        program.innerHTML =
-                            programOptions(
-                                currentProgram
-                            );
-
-                    }
-
-
-                    if(classSelect){
-
-                        classSelect.innerHTML =
-                            classOptions(
-                                currentProgram,
-                                currentClass
-                            );
-
-                    }
-
-
-                    if(sectionSelect){
-
-                        sectionSelect.innerHTML =
-                            sectionOptions(
-                                classSelect?.value || "",
-                                currentSection
-                            );
-
-                    }
-
-
-                    if(subjectSelect){
-
-                        subjectSelect.innerHTML =
-                            subjectOptions(
-                                currentProgram,
-                                currentSubject
-                            );
-
-                    }
-
-                });
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   VALIDATION
-   ============================================================ */
-
-function validateForm(){
-
-    const errors = [];
-
-
-    /* ---------------------------------------------
-       INSTITUTION
-       --------------------------------------------- */
-
-    const institutionId =
-        institutionSelect?.value || "";
-
-
-    if(!institutionId){
-
-        errors.push(
-            "Please select an institution."
-        );
-
-    }
-
-
-    /* ---------------------------------------------
-       BRANCH
-       --------------------------------------------- */
-
-    const branchId =
-        branchSelect?.value || "";
-
-
-    if(!branchId){
-
-        errors.push(
-            "Please select a branch."
-        );
-
-    }
-
-
-    /* ---------------------------------------------
-       BRANCH ADMIN SECURITY
-       --------------------------------------------- */
-
-    if(
-        currentUserRole === "branch_admin"
-    ){
-
-        if(
-            currentUserInstitutionId &&
-            String(institutionId) !==
-            String(currentUserInstitutionId)
-        ){
-
-            errors.push(
-                "The selected institution does not match your account."
-            );
-
-        }
-
-
-        if(
-            currentUserBranchId &&
-            String(branchId) !==
-            String(currentUserBranchId)
-        ){
-
-            errors.push(
-                "The selected branch does not match your account."
-            );
-
-        }
-
-    }
-
-
-    /* ---------------------------------------------
-       ACADEMIC YEAR
-       --------------------------------------------- */
-
-    const academicYear =
-        document.getElementById(
-            "academic_year_id"
-        )?.value || "";
-
-
-    if(!academicYear){
-
-        errors.push(
-            "Please select an academic year."
-        );
-
-    }
-
-
-    /* ---------------------------------------------
-       TEACHERS
-       --------------------------------------------- */
-
-    const selectedTeachers =
-        getSelectedTeachers();
-
-
-    if(!selectedTeachers.length){
-
-        errors.push(
-            "Please select at least one teacher."
-        );
-
-    }
-
-
-    /* ---------------------------------------------
-       ASSIGNMENT ROWS
-       --------------------------------------------- */
-
-    const rows =
-        Array.from(
-            assignmentList.querySelectorAll(
-                ".ts-assignment-row"
-            )
-        );
-
-
-    if(!rows.length){
-
-        errors.push(
-            "Please add at least one assignment."
-        );
-
-    }
-
-
-    /* ---------------------------------------------
-       DUPLICATES
-       --------------------------------------------- */
-
-    const duplicateKeys =
-        new Set();
-
-
-    rows.forEach(
-        (row,index)=>{
-
-            row.classList.remove(
-                "invalid"
+                }
             );
 
 
-            const program =
-                row.querySelector(
-                    ".assignment-program"
-                )?.value || "";
-
-
-            const classId =
-                row.querySelector(
-                    ".assignment-class"
-                )?.value || "";
-
-
-            const sectionId =
-                row.querySelector(
-                    ".assignment-section"
-                )?.value || "";
-
-
-            const subjectId =
-                row.querySelector(
-                    ".assignment-subject"
-                )?.value || "";
-
-
-            const mode =
-                row.querySelector(
-                    ".assignment-mode"
-                )?.value || "program";
-
-
-            const fullScope =
-                row.querySelector(
-                    ".full-scope-checkbox"
-                )?.checked || false;
-
-
-            let rowInvalid =
-                false;
-
-
-            /* PROGRAM */
-
-            if(!program){
-
-                errors.push(
-                    `Assignment ${index + 1}: Program is required.`
-                );
-
-                rowInvalid =
-                    true;
-
-            }
-
-
-            /* MODE REQUIREMENTS */
-
-            if(mode === "class" && !classId){
-
-                errors.push(
-                    `Assignment ${index + 1}: Class is required for Program + Class scope.`
-                );
-
-                rowInvalid =
-                    true;
-
-            }
-
-
-            if(mode === "section"){
-
-                if(!classId){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Class is required for Section scope.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-
-                if(!sectionId){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Section is required for Section scope.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-            }
-
-
-            if(mode === "subject" && !subjectId){
-
-                errors.push(
-                    `Assignment ${index + 1}: Subject is required for Subject scope.`
-                );
-
-                rowInvalid =
-                    true;
-
-            }
-
-
-            if(mode === "class_subject"){
-
-                if(!classId){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Class is required for Class + Subject scope.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-
-                if(!subjectId){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Subject is required for Class + Subject scope.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-            }
-
-
-            if(mode === "section_subject"){
-
-                if(!classId){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Class is required for Full Scope.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-
-                if(!sectionId){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Section is required for Full Scope.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-
-                if(!subjectId){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Subject is required for Full Scope.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-            }
-
-
-            if(fullScope){
-
-                if(
-                    !classId ||
-                    !sectionId ||
-                    !subjectId
-                ){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Full Scope requires Class, Section and Subject.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-            }
-
-
-            /* CLASS → PROGRAM */
-
-            if(classId){
-
-                const selectedClass =
-                    classesData.find(
-                        item =>
-                            String(item.id) ===
-                            String(classId)
-                    );
-
-
-                if(
-                    selectedClass &&
-                    selectedClass.program_id &&
-                    String(selectedClass.program_id) !==
-                    String(program)
-                ){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Class does not belong to the selected Program.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-            }
-
-
-            /* SECTION → CLASS */
-
-            if(sectionId){
-
-                const selectedSection =
-                    sectionsData.find(
-                        item =>
-                            String(item.id) ===
-                            String(sectionId)
-                    );
-
-
-                if(
-                    selectedSection &&
-                    selectedSection.class_id &&
-                    String(selectedSection.class_id) !==
-                    String(classId)
-                ){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Section does not belong to the selected Class.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-            }
-
-
-            /* SUBJECT → PROGRAM */
-
-            if(subjectId){
-
-                const selectedSubject =
-                    subjectsData.find(
-                        item =>
-                            String(item.id) ===
-                            String(subjectId)
-                    );
-
-
-                if(
-                    selectedSubject &&
-                    selectedSubject.program_id &&
-                    String(selectedSubject.program_id) !==
-                    String(program)
-                ){
-
-                    errors.push(
-                        `Assignment ${index + 1}: Subject does not belong to the selected Program.`
-                    );
-
-                    rowInvalid =
-                        true;
-
-                }
-
-            }
-
-
-            /* DUPLICATE */
-
-            const duplicateKey =
-                [
-                    program,
-                    classId,
-                    sectionId,
-                    subjectId
-                ].join("|");
-
-
-            if(duplicateKeys.has(duplicateKey)){
-
-                errors.push(
-                    `Assignment ${index + 1}: This assignment scope is duplicated.`
-                );
-
-                rowInvalid =
-                    true;
-
-            }else{
-
-                duplicateKeys.add(
-                    duplicateKey
-                );
-
-            }
-
-
-            if(rowInvalid){
-
-                row.classList.add(
-                    "invalid"
-                );
-
-            }
+            updateSummary();
 
         }
     );
 
 
-    /* ---------------------------------------------
-       DATES
-       --------------------------------------------- */
+    /* ========================================================
+       ACADEMIC YEAR CHANGE
+       ======================================================== */
+
+    academicYearSelect.addEventListener(
+        "change",
+        function () {
+
+            getRows().forEach(
+                function (row) {
+
+                    const fields =
+                        getRowFields(row);
+
+
+                    fields.class.value =
+                        "";
+
+                    fields.section.value =
+                        "";
+
+
+                    filterClasses(row);
+
+                    filterSections(row);
+
+                }
+            );
+
+
+            updateSummary();
+
+        }
+    );
+
+
+    /* ========================================================
+       DATE VALIDATION
+       ======================================================== */
 
     const startDate =
         document.getElementById(
             "start_date"
-        )?.value || "";
-
+        );
 
     const endDate =
         document.getElementById(
             "end_date"
-        )?.value || "";
-
-
-    if(
-        startDate &&
-        endDate &&
-        endDate < startDate
-    ){
-
-        errors.push(
-            "End Date cannot be earlier than Start Date."
         );
+
+
+    function validateDates() {
+
+        if (
+            startDate.value &&
+            endDate.value &&
+            endDate.value <
+                startDate.value
+        ) {
+
+            endDate.setCustomValidity(
+                "End Date must be greater than or equal to Start Date."
+            );
+
+        } else {
+
+            endDate.setCustomValidity("");
+
+        }
 
     }
 
 
-    return errors;
+    startDate.addEventListener(
+        "change",
+        validateDates
+    );
 
-}
-
-
-/* ============================================================
-   DISPLAY VALIDATION
-   ============================================================ */
-
-function showValidation(errors){
-
-    validationList.innerHTML =
-        "";
-
-
-    if(!errors.length){
-
-        validationBox.classList.remove(
-            "show"
-        );
-
-        return;
-
-    }
-
-
-    errors
-        .slice(0,20)
-        .forEach(error=>{
-
-            const li =
-                document.createElement("li");
-
-            li.textContent =
-                error;
-
-            validationList.appendChild(li);
-
-        });
-
-
-    validationBox.classList.add(
-        "show"
+    endDate.addEventListener(
+        "change",
+        validateDates
     );
 
 
-    validationBox.scrollIntoView({
-        behavior:"smooth",
-        block:"center"
-    });
+    /* ========================================================
+       FORM VALIDATION
+       ======================================================== */
 
-}
+    form.addEventListener(
+        "submit",
+        function (event) {
 
-
-/* ============================================================
-   SUBMIT
-   ============================================================ */
-
-form.addEventListener(
-    "submit",
-    function(event){
-
-        const errors =
-            validateForm();
+            let valid = true;
 
 
-        showValidation(errors);
+            /* ------------------------------------------------
+               DATE
+               ------------------------------------------------ */
+
+            validateDates();
 
 
-        if(errors.length){
+            /* ------------------------------------------------
+               REMOVE OLD ERRORS
+               ------------------------------------------------ */
 
-            event.preventDefault();
+            form.querySelectorAll(
+                ".field-error"
+            ).forEach(
+                function (element) {
 
-            return;
+                    element.classList.remove(
+                        "field-error"
+                    );
 
-        }
-
-
-        const teachers =
-            getSelectedTeachers().length;
-
-
-        const rows =
-            assignmentList.querySelectorAll(
-                ".ts-assignment-row"
-            ).length;
-
-
-        const confirmed =
-            window.confirm(
-
-                `Create ${rows} assignment row${rows === 1 ? "" : "s"} for ${teachers} teacher${teachers === 1 ? "" : "s"}?\n\n` +
-
-                `TeacherSubject records to create: ${rows * teachers}`
-
+                }
             );
 
 
-        if(!confirmed){
+            /* ------------------------------------------------
+               ROW VALIDATION
+               ------------------------------------------------ */
 
-            event.preventDefault();
+            getRows().forEach(
+                function (row) {
 
-            return;
+                    const fields =
+                        getRowFields(row);
 
-        }
-
-
-        saveBtn.disabled =
-            true;
-
-
-        saveBtn.innerHTML = `
-
-            <i class="fa-solid fa-spinner fa-spin"></i>
-
-            Creating...
-
-        `;
-
-    }
-);
+                    const type =
+                        fields.type.value;
 
 
-/* ============================================================
-   RESET
-   ============================================================ */
+                    if (!type) {
 
-resetFormBtn.addEventListener(
-    "click",
-    function(){
+                        valid = false;
 
-        const confirmed =
-            window.confirm(
-                "Reset the entire form and remove all assignments?"
+                        fields.type.classList.add(
+                            "field-error"
+                        );
+
+                        return;
+
+                    }
+
+
+                    const rule =
+                        assignmentRules[type];
+
+
+                    rule.required.forEach(
+                        function (fieldName) {
+
+                            const select =
+                                fields[fieldName];
+
+
+                            if (
+                                !select ||
+                                !select.value
+                            ) {
+
+                                valid = false;
+
+                                if (select) {
+
+                                    select.classList.add(
+                                        "field-error"
+                                    );
+
+                                }
+
+                            }
+
+                        }
+                    );
+
+                }
             );
 
 
-        if(!confirmed){
+            /* ------------------------------------------------
+               NATIVE VALIDATION
+               ------------------------------------------------ */
 
-            return;
+            if (!form.checkValidity()) {
 
-        }
-
-
-        form.reset();
-
-
-        assignmentList.innerHTML =
-            "";
-
-
-        assignmentIndex =
-            0;
-
-
-        teacherChecks.forEach(
-            checkbox => {
-
-                checkbox.checked =
-                    false;
+                valid = false;
 
             }
-        );
 
 
-        validationBox.classList.remove(
-            "show"
-        );
+            if (!valid) {
+
+                event.preventDefault();
+
+                const firstError =
+                    form.querySelector(
+                        ".field-error, :invalid"
+                    );
 
 
-        filterBranches();
+                if (firstError) {
 
-        updateTeacherUI();
+                    firstError.focus();
 
-        updateAssignmentCount();
+                    firstError.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
 
+                }
 
-        /*
-         * Restore first row
-         */
+                return;
 
-        createAssignmentRow();
-
-    }
-);
-
-
-/* ============================================================
-   INITIALIZE
-   ============================================================ */
-
-filterBranches();
-
-updateTeacherUI();
-
-updateAssignmentCount();
+            }
 
 
-/*
- * Always start with one assignment row.
- */
+            /* ------------------------------------------------
+               LOADING STATE
+               ------------------------------------------------ */
 
-createAssignmentRow();
+            const submitBtn =
+                document.getElementById(
+                    "submitBtn"
+                );
+
+            const submitText =
+                document.getElementById(
+                    "submitText"
+                );
+
+            const submitSpinner =
+                document.getElementById(
+                    "submitSpinner"
+                );
 
 
-/*
- * If branch admin:
- * force account's branch after initialization.
- */
+            submitBtn.disabled =
+                true;
 
-if(
-    currentUserRole === "branch_admin" &&
-    currentUserBranchId
-){
 
-    if(branchSelect){
+            submitText.style.display =
+                "none";
 
-        branchSelect.value =
-            String(currentUserBranchId);
 
-        branchSelect.disabled =
-            true;
+            submitSpinner.style.display =
+                "inline";
 
-    }
+        }
+    );
 
-    filterTeachers();
 
-}
+    /* ========================================================
+       REMOVE ERROR WHEN USER CORRECTS FIELD
+       ======================================================== */
 
+    assignmentList.addEventListener(
+        "change",
+        function (event) {
+
+            if (
+                event.target.classList.contains(
+                    "field-error"
+                ) &&
+                event.target.value
+            ) {
+
+                event.target.classList.remove(
+                    "field-error"
+                );
+
+            }
+
+        }
+    );
+
+
+    /* ========================================================
+       INITIALIZE
+       ======================================================== */
+
+    filterBranches();
+
+    filterAcademicYears();
+
+
+    getRows().forEach(
+        function (row) {
+
+            refreshRow(row);
+
+        }
+    );
+
+
+    updateRowNumbers();
+
+    updateSummary();
 
 });
 

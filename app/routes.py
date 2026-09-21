@@ -13656,72 +13656,166 @@ def delete_term(term_id):
 # ALL PROGRAMS
 # ============================================================
 
-@bp.route("/all-programs")
+@bp.route(
+    "/all-programs",
+    methods=["GET"]
+)
 @login_required
 def all_programs():
 
-  
     # ========================================================
-    # ACCESS CONTROL
-    # SUPERADMIN + INSTITUTION ADMIN
+    # CURRENT USER ROLE
     # ========================================================
 
-    is_superadmin = current_user.is_superadmin()
+    current_role = (
+        getattr(
+            current_user,
+            "role",
+            None
+        ) or ""
+    ).strip().lower()
 
-    is_institution_admin = (
-        hasattr(current_user, "is_institution_admin")
-        and current_user.is_institution_admin()
-    )
+    # ========================================================
+    # ALLOWED ROLES
+    # ========================================================
 
-    if not is_superadmin and not is_institution_admin:
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if current_role not in allowed_roles:
 
         flash(
-            "You do not have permission to delete programs.",
+            "You do not have permission to view programs.",
             "danger"
         )
 
         return redirect(
-            url_for("main.all_programs")
+            url_for("main.dashboard")
         )
 
+    # ========================================================
+    # ROLE FLAGS
+    # ========================================================
 
-    # --------------------------------------------------------
-    # QUERY PARAMETERS
-    # --------------------------------------------------------
+    is_superadmin = (
+        current_role == "superadmin"
+    )
 
-    search = request.args.get(
-        "search",
-        "",
-        type=str
-    ).strip()
+    is_school_admin = (
+        current_role == "school_admin"
+    )
 
-    selected_status = request.args.get(
-        "status",
-        "",
-        type=str
-    ).strip().lower()
+    is_branch_admin = (
+        current_role == "branch_admin"
+    )
 
-    selected_program_type = request.args.get(
-        "program_type",
-        "",
-        type=str
-    ).strip().lower()
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
 
-    selected_institution_id = request.args.get(
+    current_institution_id = getattr(
+        current_user,
         "institution_id",
-        "",
-        type=str
-    ).strip()
+        None
+    )
 
-    selected_branch_id = request.args.get(
+    current_branch_id = getattr(
+        current_user,
         "branch_id",
-        "",
-        type=str
+        None
+    )
+
+    # ========================================================
+    # REQUIRED SCOPE VALIDATION
+    # ========================================================
+
+    if is_school_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+    if is_branch_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+        if current_branch_id is None:
+
+            flash(
+                "Your account is not assigned to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+    # ========================================================
+    # QUERY PARAMETERS
+    # ========================================================
+
+    search = (
+        request.args.get(
+            "search",
+            "",
+            type=str
+        ) or ""
     ).strip()
 
-    # --------------------------------------------------------
+    selected_status = (
+        request.args.get(
+            "status",
+            "",
+            type=str
+        ) or ""
+    ).strip().lower()
+
+    selected_program_type = (
+        request.args.get(
+            "program_type",
+            "",
+            type=str
+        ) or ""
+    ).strip().lower()
+
+    selected_institution_id = (
+        request.args.get(
+            "institution_id",
+            "",
+            type=str
+        ) or ""
+    ).strip()
+
+    selected_branch_id = (
+        request.args.get(
+            "branch_id",
+            "",
+            type=str
+        ) or ""
+    ).strip()
+
+    # ========================================================
     # PAGINATION
-    # --------------------------------------------------------
+    # ========================================================
 
     allowed_per_page = {
         10,
@@ -13748,66 +13842,61 @@ def all_programs():
     if page < 1:
         page = 1
 
-    # --------------------------------------------------------
+    # ========================================================
     # BASE QUERY
-    # --------------------------------------------------------
+    # ========================================================
 
     query = Program.query
 
-    # --------------------------------------------------------
-    # SEARCH
-    # --------------------------------------------------------
+    # ========================================================
+    # SECURITY SCOPE
+    #
+    # SUPERADMIN
+    #     All programs.
+    #
+    # SCHOOL ADMIN
+    #     Programs belonging to own institution.
+    #
+    # BRANCH ADMIN
+    #     Programs belonging to:
+    #
+    #       1. Own branch
+    #       OR
+    #       2. Institution-wide programs
+    #
+    #     inside own institution.
+    # ========================================================
 
-    if search:
+    if is_superadmin:
 
-        search_pattern = f"%{search}%"
+        # ----------------------------------------------------
+        # No restriction
+        # ----------------------------------------------------
+
+        pass
+
+    elif is_school_admin:
 
         query = query.filter(
-            or_(
-                Program.name.ilike(search_pattern),
-                Program.code.ilike(search_pattern),
-                Program.short_name.ilike(search_pattern),
-                Program.description.ilike(search_pattern),
-                Program.program_type.ilike(search_pattern)
+            Program.institution_id
+            == current_institution_id
+        )
+
+    elif is_branch_admin:
+
+        query = query.filter(
+            Program.institution_id
+            == current_institution_id,
+            db.or_(
+                Program.branch_id
+                == current_branch_id,
+                Program.branch_id.is_(None)
             )
         )
 
-    # --------------------------------------------------------
-    # STATUS FILTER
-    # --------------------------------------------------------
-
-    allowed_statuses = {
-        "active",
-        "inactive"
-    }
-
-    if selected_status:
-
-        if selected_status in allowed_statuses:
-
-            query = query.filter(
-                Program.status == selected_status
-            )
-
-        else:
-
-            selected_status = ""
-
-    # --------------------------------------------------------
-    # PROGRAM TYPE FILTER
-    # --------------------------------------------------------
-
-    if selected_program_type:
-
-        query = query.filter(
-            Program.program_type.ilike(
-                selected_program_type
-            )
-        )
-
-    # --------------------------------------------------------
+    # ========================================================
     # INSTITUTION FILTER
-    # --------------------------------------------------------
+    # ========================================================
 
     if selected_institution_id:
 
@@ -13817,9 +13906,65 @@ def all_programs():
                 selected_institution_id
             )
 
-            query = query.filter(
-                Program.institution_id == institution_id
-            )
+            if institution_id <= 0:
+                raise ValueError
+
+            # ------------------------------------------------
+            # SUPERADMIN
+            # ------------------------------------------------
+
+            if is_superadmin:
+
+                query = query.filter(
+                    Program.institution_id
+                    == institution_id
+                )
+
+            # ------------------------------------------------
+            # SCHOOL ADMIN
+            # ------------------------------------------------
+
+            elif is_school_admin:
+
+                if (
+                    institution_id
+                    != current_institution_id
+                ):
+
+                    # Impossible result
+                    query = query.filter(
+                        Program.id == -1
+                    )
+
+                else:
+
+                    query = query.filter(
+                        Program.institution_id
+                        == current_institution_id
+                    )
+
+            # ------------------------------------------------
+            # BRANCH ADMIN
+            # ------------------------------------------------
+
+            elif is_branch_admin:
+
+                if (
+                    institution_id
+                    != current_institution_id
+                ):
+
+                    # Cannot escape own institution
+                    query = query.filter(
+                        Program.id == -1
+                    )
+
+                else:
+
+                    query = query.filter(
+                        Program.institution_id
+                        == current_institution_id
+                    )
 
         except (
             ValueError,
@@ -13828,9 +13973,9 @@ def all_programs():
 
             selected_institution_id = ""
 
-    # --------------------------------------------------------
+    # ========================================================
     # BRANCH FILTER
-    # --------------------------------------------------------
+    # ========================================================
 
     if selected_branch_id:
 
@@ -13840,9 +13985,88 @@ def all_programs():
                 selected_branch_id
             )
 
-            query = query.filter(
-                Program.branch_id == branch_id
-            )
+            if branch_id <= 0:
+                raise ValueError
+
+            # ------------------------------------------------
+            # SUPERADMIN
+            # ------------------------------------------------
+
+            if is_superadmin:
+
+                selected_branch = (
+                    Branch.query.filter(
+                        Branch.id
+                        == branch_id
+                    ).first()
+                )
+
+                if selected_branch is None:
+
+                    query = query.filter(
+                        Program.id == -1
+                    )
+
+                else:
+
+                    query = query.filter(
+                        Program.branch_id
+                        == branch_id
+                    )
+
+            # ------------------------------------------------
+            # SCHOOL ADMIN
+            # ------------------------------------------------
+
+            elif is_school_admin:
+
+                selected_branch = (
+                    Branch.query.filter(
+                        Branch.id
+                        == branch_id,
+                        Branch.institution_id
+                        == current_institution_id
+                    ).first()
+                )
+
+                if selected_branch is None:
+
+                    query = query.filter(
+                        Program.id == -1
+                    )
+
+                else:
+
+                    query = query.filter(
+                        Program.branch_id
+                        == branch_id
+                    )
+
+            # ------------------------------------------------
+            # BRANCH ADMIN
+            # ------------------------------------------------
+
+            elif is_branch_admin:
+
+                # --------------------------------------------
+                # Branch Admin can ONLY select own branch.
+                # --------------------------------------------
+
+                if (
+                    branch_id
+                    != current_branch_id
+                ):
+
+                    query = query.filter(
+                        Program.id == -1
+                    )
+
+                else:
+
+                    query = query.filter(
+                        Program.branch_id
+                        == current_branch_id
+                    )
 
         except (
             ValueError,
@@ -13851,9 +14075,75 @@ def all_programs():
 
             selected_branch_id = ""
 
-    # --------------------------------------------------------
+    # ========================================================
+    # SEARCH
+    # ========================================================
+
+    if search:
+
+        search_pattern = (
+            f"%{search}%"
+        )
+
+        query = query.filter(
+            db.or_(
+                Program.name.ilike(
+                    search_pattern
+                ),
+                Program.code.ilike(
+                    search_pattern
+                ),
+                Program.short_name.ilike(
+                    search_pattern
+                ),
+                Program.description.ilike(
+                    search_pattern
+                ),
+                Program.program_type.ilike(
+                    search_pattern
+                )
+            )
+        )
+
+    # ========================================================
+    # STATUS FILTER
+    # ========================================================
+
+    allowed_statuses = {
+        "active",
+        "inactive",
+        "closed"
+    }
+
+    if selected_status:
+
+        if selected_status in allowed_statuses:
+
+            query = query.filter(
+                Program.status
+                == selected_status
+            )
+
+        else:
+
+            selected_status = ""
+
+    # ========================================================
+    # PROGRAM TYPE FILTER
+    # ========================================================
+
+    if selected_program_type:
+
+        query = query.filter(
+            db.func.lower(
+                Program.program_type
+            )
+            == selected_program_type
+        )
+
+    # ========================================================
     # ORDERING
-    # --------------------------------------------------------
+    # ========================================================
 
     query = query.order_by(
         Program.status.asc(),
@@ -13863,9 +14153,9 @@ def all_programs():
         Program.id.desc()
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # PAGINATION
-    # --------------------------------------------------------
+    # ========================================================
 
     pagination = query.paginate(
         page=page,
@@ -13875,35 +14165,93 @@ def all_programs():
 
     programs = pagination.items
 
-    # --------------------------------------------------------
+    # ========================================================
+    # FILTER DATA
+    #
+    # These dropdowns are also security scoped.
+    # ========================================================
+
+    # ========================================================
     # INSTITUTIONS
-    # --------------------------------------------------------
+    # ========================================================
 
-    institutions = (
-        Institution.query
-        .order_by(
-            Institution.name.asc()
+    if is_superadmin:
+
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
         )
-        .all()
-    )
 
-    # --------------------------------------------------------
+    else:
+
+        institutions = (
+            Institution.query.filter(
+                Institution.id
+                == current_institution_id
+            )
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
     # BRANCHES
-    # --------------------------------------------------------
+    # ========================================================
 
-    branches = (
-        Branch.query
-        .order_by(
-            Branch.name.asc()
+    if is_superadmin:
+
+        branches = (
+            Branch.query
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
         )
-        .all()
-    )
 
-    # --------------------------------------------------------
+    elif is_school_admin:
+
+        branches = (
+            Branch.query.filter(
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN:
+        # ONLY CURRENT BRANCH
+        # ----------------------------------------------------
+
+        branches = (
+            Branch.query.filter(
+                Branch.id
+                == current_branch_id,
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
     # PROGRAM TYPES
-    # --------------------------------------------------------
+    #
+    # Build types from allowed programs only.
+    # ========================================================
 
-    program_type_rows = (
+    program_type_query = (
         db.session.query(
             Program.program_type
         )
@@ -13913,6 +14261,37 @@ def all_programs():
         .filter(
             Program.program_type != ""
         )
+    )
+
+    # --------------------------------------------------------
+    # APPLY SAME SECURITY SCOPE
+    # --------------------------------------------------------
+
+    if is_school_admin:
+
+        program_type_query = (
+            program_type_query.filter(
+                Program.institution_id
+                == current_institution_id
+            )
+        )
+
+    elif is_branch_admin:
+
+        program_type_query = (
+            program_type_query.filter(
+                Program.institution_id
+                == current_institution_id,
+                db.or_(
+                    Program.branch_id
+                    == current_branch_id,
+                    Program.branch_id.is_(None)
+                )
+            )
+        )
+
+    program_type_rows = (
+        program_type_query
         .distinct()
         .order_by(
             Program.program_type.asc()
@@ -13926,57 +14305,157 @@ def all_programs():
         if row[0]
     ]
 
-    # --------------------------------------------------------
-    # STATISTICS
-    # --------------------------------------------------------
+    # ========================================================
+    # STATISTICS BASE QUERY
+    #
+    # IMPORTANT:
+    # Statistics must use the same security scope.
+    # ========================================================
+
+    statistics_query = Program.query
+
+    # ========================================================
+    # STATISTICS SECURITY SCOPE
+    # ========================================================
+
+    if is_superadmin:
+
+        pass
+
+    elif is_school_admin:
+
+        statistics_query = (
+            statistics_query.filter(
+                Program.institution_id
+                == current_institution_id
+            )
+        )
+
+    elif is_branch_admin:
+
+        statistics_query = (
+            statistics_query.filter(
+                Program.institution_id
+                == current_institution_id,
+                db.or_(
+                    Program.branch_id
+                    == current_branch_id,
+                    Program.branch_id.is_(None)
+                )
+            )
+        )
+
+    # ========================================================
+    # TOTAL PROGRAMS
+    # ========================================================
 
     total_programs = (
-        Program.query
-        .count()
+        statistics_query
+        .with_entities(
+            db.func.count(
+                Program.id
+            )
+        )
+        .scalar()
+        or 0
     )
+
+    # ========================================================
+    # ACTIVE PROGRAMS
+    # ========================================================
 
     active_programs = (
-        Program.query
+        statistics_query
         .filter(
-            Program.status == "active"
+            Program.status
+            == "active"
         )
-        .count()
+        .with_entities(
+            db.func.count(
+                Program.id
+            )
+        )
+        .scalar()
+        or 0
     )
+
+    # ========================================================
+    # INACTIVE PROGRAMS
+    # ========================================================
 
     inactive_programs = (
-        Program.query
+        statistics_query
         .filter(
-            Program.status == "inactive"
+            Program.status
+            == "inactive"
         )
-        .count()
+        .with_entities(
+            db.func.count(
+                Program.id
+            )
+        )
+        .scalar()
+        or 0
     )
 
+    # ========================================================
+    # INSTITUTION-WIDE PROGRAMS
+    #
+    # branch_id IS NULL
+    # ========================================================
+
     institution_wide_programs = (
-        Program.query
+        statistics_query
         .filter(
             Program.branch_id.is_(None)
         )
-        .count()
+        .with_entities(
+            db.func.count(
+                Program.id
+            )
+        )
+        .scalar()
+        or 0
     )
 
+    # ========================================================
+    # BRANCH PROGRAMS
+    #
+    # branch_id IS NOT NULL
+    # ========================================================
+
     branch_programs = (
-        Program.query
+        statistics_query
         .filter(
             Program.branch_id.isnot(None)
         )
-        .count()
+        .with_entities(
+            db.func.count(
+                Program.id
+            )
+        )
+        .scalar()
+        or 0
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # RENDER
-    # --------------------------------------------------------
+    # ========================================================
 
     return render_template(
         "backend/pages/programs/all_programs.html",
 
+        # ----------------------------------------------------
+        # PROGRAM DATA
+        # ----------------------------------------------------
+
         programs=programs,
 
         pagination=pagination,
+
+        # ----------------------------------------------------
+        # FILTER DATA
+        # ----------------------------------------------------
 
         institutions=institutions,
 
@@ -13984,17 +14463,31 @@ def all_programs():
 
         program_types=program_types,
 
+        # ----------------------------------------------------
+        # FILTER VALUES
+        # ----------------------------------------------------
+
         search=search,
 
         selected_status=selected_status,
 
-        selected_program_type=selected_program_type,
+        selected_program_type=(
+            selected_program_type
+        ),
 
-        selected_institution_id=selected_institution_id,
+        selected_institution_id=(
+            selected_institution_id
+        ),
 
-        selected_branch_id=selected_branch_id,
+        selected_branch_id=(
+            selected_branch_id
+        ),
 
         per_page=per_page,
+
+        # ----------------------------------------------------
+        # STATISTICS
+        # ----------------------------------------------------
 
         total_programs=total_programs,
 
@@ -14002,12 +14495,44 @@ def all_programs():
 
         inactive_programs=inactive_programs,
 
-        institution_wide_programs=institution_wide_programs,
+        institution_wide_programs=(
+            institution_wide_programs
+        ),
 
-        branch_programs=branch_programs,
+        branch_programs=(
+            branch_programs
+        ),
+
+        # ----------------------------------------------------
+        # ROLE FLAGS
+        # ----------------------------------------------------
+
+        is_superadmin=is_superadmin,
+
+        is_school_admin=is_school_admin,
+
+        is_branch_admin=is_branch_admin,
+
+        # ----------------------------------------------------
+        # CURRENT SCOPE
+        # ----------------------------------------------------
+
+        current_user_institution_id=(
+            current_institution_id
+        ),
+
+        current_user_branch_id=(
+            current_branch_id
+        ),
+
+        # ----------------------------------------------------
+        # CURRENT USER
+        # ----------------------------------------------------
 
         user=current_user
     )
+
+
 
 
 # ============================================================
@@ -14021,23 +14546,32 @@ def all_programs():
 @login_required
 def add_program():
 
-   
     # ========================================================
-    # ACCESS CONTROL
-    # SUPERADMIN + INSTITUTION ADMIN
+    # CURRENT USER ROLE
     # ========================================================
 
-    is_superadmin = current_user.is_superadmin()
+    current_role = (
+        getattr(
+            current_user,
+            "role",
+            None
+        ) or ""
+    ).strip().lower()
 
-    is_institution_admin = (
-        hasattr(current_user, "is_institution_admin")
-        and current_user.is_institution_admin()
-    )
+    # ========================================================
+    # ALLOWED ROLES
+    # ========================================================
 
-    if not is_superadmin and not is_institution_admin:
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if current_role not in allowed_roles:
 
         flash(
-            "You do not have permission to delete programs.",
+            "You do not have permission to create programs.",
             "danger"
         )
 
@@ -14045,145 +14579,490 @@ def add_program():
             url_for("main.all_programs")
         )
 
+    # ========================================================
+    # ROLE FLAGS
+    # ========================================================
 
-    # --------------------------------------------------------
-    # LOAD INSTITUTIONS
-    # --------------------------------------------------------
-
-    institutions = (
-        Institution.query
-        .order_by(
-            Institution.name.asc()
-        )
-        .all()
+    is_superadmin = (
+        current_role == "superadmin"
     )
 
-    # --------------------------------------------------------
-    # LOAD BRANCHES
-    # --------------------------------------------------------
-
-    branches = (
-        Branch.query
-        .order_by(
-            Branch.name.asc()
-        )
-        .all()
+    is_school_admin = (
+        current_role == "school_admin"
     )
 
-    # --------------------------------------------------------
+    is_branch_admin = (
+        current_role == "branch_admin"
+    )
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    current_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    current_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # REQUIRED SCOPE VALIDATION
+    # ========================================================
+
+    if is_school_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+    if is_branch_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+        if current_branch_id is None:
+
+            flash(
+                "Your account is not assigned to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+    # ========================================================
+    # FORM DATA HELPER
+    #
+    # Keeps the template context consistent whenever validation
+    # fails.
+    # ========================================================
+
+    def render_form():
+
+        # ----------------------------------------------------
+        # INSTITUTIONS
+        # ----------------------------------------------------
+
+        if is_superadmin:
+
+            institutions = (
+                Institution.query
+                .order_by(
+                    Institution.name.asc()
+                )
+                .all()
+            )
+
+        else:
+
+            institutions = (
+                Institution.query.filter(
+                    Institution.id
+                    == current_institution_id
+                )
+                .order_by(
+                    Institution.name.asc()
+                )
+                .all()
+            )
+
+        # ----------------------------------------------------
+        # BRANCHES
+        # ----------------------------------------------------
+
+        if is_superadmin:
+
+            branches = (
+                Branch.query
+                .order_by(
+                    Branch.name.asc()
+                )
+                .all()
+            )
+
+        elif is_school_admin:
+
+            branches = (
+                Branch.query.filter(
+                    Branch.institution_id
+                    == current_institution_id
+                )
+                .order_by(
+                    Branch.name.asc()
+                )
+                .all()
+            )
+
+        else:
+
+            # ------------------------------------------------
+            # BRANCH ADMIN:
+            # ONLY CURRENT BRANCH
+            # ------------------------------------------------
+
+            branches = (
+                Branch.query.filter(
+                    Branch.id
+                    == current_branch_id,
+                    Branch.institution_id
+                    == current_institution_id
+                )
+                .order_by(
+                    Branch.name.asc()
+                )
+                .all()
+            )
+
+        return render_template(
+            "backend/pages/programs/add_program.html",
+
+            institutions=institutions,
+
+            branches=branches,
+
+            user=current_user,
+
+            # ------------------------------------------------
+            # ROLE FLAGS
+            # ------------------------------------------------
+
+            is_superadmin=is_superadmin,
+
+            is_school_admin=is_school_admin,
+
+            is_branch_admin=is_branch_admin,
+
+            # ------------------------------------------------
+            # CURRENT SCOPE
+            # ------------------------------------------------
+
+            current_user_institution_id=(
+                current_institution_id
+            ),
+
+            current_user_branch_id=(
+                current_branch_id
+            ),
+
+            # ------------------------------------------------
+            # FORM VALUES
+            # ------------------------------------------------
+
+            form_institution_id=(
+                request.form.get(
+                    "institution_id",
+                    ""
+                ).strip()
+                if request.method == "POST"
+                else (
+                    str(current_institution_id)
+                    if not is_superadmin
+                    and current_institution_id is not None
+                    else ""
+                )
+            ),
+
+            form_branch_id=(
+                request.form.get(
+                    "branch_id",
+                    ""
+                ).strip()
+                if request.method == "POST"
+                else (
+                    str(current_branch_id)
+                    if is_branch_admin
+                    and current_branch_id is not None
+                    else ""
+                )
+            ),
+
+            form_name=(
+                request.form.get(
+                    "name",
+                    ""
+                ).strip()
+                if request.method == "POST"
+                else ""
+            ),
+
+            form_code=(
+                request.form.get(
+                    "code",
+                    ""
+                ).strip().upper()
+                if request.method == "POST"
+                else ""
+            ),
+
+            form_short_name=(
+                request.form.get(
+                    "short_name",
+                    ""
+                ).strip()
+                if request.method == "POST"
+                else ""
+            ),
+
+            form_description=(
+                request.form.get(
+                    "description",
+                    ""
+                ).strip()
+                if request.method == "POST"
+                else ""
+            ),
+
+            form_program_type=(
+                request.form.get(
+                    "program_type",
+                    ""
+                ).strip().lower()
+                if request.method == "POST"
+                else ""
+            ),
+
+            form_duration_months=(
+                request.form.get(
+                    "duration_months",
+                    ""
+                ).strip()
+                if request.method == "POST"
+                else ""
+            ),
+
+            form_price=(
+                request.form.get(
+                    "price",
+                    "0"
+                ).strip()
+                if request.method == "POST"
+                else "0"
+            ),
+
+            form_status=(
+                request.form.get(
+                    "status",
+                    "active"
+                ).strip().lower()
+                if request.method == "POST"
+                else "active"
+            )
+        )
+
+    # ========================================================
     # POST
-    # --------------------------------------------------------
+    # ========================================================
 
     if request.method == "POST":
 
-        # ----------------------------------------------------
+        # ====================================================
         # FORM VALUES
-        # ----------------------------------------------------
+        # ====================================================
 
-        institution_id_raw = request.form.get(
-            "institution_id",
-            ""
+        institution_id_raw = (
+            request.form.get(
+                "institution_id",
+                ""
+            ) or ""
         ).strip()
 
-        branch_id_raw = request.form.get(
-            "branch_id",
-            ""
+        branch_id_raw = (
+            request.form.get(
+                "branch_id",
+                ""
+            ) or ""
         ).strip()
 
-        name = request.form.get(
-            "name",
-            ""
+        name = (
+            request.form.get(
+                "name",
+                ""
+            ) or ""
         ).strip()
 
-        code = request.form.get(
-            "code",
-            ""
+        code = (
+            request.form.get(
+                "code",
+                ""
+            ) or ""
         ).strip().upper()
 
-        short_name = request.form.get(
-            "short_name",
-            ""
+        short_name = (
+            request.form.get(
+                "short_name",
+                ""
+            ) or ""
         ).strip()
 
-        description = request.form.get(
-            "description",
-            ""
+        description = (
+            request.form.get(
+                "description",
+                ""
+            ) or ""
         ).strip()
 
-        program_type = request.form.get(
-            "program_type",
-            ""
+        program_type = (
+            request.form.get(
+                "program_type",
+                ""
+            ) or ""
         ).strip().lower()
 
-        duration_months_raw = request.form.get(
-            "duration_months",
-            ""
+        duration_months_raw = (
+            request.form.get(
+                "duration_months",
+                ""
+            ) or ""
         ).strip()
 
-        price_raw = request.form.get(
-            "price",
-            "0"
+        price_raw = (
+            request.form.get(
+                "price",
+                "0"
+            ) or "0"
         ).strip()
 
-        status = request.form.get(
-            "status",
-            "active"
+        status = (
+            request.form.get(
+                "status",
+                "active"
+            ) or "active"
         ).strip().lower()
 
-        # ----------------------------------------------------
-        # VALIDATE INSTITUTION ID
-        # ----------------------------------------------------
+        # ====================================================
+        # INSTITUTION
+        # ====================================================
 
-        try:
+        institution_id = None
 
-            institution_id = int(
-                institution_id_raw
+        if is_superadmin:
+
+            if not institution_id_raw:
+
+                flash(
+                    "Please select an institution.",
+                    "danger"
+                )
+
+                return render_form()
+
+            try:
+
+                institution_id = int(
+                    institution_id_raw
+                )
+
+                if institution_id <= 0:
+                    raise ValueError
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                flash(
+                    "Please select a valid institution.",
+                    "danger"
+                )
+
+                return render_form()
+
+        else:
+
+            # ------------------------------------------------
+            # SCHOOL ADMIN + BRANCH ADMIN
+            #
+            # NEVER TRUST FORM VALUE.
+            # ------------------------------------------------
+
+            institution_id = (
+                current_institution_id
             )
 
-        except (
-            ValueError,
-            TypeError
+        # ====================================================
+        # INSTITUTION EXISTENCE
+        # ====================================================
+
+        institution = (
+            Institution.query.filter(
+                Institution.id
+                == institution_id
+            ).first()
+        )
+
+        if institution is None:
+
+            flash(
+                "Selected institution was not found.",
+                "danger"
+            )
+
+            return render_form()
+
+        # ====================================================
+        # SCHOOL ADMIN INSTITUTION SECURITY
+        # ====================================================
+
+        if (
+            not is_superadmin
+            and institution_id
+            != current_institution_id
         ):
 
             flash(
-                "Please select a valid institution.",
+                "You cannot create a program "
+                "outside your institution.",
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/add_program.html",
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
+            return render_form()
 
-        if institution_id <= 0:
-
-            flash(
-                "Please select a valid institution.",
-                "danger"
-            )
-
-            return render_template(
-                "backend/pages/programs/add_program.html",
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
-
-        # ----------------------------------------------------
-        # VALIDATE BRANCH
-        # ----------------------------------------------------
+        # ====================================================
+        # BRANCH
+        # ====================================================
 
         branch_id = None
 
-        if branch_id_raw:
+        if is_branch_admin:
+
+            # ------------------------------------------------
+            # Branch Admin MUST have a branch.
+            # ------------------------------------------------
+
+            branch_id = current_branch_id
+
+        elif branch_id_raw:
 
             try:
 
                 branch_id = int(
                     branch_id_raw
                 )
+
+                if branch_id <= 0:
+                    raise ValueError
 
             except (
                 ValueError,
@@ -14195,30 +15074,88 @@ def add_program():
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/add_program.html",
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
+                return render_form()
 
-            if branch_id <= 0:
+        # ====================================================
+        # BRANCH EXISTENCE / RELATIONSHIP
+        # ====================================================
+
+        branch = None
+
+        if branch_id is not None:
+
+            branch = (
+                Branch.query.filter(
+                    Branch.id
+                    == branch_id
+                ).first()
+            )
+
+            if branch is None:
 
                 flash(
-                    "Please select a valid branch.",
+                    "Selected branch was not found.",
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/add_program.html",
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
+                return render_form()
+
+            # ------------------------------------------------
+            # Branch must belong to selected institution.
+            # ------------------------------------------------
+
+            if (
+                branch.institution_id
+                != institution_id
+            ):
+
+                flash(
+                    "The selected branch does not "
+                    "belong to the selected institution.",
+                    "danger"
                 )
 
-        # ----------------------------------------------------
-        # REQUIRED FIELDS
-        # ----------------------------------------------------
+                return render_form()
+
+            # ------------------------------------------------
+            # Branch Admin MUST use current branch.
+            # ------------------------------------------------
+
+            if (
+                is_branch_admin
+                and branch_id
+                != current_branch_id
+            ):
+
+                flash(
+                    "You cannot create a program "
+                    "for another branch.",
+                    "danger"
+                )
+
+                return render_form()
+
+        # ====================================================
+        # BRANCH ADMIN MUST BE BRANCH-SPECIFIC
+        #
+        # No institution-wide program for branch_admin.
+        # ====================================================
+
+        if (
+            is_branch_admin
+            and branch_id is None
+        ):
+
+            flash(
+                "Branch Admin must select the assigned branch.",
+                "danger"
+            )
+
+            return render_form()
+
+        # ====================================================
+        # PROGRAM NAME
+        # ====================================================
 
         if not name:
 
@@ -14227,12 +15164,20 @@ def add_program():
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/add_program.html",
-                institutions=institutions,
-                branches=branches,
-                user=current_user
+            return render_form()
+
+        if len(name) > 150:
+
+            flash(
+                "Program name cannot exceed 150 characters.",
+                "danger"
             )
+
+            return render_form()
+
+        # ====================================================
+        # PROGRAM CODE
+        # ====================================================
 
         if not code:
 
@@ -14241,86 +15186,46 @@ def add_program():
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/add_program.html",
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
+            return render_form()
 
-        # ----------------------------------------------------
-        # INSTITUTION
-        # ----------------------------------------------------
-
-        institution = (
-            Institution.query
-            .filter(
-                Institution.id == institution_id
-            )
-            .first()
-        )
-
-        if not institution:
+        if len(code) > 50:
 
             flash(
-                "Selected institution was not found.",
+                "Program code cannot exceed 50 characters.",
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/add_program.html",
-                institutions=institutions,
-                branches=branches,
-                user=current_user
+            return render_form()
+
+        # ====================================================
+        # SHORT NAME
+        # ====================================================
+
+        if len(short_name) > 100:
+
+            flash(
+                "Short name cannot exceed 100 characters.",
+                "danger"
             )
 
-        # ----------------------------------------------------
-        # BRANCH
-        # ----------------------------------------------------
+            return render_form()
 
-        branch = None
+        # ====================================================
+        # PROGRAM TYPE
+        # ====================================================
 
-        if branch_id is not None:
+        if len(program_type) > 100:
 
-            branch = (
-                Branch.query
-                .filter(
-                    Branch.id == branch_id
-                )
-                .first()
+            flash(
+                "Program type cannot exceed 100 characters.",
+                "danger"
             )
 
-            if not branch:
+            return render_form()
 
-                flash(
-                    "Selected branch was not found.",
-                    "danger"
-                )
-
-                return render_template(
-                    "backend/pages/programs/add_program.html",
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
-
-            if branch.institution_id != institution_id:
-
-                flash(
-                    "The selected branch does not belong to the selected institution.",
-                    "danger"
-                )
-
-                return render_template(
-                    "backend/pages/programs/add_program.html",
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
-
-        # ----------------------------------------------------
+        # ====================================================
         # DURATION
-        # ----------------------------------------------------
+        # ====================================================
 
         duration_months = None
 
@@ -14342,12 +15247,7 @@ def add_program():
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/add_program.html",
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
+                return render_form()
 
             if duration_months < 1:
 
@@ -14356,18 +15256,16 @@ def add_program():
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/add_program.html",
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
+                return render_form()
 
-        # ----------------------------------------------------
+        # ====================================================
         # PRICE
-        # ----------------------------------------------------
+        # ====================================================
 
-        from decimal import Decimal, InvalidOperation
+        from decimal import (
+            Decimal,
+            InvalidOperation
+        )
 
         try:
 
@@ -14386,12 +15284,16 @@ def add_program():
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/add_program.html",
-                institutions=institutions,
-                branches=branches,
-                user=current_user
+            return render_form()
+
+        if not price.is_finite():
+
+            flash(
+                "Price must be a valid finite number.",
+                "danger"
             )
+
+            return render_form()
 
         if price < 0:
 
@@ -14400,37 +15302,43 @@ def add_program():
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/add_program.html",
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
+            return render_form()
 
-        # ----------------------------------------------------
+        # ====================================================
         # STATUS
-        # ----------------------------------------------------
+        # ====================================================
 
         allowed_statuses = {
             "active",
-            "inactive"
+            "inactive",
         }
 
         if status not in allowed_statuses:
 
-            status = "active"
+            flash(
+                "Invalid program status.",
+                "danger"
+            )
 
-        # ----------------------------------------------------
-        # DUPLICATE CODE
-        # ----------------------------------------------------
+            return render_form()
+
+        # ====================================================
+        # DUPLICATE PROGRAM CODE
+        #
+        # Code must be unique inside institution.
+        # ====================================================
 
         existing_code = (
             Program.query
             .filter(
-                Program.institution_id == institution_id
+                Program.institution_id
+                == institution_id
             )
             .filter(
-                Program.code.ilike(code)
+                db.func.lower(
+                    Program.code
+                )
+                == code.lower()
             )
             .first()
         )
@@ -14438,56 +15346,134 @@ def add_program():
         if existing_code:
 
             flash(
-                "This program code already exists in the selected institution.",
+                "This program code already exists "
+                "in the selected institution.",
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/add_program.html",
-                institutions=institutions,
-                branches=branches,
-                user=current_user
+            return render_form()
+
+        # ====================================================
+        # DUPLICATE PROGRAM NAME
+        #
+        # Same program name cannot exist in the same
+        # institution + branch scope.
+        # ====================================================
+
+        duplicate_name_query = (
+            Program.query
+            .filter(
+                Program.institution_id
+                == institution_id
+            )
+            .filter(
+                db.func.lower(
+                    Program.name
+                )
+                == name.lower()
+            )
+        )
+
+        if branch_id is None:
+
+            duplicate_name_query = (
+                duplicate_name_query.filter(
+                    Program.branch_id.is_(None)
+                )
             )
 
-        # ----------------------------------------------------
+        else:
+
+            duplicate_name_query = (
+                duplicate_name_query.filter(
+                    Program.branch_id
+                    == branch_id
+                )
+            )
+
+        existing_name = (
+            duplicate_name_query.first()
+        )
+
+        if existing_name:
+
+            flash(
+                "A program with this name already exists "
+                "in the selected institution and branch.",
+                "danger"
+            )
+
+            return render_form()
+
+        # ====================================================
         # CREATE PROGRAM
-        # ----------------------------------------------------
+        # ====================================================
 
         program = Program(
 
-            institution_id=institution_id,
+            institution_id=(
+                institution_id
+            ),
 
-            branch_id=branch_id,
+            branch_id=(
+                branch_id
+            ),
 
-            name=name,
+            name=(
+                name
+            ),
 
-            code=code,
+            code=(
+                code
+            ),
 
-            short_name=short_name or None,
+            short_name=(
+                short_name
+                or None
+            ),
 
-            description=description or None,
+            description=(
+                description
+                or None
+            ),
 
-            program_type=program_type or None,
+            program_type=(
+                program_type
+                or None
+            ),
 
-            duration_months=duration_months,
+            duration_months=(
+                duration_months
+            ),
 
-            price=price,
+            price=(
+                price
+            ),
 
-            status=status
+            status=(
+                status
+            )
         )
 
-        db.session.add(program)
+        # ====================================================
+        # ADD
+        # ====================================================
 
-        # ----------------------------------------------------
+        db.session.add(
+            program
+        )
+
+        # ====================================================
         # COMMIT
-        # ----------------------------------------------------
+        # ====================================================
 
         try:
 
             db.session.commit()
 
             flash(
-                "Program created successfully.",
+                f'Program "{program.name}" '
+                f'created successfully.',
                 "success"
             )
 
@@ -14498,67 +15484,83 @@ def add_program():
                 )
             )
 
+        # ====================================================
+        # INTEGRITY ERROR
+        # ====================================================
+
         except IntegrityError:
 
             db.session.rollback()
 
+            current_app.logger.exception(
+                "IntegrityError while creating program."
+            )
+
             flash(
-                "Unable to create program. "
-                "The program code may already exist.",
+                "Unable to create the program because "
+                "of a database constraint conflict. "
+                "The program code or another unique "
+                "value may already exist.",
                 "danger"
             )
 
-        except Exception:
+            return render_form()
+
+        # ====================================================
+        # GENERAL ERROR
+        # ====================================================
+
+        except Exception as exc:
 
             db.session.rollback()
 
+            current_app.logger.exception(
+                "Unexpected error while creating program: %s",
+                exc
+            )
+
             flash(
-                "An unexpected error occurred while creating the program.",
+                "An unexpected error occurred while "
+                "creating the program.",
                 "danger"
             )
 
-    # --------------------------------------------------------
+            return render_form()
+
+    # ========================================================
     # GET
-    # --------------------------------------------------------
+    # ========================================================
 
-    return render_template(
-        "backend/pages/programs/add_program.html",
-
-        institutions=institutions,
-
-        branches=branches,
-
-        user=current_user
-    )
+    return render_form()
 
 
 # ============================================================
 # VIEW PROGRAM
 # ============================================================
-
 @bp.route(
     "/view-program/<int:program_id>"
 )
 @login_required
 def view_program(program_id):
 
-   
     # ========================================================
-    # ACCESS CONTROL
-    # SUPERADMIN + INSTITUTION ADMIN
+    # ROLE / ACCESS CONTROL
     # ========================================================
 
-    is_superadmin = current_user.is_superadmin()
+    current_role = (
+        getattr(current_user, "role", None) or ""
+    ).strip().lower()
 
-    is_institution_admin = (
-        hasattr(current_user, "is_institution_admin")
-        and current_user.is_institution_admin()
-    )
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
 
-    if not is_superadmin and not is_institution_admin:
+    if current_role not in allowed_roles:
 
         flash(
-            "You do not have permission to delete programs.",
+            "You do not have permission to view programs.",
             "danger"
         )
 
@@ -14566,22 +15568,150 @@ def view_program(program_id):
             url_for("main.all_programs")
         )
 
-    # --------------------------------------------------------
-    # GET PROGRAM
-    # --------------------------------------------------------
+    # ========================================================
+    # ROLE FLAGS
+    # ========================================================
 
-    program = (
+    is_superadmin = (
+        current_role == "superadmin"
+    )
+
+    is_school_admin = (
+        current_role == "school_admin"
+    )
+
+    is_branch_admin = (
+        current_role == "branch_admin"
+    )
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    current_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    current_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # VALIDATE SCHOOL ADMIN
+    # ========================================================
+
+    if is_school_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+    # ========================================================
+    # VALIDATE BRANCH ADMIN
+    # ========================================================
+
+    if is_branch_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+        if current_branch_id is None:
+
+            flash(
+                "Your account is not assigned to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+    # ========================================================
+    # GET PROGRAM WITH SECURITY SCOPE
+    # ========================================================
+
+    program_query = (
         Program.query
         .filter(
             Program.id == program_id
         )
-        .first()
     )
+
+    # ========================================================
+    # SUPERADMIN
+    # ========================================================
+
+    if is_superadmin:
+
+        pass
+
+    # ========================================================
+    # SCHOOL ADMIN
+    #
+    # Can view programs from own institution.
+    # This includes:
+    # - Institution-wide programs
+    # - All branch programs in own institution
+    # ========================================================
+
+    elif is_school_admin:
+
+        program_query = program_query.filter(
+            Program.institution_id ==
+            current_institution_id
+        )
+
+    # ========================================================
+    # BRANCH ADMIN
+    #
+    # Can view ONLY programs belonging to own branch.
+    #
+    # Institution-wide programs are NOT included here.
+    # ========================================================
+
+    elif is_branch_admin:
+
+        program_query = program_query.filter(
+            Program.institution_id ==
+            current_institution_id,
+            Program.branch_id ==
+            current_branch_id
+        )
+
+    # ========================================================
+    # FIND PROGRAM
+    # ========================================================
+
+    program = program_query.first()
+
+    # ========================================================
+    # PROGRAM NOT FOUND / OUTSIDE SCOPE
+    # ========================================================
 
     if not program:
 
         flash(
-            "Program not found.",
+            "Program not found or you do not have permission "
+            "to view this program.",
             "danger"
         )
 
@@ -14589,21 +15719,22 @@ def view_program(program_id):
             url_for("main.all_programs")
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # INSTITUTION
-    # --------------------------------------------------------
+    # ========================================================
 
     institution = (
         Institution.query
         .filter(
-            Institution.id == program.institution_id
+            Institution.id ==
+            program.institution_id
         )
         .first()
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # BRANCH
-    # --------------------------------------------------------
+    # ========================================================
 
     branch = None
 
@@ -14612,17 +15743,68 @@ def view_program(program_id):
         branch = (
             Branch.query
             .filter(
-                Branch.id == program.branch_id
+                Branch.id ==
+                program.branch_id
             )
             .first()
         )
 
-    # --------------------------------------------------------
+    # ========================================================
+    # BUILD SCOPE QUERY FOR RELATED STATISTICS
+    #
+    # This is important because counts must not expose data
+    # outside the current user's permitted scope.
+    # ========================================================
+
+    scoped_program_query = Program.query
+
+    # ========================================================
+    # SUPERADMIN
+    # ========================================================
+
+    if is_superadmin:
+
+        pass
+
+    # ========================================================
+    # SCHOOL ADMIN
+    # ========================================================
+
+    elif is_school_admin:
+
+        scoped_program_query = (
+            scoped_program_query
+            .filter(
+                Program.institution_id ==
+                current_institution_id
+            )
+        )
+
+    # ========================================================
+    # BRANCH ADMIN
+    # ========================================================
+
+    elif is_branch_admin:
+
+        scoped_program_query = (
+            scoped_program_query
+            .filter(
+                Program.institution_id ==
+                current_institution_id,
+                Program.branch_id ==
+                current_branch_id
+            )
+        )
+
+    # ========================================================
     # SAME INSTITUTION PROGRAM COUNT
-    # --------------------------------------------------------
+    #
+    # For Branch Admin this naturally remains limited to the
+    # branch because scoped_program_query is branch-scoped.
+    # ========================================================
 
     institution_programs_count = (
-        Program.query
+        scoped_program_query
         .filter(
             Program.institution_id ==
             program.institution_id
@@ -14630,58 +15812,173 @@ def view_program(program_id):
         .count()
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # SAME BRANCH PROGRAM COUNT
-    # --------------------------------------------------------
+    # ========================================================
 
     branch_programs_count = 0
 
     if program.branch_id is not None:
 
-        branch_programs_count = (
-            Program.query
-            .filter(
-                Program.branch_id ==
-                program.branch_id
-            )
-            .count()
-        )
-
-    # --------------------------------------------------------
-    # SAME PROGRAM TYPE COUNT
-    # --------------------------------------------------------
-
-    program_type_count = 0
-
-    if program.program_type:
-
-        program_type_count = (
+        branch_count_query = (
             Program.query
             .filter(
                 Program.institution_id ==
                 program.institution_id
             )
             .filter(
-                Program.program_type.ilike(
+                Program.branch_id ==
+                program.branch_id
+            )
+        )
+
+        # ----------------------------------------------------
+        # SCHOOL ADMIN
+        # Own institution only
+        # ----------------------------------------------------
+
+        if is_school_admin:
+
+            branch_count_query = (
+                branch_count_query
+                .filter(
+                    Program.institution_id ==
+                    current_institution_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN
+        # Own branch only
+        # ----------------------------------------------------
+
+        elif is_branch_admin:
+
+            branch_count_query = (
+                branch_count_query
+                .filter(
+                    Program.institution_id ==
+                    current_institution_id,
+                    Program.branch_id ==
+                    current_branch_id
+                )
+            )
+
+        branch_programs_count = (
+            branch_count_query.count()
+        )
+
+    # ========================================================
+    # SAME PROGRAM TYPE COUNT
+    # ========================================================
+
+    program_type_count = 0
+
+    if program.program_type:
+
+        program_type_query = (
+            Program.query
+            .filter(
+                Program.institution_id ==
+                program.institution_id
+            )
+            .filter(
+                db.func.lower(
+                    Program.program_type
+                ) ==
+                db.func.lower(
                     program.program_type
                 )
             )
-            .count()
         )
 
-    # --------------------------------------------------------
+        # ----------------------------------------------------
+        # SCHOOL ADMIN
+        # ----------------------------------------------------
+
+        if is_school_admin:
+
+            program_type_query = (
+                program_type_query
+                .filter(
+                    Program.institution_id ==
+                    current_institution_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN
+        # ----------------------------------------------------
+
+        elif is_branch_admin:
+
+            program_type_query = (
+                program_type_query
+                .filter(
+                    Program.institution_id ==
+                    current_institution_id,
+                    Program.branch_id ==
+                    current_branch_id
+                )
+            )
+
+        program_type_count = (
+            program_type_query.count()
+        )
+
+    # ========================================================
     # RELATED PROGRAMS
-    # --------------------------------------------------------
+    #
+    # Only show programs the current user is allowed to view.
+    # ========================================================
 
-    related_programs = (
+    related_programs_query = (
         Program.query
-        .filter(
-            Program.institution_id ==
-            program.institution_id
-        )
         .filter(
             Program.id != program.id
         )
+    )
+
+    # ========================================================
+    # SUPERADMIN
+    # ========================================================
+
+    if is_superadmin:
+
+        pass
+
+    # ========================================================
+    # SCHOOL ADMIN
+    # ========================================================
+
+    elif is_school_admin:
+
+        related_programs_query = (
+            related_programs_query
+            .filter(
+                Program.institution_id ==
+                current_institution_id
+            )
+        )
+
+    # ========================================================
+    # BRANCH ADMIN
+    # ========================================================
+
+    elif is_branch_admin:
+
+        related_programs_query = (
+            related_programs_query
+            .filter(
+                Program.institution_id ==
+                current_institution_id,
+                Program.branch_id ==
+                current_branch_id
+            )
+        )
+
+    related_programs = (
+        related_programs_query
         .order_by(
             Program.name.asc(),
             Program.code.asc()
@@ -14690,9 +15987,12 @@ def view_program(program_id):
         .all()
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # RELATIONSHIP COUNTS
-    # --------------------------------------------------------
+    #
+    # These relationships are already attached to the selected
+    # program, so count the records belonging to this program.
+    # ========================================================
 
     assessment_plans_count = (
         len(program.assessment_plans)
@@ -14724,54 +16024,117 @@ def view_program(program_id):
         else 0
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # RENDER
-    # --------------------------------------------------------
+    # ========================================================
 
     return render_template(
         "backend/pages/programs/view_program.html",
 
+        # ----------------------------------------------------
+        # PROGRAM
+        # ----------------------------------------------------
+
         program=program,
+
+        # ----------------------------------------------------
+        # INSTITUTION
+        # ----------------------------------------------------
 
         institution=institution,
 
+        # ----------------------------------------------------
+        # BRANCH
+        # ----------------------------------------------------
+
         branch=branch,
 
-        institution_programs_count=
-            institution_programs_count,
+        # ----------------------------------------------------
+        # STATISTICS
+        # ----------------------------------------------------
 
-        branch_programs_count=
-            branch_programs_count,
+        institution_programs_count=(
+            institution_programs_count
+        ),
 
-        program_type_count=
-            program_type_count,
+        branch_programs_count=(
+            branch_programs_count
+        ),
 
-        related_programs=
-            related_programs,
+        program_type_count=(
+            program_type_count
+        ),
 
-        assessment_plans_count=
-            assessment_plans_count,
+        # ----------------------------------------------------
+        # RELATED PROGRAMS
+        # ----------------------------------------------------
 
-        classes_count=
-            classes_count,
+        related_programs=(
+            related_programs
+        ),
 
-        subjects_count=
-            subjects_count,
+        # ----------------------------------------------------
+        # RELATIONSHIP COUNTS
+        # ----------------------------------------------------
 
-        teacher_subjects_count=
-            teacher_subjects_count,
+        assessment_plans_count=(
+            assessment_plans_count
+        ),
 
-        student_enrollments_count=
-            student_enrollments_count,
+        classes_count=(
+            classes_count
+        ),
+
+        subjects_count=(
+            subjects_count
+        ),
+
+        teacher_subjects_count=(
+            teacher_subjects_count
+        ),
+
+        student_enrollments_count=(
+            student_enrollments_count
+        ),
+
+        # ----------------------------------------------------
+        # ROLE FLAGS
+        # ----------------------------------------------------
+
+        is_superadmin=(
+            is_superadmin
+        ),
+
+        is_school_admin=(
+            is_school_admin
+        ),
+
+        is_branch_admin=(
+            is_branch_admin
+        ),
+
+        # ----------------------------------------------------
+        # CURRENT USER SCOPE
+        # ----------------------------------------------------
+
+        current_user_institution_id=(
+            current_institution_id
+        ),
+
+        current_user_branch_id=(
+            current_branch_id
+        ),
+
+        # ----------------------------------------------------
+        # CURRENT USER
+        # ----------------------------------------------------
 
         user=current_user
     )
 
-
 # ============================================================
 # EDIT PROGRAM
 # ============================================================
-
 @bp.route(
     "/edit-program/<int:program_id>",
     methods=["GET", "POST"]
@@ -14779,50 +16142,162 @@ def view_program(program_id):
 @login_required
 def edit_program(program_id):
 
-    # --------------------------------------------------------
-    # SUPERADMIN ONLY
-    # --------------------------------------------------------
-
     # ========================================================
-    # ACCESS CONTROL
-    # SUPERADMIN + INSTITUTION ADMIN
+    # ROLE / ACCESS CONTROL
     # ========================================================
 
-    is_superadmin = current_user.is_superadmin()
+    current_role = (
+        getattr(current_user, "role", None) or ""
+    ).strip().lower()
 
-    is_institution_admin = (
-        hasattr(current_user, "is_institution_admin")
-        and current_user.is_institution_admin()
-    )
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
 
-    if not is_superadmin and not is_institution_admin:
+    if current_role not in allowed_roles:
 
         flash(
-            "You do not have permission to delete programs.",
+            "You do not have permission to edit programs.",
             "danger"
         )
 
         return redirect(
             url_for("main.all_programs")
         )
-   
 
-    # --------------------------------------------------------
+    # ========================================================
+    # ROLE FLAGS
+    # ========================================================
+
+    is_superadmin = (
+        current_role == "superadmin"
+    )
+
+    is_school_admin = (
+        current_role == "school_admin"
+    )
+
+    is_branch_admin = (
+        current_role == "branch_admin"
+    )
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    current_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    current_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # VALIDATE USER SCOPE
+    # ========================================================
+
+    if is_school_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+    if is_branch_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+        if current_branch_id is None:
+
+            flash(
+                "Your account is not assigned to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+    # ========================================================
     # GET PROGRAM
-    # --------------------------------------------------------
+    #
+    # IMPORTANT:
+    # Load program according to user's security scope.
+    # Never load every program and check only in template.
+    # ========================================================
 
-    program = (
+    program_query = (
         Program.query
         .filter(
             Program.id == program_id
         )
-        .first()
     )
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN
+    # Own institution only
+    # --------------------------------------------------------
+
+    if is_school_admin:
+
+        program_query = program_query.filter(
+            Program.institution_id ==
+            current_institution_id
+        )
+
+    # --------------------------------------------------------
+    # BRANCH ADMIN
+    # Own institution + own branch only
+    #
+    # Branch Admin cannot edit institution-wide programs.
+    # --------------------------------------------------------
+
+    elif is_branch_admin:
+
+        program_query = program_query.filter(
+            Program.institution_id ==
+            current_institution_id,
+            Program.branch_id ==
+            current_branch_id
+        )
+
+    # --------------------------------------------------------
+    # SUPERADMIN
+    # No additional scope
+    # --------------------------------------------------------
+
+    program = program_query.first()
+
+    # ========================================================
+    # PROGRAM NOT FOUND / OUTSIDE SCOPE
+    # ========================================================
 
     if not program:
 
         flash(
-            "Program not found.",
+            "Program not found or you do not have permission to edit it.",
             "danger"
         )
 
@@ -14830,145 +16305,461 @@ def edit_program(program_id):
             url_for("main.all_programs")
         )
 
-    # --------------------------------------------------------
+    # ========================================================
+    # FORM DATA DEFAULTS
+    # ========================================================
+
+    def get_form_value(
+        field_name,
+        default=""
+    ):
+
+        if request.method == "POST":
+
+            return (
+                request.form.get(
+                    field_name,
+                    default
+                ) or ""
+            ).strip()
+
+        return default
+
+    # ========================================================
     # LOAD INSTITUTIONS
-    # --------------------------------------------------------
+    # ========================================================
 
-    institutions = (
-        Institution.query
-        .order_by(
-            Institution.name.asc()
+    if is_superadmin:
+
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
         )
-        .all()
-    )
 
-    # --------------------------------------------------------
+    else:
+
+        institutions = (
+            Institution.query
+            .filter(
+                Institution.id ==
+                current_institution_id
+            )
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
     # LOAD BRANCHES
-    # --------------------------------------------------------
+    # ========================================================
 
-    branches = (
-        Branch.query
-        .order_by(
-            Branch.name.asc()
+    if is_superadmin:
+
+        branches = (
+            Branch.query
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
         )
-        .all()
-    )
 
-    # --------------------------------------------------------
+    elif is_school_admin:
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.institution_id ==
+                current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN = CURRENT BRANCH ONLY
+        # ----------------------------------------------------
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.id ==
+                current_branch_id,
+                Branch.institution_id ==
+                current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # FORM RENDER HELPER
+    # ========================================================
+
+    def render_edit_form():
+
+        # ----------------------------------------------------
+        # POST VALUES
+        # ----------------------------------------------------
+
+        if request.method == "POST":
+
+            form_institution_id = (
+                request.form.get(
+                    "institution_id",
+                    ""
+                ) or ""
+            ).strip()
+
+            form_branch_id = (
+                request.form.get(
+                    "branch_id",
+                    ""
+                ) or ""
+            ).strip()
+
+            form_name = (
+                request.form.get(
+                    "name",
+                    ""
+                ) or ""
+            ).strip()
+
+            form_code = (
+                request.form.get(
+                    "code",
+                    ""
+                ) or ""
+            ).strip().upper()
+
+            form_short_name = (
+                request.form.get(
+                    "short_name",
+                    ""
+                ) or ""
+            ).strip()
+
+            form_description = (
+                request.form.get(
+                    "description",
+                    ""
+                ) or ""
+            ).strip()
+
+            form_program_type = (
+                request.form.get(
+                    "program_type",
+                    ""
+                ) or ""
+            ).strip().lower()
+
+            form_duration_months = (
+                request.form.get(
+                    "duration_months",
+                    ""
+                ) or ""
+            ).strip()
+
+            form_price = (
+                request.form.get(
+                    "price",
+                    "0"
+                ) or "0"
+            ).strip()
+
+            form_status = (
+                request.form.get(
+                    "status",
+                    "active"
+                ) or "active"
+            ).strip().lower()
+
+        else:
+
+            # ------------------------------------------------
+            # GET = EXISTING PROGRAM VALUES
+            # ------------------------------------------------
+
+            form_institution_id = (
+                str(program.institution_id)
+                if program.institution_id is not None
+                else ""
+            )
+
+            form_branch_id = (
+                str(program.branch_id)
+                if program.branch_id is not None
+                else ""
+            )
+
+            form_name = (
+                program.name or ""
+            )
+
+            form_code = (
+                program.code or ""
+            ).upper()
+
+            form_short_name = (
+                program.short_name or ""
+            )
+
+            form_description = (
+                program.description or ""
+            )
+
+            form_program_type = (
+                program.program_type or ""
+            ).lower()
+
+            form_duration_months = (
+                str(program.duration_months)
+                if program.duration_months is not None
+                else ""
+            )
+
+            form_price = (
+                str(program.price)
+                if program.price is not None
+                else "0"
+            )
+
+            form_status = (
+                program.status or "active"
+            ).lower()
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN
+        #
+        # Backend-controlled branch.
+        # ----------------------------------------------------
+
+        if is_branch_admin:
+
+            form_institution_id = str(
+                current_institution_id
+            )
+
+            form_branch_id = str(
+                current_branch_id
+            )
+
+        # ----------------------------------------------------
+        # SCHOOL ADMIN
+        #
+        # Institution is always their institution.
+        # ----------------------------------------------------
+
+        elif is_school_admin:
+
+            form_institution_id = str(
+                current_institution_id
+            )
+
+        # ====================================================
+        # RENDER
+        # ====================================================
+
+        return render_template(
+            "backend/pages/programs/edit_program.html",
+
+            # ------------------------------------------------
+            # OBJECT
+            # ------------------------------------------------
+
+            program=program,
+
+            # ------------------------------------------------
+            # DROPDOWN DATA
+            # ------------------------------------------------
+
+            institutions=institutions,
+
+            branches=branches,
+
+            # ------------------------------------------------
+            # USER
+            # ------------------------------------------------
+
+            user=current_user,
+
+            # ------------------------------------------------
+            # ROLE FLAGS
+            # ------------------------------------------------
+
+            is_superadmin=is_superadmin,
+
+            is_school_admin=is_school_admin,
+
+            is_branch_admin=is_branch_admin,
+
+            # ------------------------------------------------
+            # USER SCOPE
+            # ------------------------------------------------
+
+            current_user_institution_id=(
+                current_institution_id
+            ),
+
+            current_user_branch_id=(
+                current_branch_id
+            ),
+
+            # ------------------------------------------------
+            # FORM VALUES
+            # ------------------------------------------------
+
+            form_institution_id=(
+                form_institution_id
+            ),
+
+            form_branch_id=(
+                form_branch_id
+            ),
+
+            form_name=(
+                form_name
+            ),
+
+            form_code=(
+                form_code
+            ),
+
+            form_short_name=(
+                form_short_name
+            ),
+
+            form_description=(
+                form_description
+            ),
+
+            form_program_type=(
+                form_program_type
+            ),
+
+            form_duration_months=(
+                form_duration_months
+            ),
+
+            form_price=(
+                form_price
+            ),
+
+            form_status=(
+                form_status
+            )
+        )
+
+    # ========================================================
     # POST
-    # --------------------------------------------------------
+    # ========================================================
 
     if request.method == "POST":
 
-        # ----------------------------------------------------
-        # FORM VALUES
-        # ----------------------------------------------------
+        # ====================================================
+        # READ FORM
+        # ====================================================
 
-        institution_id_raw = request.form.get(
-            "institution_id",
-            ""
+        institution_id_raw = (
+            request.form.get(
+                "institution_id",
+                ""
+            ) or ""
         ).strip()
 
-        branch_id_raw = request.form.get(
-            "branch_id",
-            ""
+        branch_id_raw = (
+            request.form.get(
+                "branch_id",
+                ""
+            ) or ""
         ).strip()
 
-        name = request.form.get(
-            "name",
-            ""
+        name = (
+            request.form.get(
+                "name",
+                ""
+            ) or ""
         ).strip()
 
-        code = request.form.get(
-            "code",
-            ""
+        code = (
+            request.form.get(
+                "code",
+                ""
+            ) or ""
         ).strip().upper()
 
-        short_name = request.form.get(
-            "short_name",
-            ""
+        short_name = (
+            request.form.get(
+                "short_name",
+                ""
+            ) or ""
         ).strip()
 
-        description = request.form.get(
-            "description",
-            ""
+        description = (
+            request.form.get(
+                "description",
+                ""
+            ) or ""
         ).strip()
 
-        program_type = request.form.get(
-            "program_type",
-            ""
+        program_type = (
+            request.form.get(
+                "program_type",
+                ""
+            ) or ""
         ).strip().lower()
 
-        duration_months_raw = request.form.get(
-            "duration_months",
-            ""
+        duration_months_raw = (
+            request.form.get(
+                "duration_months",
+                ""
+            ) or ""
         ).strip()
 
-        price_raw = request.form.get(
-            "price",
-            "0"
+        price_raw = (
+            request.form.get(
+                "price",
+                "0"
+            ) or "0"
         ).strip()
 
-        status = request.form.get(
-            "status",
-            "active"
+        status = (
+            request.form.get(
+                "status",
+                "active"
+            ) or "active"
         ).strip().lower()
 
-        # ----------------------------------------------------
-        # VALIDATE INSTITUTION ID
-        # ----------------------------------------------------
+        # ====================================================
+        # INSTITUTION
+        #
+        # Backend forces institution for scoped admins.
+        # ====================================================
 
-        try:
+        if is_superadmin:
 
-            institution_id = int(
-                institution_id_raw
-            )
+            if not institution_id_raw:
 
-        except (
-            ValueError,
-            TypeError
-        ):
+                flash(
+                    "Please select an institution.",
+                    "danger"
+                )
 
-            flash(
-                "Please select a valid institution.",
-                "danger"
-            )
-
-            return render_template(
-                "backend/pages/programs/edit_program.html",
-                program=program,
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
-
-        if institution_id <= 0:
-
-            flash(
-                "Please select a valid institution.",
-                "danger"
-            )
-
-            return render_template(
-                "backend/pages/programs/edit_program.html",
-                program=program,
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
-
-        # ----------------------------------------------------
-        # VALIDATE BRANCH
-        # ----------------------------------------------------
-
-        branch_id = None
-
-        if branch_id_raw:
+                return render_edit_form()
 
             try:
 
-                branch_id = int(
-                    branch_id_raw
+                institution_id = int(
+                    institution_id_raw
                 )
 
             except (
@@ -14977,75 +16768,40 @@ def edit_program(program_id):
             ):
 
                 flash(
-                    "Please select a valid branch.",
+                    "Please select a valid institution.",
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/edit_program.html",
-                    program=program,
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
+                return render_edit_form()
 
-            if branch_id <= 0:
+            if institution_id <= 0:
 
                 flash(
-                    "Please select a valid branch.",
+                    "Please select a valid institution.",
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/edit_program.html",
-                    program=program,
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
+                return render_edit_form()
 
-        # ----------------------------------------------------
-        # REQUIRED FIELDS
-        # ----------------------------------------------------
+        else:
 
-        if not name:
+            # ------------------------------------------------
+            # NEVER TRUST POSTED INSTITUTION ID
+            # ------------------------------------------------
 
-            flash(
-                "Program name is required.",
-                "danger"
+            institution_id = (
+                current_institution_id
             )
 
-            return render_template(
-                "backend/pages/programs/edit_program.html",
-                program=program,
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
-
-        if not code:
-
-            flash(
-                "Program code is required.",
-                "danger"
-            )
-
-            return render_template(
-                "backend/pages/programs/edit_program.html",
-                program=program,
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
-
-        # ----------------------------------------------------
-        # INSTITUTION
-        # ----------------------------------------------------
+        # ====================================================
+        # VERIFY INSTITUTION
+        # ====================================================
 
         institution = (
             Institution.query
             .filter(
-                Institution.id == institution_id
+                Institution.id ==
+                institution_id
             )
             .first()
         )
@@ -15057,17 +16813,71 @@ def edit_program(program_id):
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/edit_program.html",
-                program=program,
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
+            return render_edit_form()
 
-        # ----------------------------------------------------
+        # ====================================================
+        # PREVENT SCOPE ESCAPE
+        # ====================================================
+
+        if not is_superadmin:
+
+            if institution_id != current_institution_id:
+
+                flash(
+                    "You cannot move a program outside your institution.",
+                    "danger"
+                )
+
+                return render_edit_form()
+
+        # ====================================================
         # BRANCH
-        # ----------------------------------------------------
+        # ====================================================
+
+        branch_id = None
+
+        if is_branch_admin:
+
+            # ------------------------------------------------
+            # BRANCH ADMIN CANNOT CHANGE BRANCH
+            # ------------------------------------------------
+
+            branch_id = current_branch_id
+
+        else:
+
+            if branch_id_raw:
+
+                try:
+
+                    branch_id = int(
+                        branch_id_raw
+                    )
+
+                except (
+                    ValueError,
+                    TypeError
+                ):
+
+                    flash(
+                        "Please select a valid branch.",
+                        "danger"
+                    )
+
+                    return render_edit_form()
+
+                if branch_id <= 0:
+
+                    flash(
+                        "Please select a valid branch.",
+                        "danger"
+                    )
+
+                    return render_edit_form()
+
+        # ====================================================
+        # VERIFY BRANCH
+        # ====================================================
 
         branch = None
 
@@ -15076,7 +16886,8 @@ def edit_program(program_id):
             branch = (
                 Branch.query
                 .filter(
-                    Branch.id == branch_id
+                    Branch.id ==
+                    branch_id
                 )
                 .first()
             )
@@ -15088,13 +16899,11 @@ def edit_program(program_id):
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/edit_program.html",
-                    program=program,
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
+                return render_edit_form()
+
+            # ------------------------------------------------
+            # BRANCH MUST BELONG TO INSTITUTION
+            # ------------------------------------------------
 
             if branch.institution_id != institution_id:
 
@@ -15103,17 +16912,130 @@ def edit_program(program_id):
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/edit_program.html",
-                    program=program,
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
+                return render_edit_form()
 
-        # ----------------------------------------------------
+            # ------------------------------------------------
+            # BRANCH ADMIN = OWN BRANCH ONLY
+            # ------------------------------------------------
+
+            if is_branch_admin:
+
+                if branch_id != current_branch_id:
+
+                    flash(
+                        "You cannot move a program to another branch.",
+                        "danger"
+                    )
+
+                    return render_edit_form()
+
+        # ====================================================
+        # BRANCH ADMIN CANNOT MAKE INSTITUTION-WIDE PROGRAM
+        # ====================================================
+
+        if is_branch_admin and branch_id is None:
+
+            flash(
+                "Branch Admin programs must belong to the assigned branch.",
+                "danger"
+            )
+
+            return render_edit_form()
+
+        # ====================================================
+        # SCHOOL ADMIN
+        #
+        # Can edit own institution programs and may choose:
+        # - Institution-wide
+        # - Any branch in own institution
+        # ====================================================
+
+        # ====================================================
+        # REQUIRED NAME
+        # ====================================================
+
+        if not name:
+
+            flash(
+                "Program name is required.",
+                "danger"
+            )
+
+            return render_edit_form()
+
+        if len(name) > 150:
+
+            flash(
+                "Program name cannot exceed 150 characters.",
+                "danger"
+            )
+
+            return render_edit_form()
+
+        # ====================================================
+        # REQUIRED CODE
+        # ====================================================
+
+        if not code:
+
+            flash(
+                "Program code is required.",
+                "danger"
+            )
+
+            return render_edit_form()
+
+        if len(code) > 50:
+
+            flash(
+                "Program code cannot exceed 50 characters.",
+                "danger"
+            )
+
+            return render_edit_form()
+
+        # ====================================================
+        # SHORT NAME
+        # ====================================================
+
+        if len(short_name) > 100:
+
+            flash(
+                "Short name cannot exceed 100 characters.",
+                "danger"
+            )
+
+            return render_edit_form()
+
+        # ====================================================
+        # PROGRAM TYPE
+        # ====================================================
+
+        if len(program_type) > 100:
+
+            flash(
+                "Program type cannot exceed 100 characters.",
+                "danger"
+            )
+
+            return render_edit_form()
+
+        # ====================================================
+        # DESCRIPTION
+        # ====================================================
+
+        if len(description) > 1000:
+
+            flash(
+                "Description cannot exceed 1000 characters.",
+                "danger"
+            )
+
+            return render_edit_form()
+
+        # ====================================================
         # DURATION
-        # ----------------------------------------------------
+        # ====================================================
 
         duration_months = None
 
@@ -15135,13 +17057,7 @@ def edit_program(program_id):
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/edit_program.html",
-                    program=program,
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
+                return render_edit_form()
 
             if duration_months < 1:
 
@@ -15150,19 +17066,16 @@ def edit_program(program_id):
                     "danger"
                 )
 
-                return render_template(
-                    "backend/pages/programs/edit_program.html",
-                    program=program,
-                    institutions=institutions,
-                    branches=branches,
-                    user=current_user
-                )
+                return render_edit_form()
 
-        # ----------------------------------------------------
+        # ====================================================
         # PRICE
-        # ----------------------------------------------------
+        # ====================================================
 
-        from decimal import Decimal, InvalidOperation
+        from decimal import (
+            Decimal,
+            InvalidOperation
+        )
 
         try:
 
@@ -15181,13 +17094,16 @@ def edit_program(program_id):
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/edit_program.html",
-                program=program,
-                institutions=institutions,
-                branches=branches,
-                user=current_user
+            return render_edit_form()
+
+        if not price.is_finite():
+
+            flash(
+                "Price must be a valid finite number.",
+                "danger"
             )
+
+            return render_edit_form()
 
         if price < 0:
 
@@ -15196,30 +17112,31 @@ def edit_program(program_id):
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/edit_program.html",
-                program=program,
-                institutions=institutions,
-                branches=branches,
-                user=current_user
-            )
+            return render_edit_form()
 
-        # ----------------------------------------------------
+        # ====================================================
         # STATUS
-        # ----------------------------------------------------
+        # ====================================================
 
         allowed_statuses = {
             "active",
-            "inactive"
+            "inactive",
         }
 
         if status not in allowed_statuses:
 
-            status = "active"
+            flash(
+                "Invalid program status.",
+                "danger"
+            )
 
-        # ----------------------------------------------------
-        # DUPLICATE CODE
-        # ----------------------------------------------------
+            return render_edit_form()
+
+        # ====================================================
+        # DUPLICATE PROGRAM CODE
+        #
+        # Code is unique inside institution.
+        # ====================================================
 
         existing_code = (
             Program.query
@@ -15228,7 +17145,10 @@ def edit_program(program_id):
                 institution_id
             )
             .filter(
-                Program.code.ilike(code)
+                db.func.lower(
+                    Program.code
+                ) ==
+                code.lower()
             )
             .filter(
                 Program.id != program.id
@@ -15243,25 +17163,146 @@ def edit_program(program_id):
                 "danger"
             )
 
-            return render_template(
-                "backend/pages/programs/edit_program.html",
-                program=program,
-                institutions=institutions,
-                branches=branches,
-                user=current_user
+            return render_edit_form()
+
+        # ====================================================
+        # DUPLICATE PROGRAM NAME
+        #
+        # Same program name is allowed in different branches,
+        # but not in the same institution + same branch.
+        # ====================================================
+
+        duplicate_name_query = (
+            Program.query
+            .filter(
+                Program.institution_id ==
+                institution_id
+            )
+            .filter(
+                db.func.lower(
+                    Program.name
+                ) ==
+                name.lower()
+            )
+            .filter(
+                Program.id != program.id
+            )
+        )
+
+        if branch_id is None:
+
+            duplicate_name_query = (
+                duplicate_name_query
+                .filter(
+                    Program.branch_id.is_(None)
+                )
             )
 
-        # ----------------------------------------------------
+        else:
+
+            duplicate_name_query = (
+                duplicate_name_query
+                .filter(
+                    Program.branch_id ==
+                    branch_id
+                )
+            )
+
+        existing_name = (
+            duplicate_name_query
+            .first()
+        )
+
+        if existing_name:
+
+            flash(
+                "A program with this name already exists in the selected institution and branch.",
+                "danger"
+            )
+
+            return render_edit_form()
+
+        # ====================================================
+        # ADDITIONAL SECURITY
+        #
+        # Branch Admin may ONLY edit a program that belongs
+        # to his current branch.
+        #
+        # This protects against changing program scope.
+        # ====================================================
+
+        if is_branch_admin:
+
+            if program.institution_id != current_institution_id:
+
+                flash(
+                    "You cannot edit a program outside your institution.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("main.all_programs")
+                )
+
+            if program.branch_id != current_branch_id:
+
+                flash(
+                    "You cannot edit a program outside your branch.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("main.all_programs")
+                )
+
+            # ------------------------------------------------
+            # Force original/current scope
+            # ------------------------------------------------
+
+            institution_id = (
+                current_institution_id
+            )
+
+            branch_id = (
+                current_branch_id
+            )
+
+        # ====================================================
+        # SCHOOL ADMIN SECURITY
+        # ====================================================
+
+        if is_school_admin:
+
+            if program.institution_id != current_institution_id:
+
+                flash(
+                    "You cannot edit a program outside your institution.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("main.all_programs")
+                )
+
+        # ====================================================
         # UPDATE PROGRAM
-        # ----------------------------------------------------
+        # ====================================================
 
-        program.institution_id = institution_id
+        program.institution_id = (
+            institution_id
+        )
 
-        program.branch_id = branch_id
+        program.branch_id = (
+            branch_id
+        )
 
-        program.name = name
+        program.name = (
+            name
+        )
 
-        program.code = code
+        program.code = (
+            code
+        )
 
         program.short_name = (
             short_name or None
@@ -15279,20 +17320,24 @@ def edit_program(program_id):
             duration_months
         )
 
-        program.price = price
+        program.price = (
+            price
+        )
 
-        program.status = status
+        program.status = (
+            status
+        )
 
-        # ----------------------------------------------------
+        # ====================================================
         # COMMIT
-        # ----------------------------------------------------
+        # ====================================================
 
         try:
 
             db.session.commit()
 
             flash(
-                "Program updated successfully.",
+                f'Program "{program.name}" updated successfully.',
                 "success"
             )
 
@@ -15303,47 +17348,56 @@ def edit_program(program_id):
                 )
             )
 
+        # ====================================================
+        # DATABASE CONSTRAINT ERROR
+        # ====================================================
+
         except IntegrityError:
 
             db.session.rollback()
 
+            current_app.logger.exception(
+                "IntegrityError while updating program."
+            )
+
             flash(
-                "Unable to update program. "
-                "The program code may already exist.",
+                "Unable to update the program because of a database constraint conflict. "
+                "The program code or another unique value may already exist.",
                 "danger"
             )
 
-        except Exception:
+            return render_edit_form()
+
+        # ====================================================
+        # UNEXPECTED ERROR
+        # ====================================================
+
+        except Exception as exc:
 
             db.session.rollback()
+
+            current_app.logger.exception(
+                "Unexpected error while updating program: %s",
+                exc
+            )
 
             flash(
                 "An unexpected error occurred while updating the program.",
                 "danger"
             )
 
-    # --------------------------------------------------------
+            return render_edit_form()
+
+    # ========================================================
     # GET
-    # --------------------------------------------------------
+    # ========================================================
 
-    return render_template(
-        "backend/pages/programs/edit_program.html",
-
-        program=program,
-
-        institutions=institutions,
-
-        branches=branches,
-
-        user=current_user
-    )
-
+    return render_edit_form()
 
 
 # ============================================================
 # DELETE PROGRAM
 # ============================================================
-
 @bp.route(
     "/delete-program/<int:program_id>",
     methods=["POST"]
@@ -15352,18 +17406,20 @@ def edit_program(program_id):
 def delete_program(program_id):
 
     # ========================================================
-    # ACCESS CONTROL
-    # SUPERADMIN + INSTITUTION ADMIN
+    # ROLE / ACCESS CONTROL
     # ========================================================
 
-    is_superadmin = current_user.is_superadmin()
+    current_role = (
+        getattr(current_user, "role", None) or ""
+    ).strip().lower()
 
-    is_institution_admin = (
-        hasattr(current_user, "is_institution_admin")
-        and current_user.is_institution_admin()
-    )
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
 
-    if not is_superadmin and not is_institution_admin:
+    if current_role not in allowed_roles:
 
         flash(
             "You do not have permission to delete programs.",
@@ -15375,24 +17431,47 @@ def delete_program(program_id):
         )
 
     # ========================================================
-    # GET PROGRAM
+    # ROLE FLAGS
     # ========================================================
 
-    program_query = Program.query.filter(
-        Program.id == program_id
+    is_superadmin = (
+        current_role == "superadmin"
+    )
+
+    is_school_admin = (
+        current_role == "school_admin"
+    )
+
+    is_branch_admin = (
+        current_role == "branch_admin"
     )
 
     # ========================================================
-    # INSTITUTION ADMIN
-    # CAN ONLY DELETE PROGRAMS FROM HIS/HER INSTITUTION
+    # CURRENT USER SCOPE
     # ========================================================
 
-    if is_institution_admin and not is_superadmin:
+    current_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
 
-        if not getattr(current_user, "institution_id", None):
+    current_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # SCHOOL ADMIN VALIDATION
+    # ========================================================
+
+    if is_school_admin:
+
+        if current_institution_id is None:
 
             flash(
-                "Your account is not linked to an institution.",
+                "Your account is not assigned to an institution.",
                 "danger"
             )
 
@@ -15400,16 +17479,99 @@ def delete_program(program_id):
                 url_for("main.all_programs")
             )
 
+    # ========================================================
+    # BRANCH ADMIN VALIDATION
+    # ========================================================
+
+    if is_branch_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+        if current_branch_id is None:
+
+            flash(
+                "Your account is not assigned to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+    # ========================================================
+    # BUILD SECURE PROGRAM QUERY
+    # ========================================================
+
+    program_query = (
+        Program.query
+        .filter(
+            Program.id == program_id
+        )
+    )
+
+    # ========================================================
+    # SUPERADMIN
+    #
+    # Can delete any program.
+    # ========================================================
+
+    if is_superadmin:
+
+        pass
+
+    # ========================================================
+    # SCHOOL ADMIN
+    #
+    # Can delete any program belonging to own institution.
+    #
+    # This includes:
+    # - Institution-wide programs
+    # - Branch-specific programs
+    # ========================================================
+
+    elif is_school_admin:
+
         program_query = program_query.filter(
-            Program.institution_id
-            == current_user.institution_id
+            Program.institution_id ==
+            current_institution_id
         )
 
     # ========================================================
-    # FIND PROGRAM
+    # BRANCH ADMIN
+    #
+    # Can delete programs from own branch ONLY.
+    #
+    # branch_id = NULL means institution-wide program.
+    # Such programs cannot be deleted by branch_admin.
+    # ========================================================
+
+    elif is_branch_admin:
+
+        program_query = program_query.filter(
+            Program.institution_id ==
+            current_institution_id,
+            Program.branch_id ==
+            current_branch_id
+        )
+
+    # ========================================================
+    # GET PROGRAM
     # ========================================================
 
     program = program_query.first()
+
+    # ========================================================
+    # PROGRAM NOT FOUND / OUTSIDE SCOPE
+    # ========================================================
 
     if not program:
 
@@ -15424,12 +17586,102 @@ def delete_program(program_id):
         )
 
     # ========================================================
+    # EXTRA SECURITY CHECK
+    # SCHOOL ADMIN
+    # ========================================================
+
+    if is_school_admin:
+
+        if (
+            program.institution_id
+            != current_institution_id
+        ):
+
+            flash(
+                "You cannot delete a program outside your institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+    # ========================================================
+    # EXTRA SECURITY CHECK
+    # BRANCH ADMIN
+    # ========================================================
+
+    if is_branch_admin:
+
+        # ----------------------------------------------------
+        # Institution must match
+        # ----------------------------------------------------
+
+        if (
+            program.institution_id
+            != current_institution_id
+        ):
+
+            flash(
+                "You cannot delete a program outside your institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+        # ----------------------------------------------------
+        # Branch must match
+        # ----------------------------------------------------
+
+        if (
+            program.branch_id
+            != current_branch_id
+        ):
+
+            flash(
+                "You cannot delete a program outside your branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+        # ----------------------------------------------------
+        # Explicit protection against institution-wide
+        # programs.
+        # ----------------------------------------------------
+
+        if program.branch_id is None:
+
+            flash(
+                "Branch Admin cannot delete institution-wide programs.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_programs")
+            )
+
+    # ========================================================
     # SAVE INFORMATION BEFORE DELETE
     # ========================================================
 
-    program_name = program.name
-    program_code = program.code
-    program_id_value = program.id
+    program_name = (
+        program.name
+        or "Unnamed Program"
+    )
+
+    program_code = (
+        program.code
+        or "N/A"
+    )
+
+    program_id_value = (
+        program.id
+    )
 
     # ========================================================
     # DELETE PROGRAM
@@ -15437,7 +17689,9 @@ def delete_program(program_id):
 
     try:
 
-        db.session.delete(program)
+        db.session.delete(
+            program
+        )
 
         db.session.commit()
 
@@ -15465,6 +17719,11 @@ def delete_program(program_id):
 
         db.session.rollback()
 
+        current_app.logger.exception(
+            "IntegrityError while deleting program ID %s.",
+            program_id_value
+        )
+
         flash(
             (
                 f"Program '{program_name}' cannot be deleted "
@@ -15481,9 +17740,15 @@ def delete_program(program_id):
     # UNEXPECTED ERROR
     # ========================================================
 
-    except Exception:
+    except Exception as exc:
 
         db.session.rollback()
+
+        current_app.logger.exception(
+            "Unexpected error while deleting program ID %s: %s",
+            program_id_value,
+            exc
+        )
 
         flash(
             (
@@ -22872,53 +25137,168 @@ def _validate_subject_relationships(
 # ALL SUBJECTS
 # ============================================================
 
-@bp.route("/subjects", methods=["GET"])
+@bp.route(
+    "/subjects",
+    methods=["GET"]
+)
 @login_required
 def all_subjects():
+
+    # ========================================================
+    # CURRENT USER ROLE
+    # ========================================================
+
+    current_role = (
+        getattr(
+            current_user,
+            "role",
+            None
+        ) or ""
+    ).strip().lower()
+
+    # ========================================================
+    # ALLOWED ROLES
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if current_role not in allowed_roles:
+
+        flash(
+            "You do not have permission to view subjects.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.dashboard")
+        )
+
+    # ========================================================
+    # ROLE FLAGS
+    # ========================================================
+
+    is_superadmin = (
+        current_role == "superadmin"
+    )
+
+    is_school_admin = (
+        current_role == "school_admin"
+    )
+
+    is_branch_admin = (
+        current_role == "branch_admin"
+    )
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    current_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    current_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # REQUIRED SCOPE
+    # ========================================================
+
+    if is_school_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+    if is_branch_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+        if current_branch_id is None:
+
+            flash(
+                "Your account is not assigned to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
 
     # ========================================================
     # FILTERS
     # ========================================================
 
     search = (
-        request.args.get("search", "")
-        .strip()
-    )
+        request.args.get(
+            "search",
+            ""
+        ) or ""
+    ).strip()
 
     institution_filter = (
         request.args.get(
             "institution_id",
             ""
-        ).strip()
-    )
+        ) or ""
+    ).strip()
 
     branch_filter = (
         request.args.get(
             "branch_id",
             ""
-        ).strip()
-    )
+        ) or ""
+    ).strip()
 
     program_filter = (
         request.args.get(
             "program_id",
             ""
-        ).strip()
-    )
+        ) or ""
+    ).strip()
 
     subject_type_filter = (
         request.args.get(
             "subject_type",
             ""
-        ).strip()
-    )
+        ) or ""
+    ).strip().lower()
 
     status_filter = (
         request.args.get(
             "status",
             ""
-        ).strip()
-    )
+        ) or ""
+    ).strip().lower()
+
+    # ========================================================
+    # PAGINATION
+    # ========================================================
 
     page = request.args.get(
         "page",
@@ -22943,22 +25323,59 @@ def all_subjects():
     }:
         per_page = 25
 
-
     # ========================================================
     # BASE QUERY
     # ========================================================
 
     query = Subject.query
 
-
     # ========================================================
     # SECURITY SCOPE
+    #
+    # SUPERADMIN
+    #     All subjects.
+    #
+    # SCHOOL ADMIN
+    #     Subjects inside own institution.
+    #
+    # BRANCH ADMIN
+    #     Subjects inside own branch ONLY.
     # ========================================================
 
-    query = _subject_scope_query(
-        query
-    )
+    if is_superadmin:
 
+        # ----------------------------------------------------
+        # No restriction
+        # ----------------------------------------------------
+
+        pass
+
+    elif is_school_admin:
+
+        query = query.filter(
+            Subject.institution_id
+            == current_institution_id
+        )
+
+    elif is_branch_admin:
+
+        # ----------------------------------------------------
+        # IMPORTANT:
+        # Branch Admin MUST NEVER see:
+        #
+        # - another institution
+        # - another branch
+        # - institution-wide subjects
+        #
+        # Only exact current branch.
+        # ----------------------------------------------------
+
+        query = query.filter(
+            Subject.institution_id
+            == current_institution_id,
+            Subject.branch_id
+            == current_branch_id
+        )
 
     # ========================================================
     # INSTITUTION FILTER
@@ -22967,19 +25384,75 @@ def all_subjects():
     if institution_filter:
 
         try:
+
             institution_id = int(
                 institution_filter
             )
 
-            query = query.filter(
-                Subject.institution_id ==
-                institution_id
-            )
+            if institution_id > 0:
+
+                # --------------------------------------------
+                # BRANCH ADMIN
+                # --------------------------------------------
+
+                if is_branch_admin:
+
+                    # Never allow the URL filter to escape
+                    # the user's institution.
+
+                    if (
+                        institution_id
+                        != current_institution_id
+                    ):
+
+                        # Force impossible query.
+                        query = query.filter(
+                            Subject.id == -1
+                        )
+
+                    else:
+
+                        query = query.filter(
+                            Subject.institution_id
+                            == current_institution_id
+                        )
+
+                # --------------------------------------------
+                # SCHOOL ADMIN
+                # --------------------------------------------
+
+                elif is_school_admin:
+
+                    if (
+                        institution_id
+                        != current_institution_id
+                    ):
+
+                        query = query.filter(
+                            Subject.id == -1
+                        )
+
+                    else:
+
+                        query = query.filter(
+                            Subject.institution_id
+                            == institution_id
+                        )
+
+                # --------------------------------------------
+                # SUPERADMIN
+                # --------------------------------------------
+
+                else:
+
+                    query = query.filter(
+                        Subject.institution_id
+                        == institution_id
+                    )
 
         except (TypeError, ValueError):
 
             pass
-
 
     # ========================================================
     # BRANCH FILTER
@@ -22988,19 +25461,79 @@ def all_subjects():
     if branch_filter:
 
         try:
+
             branch_id = int(
                 branch_filter
             )
 
-            query = query.filter(
-                Subject.branch_id ==
-                branch_id
-            )
+            if branch_id > 0:
+
+                # --------------------------------------------
+                # BRANCH ADMIN
+                # --------------------------------------------
+
+                if is_branch_admin:
+
+                    # Cannot select another branch.
+
+                    if (
+                        branch_id
+                        != current_branch_id
+                    ):
+
+                        query = query.filter(
+                            Subject.id == -1
+                        )
+
+                    else:
+
+                        query = query.filter(
+                            Subject.branch_id
+                            == current_branch_id
+                        )
+
+                # --------------------------------------------
+                # SCHOOL ADMIN
+                # --------------------------------------------
+
+                elif is_school_admin:
+
+                    selected_branch = (
+                        Branch.query.filter(
+                            Branch.id
+                            == branch_id,
+                            Branch.institution_id
+                            == current_institution_id
+                        ).first()
+                    )
+
+                    if selected_branch is None:
+
+                        query = query.filter(
+                            Subject.id == -1
+                        )
+
+                    else:
+
+                        query = query.filter(
+                            Subject.branch_id
+                            == branch_id
+                        )
+
+                # --------------------------------------------
+                # SUPERADMIN
+                # --------------------------------------------
+
+                else:
+
+                    query = query.filter(
+                        Subject.branch_id
+                        == branch_id
+                    )
 
         except (TypeError, ValueError):
 
             pass
-
 
     # ========================================================
     # PROGRAM FILTER
@@ -23009,31 +25542,104 @@ def all_subjects():
     if program_filter:
 
         try:
+
             program_id = int(
                 program_filter
             )
 
-            query = query.filter(
-                Subject.program_id ==
-                program_id
-            )
+            if program_id > 0:
+
+                # --------------------------------------------
+                # BRANCH ADMIN
+                # --------------------------------------------
+
+                if is_branch_admin:
+
+                    selected_program = (
+                        Program.query.filter(
+                            Program.id
+                            == program_id,
+                            Program.institution_id
+                            == current_institution_id,
+                            db.or_(
+                                Program.branch_id
+                                == current_branch_id,
+                                Program.branch_id.is_(None)
+                            )
+                        ).first()
+                    )
+
+                    if selected_program is None:
+
+                        query = query.filter(
+                            Subject.id == -1
+                        )
+
+                    else:
+
+                        query = query.filter(
+                            Subject.program_id
+                            == program_id
+                        )
+
+                # --------------------------------------------
+                # SCHOOL ADMIN
+                # --------------------------------------------
+
+                elif is_school_admin:
+
+                    selected_program = (
+                        Program.query.filter(
+                            Program.id
+                            == program_id,
+                            Program.institution_id
+                            == current_institution_id
+                        ).first()
+                    )
+
+                    if selected_program is None:
+
+                        query = query.filter(
+                            Subject.id == -1
+                        )
+
+                    else:
+
+                        query = query.filter(
+                            Subject.program_id
+                            == program_id
+                        )
+
+                # --------------------------------------------
+                # SUPERADMIN
+                # --------------------------------------------
+
+                else:
+
+                    query = query.filter(
+                        Subject.program_id
+                        == program_id
+                    )
 
         except (TypeError, ValueError):
 
             pass
 
-
     # ========================================================
-    # TYPE FILTER
+    # SUBJECT TYPE FILTER
     # ========================================================
 
     if subject_type_filter:
 
-        query = query.filter(
-            Subject.subject_type ==
+        if (
             subject_type_filter
-        )
+            in SUBJECT_TYPES
+        ):
 
+            query = query.filter(
+                Subject.subject_type
+                == subject_type_filter
+            )
 
     # ========================================================
     # STATUS FILTER
@@ -23041,11 +25647,15 @@ def all_subjects():
 
     if status_filter:
 
-        query = query.filter(
-            Subject.status ==
+        if (
             status_filter
-        )
+            in SUBJECT_STATUSES
+        ):
 
+            query = query.filter(
+                Subject.status
+                == status_filter
+            )
 
     # ========================================================
     # SEARCH
@@ -23058,7 +25668,7 @@ def all_subjects():
         )
 
         query = query.filter(
-            or_(
+            db.or_(
                 Subject.name.ilike(
                     search_pattern
                 ),
@@ -23071,7 +25681,6 @@ def all_subjects():
             )
         )
 
-
     # ========================================================
     # ORDER
     # ========================================================
@@ -23080,7 +25689,6 @@ def all_subjects():
         Subject.name.asc(),
         Subject.id.desc()
     )
-
 
     # ========================================================
     # PAGINATION
@@ -23094,23 +25702,140 @@ def all_subjects():
 
     subjects = pagination.items
 
-
     # ========================================================
     # FILTER DATA
+    #
+    # Do NOT blindly use global helper functions here.
+    # Build the lists according to the user's scope.
     # ========================================================
 
-    institutions = (
-        _subject_allowed_institutions()
-    )
+    # ========================================================
+    # INSTITUTIONS
+    # ========================================================
 
-    branches = (
-        _subject_allowed_branches()
-    )
+    if is_superadmin:
 
-    programs = (
-        _subject_allowed_programs()
-    )
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
 
+    else:
+
+        institutions = (
+            Institution.query.filter(
+                Institution.id
+                == current_institution_id
+            )
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # BRANCHES
+    # ========================================================
+
+    if is_superadmin:
+
+        branches = (
+            Branch.query
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    elif is_school_admin:
+
+        branches = (
+            Branch.query.filter(
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN:
+        # EXACTLY ONE BRANCH
+        # ----------------------------------------------------
+
+        branches = (
+            Branch.query.filter(
+                Branch.id
+                == current_branch_id,
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # PROGRAMS
+    # ========================================================
+
+    if is_superadmin:
+
+        programs = (
+            Program.query
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    elif is_school_admin:
+
+        programs = (
+            Program.query.filter(
+                Program.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN
+        #
+        # Programs allowed:
+        #
+        # 1. Current branch programs
+        # 2. Institution-wide programs
+        # ----------------------------------------------------
+
+        programs = (
+            Program.query.filter(
+                Program.institution_id
+                == current_institution_id,
+                db.or_(
+                    Program.branch_id
+                    == current_branch_id,
+                    Program.branch_id.is_(None)
+                )
+            )
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
 
     # ========================================================
     # RENDER
@@ -23118,22 +25843,58 @@ def all_subjects():
 
     return render_template(
         "backend/pages/subjects/all_subjects.html",
+
+        # ----------------------------------------------------
+        # DATA
+        # ----------------------------------------------------
+
         subjects=subjects,
         pagination=pagination,
+
+        # ----------------------------------------------------
+        # FILTER DATA
+        # ----------------------------------------------------
+
         institutions=institutions,
         branches=branches,
         programs=programs,
+
         subject_types=SUBJECT_TYPES,
         subject_statuses=SUBJECT_STATUSES,
+
+        # ----------------------------------------------------
+        # CURRENT FILTERS
+        # ----------------------------------------------------
+
         search=search,
         institution_filter=institution_filter,
         branch_filter=branch_filter,
         program_filter=program_filter,
         subject_type_filter=subject_type_filter,
         status_filter=status_filter,
+
+        # ----------------------------------------------------
+        # ROLE / SCOPE DATA
+        # ----------------------------------------------------
+
+        is_superadmin=is_superadmin,
+        is_school_admin=is_school_admin,
+        is_branch_admin=is_branch_admin,
+
+        current_user_institution_id=(
+            current_institution_id
+        ),
+
+        current_user_branch_id=(
+            current_branch_id
+        ),
+
+        # ----------------------------------------------------
+        # CURRENT USER
+        # ----------------------------------------------------
+
         user=current_user
     )
-
 
 # ============================================================
 # GENERATE NEXT SUBJECT CODE
@@ -23247,6 +26008,7 @@ def _generate_next_subject_code(
     return f"SUB{next_number:03d}"
 
 
+
 # ============================================================
 # ADD SUBJECT
 # ============================================================
@@ -23258,10 +26020,25 @@ def _generate_next_subject_code(
 def add_subject():
 
     # ========================================================
-    # PERMISSION
+    # CURRENT USER ROLE
     # ========================================================
 
-    if not _subject_can_manage_global():
+    current_role = (
+        getattr(current_user, "role", None)
+        or ""
+    ).strip().lower()
+
+    # ========================================================
+    # ROLE PERMISSION
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if current_role not in allowed_roles:
 
         flash(
             "You do not have permission to create subjects.",
@@ -23273,24 +26050,155 @@ def add_subject():
         )
 
     # ========================================================
-    # SELECTED INSTITUTION
+    # ROLE FLAGS
+    # ========================================================
+
+    is_superadmin = (
+        current_role == "superadmin"
+    )
+
+    is_school_admin = (
+        current_role == "school_admin"
+    )
+
+    is_branch_admin = (
+        current_role == "branch_admin"
+    )
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    current_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    current_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # BRANCH ADMIN MUST HAVE INSTITUTION + BRANCH
+    # ========================================================
+
+    if is_branch_admin:
+
+        if not current_institution_id:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_subjects")
+            )
+
+        if not current_branch_id:
+
+            flash(
+                "Your account is not assigned to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_subjects")
+            )
+
+    # ========================================================
+    # SCHOOL ADMIN MUST HAVE INSTITUTION
+    # ========================================================
+
+    if is_school_admin:
+
+        if not current_institution_id:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_subjects")
+            )
+
+    # ========================================================
+    # SELECTED VALUES
     # ========================================================
 
     selected_institution_id = None
+    selected_branch_id = None
+    selected_program_id = None
 
-    if request.method == "POST":
+    # ========================================================
+    # GET
+    # ========================================================
 
-        selected_institution_id = (
-            request.form.get("institution_id")
-            or None
-        )
+    if request.method == "GET":
 
-    else:
+        # ----------------------------------------------------
+        # SUPERADMIN
+        # ----------------------------------------------------
 
-        if not _subject_is_global_user():
+        if is_superadmin:
 
             selected_institution_id = (
-                _subject_get_user_institution_id()
+                request.args.get("institution_id")
+                or None
+            )
+
+            selected_branch_id = (
+                request.args.get("branch_id")
+                or None
+            )
+
+            selected_program_id = (
+                request.args.get("program_id")
+                or None
+            )
+
+        # ----------------------------------------------------
+        # SCHOOL ADMIN
+        # ----------------------------------------------------
+
+        elif is_school_admin:
+
+            selected_institution_id = (
+                current_institution_id
+            )
+
+            selected_branch_id = (
+                request.args.get("branch_id")
+                or None
+            )
+
+            selected_program_id = (
+                request.args.get("program_id")
+                or None
+            )
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN
+        # ----------------------------------------------------
+
+        elif is_branch_admin:
+
+            # NEVER TAKE BRANCH FROM URL
+            selected_institution_id = (
+                current_institution_id
+            )
+
+            selected_branch_id = (
+                current_branch_id
+            )
+
+            selected_program_id = (
+                request.args.get("program_id")
+                or None
             )
 
     # ========================================================
@@ -23374,9 +26282,223 @@ def add_subject():
         short_name = short_name or None
         description = description or None
 
+        # ====================================================
+        # BRANCH ADMIN
+        # FORCE OWN INSTITUTION + BRANCH
+        # ====================================================
+
+        if is_branch_admin:
+
+            institution_id = str(
+                current_institution_id
+            )
+
+            branch_id = str(
+                current_branch_id
+            )
+
+        # ====================================================
+        # SCHOOL ADMIN
+        # FORCE OWN INSTITUTION
+        # ====================================================
+
+        elif is_school_admin:
+
+            institution_id = str(
+                current_institution_id
+            )
+
+        # ====================================================
+        # UPDATE SELECTED VALUES
+        # ====================================================
+
         selected_institution_id = (
             institution_id or None
         )
+
+        selected_branch_id = (
+            branch_id or None
+        )
+
+        selected_program_id = (
+            program_id or None
+        )
+
+        # ====================================================
+        # INSTITUTION
+        # ====================================================
+
+        institution = None
+        institution_id_int = None
+
+        if not institution_id:
+
+            errors["institution_id"] = (
+                "Institution is required."
+            )
+
+        else:
+
+            try:
+
+                institution_id_int = int(
+                    institution_id
+                )
+
+            except (TypeError, ValueError):
+
+                errors["institution_id"] = (
+                    "Invalid institution selected."
+                )
+
+            else:
+
+                institution = (
+                    Institution.query
+                    .filter(
+                        Institution.id
+                        == institution_id_int
+                    )
+                    .first()
+                )
+
+                if not institution:
+
+                    errors["institution_id"] = (
+                        "Selected institution does not exist."
+                    )
+
+                # --------------------------------------------
+                # SCHOOL ADMIN / BRANCH ADMIN
+                # --------------------------------------------
+
+                if (
+                    not is_superadmin
+                    and current_institution_id
+                    and institution_id_int
+                    != int(current_institution_id)
+                ):
+
+                    errors["institution_id"] = (
+                        "You can only use your assigned "
+                        "institution."
+                    )
+
+        # ====================================================
+        # BRANCH
+        # ====================================================
+
+        branch = None
+        branch_id_int = None
+
+        if not branch_id:
+
+            errors["branch_id"] = (
+                "Branch is required."
+            )
+
+        else:
+
+            try:
+
+                branch_id_int = int(
+                    branch_id
+                )
+
+            except (TypeError, ValueError):
+
+                errors["branch_id"] = (
+                    "Invalid branch selected."
+                )
+
+            else:
+
+                branch = (
+                    Branch.query
+                    .filter(
+                        Branch.id
+                        == branch_id_int
+                    )
+                    .first()
+                )
+
+                if not branch:
+
+                    errors["branch_id"] = (
+                        "Selected branch does not exist."
+                    )
+
+                else:
+
+                    # ----------------------------------------
+                    # BRANCH → INSTITUTION
+                    # ----------------------------------------
+
+                    if (
+                        institution_id_int
+                        is not None
+                        and getattr(
+                            branch,
+                            "institution_id",
+                            None
+                        )
+                        != institution_id_int
+                    ):
+
+                        errors["branch_id"] = (
+                            "The selected branch does not "
+                            "belong to the selected institution."
+                        )
+
+                    # ----------------------------------------
+                    # BRANCH ADMIN → OWN BRANCH ONLY
+                    # ----------------------------------------
+
+                    if is_branch_admin:
+
+                        if (
+                            int(branch.id)
+                            != int(current_branch_id)
+                        ):
+
+                            errors["branch_id"] = (
+                                "You can only use your "
+                                "assigned branch."
+                            )
+
+                        if (
+                            getattr(
+                                branch,
+                                "institution_id",
+                                None
+                            )
+                            != int(current_institution_id)
+                        ):
+
+                            errors["branch_id"] = (
+                                "The selected branch does not "
+                                "belong to your institution."
+                            )
+
+                    # ----------------------------------------
+                    # SCHOOL ADMIN → OWN INSTITUTION
+                    # ----------------------------------------
+
+                    if is_school_admin:
+
+                        if (
+                            getattr(
+                                branch,
+                                "institution_id",
+                                None
+                            )
+                            != int(current_institution_id)
+                        ):
+
+                            errors["branch_id"] = (
+                                "You can only use branches "
+                                "from your institution."
+                            )
 
         # ====================================================
         # NAME
@@ -23514,31 +26636,8 @@ def add_subject():
             )
 
         # ====================================================
-        # RELATIONSHIPS
-        # ====================================================
-
-        institution = None
-        branch = None
-        program = None
-
-        (
-            institution,
-            branch,
-            program
-        ) = _validate_subject_relationships(
-            institution_id,
-            branch_id,
-            program_id,
-            errors
-        )
-
-        # ====================================================
         # PROGRAM REQUIRED
         # ====================================================
-        #
-        # Since the code sequence belongs to a Program,
-        # require a Program.
-        #
 
         if not program_id:
 
@@ -23548,35 +26647,122 @@ def add_subject():
             )
 
         # ====================================================
-        # DUPLICATE NAME
+        # PROGRAM
         # ====================================================
 
-        if (
-            institution_id
-            and name
-            and not errors.get("institution_id")
-        ):
+        program = None
+        program_id_int = None
 
-            query = Subject.query.filter(
-                Subject.institution_id == institution_id
-            )
+        if program_id:
 
-            if branch_id:
+            try:
 
-                query = query.filter(
-                    Subject.branch_id == branch_id
+                program_id_int = int(
+                    program_id
+                )
+
+            except (TypeError, ValueError):
+
+                errors["program_id"] = (
+                    "Invalid program selected."
                 )
 
             else:
 
-                query = query.filter(
-                    Subject.branch_id.is_(None)
+                program = (
+                    Program.query
+                    .filter(
+                        Program.id
+                        == program_id_int
+                    )
+                    .first()
                 )
 
-            if program_id:
+                if not program:
+
+                    errors["program_id"] = (
+                        "Selected program does not exist."
+                    )
+
+                else:
+
+                    # ----------------------------------------
+                    # PROGRAM INSTITUTION
+                    # ----------------------------------------
+
+                    program_institution_id = getattr(
+                        program,
+                        "institution_id",
+                        None
+                    )
+
+                    if (
+                        institution_id_int
+                        is not None
+                        and program_institution_id
+                        != institution_id_int
+                    ):
+
+                        errors["program_id"] = (
+                            "The selected program does not "
+                            "belong to the selected institution."
+                        )
+
+                    # ----------------------------------------
+                    # BRANCH ADMIN PROGRAM SCOPE
+                    # ----------------------------------------
+
+                    if is_branch_admin:
+
+                        program_branch_id = getattr(
+                            program,
+                            "branch_id",
+                            None
+                        )
+
+                        # Program may be:
+                        #
+                        # - Current branch
+                        # - Institution-wide (NULL branch)
+                        #
+
+                        if (
+                            program_branch_id is not None
+                            and int(program_branch_id)
+                            != int(current_branch_id)
+                        ):
+
+                            errors["program_id"] = (
+                                "You can only use programs "
+                                "assigned to your branch or "
+                                "institution-wide programs."
+                            )
+
+        # ====================================================
+        # DUPLICATE SUBJECT
+        # ====================================================
+
+        if (
+            institution_id_int is not None
+            and branch_id_int is not None
+            and name
+            and not errors.get("institution_id")
+            and not errors.get("branch_id")
+        ):
+
+            query = Subject.query.filter(
+                Subject.institution_id
+                == institution_id_int,
+
+                Subject.branch_id
+                == branch_id_int
+            )
+
+            if program_id_int:
 
                 query = query.filter(
-                    Subject.program_id == program_id
+                    Subject.program_id
+                    == program_id_int
                 )
 
             else:
@@ -23586,7 +26772,9 @@ def add_subject():
                 )
 
             query = query.filter(
-                db.func.lower(Subject.name)
+                db.func.lower(
+                    Subject.name
+                )
                 == name.lower()
             )
 
@@ -23598,7 +26786,7 @@ def add_subject():
                 )
 
         # ====================================================
-        # GENERATE CODE
+        # GENERATE SUBJECT CODE
         # ====================================================
 
         code = None
@@ -23606,23 +26794,22 @@ def add_subject():
         if not errors:
 
             code = _generate_next_subject_code(
-                institution_id=int(
-                    institution_id
+
+                institution_id=(
+                    institution_id_int
                 ),
+
                 branch_id=(
-                    int(branch_id)
-                    if branch_id
-                    else None
+                    branch_id_int
                 ),
+
                 program_id=(
-                    int(program_id)
-                    if program_id
-                    else None
+                    program_id_int
                 )
             )
 
         # ====================================================
-        # CREATE
+        # CREATE SUBJECT
         # ====================================================
 
         if not errors:
@@ -23631,27 +26818,19 @@ def add_subject():
 
                 subject = Subject(
 
-                    institution_id=int(
-                        institution_id
+                    institution_id=(
+                        institution_id_int
                     ),
 
                     branch_id=(
-                        int(branch_id)
-                        if branch_id
-                        else None
+                        branch_id_int
                     ),
 
                     program_id=(
-                        int(program_id)
-                        if program_id
-                        else None
+                        program_id_int
                     ),
 
                     name=name,
-
-                    # ========================================
-                    # AUTOMATIC CODE
-                    # ========================================
 
                     code=code,
 
@@ -23699,7 +26878,11 @@ def add_subject():
                 )
 
                 error_text = str(
-                    getattr(exc, "orig", exc)
+                    getattr(
+                        exc,
+                        "orig",
+                        exc
+                    )
                 ).lower()
 
                 if "code" in error_text:
@@ -23754,12 +26937,246 @@ def add_subject():
                 )
 
     # ========================================================
-    # FORM CONTEXT
+    # FORM DATA
     # ========================================================
 
-    context = _subject_form_context(
-        selected_institution_id
-    )
+    # ========================================================
+    # INSTITUTIONS
+    # ========================================================
+
+    if is_superadmin:
+
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        institution = None
+
+        if current_institution_id:
+
+            institution = (
+                Institution.query
+                .filter(
+                    Institution.id
+                    == current_institution_id
+                )
+                .first()
+            )
+
+        institutions = (
+            [institution]
+            if institution
+            else []
+        )
+
+    # ========================================================
+    # BRANCHES
+    # ========================================================
+
+    if is_superadmin:
+
+        # SUPERADMIN → ALL BRANCHES
+
+        branches = (
+            Branch.query
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    elif is_school_admin:
+
+        # SCHOOL ADMIN → ALL BRANCHES
+        # OF HIS INSTITUTION
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    elif is_branch_admin:
+
+        # ====================================================
+        # BRANCH ADMIN → ONLY HIS BRANCH
+        # ====================================================
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.id
+                == current_branch_id,
+
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        branches = []
+
+    # ========================================================
+    # PROGRAMS
+    # ========================================================
+
+    if is_superadmin:
+
+        programs = (
+            Program.query
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    elif is_school_admin:
+
+        programs = (
+            Program.query
+            .filter(
+                Program.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    elif is_branch_admin:
+
+        # ====================================================
+        # BRANCH ADMIN:
+        #
+        # Current branch programs
+        # +
+        # Institution-wide programs
+        # ====================================================
+
+        programs = (
+            Program.query
+            .filter(
+                Program.institution_id
+                == current_institution_id
+            )
+            .filter(
+                db.or_(
+                    Program.branch_id
+                    == current_branch_id,
+
+                    Program.branch_id.is_(None)
+                )
+            )
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        programs = []
+
+    # ========================================================
+    # FINAL BRANCH ADMIN SAFETY FILTER
+    # ========================================================
+
+    if is_branch_admin:
+
+        branches = [
+            branch
+            for branch in branches
+            if (
+                int(branch.id)
+                == int(current_branch_id)
+                and
+                int(branch.institution_id)
+                == int(current_institution_id)
+            )
+        ]
+
+    # ========================================================
+    # FINAL CONTEXT
+    # ========================================================
+
+    context = {
+
+        # ----------------------------------------------------
+        # DATA
+        # ----------------------------------------------------
+
+        "institutions": institutions,
+
+        "branches": branches,
+
+        "programs": programs,
+
+        # ----------------------------------------------------
+        # SELECTED
+        # ----------------------------------------------------
+
+        "selected_institution_id": (
+            selected_institution_id
+        ),
+
+        "selected_branch_id": (
+            selected_branch_id
+        ),
+
+        "selected_program_id": (
+            selected_program_id
+        ),
+
+        # ----------------------------------------------------
+        # USER
+        # ----------------------------------------------------
+
+        "current_user_role": (
+            current_role
+        ),
+
+        "current_user_institution_id": (
+            current_institution_id
+        ),
+
+        "current_user_branch_id": (
+            current_branch_id
+        ),
+
+        # ----------------------------------------------------
+        # ROLE FLAGS
+        # ----------------------------------------------------
+
+        "is_superadmin": (
+            is_superadmin
+        ),
+
+        "is_school_admin": (
+            is_school_admin
+        ),
+
+        "is_branch_admin": (
+            is_branch_admin
+        ),
+    }
 
     # ========================================================
     # RENDER
@@ -23769,8 +27186,6 @@ def add_subject():
         "backend/pages/subjects/add_subject.html",
         **context
     )
-
-
 
 
 
@@ -23830,7 +27245,10 @@ def view_subject(subject_id):
 # ============================================================
 # EDIT SUBJECT
 # ============================================================
-@bp.route("/subjects/<int:subject_id>/edit", methods=["GET", "POST"])
+@bp.route(
+    "/subjects/<int:subject_id>/edit",
+    methods=["GET", "POST"]
+)
 @login_required
 def edit_subject(subject_id):
 
@@ -23841,65 +27259,178 @@ def edit_subject(subject_id):
     subject = Subject.query.get_or_404(subject_id)
 
     # ============================================================
-    # PERMISSION
+    # CURRENT USER ROLE
     # ============================================================
 
-    if not _subject_can_manage_global():
+    current_role = (
+        getattr(current_user, "role", None) or ""
+    ).strip().lower()
+
+    # ============================================================
+    # ALLOWED ROLES
+    # ============================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if current_role not in allowed_roles:
+
         flash(
             "You do not have permission to edit subjects.",
             "danger"
         )
+
         return redirect(
             url_for("main.all_subjects")
         )
 
     # ============================================================
-    # SCOPE SECURITY
+    # ROLE FLAGS
     # ============================================================
 
-    user_institution_id = (
-        _subject_get_user_institution_id()
+    is_superadmin = (
+        current_role == "superadmin"
     )
 
-    user_branch_id = (
-        _subject_get_user_branch_id()
+    is_school_admin = (
+        current_role == "school_admin"
     )
 
-    is_global_user = _subject_is_global_user()
+    is_branch_admin = (
+        current_role == "branch_admin"
+    )
 
-    # ------------------------------------------------------------
-    # Institution scope
-    # ------------------------------------------------------------
+    # ============================================================
+    # CURRENT USER SCOPE
+    # ============================================================
 
-    if (
-        user_institution_id is not None
-        and subject.institution_id != user_institution_id
-    ):
-        flash(
-            "You are not authorized to edit this subject.",
-            "danger"
-        )
-        return redirect(
-            url_for("main.all_subjects")
-        )
+    current_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
 
-    # ------------------------------------------------------------
-    # Branch scope
-    # ------------------------------------------------------------
+    current_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
 
-    if (
-        not is_global_user
-        and user_branch_id is not None
-        and subject.branch_id is not None
-        and subject.branch_id != user_branch_id
-    ):
-        flash(
-            "You are not authorized to edit this subject.",
-            "danger"
-        )
-        return redirect(
-            url_for("main.all_subjects")
-        )
+    # ============================================================
+    # REQUIRED SCOPE VALIDATION
+    # ============================================================
+
+    if is_school_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_subjects")
+            )
+
+    if is_branch_admin:
+
+        if current_institution_id is None:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_subjects")
+            )
+
+        if current_branch_id is None:
+
+            flash(
+                "Your account is not assigned to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_subjects")
+            )
+
+    # ============================================================
+    # EXISTING SUBJECT SECURITY
+    #
+    # SUPERADMIN
+    #     Can edit everything.
+    #
+    # SCHOOL ADMIN
+    #     Can edit subjects inside own institution.
+    #
+    # BRANCH ADMIN
+    #     Can edit subjects inside own branch ONLY.
+    # ============================================================
+
+    if is_school_admin:
+
+        if (
+            subject.institution_id
+            != current_institution_id
+        ):
+
+            flash(
+                "You are not authorized to edit this subject.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_subjects")
+            )
+
+    elif is_branch_admin:
+
+        # --------------------------------------------------------
+        # Institution must match
+        # --------------------------------------------------------
+
+        if (
+            subject.institution_id
+            != current_institution_id
+        ):
+
+            flash(
+                "You are not authorized to edit this subject.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_subjects")
+            )
+
+        # --------------------------------------------------------
+        # Branch MUST match exactly
+        #
+        # branch_admin cannot edit:
+        # - another branch subject
+        # - institution-wide subject (branch_id=None)
+        # --------------------------------------------------------
+
+        if (
+            subject.branch_id
+            != current_branch_id
+        ):
+
+            flash(
+                "You are not authorized to edit a subject "
+                "outside your assigned branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_subjects")
+            )
 
     # ============================================================
     # POST
@@ -23919,23 +27450,38 @@ def edit_subject(subject_id):
 
         institution_id = None
 
-        if not institution_raw:
-            errors["institution_id"] = (
-                "Institution is required."
-            )
-        else:
-            try:
-                institution_id = int(
-                    institution_raw
-                )
+        if is_branch_admin or is_school_admin:
 
-                if institution_id <= 0:
-                    raise ValueError
+            # ----------------------------------------------------
+            # NEVER TRUST FORM FOR ADMIN SCOPE
+            # ----------------------------------------------------
 
-            except (TypeError, ValueError):
+            institution_id = current_institution_id
+
+        elif is_superadmin:
+
+            if not institution_raw:
+
                 errors["institution_id"] = (
-                    "Invalid institution."
+                    "Institution is required."
                 )
+
+            else:
+
+                try:
+
+                    institution_id = int(
+                        institution_raw
+                    )
+
+                    if institution_id <= 0:
+                        raise ValueError
+
+                except (TypeError, ValueError):
+
+                    errors["institution_id"] = (
+                        "Invalid institution."
+                    )
 
         # ========================================================
         # BRANCH
@@ -23947,14 +27493,28 @@ def edit_subject(subject_id):
 
         branch_id = None
 
-        if branch_raw:
+        if is_branch_admin:
+
+            # ----------------------------------------------------
+            # BRANCH ADMIN:
+            # FORCE CURRENT BRANCH
+            # ----------------------------------------------------
+
+            branch_id = current_branch_id
+
+        elif branch_raw:
+
             try:
-                branch_id = int(branch_raw)
+
+                branch_id = int(
+                    branch_raw
+                )
 
                 if branch_id <= 0:
                     raise ValueError
 
             except (TypeError, ValueError):
+
                 errors["branch_id"] = (
                     "Invalid branch."
                 )
@@ -23969,14 +27529,25 @@ def edit_subject(subject_id):
 
         program_id = None
 
-        if program_raw:
+        if not program_raw:
+
+            errors["program_id"] = (
+                "Program is required."
+            )
+
+        else:
+
             try:
-                program_id = int(program_raw)
+
+                program_id = int(
+                    program_raw
+                )
 
                 if program_id <= 0:
                     raise ValueError
 
             except (TypeError, ValueError):
+
                 errors["program_id"] = (
                     "Invalid program."
                 )
@@ -23990,19 +27561,23 @@ def edit_subject(subject_id):
         ).strip()
 
         if not name:
+
             errors["name"] = (
                 "Subject name is required."
             )
 
         elif len(name) > 150:
+
             errors["name"] = (
-                "Subject name cannot exceed 150 characters."
+                "Subject name cannot exceed "
+                "150 characters."
             )
 
         # ========================================================
+        # SUBJECT CODE
+        #
         # IMPORTANT:
-        # CODE IS NOT TAKEN FROM USER
-        # KEEP EXISTING DATABASE CODE
+        # CODE IS NEVER CHANGED FROM FORM.
         # ========================================================
 
         code = (
@@ -24010,8 +27585,10 @@ def edit_subject(subject_id):
         ).strip().upper()
 
         if not code:
+
             errors["code"] = (
-                "This subject does not have a valid subject code."
+                "This subject does not have a valid "
+                "subject code."
             )
 
         # ========================================================
@@ -24023,12 +27600,16 @@ def edit_subject(subject_id):
         ).strip()
 
         if short_name:
+
             if len(short_name) > 100:
+
                 errors["short_name"] = (
-                    "Short name cannot exceed 100 characters."
+                    "Short name cannot exceed "
+                    "100 characters."
                 )
 
         else:
+
             short_name = None
 
         # ========================================================
@@ -24041,6 +27622,7 @@ def edit_subject(subject_id):
         ).strip().lower()
 
         if subject_type not in SUBJECT_TYPES:
+
             errors["subject_type"] = (
                 "Invalid subject type."
             )
@@ -24055,6 +27637,7 @@ def edit_subject(subject_id):
         ).strip().lower()
 
         if status not in SUBJECT_STATUSES:
+
             errors["status"] = (
                 "Invalid subject status."
             )
@@ -24074,6 +27657,7 @@ def edit_subject(subject_id):
             weekly_hours is not None
             and weekly_hours < Decimal("0")
         ):
+
             errors["weekly_hours"] = (
                 "Weekly hours cannot be negative."
             )
@@ -24093,6 +27677,7 @@ def edit_subject(subject_id):
             credit_hours is not None
             and credit_hours < Decimal("0")
         ):
+
             errors["credit_hours"] = (
                 "Credit hours cannot be negative."
             )
@@ -24112,6 +27697,7 @@ def edit_subject(subject_id):
             max_marks is not None
             and max_marks <= Decimal("0")
         ):
+
             errors["max_marks"] = (
                 "Maximum marks must be greater than 0."
             )
@@ -24131,12 +27717,13 @@ def edit_subject(subject_id):
             pass_marks is not None
             and pass_marks < Decimal("0")
         ):
+
             errors["pass_marks"] = (
                 "Pass marks cannot be negative."
             )
 
         # ========================================================
-        # PASS <= MAX
+        # PASS MARKS <= MAX MARKS
         # ========================================================
 
         if (
@@ -24144,8 +27731,10 @@ def edit_subject(subject_id):
             and pass_marks is not None
             and pass_marks > max_marks
         ):
+
             errors["pass_marks"] = (
-                "Pass marks cannot be greater than maximum marks."
+                "Pass marks cannot be greater than "
+                "maximum marks."
             )
 
         # ========================================================
@@ -24160,46 +27749,151 @@ def edit_subject(subject_id):
             description = None
 
         # ========================================================
+        # USER SCOPE SECURITY
+        #
+        # This is backend enforcement.
+        # Even if someone modifies HTML/POST manually,
+        # branch_admin cannot escape his scope.
+        # ========================================================
+
+        if is_school_admin:
+
+            if (
+                institution_id
+                != current_institution_id
+            ):
+
+                errors["institution_id"] = (
+                    "You cannot move this subject "
+                    "to another institution."
+                )
+
+        if is_branch_admin:
+
+            # ----------------------------------------------------
+            # Force institution
+            # ----------------------------------------------------
+
+            institution_id = (
+                current_institution_id
+            )
+
+            # ----------------------------------------------------
+            # Force branch
+            # ----------------------------------------------------
+
+            branch_id = (
+                current_branch_id
+            )
+
+        # ========================================================
         # RELATIONSHIP VALIDATION
         # ========================================================
 
         if institution_id is not None:
 
-            relationship_errors = (
-                _validate_subject_relationships(
-                    institution_id,
-                    branch_id,
-                    program_id,
-                    errors
-                )
+            _validate_subject_relationships(
+                institution_id,
+                branch_id,
+                program_id,
+                errors
             )
 
         # ========================================================
-        # USER SCOPE VALIDATION
+        # EXTRA BRANCH ADMIN PROGRAM SECURITY
+        #
+        # Program must belong to:
+        #
+        #   1. Current institution
+        #   2. Current branch
+        #
+        # OR:
+        #
+        #   Institution-wide program (branch_id=NULL)
         # ========================================================
-
-        if institution_id is not None:
-
-            if (
-                user_institution_id is not None
-                and institution_id != user_institution_id
-            ):
-                errors["institution_id"] = (
-                    "You cannot move this subject to another institution."
-                )
 
         if (
-            not is_global_user
-            and user_branch_id is not None
-            and branch_id is not None
-            and branch_id != user_branch_id
+            is_branch_admin
+            and program_id is not None
         ):
-            errors["branch_id"] = (
-                "You cannot move this subject to another branch."
+
+            selected_program = (
+                Program.query.filter(
+                    Program.id == program_id,
+                    Program.institution_id
+                    == current_institution_id
+                ).first()
             )
 
+            if selected_program is None:
+
+                errors["program_id"] = (
+                    "You cannot use a program "
+                    "outside your institution."
+                )
+
+            elif (
+                selected_program.branch_id is not None
+                and selected_program.branch_id
+                != current_branch_id
+            ):
+
+                errors["program_id"] = (
+                    "You cannot use a program "
+                    "outside your assigned branch."
+                )
+
         # ========================================================
-        # DUPLICATE NAME
+        # BRANCH SECURITY
+        # ========================================================
+
+        if branch_id is not None:
+
+            selected_branch = (
+                Branch.query.filter(
+                    Branch.id == branch_id
+                ).first()
+            )
+
+            if selected_branch is None:
+
+                errors["branch_id"] = (
+                    "Selected branch does not exist."
+                )
+
+            else:
+
+                if (
+                    institution_id is not None
+                    and selected_branch.institution_id
+                    != institution_id
+                ):
+
+                    errors["branch_id"] = (
+                        "Selected branch does not "
+                        "belong to the selected institution."
+                    )
+
+                # ------------------------------------------------
+                # BRANCH ADMIN MUST USE OWN BRANCH
+                # ------------------------------------------------
+
+                if (
+                    is_branch_admin
+                    and selected_branch.id
+                    != current_branch_id
+                ):
+
+                    errors["branch_id"] = (
+                        "You cannot move this subject "
+                        "to another branch."
+                    )
+
+        # ========================================================
+        # DUPLICATE SUBJECT NAME
+        #
+        # Same name is allowed in different branches,
+        # but not within the same institution + branch.
         # ========================================================
 
         if (
@@ -24207,19 +27901,23 @@ def edit_subject(subject_id):
             and name
         ):
 
-            duplicate_name_query = Subject.query.filter(
-                Subject.id != subject.id,
-                Subject.institution_id == institution_id,
-                db.func.lower(
-                    Subject.name
-                ) == name.lower()
+            duplicate_name_query = (
+                Subject.query.filter(
+                    Subject.id != subject.id,
+                    Subject.institution_id
+                    == institution_id,
+                    db.func.lower(
+                        Subject.name
+                    ) == name.lower()
+                )
             )
 
             if branch_id is not None:
 
                 duplicate_name_query = (
                     duplicate_name_query.filter(
-                        Subject.branch_id == branch_id
+                        Subject.branch_id
+                        == branch_id
                     )
                 )
 
@@ -24236,16 +27934,17 @@ def edit_subject(subject_id):
             )
 
             if duplicate_name:
+
                 errors["name"] = (
-                    "Another subject with this name already exists "
-                    "in the selected institution and branch."
+                    "Another subject with this name "
+                    "already exists in the selected "
+                    "institution and branch."
                 )
 
         # ========================================================
-        # DUPLICATE CODE
+        # DUPLICATE SUBJECT CODE
         #
-        # Existing code is preserved, but relationship scope
-        # may change. Therefore check code in new scope.
+        # Existing code is preserved.
         # ========================================================
 
         if (
@@ -24253,19 +27952,23 @@ def edit_subject(subject_id):
             and code
         ):
 
-            duplicate_code_query = Subject.query.filter(
-                Subject.id != subject.id,
-                Subject.institution_id == institution_id,
-                db.func.upper(
-                    Subject.code
-                ) == code.upper()
+            duplicate_code_query = (
+                Subject.query.filter(
+                    Subject.id != subject.id,
+                    Subject.institution_id
+                    == institution_id,
+                    db.func.upper(
+                        Subject.code
+                    ) == code.upper()
+                )
             )
 
             if branch_id is not None:
 
                 duplicate_code_query = (
                     duplicate_code_query.filter(
-                        Subject.branch_id == branch_id
+                        Subject.branch_id
+                        == branch_id
                     )
                 )
 
@@ -24282,9 +27985,11 @@ def edit_subject(subject_id):
             )
 
             if duplicate_code:
+
                 errors["code"] = (
-                    "The existing subject code is already used "
-                    "in the selected institution and branch."
+                    "The existing subject code is "
+                    "already used in the selected "
+                    "institution and branch."
                 )
 
         # ========================================================
@@ -24294,18 +27999,154 @@ def edit_subject(subject_id):
         if errors:
 
             for message in errors.values():
-                flash(message, "danger")
 
-            context = _subject_form_context(
-                institution_id
-                if institution_id is not None
-                else subject.institution_id
-            )
+                flash(
+                    message,
+                    "danger"
+                )
+
+            # ----------------------------------------------------
+            # BUILD SAFE FORM CONTEXT
+            # ----------------------------------------------------
+
+            if is_superadmin:
+
+                institutions = (
+                    Institution.query
+                    .order_by(
+                        Institution.name.asc()
+                    )
+                    .all()
+                )
+
+                branches = (
+                    Branch.query
+                    .order_by(
+                        Branch.name.asc()
+                    )
+                    .all()
+                )
+
+                programs = (
+                    Program.query
+                    .order_by(
+                        Program.name.asc()
+                    )
+                    .all()
+                )
+
+            elif is_school_admin:
+
+                institutions = (
+                    Institution.query.filter(
+                        Institution.id
+                        == current_institution_id
+                    )
+                    .order_by(
+                        Institution.name.asc()
+                    )
+                    .all()
+                )
+
+                branches = (
+                    Branch.query.filter(
+                        Branch.institution_id
+                        == current_institution_id
+                    )
+                    .order_by(
+                        Branch.name.asc()
+                    )
+                    .all()
+                )
+
+                programs = (
+                    Program.query.filter(
+                        Program.institution_id
+                        == current_institution_id
+                    )
+                    .order_by(
+                        Program.name.asc()
+                    )
+                    .all()
+                )
+
+            else:
+
+                # ------------------------------------------------
+                # BRANCH ADMIN
+                # ONLY ONE BRANCH
+                # ------------------------------------------------
+
+                institutions = (
+                    Institution.query.filter(
+                        Institution.id
+                        == current_institution_id
+                    )
+                    .order_by(
+                        Institution.name.asc()
+                    )
+                    .all()
+                )
+
+                branches = (
+                    Branch.query.filter(
+                        Branch.id
+                        == current_branch_id,
+                        Branch.institution_id
+                        == current_institution_id
+                    )
+                    .order_by(
+                        Branch.name.asc()
+                    )
+                    .all()
+                )
+
+                programs = (
+                    Program.query.filter(
+                        Program.institution_id
+                        == current_institution_id,
+                        db.or_(
+                            Program.branch_id
+                            == current_branch_id,
+                            Program.branch_id.is_(None)
+                        )
+                    )
+                    .order_by(
+                        Program.name.asc()
+                    )
+                    .all()
+                )
 
             return render_template(
                 "backend/pages/subjects/edit_subject.html",
-                **context,
-                subject=subject
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                subject=subject,
+                is_superadmin=is_superadmin,
+                is_school_admin=is_school_admin,
+                is_branch_admin=is_branch_admin,
+                current_user_institution_id=(
+                    current_institution_id
+                ),
+                current_user_branch_id=(
+                    current_branch_id
+                ),
+                selected_institution_id=(
+                    institution_id
+                    if institution_id is not None
+                    else subject.institution_id
+                ),
+                selected_branch_id=(
+                    branch_id
+                    if branch_id is not None
+                    else subject.branch_id
+                ),
+                selected_program_id=(
+                    program_id
+                    if program_id is not None
+                    else subject.program_id
+                )
             )
 
         # ========================================================
@@ -24316,7 +28157,7 @@ def edit_subject(subject_id):
 
             # ----------------------------------------------------
             # IMPORTANT:
-            # DO NOT CHANGE subject.code
+            # SUBJECT CODE IS NOT CHANGED
             # ----------------------------------------------------
 
             subject.institution_id = (
@@ -24367,13 +28208,21 @@ def edit_subject(subject_id):
                 status
             )
 
-            # Explicit update timestamp
+            # ----------------------------------------------------
+            # UPDATED TIMESTAMP
+            # ----------------------------------------------------
+
             subject.updated_at = datetime.utcnow()
+
+            # ----------------------------------------------------
+            # COMMIT
+            # ----------------------------------------------------
 
             db.session.commit()
 
             flash(
-                f'Subject "{subject.name}" updated successfully.',
+                f'Subject "{subject.name}" '
+                f'updated successfully.',
                 "success"
             )
 
@@ -24388,19 +28237,21 @@ def edit_subject(subject_id):
         # DATABASE INTEGRITY ERROR
         # ========================================================
 
-        except IntegrityError as exc:
+        except IntegrityError:
 
             db.session.rollback()
 
             current_app.logger.exception(
-                "IntegrityError while editing subject ID %s",
+                "IntegrityError while editing "
+                "subject ID %s",
                 subject.id
             )
 
             flash(
-                "Unable to update the subject because of a "
-                "database constraint conflict. Please check "
-                "the institution, branch, program, name, and code.",
+                "Unable to update the subject because "
+                "of a database constraint conflict. "
+                "Please check the institution, branch, "
+                "program, name, and code.",
                 "danger"
             )
 
@@ -24413,29 +28264,161 @@ def edit_subject(subject_id):
             db.session.rollback()
 
             current_app.logger.exception(
-                "Unexpected error while editing subject ID %s: %s",
+                "Unexpected error while updating "
+                "subject ID %s: %s",
                 subject.id,
                 exc
             )
 
             flash(
-                "An unexpected error occurred while updating the subject.",
+                "An unexpected error occurred while "
+                "updating the subject.",
                 "danger"
             )
 
     # ============================================================
-    # GET / FAILED POST
+    # GET / FAILED POST AFTER DATABASE ERROR
     # ============================================================
 
-    context = _subject_form_context(
-        subject.institution_id
-    )
+    if is_superadmin:
+
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+        branches = (
+            Branch.query
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+        programs = (
+            Program.query
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    elif is_school_admin:
+
+        institutions = (
+            Institution.query.filter(
+                Institution.id
+                == current_institution_id
+            )
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+        branches = (
+            Branch.query.filter(
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+        programs = (
+            Program.query.filter(
+                Program.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        # ========================================================
+        # BRANCH ADMIN
+        # EXACTLY ONE BRANCH
+        # ========================================================
+
+        institutions = (
+            Institution.query.filter(
+                Institution.id
+                == current_institution_id
+            )
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+        branches = (
+            Branch.query.filter(
+                Branch.id
+                == current_branch_id,
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+        programs = (
+            Program.query.filter(
+                Program.institution_id
+                == current_institution_id,
+                db.or_(
+                    Program.branch_id
+                    == current_branch_id,
+                    Program.branch_id.is_(None)
+                )
+            )
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    # ============================================================
+    # RENDER EDIT PAGE
+    # ============================================================
 
     return render_template(
         "backend/pages/subjects/edit_subject.html",
-        **context,
-        subject=subject
+        institutions=institutions,
+        branches=branches,
+        programs=programs,
+        subject=subject,
+        is_superadmin=is_superadmin,
+        is_school_admin=is_school_admin,
+        is_branch_admin=is_branch_admin,
+        current_user_institution_id=(
+            current_institution_id
+        ),
+        current_user_branch_id=(
+            current_branch_id
+        ),
+        selected_institution_id=(
+            subject.institution_id
+        ),
+        selected_branch_id=(
+            subject.branch_id
+        ),
+        selected_program_id=(
+            subject.program_id
+        ),
+        user=current_user
     )
+
 
 
 # ============================================================
@@ -27727,6 +31710,16 @@ def all_teacher_subjects():
 # ============================================================
 # ADD TEACHER SUBJECT ASSIGNMENTS
 # ============================================================
+# ============================================================
+# TEACHER SUBJECT / ASSIGNMENT
+# ADD MULTIPLE TEACHER ASSIGNMENTS
+#
+# ROLE SCOPE
+# ------------------------------------------------------------
+# superadmin   -> all institutions + all branches
+# school_admin -> own institution + all its branches
+# branch_admin -> own institution + ONLY own branch
+# ============================================================
 
 @bp.route(
     "/teacher-subjects/add",
@@ -27745,16 +31738,14 @@ def add_teacher_subject():
         "branch_admin",
     }
 
-    current_role = getattr(
-        current_user,
-        "role",
-        None
-    )
+    current_role = (
+        getattr(current_user, "role", None) or ""
+    ).strip().lower()
 
     if current_role not in allowed_roles:
 
         flash(
-            "You are not authorized to create teacher subject assignments.",
+            "You do not have permission to create teacher assignments.",
             "danger"
         )
 
@@ -27763,37 +31754,88 @@ def add_teacher_subject():
         )
 
     # ========================================================
-    # USER SCOPE
+    # CURRENT USER SCOPE
     # ========================================================
 
-    user_institution_id = getattr(
+    current_institution_id = getattr(
         current_user,
         "institution_id",
         None
     )
 
-    user_branch_id = getattr(
+    current_branch_id = getattr(
         current_user,
         "branch_id",
         None
     )
 
     # ========================================================
-    # SELECTED INSTITUTION
+    # BRANCH ADMIN MUST HAVE INSTITUTION + BRANCH
     # ========================================================
 
-    posted_institution_id = request.form.get(
-        "institution_id",
-        type=int
-    )
+    if current_role == "branch_admin":
 
-    selected_institution_id = (
-        posted_institution_id
-        or user_institution_id
-    )
+        if not current_institution_id:
+
+            flash(
+                "Your branch admin account is not linked to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+        if not current_branch_id:
+
+            flash(
+                "Your branch admin account is not linked to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
 
     # ========================================================
-    # INSTITUTIONS
+    # SCHOOL ADMIN MUST HAVE INSTITUTION
+    # ========================================================
+
+    if current_role == "school_admin":
+
+        if not current_institution_id:
+
+            flash(
+                "Your school admin account is not linked to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+    # ========================================================
+    # INITIAL DATA
+    # ========================================================
+
+    institutions = []
+
+    branches = []
+
+    academic_years = []
+
+    teachers = []
+
+    programs = []
+
+    classes = []
+
+    subjects = []
+
+    sections = []
+
+    # ========================================================
+    # LOAD INSTITUTIONS
     # ========================================================
 
     if current_role == "superadmin":
@@ -27808,405 +31850,10 @@ def add_teacher_subject():
 
     else:
 
-        institutions = []
-
-        if user_institution_id:
-
-            institution = (
-                Institution.query
-                .filter(
-                    Institution.id ==
-                    user_institution_id
-                )
-                .first()
-            )
-
-            if institution:
-                institutions = [
-                    institution
-                ]
-
-    # ========================================================
-    # INSTITUTION SECURITY
-    # ========================================================
-
-    if current_role != "superadmin":
-
-        if (
-            selected_institution_id
-            and
-            selected_institution_id
-            != user_institution_id
-        ):
-
-            flash(
-                "You cannot use another institution.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-    # ========================================================
-    # BRANCH QUERY
-    # ========================================================
-
-    branch_query = Branch.query
-
-    if selected_institution_id:
-
-        branch_query = branch_query.filter(
-            Branch.institution_id ==
-            selected_institution_id
-        )
-
-    if current_role == "branch_admin":
-
-        branch_query = branch_query.filter(
-            Branch.id ==
-            user_branch_id
-        )
-
-    branches = (
-        branch_query
-        .order_by(
-            Branch.name.asc()
-        )
-        .all()
-    )
-
-    # ========================================================
-    # SELECTED BRANCH
-    # ========================================================
-
-    posted_branch_id = request.form.get(
-        "branch_id",
-        type=int
-    )
-
-    selected_branch_id = (
-        posted_branch_id
-        or user_branch_id
-    )
-
-    # ========================================================
-    # BRANCH SECURITY
-    # ========================================================
-
-    if current_role == "branch_admin":
-
-        if (
-            selected_branch_id
-            != user_branch_id
-        ):
-
-            flash(
-                "You cannot use another branch.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-    # ========================================================
-    # VERIFY SELECTED BRANCH
-    # ========================================================
-
-    selected_branch = None
-
-    if selected_branch_id:
-
-        selected_branch = (
-            Branch.query
-            .filter(
-                Branch.id ==
-                selected_branch_id,
-
-                Branch.institution_id ==
-                selected_institution_id
-            )
-            .first()
-        )
-
-    # ========================================================
-    # ACADEMIC YEARS
-    # ========================================================
-
-    academic_years = []
-
-    if selected_institution_id:
-
-        academic_years = (
-            AcademicYear.query
-            .filter(
-                AcademicYear.institution_id ==
-                selected_institution_id
-            )
-            .order_by(
-                AcademicYear.id.desc()
-            )
-            .all()
-        )
-
-    # ========================================================
-    # TEACHERS
-    # ========================================================
-
-    teacher_query = Teacher.query
-
-    if selected_institution_id:
-
-        teacher_query = teacher_query.filter(
-            Teacher.institution_id ==
-            selected_institution_id
-        )
-
-    if selected_branch_id:
-
-        teacher_query = teacher_query.filter(
-            Teacher.branch_id ==
-            selected_branch_id
-        )
-
-    teachers = (
-        teacher_query
-        .order_by(
-            Teacher.full_name.asc()
-        )
-        .all()
-    )
-
-    # ========================================================
-    # PROGRAMS
-    # ========================================================
-
-    programs = []
-
-    if selected_institution_id:
-
-        programs = (
-            Program.query
-            .filter(
-                Program.institution_id ==
-                selected_institution_id
-            )
-            .order_by(
-                Program.name.asc()
-            )
-            .all()
-        )
-
-    # ========================================================
-    # CLASSES
-    # ========================================================
-
-    classes = []
-
-    if selected_branch_id:
-
-        classes = (
-            Class.query
-            .filter(
-                Class.branch_id ==
-                selected_branch_id
-            )
-            .order_by(
-                Class.name.asc()
-            )
-            .all()
-        )
-
-    # ========================================================
-    # SECTIONS
-    # ========================================================
-
-    sections = []
-
-    if selected_branch_id:
-
-        sections = (
-            Section.query
-            .join(
-                Class,
-                Section.class_id ==
-                Class.id
-            )
-            .filter(
-                Class.branch_id ==
-                selected_branch_id
-            )
-            .order_by(
-                Section.name.asc()
-            )
-            .all()
-        )
-
-    # ========================================================
-    # SUBJECTS
-    # ========================================================
-
-    subjects = []
-
-    if selected_institution_id:
-
-        subjects = (
-            Subject.query
-            .filter(
-                or_(
-                    Subject.institution_id ==
-                    selected_institution_id,
-
-                    Subject.institution_id.is_(None)
-                )
-            )
-            .order_by(
-                Subject.name.asc()
-            )
-            .all()
-        )
-
-    # ========================================================
-    # POST
-    # ========================================================
-
-    if request.method == "POST":
-
-        # ====================================================
-        # BASIC VALUES
-        # ====================================================
-
-        institution_id = request.form.get(
-            "institution_id",
-            type=int
-        )
-
-        branch_id = request.form.get(
-            "branch_id",
-            type=int
-        )
-
-        academic_year_id = request.form.get(
-            "academic_year_id",
-            type=int
-        )
-
-        teacher_id = request.form.get(
-            "teacher_id",
-            type=int
-        )
-
-        # ====================================================
-        # BASIC VALIDATION
-        # ====================================================
-
-        if not institution_id:
-
-            flash(
-                "Institution is required.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        if not branch_id:
-
-            flash(
-                "Branch is required.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        if not academic_year_id:
-
-            flash(
-                "Academic year is required.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        if not teacher_id:
-
-            flash(
-                "Teacher is required.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        # ====================================================
-        # SECURITY - INSTITUTION
-        # ====================================================
-
-        if current_role != "superadmin":
-
-            if (
-                institution_id
-                != user_institution_id
-            ):
-
-                flash(
-                    "Invalid institution access.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for(
-                        "main.add_teacher_subject"
-                    )
-                )
-
-        # ====================================================
-        # SECURITY - BRANCH ADMIN
-        # ====================================================
-
-        if current_role == "branch_admin":
-
-            if branch_id != user_branch_id:
-
-                flash(
-                    "Invalid branch access.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for(
-                        "main.add_teacher_subject"
-                    )
-                )
-
-        # ====================================================
-        # VERIFY INSTITUTION
-        # ====================================================
-
         institution = (
             Institution.query
             .filter(
-                Institution.id ==
-                institution_id
+                Institution.id == current_institution_id
             )
             .first()
         )
@@ -28214,525 +31861,430 @@ def add_teacher_subject():
         if not institution:
 
             flash(
-                "Invalid institution.",
+                "Institution not found.",
                 "danger"
             )
 
             return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
+                url_for("main.dashboard")
             )
 
-        # ====================================================
-        # VERIFY BRANCH
-        # ====================================================
+        institutions = [
+            institution
+        ]
 
-        branch = (
-            Branch.query
-            .filter(
-                Branch.id ==
-                branch_id,
+    # ========================================================
+    # HELPER: SAFE INTEGER
+    # ========================================================
 
-                Branch.institution_id ==
-                institution_id
-            )
-            .first()
-        )
+    def safe_int(value):
 
-        if not branch:
+        try:
 
-            flash(
-                "Selected branch does not belong to the selected institution.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        # ====================================================
-        # VERIFY ACADEMIC YEAR
-        # ====================================================
-
-        academic_year = (
-            AcademicYear.query
-            .filter(
-                AcademicYear.id ==
-                academic_year_id,
-
-                AcademicYear.institution_id ==
-                institution_id
-            )
-            .first()
-        )
-
-        if not academic_year:
-
-            flash(
-                "Invalid academic year for this institution.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        # ====================================================
-        # VERIFY TEACHER
-        # ====================================================
-
-        teacher = (
-            Teacher.query
-            .filter(
-                Teacher.id ==
-                teacher_id,
-
-                Teacher.institution_id ==
-                institution_id,
-
-                Teacher.branch_id ==
-                branch_id
-            )
-            .first()
-        )
-
-        if not teacher:
-
-            flash(
-                "Selected teacher does not belong to this institution and branch.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        # ====================================================
-        # GET ASSIGNMENTS JSON
-        # ====================================================
-
-        assignments_raw = (
-            request.form.get(
-                "assignments",
-                ""
-            )
-            .strip()
-        )
-
-        assignments = []
-
-        if assignments_raw:
-
-            try:
-
-                assignments = json.loads(
-                    assignments_raw
-                )
-
-            except (
-                ValueError,
-                TypeError,
-                json.JSONDecodeError
-            ):
-
-                flash(
-                    "Invalid assignment data.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for(
-                        "main.add_teacher_subject"
-                    )
-                )
-
-        # ====================================================
-        # ENSURE LIST
-        # ====================================================
-
-        if not isinstance(
-            assignments,
-            list
-        ):
-
-            flash(
-                "Assignment data must be a list.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        # ====================================================
-        # FALLBACK SINGLE ASSIGNMENT
-        # ====================================================
-
-        if not assignments:
-
-            assignments = [
-                {
-                    "assignment_mode":
-                        request.form.get(
-                            "assignment_mode"
-                        ) or "subject",
-
-                    "program_id":
-                        request.form.get(
-                            "program_id",
-                            type=int
-                        ),
-
-                    "class_id":
-                        request.form.get(
-                            "class_id",
-                            type=int
-                        ),
-
-                    "section_id":
-                        request.form.get(
-                            "section_id",
-                            type=int
-                        ),
-
-                    "subject_id":
-                        request.form.get(
-                            "subject_id",
-                            type=int
-                        ),
-
-                    "teaching_type":
-                        request.form.get(
-                            "teaching_type"
-                        ) or "teacher",
-
-                    "status":
-                        request.form.get(
-                            "status"
-                        ) or "active",
-
-                    "start_date":
-                        request.form.get(
-                            "start_date"
-                        ),
-
-                    "end_date":
-                        request.form.get(
-                            "end_date"
-                        ),
-
-                    "notes":
-                        request.form.get(
-                            "notes"
-                        ) or "",
-
-                    "is_primary":
-                        request.form.get(
-                            "is_primary"
-                        ) in (
-                            "1",
-                            "true",
-                            "True",
-                            "on",
-                            "yes"
-                        ),
-                }
-            ]
-
-        # ====================================================
-        # EMPTY
-        # ====================================================
-
-        if not assignments:
-
-            flash(
-                "Please add at least one assignment.",
-                "danger"
-            )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        # ====================================================
-        # HELPERS
-        # ====================================================
-
-        def safe_int(value):
-
-            if value in (
-                None,
-                "",
-                "null",
-                "None"
-            ):
+            if value is None:
                 return None
 
-            try:
-                return int(value)
-
-            except (
-                ValueError,
-                TypeError
-            ):
-                return None
-
-        # ----------------------------------------------------
-
-        def parse_date(value):
+            value = str(value).strip()
 
             if not value:
                 return None
 
-            if hasattr(
-                value,
-                "year"
-            ):
-                return value
+            return int(value)
 
-            try:
-
-                return datetime.strptime(
-                    str(value),
-                    "%Y-%m-%d"
-                ).date()
-
-            except (
-                ValueError,
-                TypeError
-            ):
-
-                return None
-
-        # ----------------------------------------------------
-
-        def parse_bool(value):
-
-            if isinstance(
-                value,
-                bool
-            ):
-                return value
-
-            if value is None:
-                return False
-
-            return str(value).lower() in {
-                "1",
-                "true",
-                "yes",
-                "on",
-            }
-
-        # ====================================================
-        # TRACKING
-        # ====================================================
-
-        created_count = 0
-        skipped_count = 0
-        duplicate_items = []
-
-        # ====================================================
-        # ALLOWED ASSIGNMENT MODES
-        # ====================================================
-
-        mode_requirements = {
-
-            "subject": [
-                "subject"
-            ],
-
-            "program_all": [
-                "program"
-            ],
-
-            "class_all": [
-                "class"
-            ],
-
-            "section_all": [
-                "section"
-            ],
-
-            "program_subject": [
-                "program",
-                "subject"
-            ],
-
-            "class_subject": [
-                "class",
-                "subject"
-            ],
-
-            "section_subject": [
-                "section",
-                "subject"
-            ],
-
-            "program_class_subject": [
-                "program",
-                "class",
-                "subject"
-            ],
-
-            "class_section_subject": [
-                "class",
-                "section",
-                "subject"
-            ],
-
-            "full": [
-                "program",
-                "class",
-                "section",
-                "subject"
-            ],
-        }
-
-        # ====================================================
-        # PROCESS ASSIGNMENTS
-        # ====================================================
-
-        for index, item in enumerate(
-            assignments,
-            start=1
+        except (
+            TypeError,
+            ValueError
         ):
 
-            # =================================================
-            # VALID ITEM
-            # =================================================
+            return None
 
-            if not isinstance(
-                item,
-                dict
-            ):
+    # ========================================================
+    # POST
+    # ========================================================
 
-                flash(
-                    f"Assignment #{index} is invalid.",
-                    "danger"
+    if request.method == "POST":
+
+        try:
+
+            # ==================================================
+            # FORM VALUES
+            # ==================================================
+
+            institution_id_raw = (
+                request.form.get(
+                    "institution_id"
                 )
-
-                db.session.rollback()
-
-                return redirect(
-                    url_for(
-                        "main.add_teacher_subject"
-                    )
-                )
-
-            # =================================================
-            # VALUES
-            # =================================================
-
-            mode = str(
-                item.get(
-                    "assignment_mode"
-                )
-                or "subject"
+                or ""
             ).strip()
 
-            program_id = safe_int(
-                item.get(
-                    "program_id"
+            branch_id_raw = (
+                request.form.get(
+                    "branch_id"
                 )
-            )
+                or ""
+            ).strip()
 
-            class_id = safe_int(
-                item.get(
-                    "class_id"
+            academic_year_id_raw = (
+                request.form.get(
+                    "academic_year_id"
                 )
-            )
-
-            section_id = safe_int(
-                item.get(
-                    "section_id"
-                )
-            )
-
-            subject_id = safe_int(
-                item.get(
-                    "subject_id"
-                )
-            )
+                or ""
+            ).strip()
 
             teaching_type = (
-                str(
-                    item.get(
-                        "teaching_type"
-                    )
-                    or "teacher"
+                request.form.get(
+                    "teaching_type"
                 )
-                .strip()
-            )
+                or "teacher"
+            ).strip().lower()
 
             status = (
-                str(
-                    item.get(
-                        "status"
-                    )
-                    or "active"
+                request.form.get(
+                    "status"
                 )
-                .strip()
-            )
+                or "active"
+            ).strip().lower()
 
-            start_date = parse_date(
-                item.get(
+            start_date_raw = (
+                request.form.get(
                     "start_date"
                 )
-            )
+                or ""
+            ).strip()
 
-            end_date = parse_date(
-                item.get(
+            end_date_raw = (
+                request.form.get(
                     "end_date"
                 )
-            )
+                or ""
+            ).strip()
 
-            notes = str(
-                item.get(
+            notes = (
+                request.form.get(
                     "notes"
                 )
                 or ""
             ).strip()
 
-            is_primary = parse_bool(
-                item.get(
+            is_primary = (
+                request.form.get(
                     "is_primary"
+                )
+                == "1"
+            )
+
+            # ==================================================
+            # MULTIPLE ROWS
+            # ==================================================
+
+            teacher_ids = request.form.getlist(
+                "teacher_ids"
+            )
+
+            assignment_types = request.form.getlist(
+                "assignment_type"
+            )
+
+            program_ids = request.form.getlist(
+                "program_ids"
+            )
+
+            class_ids = request.form.getlist(
+                "class_ids"
+            )
+
+            subject_ids = request.form.getlist(
+                "subject_ids"
+            )
+
+            section_ids = request.form.getlist(
+                "section_ids"
+            )
+
+            # ==================================================
+            # BASIC REQUIRED VALUES
+            # ==================================================
+
+            if not teacher_ids:
+
+                raise ValueError(
+                    "Please add at least one teacher assignment."
+                )
+
+            if not academic_year_id_raw:
+
+                raise ValueError(
+                    "Academic Year is required."
+                )
+
+            if not branch_id_raw:
+
+                raise ValueError(
+                    "Branch is required."
+                )
+
+            # ==================================================
+            # INSTITUTION
+            # ==================================================
+
+            submitted_institution_id = safe_int(
+                institution_id_raw
+            )
+
+            submitted_branch_id = safe_int(
+                branch_id_raw
+            )
+
+            academic_year_id = safe_int(
+                academic_year_id_raw
+            )
+
+            # ==================================================
+            # SUPERADMIN
+            # ==================================================
+
+            if current_role == "superadmin":
+
+                if not submitted_institution_id:
+
+                    raise ValueError(
+                        "Institution is required."
+                    )
+
+                institution_id = (
+                    submitted_institution_id
+                )
+
+            # ==================================================
+            # SCHOOL ADMIN
+            # ==================================================
+
+            elif current_role == "school_admin":
+
+                institution_id = (
+                    current_institution_id
+                )
+
+                # ----------------------------------------------
+                # SECURITY:
+                # school_admin cannot submit another institution
+                # ----------------------------------------------
+
+                if (
+                    submitted_institution_id
+                    and submitted_institution_id
+                    != current_institution_id
+                ):
+
+                    raise ValueError(
+                        "You cannot create assignments for another institution."
+                    )
+
+            # ==================================================
+            # BRANCH ADMIN
+            # ==================================================
+
+            else:
+
+                institution_id = (
+                    current_institution_id
+                )
+
+                # ----------------------------------------------
+                # SECURITY:
+                # branch_admin cannot change institution
+                # ----------------------------------------------
+
+                if (
+                    submitted_institution_id
+                    and submitted_institution_id
+                    != current_institution_id
+                ):
+
+                    raise ValueError(
+                        "You cannot create assignments for another institution."
+                    )
+
+                # ----------------------------------------------
+                # SECURITY:
+                # branch_admin MUST use current branch
+                # ----------------------------------------------
+
+                if (
+                    submitted_branch_id
+                    != current_branch_id
+                ):
+
+                    raise ValueError(
+                        "You can only create assignments for your own branch."
+                    )
+
+            # ==================================================
+            # BRANCH ID
+            # ==================================================
+
+            if not submitted_branch_id:
+
+                raise ValueError(
+                    "Branch is required."
+                )
+
+            branch_id = (
+                submitted_branch_id
+            )
+
+            # ==================================================
+            # INSTITUTION VALIDATION
+            # ==================================================
+
+            institution = (
+                Institution.query
+                .filter(
+                    Institution.id
+                    == institution_id
+                )
+                .first()
+            )
+
+            if not institution:
+
+                raise ValueError(
+                    "Selected institution does not exist."
+                )
+
+            # ==================================================
+            # BRANCH VALIDATION
+            # ==================================================
+
+            branch_query = (
+                Branch.query
+                .filter(
+                    Branch.id == branch_id,
+                    Branch.institution_id == institution_id,
                 )
             )
 
-            # =================================================
-            # MODE CHECK
-            # =================================================
+            # ----------------------------------------------
+            # EXTRA BRANCH ADMIN SECURITY
+            # ----------------------------------------------
 
-            if mode not in mode_requirements:
+            if current_role == "branch_admin":
 
-                flash(
-                    f"Unsupported assignment mode: {mode}",
-                    "danger"
+                branch_query = branch_query.filter(
+                    Branch.id == current_branch_id
                 )
 
-                db.session.rollback()
+            branch = (
+                branch_query
+                .first()
+            )
 
-                return redirect(
-                    url_for(
-                        "main.add_teacher_subject"
+            if not branch:
+
+                raise ValueError(
+                    "Selected branch is not available for your account."
+                )
+
+            # ==================================================
+            # ACADEMIC YEAR VALIDATION
+            # ==================================================
+
+            if not academic_year_id:
+
+                raise ValueError(
+                    "Academic Year is required."
+                )
+
+            academic_year = (
+                AcademicYear.query
+                .filter(
+                    AcademicYear.id
+                    == academic_year_id,
+
+                    AcademicYear.institution_id
+                    == institution_id,
+                )
+                .first()
+            )
+
+            if not academic_year:
+
+                raise ValueError(
+                    "Selected academic year does not belong to this institution."
+                )
+
+            # ==================================================
+            # TEACHING TYPE
+            # ==================================================
+
+            allowed_teaching_types = {
+                "teacher",
+                "assistant",
+                "coordinator",
+                "substitute",
+            }
+
+            if teaching_type not in allowed_teaching_types:
+
+                raise ValueError(
+                    "Invalid teaching type."
+                )
+
+            # ==================================================
+            # STATUS
+            # ==================================================
+
+            allowed_statuses = {
+                "active",
+                "inactive",
+            }
+
+            if status not in allowed_statuses:
+
+                raise ValueError(
+                    "Invalid assignment status."
+                )
+
+            # ==================================================
+            # DATE PARSING
+            # ==================================================
+
+            start_date = None
+            end_date = None
+
+            if start_date_raw:
+
+                try:
+
+                    start_date = datetime.strptime(
+                        start_date_raw,
+                        "%Y-%m-%d"
+                    ).date()
+
+                except ValueError:
+
+                    raise ValueError(
+                        "Invalid start date."
                     )
-                )
 
-            # =================================================
-            # DATE CHECK
-            # =================================================
+            if end_date_raw:
+
+                try:
+
+                    end_date = datetime.strptime(
+                        end_date_raw,
+                        "%Y-%m-%d"
+                    ).date()
+
+                except ValueError:
+
+                    raise ValueError(
+                        "Invalid end date."
+                    )
+
+            # ==================================================
+            # DATE RANGE
+            # ==================================================
 
             if (
                 start_date
@@ -28740,379 +32292,583 @@ def add_teacher_subject():
                 and end_date < start_date
             ):
 
-                flash(
-                    f"Assignment #{index}: End date cannot be before start date.",
-                    "danger"
+                raise ValueError(
+                    "End Date cannot be earlier than Start Date."
                 )
 
-                db.session.rollback()
+            # ==================================================
+            # ROW COUNTS
+            # ==================================================
 
-                return redirect(
-                    url_for(
-                        "main.add_teacher_subject"
-                    )
-                )
-
-            # =================================================
-            # PROGRAM
-            # =================================================
-
-            program = None
-
-            if program_id:
-
-                program = (
-                    Program.query
-                    .filter(
-                        Program.id ==
-                        program_id,
-
-                        Program.institution_id ==
-                        institution_id
-                    )
-                    .first()
-                )
-
-                if not program:
-
-                    flash(
-                        f"Assignment #{index}: Invalid program selected.",
-                        "danger"
-                    )
-
-                    db.session.rollback()
-
-                    return redirect(
-                        url_for(
-                            "main.add_teacher_subject"
-                        )
-                    )
-
-            # =================================================
-            # CLASS
-            # =================================================
-
-            class_obj = None
-
-            if class_id:
-
-                class_obj = (
-                    Class.query
-                    .filter(
-                        Class.id ==
-                        class_id,
-
-                        Class.branch_id ==
-                        branch_id
-                    )
-                    .first()
-                )
-
-                if not class_obj:
-
-                    flash(
-                        f"Assignment #{index}: Invalid class selected.",
-                        "danger"
-                    )
-
-                    db.session.rollback()
-
-                    return redirect(
-                        url_for(
-                            "main.add_teacher_subject"
-                        )
-                    )
-
-                # ---------------------------------------------
-                # CLASS -> PROGRAM
-                # ---------------------------------------------
-
-                class_program_id = getattr(
-                    class_obj,
-                    "program_id",
-                    None
-                )
-
-                if (
-                    program_id
-                    and class_program_id
-                    and class_program_id
-                    != program_id
-                ):
-
-                    flash(
-                        f"Assignment #{index}: Selected class does not belong to the selected program.",
-                        "danger"
-                    )
-
-                    db.session.rollback()
-
-                    return redirect(
-                        url_for(
-                            "main.add_teacher_subject"
-                        )
-                    )
-
-            # =================================================
-            # SECTION
-            # =================================================
-
-            section = None
-
-            if section_id:
-
-                section = (
-                    Section.query
-                    .join(
-                        Class,
-                        Section.class_id ==
-                        Class.id
-                    )
-                    .filter(
-                        Section.id ==
-                        section_id,
-
-                        Class.branch_id ==
-                        branch_id
-                    )
-                    .first()
-                )
-
-                if not section:
-
-                    flash(
-                        f"Assignment #{index}: Invalid section selected.",
-                        "danger"
-                    )
-
-                    db.session.rollback()
-
-                    return redirect(
-                        url_for(
-                            "main.add_teacher_subject"
-                        )
-                    )
-
-                # ---------------------------------------------
-                # SECTION -> CLASS
-                # ---------------------------------------------
-
-                if (
-                    class_id
-                    and section.class_id
-                    != class_id
-                ):
-
-                    flash(
-                        f"Assignment #{index}: Selected section does not belong to the selected class.",
-                        "danger"
-                    )
-
-                    db.session.rollback()
-
-                    return redirect(
-                        url_for(
-                            "main.add_teacher_subject"
-                        )
-                    )
-
-            # =================================================
-            # SUBJECT
-            # =================================================
-
-            subject = None
-
-            if subject_id:
-
-                subject = (
-                    Subject.query
-                    .filter(
-                        Subject.id ==
-                        subject_id
-                    )
-                    .first()
-                )
-
-                if not subject:
-
-                    flash(
-                        f"Assignment #{index}: Invalid subject selected.",
-                        "danger"
-                    )
-
-                    db.session.rollback()
-
-                    return redirect(
-                        url_for(
-                            "main.add_teacher_subject"
-                        )
-                    )
-
-                # ---------------------------------------------
-                # SUBJECT -> INSTITUTION
-                # ---------------------------------------------
-
-                subject_institution_id = getattr(
-                    subject,
-                    "institution_id",
-                    None
-                )
-
-                if (
-                    subject_institution_id
-                    and
-                    subject_institution_id
-                    != institution_id
-                ):
-
-                    flash(
-                        f"Assignment #{index}: Selected subject does not belong to this institution.",
-                        "danger"
-                    )
-
-                    db.session.rollback()
-
-                    return redirect(
-                        url_for(
-                            "main.add_teacher_subject"
-                        )
-                    )
-
-                # ---------------------------------------------
-                # SUBJECT -> PROGRAM
-                # ---------------------------------------------
-
-                subject_program_id = getattr(
-                    subject,
-                    "program_id",
-                    None
-                )
-
-                if (
-                    program_id
-                    and
-                    subject_program_id
-                    and
-                    subject_program_id
-                    != program_id
-                ):
-
-                    flash(
-                        f"Assignment #{index}: Selected subject does not belong to the selected program.",
-                        "danger"
-                    )
-
-                    db.session.rollback()
-
-                    return redirect(
-                        url_for(
-                            "main.add_teacher_subject"
-                        )
-                    )
-
-            # =================================================
-            # REQUIRED FIELDS
-            # =================================================
-
-            requirements = mode_requirements.get(
-                mode,
-                []
+            row_count = len(
+                teacher_ids
             )
 
-            missing = []
+            if len(assignment_types) != row_count:
 
-            for required_item in requirements:
-
-                if (
-                    required_item == "program"
-                    and not program
-                ):
-                    missing.append(
-                        "Program"
-                    )
-
-                elif (
-                    required_item == "class"
-                    and not class_obj
-                ):
-                    missing.append(
-                        "Class"
-                    )
-
-                elif (
-                    required_item == "section"
-                    and not section
-                ):
-                    missing.append(
-                        "Section"
-                    )
-
-                elif (
-                    required_item == "subject"
-                    and not subject
-                ):
-                    missing.append(
-                        "Subject"
-                    )
-
-            if missing:
-
-                flash(
-                    f"Assignment #{index}: "
-                    f"{', '.join(missing)} "
-                    f"is required for this assignment mode.",
-                    "danger"
+                raise ValueError(
+                    "Assignment data is incomplete. "
+                    "Please make sure every row has an assignment type."
                 )
 
-                db.session.rollback()
+            # ==================================================
+            # LIST HELPER
+            # ==================================================
 
-                return redirect(
-                    url_for(
-                        "main.add_teacher_subject"
-                    )
-                )
-
-            # =================================================
-            # DUPLICATE QUERY
-            # =================================================
-
-            duplicate_query = (
-                TeacherSubject.query
-                .filter(
-                    TeacherSubject.teacher_id ==
-                    teacher.id,
-
-                    TeacherSubject.institution_id ==
-                    institution_id,
-
-                    TeacherSubject.branch_id ==
-                    branch_id,
-
-                    TeacherSubject.academic_year_id ==
-                    academic_year_id
-                )
-            )
-
-            # =================================================
-            # PROGRAM DUPLICATE
-            # =================================================
-
-            if hasattr(
-                TeacherSubject,
-                "program_id"
+            def get_list_value(
+                values,
+                index
             ):
+
+                if index >= len(values):
+
+                    return None
+
+                value = (
+                    values[index]
+                    or ""
+                ).strip()
+
+                return value or None
+
+            # ==================================================
+            # DUPLICATES IN CURRENT FORM
+            # ==================================================
+
+            submitted_keys = set()
+
+            # ==================================================
+            # CREATED COUNT
+            # ==================================================
+
+            created_count = 0
+
+            # ==================================================
+            # PROCESS EACH ROW
+            # ==================================================
+
+            for index in range(
+                row_count
+            ):
+
+                row_number = (
+                    index + 1
+                )
+
+                # ==============================================
+                # TEACHER
+                # ==============================================
+
+                teacher_id = safe_int(
+                    get_list_value(
+                        teacher_ids,
+                        index
+                    )
+                )
+
+                if not teacher_id:
+
+                    raise ValueError(
+                        f"Assignment {row_number}: "
+                        "Teacher is required."
+                    )
+
+                # ==============================================
+                # ASSIGNMENT TYPE
+                # ==============================================
+
+                assignment_type = (
+                    get_list_value(
+                        assignment_types,
+                        index
+                    )
+                    or ""
+                ).lower()
+
+                allowed_assignment_types = {
+                    "program",
+                    "class",
+                    "subject",
+                    "section",
+                }
+
+                if (
+                    assignment_type
+                    not in allowed_assignment_types
+                ):
+
+                    raise ValueError(
+                        f"Assignment {row_number}: "
+                        "Invalid assignment type."
+                    )
+
+                # ==============================================
+                # TEACHER SECURITY
+                # ==============================================
+
+                teacher_query = (
+                    Teacher.query
+                    .filter(
+                        Teacher.id
+                        == teacher_id,
+
+                        Teacher.institution_id
+                        == institution_id,
+
+                        Teacher.branch_id
+                        == branch_id,
+                    )
+                )
+
+                # branch_admin is already restricted by branch_id
+                teacher = (
+                    teacher_query
+                    .first()
+                )
+
+                if not teacher:
+
+                    raise ValueError(
+                        f"Assignment {row_number}: "
+                        "Selected teacher does not belong to "
+                        "the selected branch."
+                    )
+
+                # ==============================================
+                # PROGRAM
+                # ==============================================
+
+                program_id = None
+
+                program_id_raw = get_list_value(
+                    program_ids,
+                    index
+                )
+
+                if assignment_type in {
+                    "program",
+                    "class",
+                    "subject",
+                    "section",
+                }:
+
+                    if not program_id_raw:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Program is required."
+                        )
+
+                    program_id = safe_int(
+                        program_id_raw
+                    )
+
+                    if not program_id:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Invalid program."
+                        )
+
+                # ==============================================
+                # PROGRAM SECURITY
+                # ==============================================
+
+                program = None
 
                 if program_id:
 
-                    duplicate_query = (
-                        duplicate_query
+                    program = (
+                        Program.query
                         .filter(
-                            TeacherSubject.program_id ==
-                            program_id
+                            Program.id
+                            == program_id,
+
+                            Program.institution_id
+                            == institution_id,
                         )
+                        .first()
                     )
 
-                else:
+                    if not program:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Selected program does not belong "
+                            "to this institution."
+                        )
+
+                    # ------------------------------------------
+                    # PROGRAM BRANCH SCOPE
+                    #
+                    # branch_id = NULL
+                    # means institution-wide
+                    #
+                    # branch_id = current branch
+                    # means branch-specific
+                    # ------------------------------------------
+
+                    if (
+                        program.branch_id is not None
+                        and program.branch_id != branch_id
+                    ):
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Selected program does not belong "
+                            "to this branch."
+                        )
+
+                    # ------------------------------------------
+                    # PROGRAM STATUS
+                    # ------------------------------------------
+
+                    if (
+                        getattr(
+                            program,
+                            "status",
+                            "active"
+                        )
+                        != "active"
+                    ):
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Selected program is not active."
+                        )
+
+                # ==============================================
+                # CLASS
+                # ==============================================
+
+                class_id = None
+
+                class_id_raw = get_list_value(
+                    class_ids,
+                    index
+                )
+
+                if assignment_type in {
+                    "class",
+                    "subject",
+                    "section",
+                }:
+
+                    if not class_id_raw:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Class is required."
+                        )
+
+                    class_id = safe_int(
+                        class_id_raw
+                    )
+
+                    if not class_id:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Invalid class."
+                        )
+
+                    # ------------------------------------------
+                    # CLASS MUST MATCH:
+                    # institution
+                    # branch
+                    # program
+                    # academic year
+                    # ------------------------------------------
+
+                    class_obj = (
+                        Class.query
+                        .filter(
+                            Class.id
+                            == class_id,
+
+                            Class.institution_id
+                            == institution_id,
+
+                            Class.branch_id
+                            == branch_id,
+
+                            Class.program_id
+                            == program_id,
+
+                            Class.academic_year_id
+                            == academic_year_id,
+                        )
+                        .first()
+                    )
+
+                    if not class_obj:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Selected class does not match "
+                            "the selected program, branch, "
+                            "or academic year."
+                        )
+
+                # ==============================================
+                # SUBJECT
+                # ==============================================
+
+                subject_id = None
+
+                subject_id_raw = get_list_value(
+                    subject_ids,
+                    index
+                )
+
+                if assignment_type in {
+                    "subject",
+                    "section",
+                }:
+
+                    if not subject_id_raw:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Subject is required."
+                        )
+
+                    subject_id = safe_int(
+                        subject_id_raw
+                    )
+
+                    if not subject_id:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Invalid subject."
+                        )
+
+                    # ------------------------------------------
+                    # SUBJECT BASE QUERY
+                    # ------------------------------------------
+
+                    subject = (
+                        Subject.query
+                        .filter(
+                            Subject.id
+                            == subject_id,
+
+                            Subject.institution_id
+                            == institution_id,
+                        )
+                        .first()
+                    )
+
+                    if not subject:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Selected subject does not belong "
+                            "to this institution."
+                        )
+
+                    # ------------------------------------------
+                    # SUBJECT BRANCH
+                    # ------------------------------------------
+
+                    if (
+                        subject.branch_id is not None
+                        and subject.branch_id != branch_id
+                    ):
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Selected subject does not belong "
+                            "to this branch."
+                        )
+
+                    # ------------------------------------------
+                    # SUBJECT PROGRAM
+                    # ------------------------------------------
+
+                    subject_program_id = getattr(
+                        subject,
+                        "program_id",
+                        None
+                    )
+
+                    if (
+                        subject_program_id is not None
+                        and subject_program_id != program_id
+                    ):
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Selected subject does not belong "
+                            "to the selected program."
+                        )
+
+                    # ------------------------------------------
+                    # SUBJECT STATUS
+                    # ------------------------------------------
+
+                    if (
+                        getattr(
+                            subject,
+                            "status",
+                            "active"
+                        )
+                        != "active"
+                    ):
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Selected subject is not active."
+                        )
+
+                # ==============================================
+                # SECTION
+                # ==============================================
+
+                section_id = None
+
+                section_id_raw = get_list_value(
+                    section_ids,
+                    index
+                )
+
+                if assignment_type == "section":
+
+                    if not section_id_raw:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Section is required."
+                        )
+
+                    section_id = safe_int(
+                        section_id_raw
+                    )
+
+                    if not section_id:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Invalid section."
+                        )
+
+                    # ------------------------------------------
+                    # SECTION MUST MATCH:
+                    # institution
+                    # branch
+                    # class
+                    # academic year
+                    # ------------------------------------------
+
+                    section = (
+                        Section.query
+                        .filter(
+                            Section.id
+                            == section_id,
+
+                            Section.institution_id
+                            == institution_id,
+
+                            Section.branch_id
+                            == branch_id,
+
+                            Section.class_id
+                            == class_id,
+
+                            Section.academic_year_id
+                            == academic_year_id,
+                        )
+                        .first()
+                    )
+
+                    if not section:
+
+                        raise ValueError(
+                            f"Assignment {row_number}: "
+                            "Selected section does not belong "
+                            "to the selected class, branch, "
+                            "or academic year."
+                        )
+
+                # ==============================================
+                # CLEAN LOWER-LEVEL VALUES
+                # ==============================================
+
+                if assignment_type == "program":
+
+                    class_id = None
+                    subject_id = None
+                    section_id = None
+
+                elif assignment_type == "class":
+
+                    subject_id = None
+                    section_id = None
+
+                elif assignment_type == "subject":
+
+                    section_id = None
+
+                # ==============================================
+                # FORM DUPLICATE KEY
+                # ==============================================
+
+                duplicate_key = (
+                    teacher_id,
+                    academic_year_id,
+                    branch_id,
+                    assignment_type,
+                    program_id,
+                    class_id,
+                    subject_id,
+                    section_id,
+                )
+
+                if duplicate_key in submitted_keys:
+
+                    raise ValueError(
+                        f"Assignment {row_number}: "
+                        "This same teacher assignment "
+                        "appears more than once."
+                    )
+
+                submitted_keys.add(
+                    duplicate_key
+                )
+
+                # ==============================================
+                # DATABASE DUPLICATE CHECK
+                # ==============================================
+
+                duplicate_query = (
+                    TeacherSubject.query
+                    .filter(
+                        TeacherSubject.institution_id
+                        == institution_id,
+
+                        TeacherSubject.branch_id
+                        == branch_id,
+
+                        TeacherSubject.teacher_id
+                        == teacher_id,
+
+                        TeacherSubject.academic_year_id
+                        == academic_year_id,
+
+                        TeacherSubject.assignment_type
+                        == assignment_type,
+
+                        TeacherSubject.scope
+                        == "specific",
+                    )
+                )
+
+                # ----------------------------------------------
+                # PROGRAM
+                # ----------------------------------------------
+
+                if program_id is None:
 
                     duplicate_query = (
                         duplicate_query
@@ -29121,26 +32877,21 @@ def add_teacher_subject():
                         )
                     )
 
-            # =================================================
-            # CLASS DUPLICATE
-            # =================================================
-
-            if hasattr(
-                TeacherSubject,
-                "class_id"
-            ):
-
-                if class_id:
+                else:
 
                     duplicate_query = (
                         duplicate_query
                         .filter(
-                            TeacherSubject.class_id ==
-                            class_id
+                            TeacherSubject.program_id
+                            == program_id
                         )
                     )
 
-                else:
+                # ----------------------------------------------
+                # CLASS
+                # ----------------------------------------------
+
+                if class_id is None:
 
                     duplicate_query = (
                         duplicate_query
@@ -29149,54 +32900,21 @@ def add_teacher_subject():
                         )
                     )
 
-            # =================================================
-            # SECTION DUPLICATE
-            # =================================================
-
-            if hasattr(
-                TeacherSubject,
-                "section_id"
-            ):
-
-                if section_id:
-
-                    duplicate_query = (
-                        duplicate_query
-                        .filter(
-                            TeacherSubject.section_id ==
-                            section_id
-                        )
-                    )
-
                 else:
 
                     duplicate_query = (
                         duplicate_query
                         .filter(
-                            TeacherSubject.section_id.is_(None)
+                            TeacherSubject.class_id
+                            == class_id
                         )
                     )
 
-            # =================================================
-            # SUBJECT DUPLICATE
-            # =================================================
+                # ----------------------------------------------
+                # SUBJECT
+                # ----------------------------------------------
 
-            if hasattr(
-                TeacherSubject,
-                "subject_id"
-            ):
-
-                if subject_id:
-
-                    duplicate_query = (
-                        duplicate_query
-                        .filter(
-                            TeacherSubject.subject_id ==
-                            subject_id
-                        )
-                    )
-
-                else:
+                if subject_id is None:
 
                     duplicate_query = (
                         duplicate_query
@@ -29205,267 +32923,591 @@ def add_teacher_subject():
                         )
                     )
 
-            # =================================================
-            # CHECK DUPLICATE
-            # =================================================
+                else:
 
-            existing_assignment = (
-                duplicate_query
-                .first()
-            )
-
-            if existing_assignment:
-
-                skipped_count += 1
-
-                duplicate_name = (
-                    getattr(
-                        subject,
-                        "name",
-                        None
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.subject_id
+                            == subject_id
+                        )
                     )
-                    or
-                    getattr(
-                        class_obj,
-                        "name",
-                        None
+
+                # ----------------------------------------------
+                # SECTION
+                # ----------------------------------------------
+
+                if section_id is None:
+
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.section_id.is_(None)
+                        )
                     )
-                    or
-                    getattr(
-                        section,
-                        "name",
-                        None
+
+                else:
+
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.section_id
+                            == section_id
+                        )
                     )
-                    or
-                    getattr(
-                        program,
-                        "name",
-                        None
+
+                existing_assignment = (
+                    duplicate_query
+                    .first()
+                )
+
+                if existing_assignment:
+
+                    raise ValueError(
+                        f"Assignment {row_number}: "
+                        "This teacher is already assigned "
+                        "to the selected target."
                     )
-                    or
-                    "Assignment"
+
+                # ==============================================
+                # CREATE
+                # ==============================================
+
+                assignment = TeacherSubject(
+
+                    institution_id=(
+                        institution_id
+                    ),
+
+                    branch_id=(
+                        branch_id
+                    ),
+
+                    teacher_id=(
+                        teacher_id
+                    ),
+
+                    program_id=(
+                        program_id
+                    ),
+
+                    class_id=(
+                        class_id
+                    ),
+
+                    subject_id=(
+                        subject_id
+                    ),
+
+                    section_id=(
+                        section_id
+                    ),
+
+                    academic_year_id=(
+                        academic_year_id
+                    ),
+
+                    assignment_type=(
+                        assignment_type
+                    ),
+
+                    scope="specific",
+
+                    teaching_type=(
+                        teaching_type
+                    ),
+
+                    is_primary=(
+                        is_primary
+                    ),
+
+                    status=(
+                        status
+                    ),
+
+                    start_date=(
+                        start_date
+                    ),
+
+                    end_date=(
+                        end_date
+                    ),
+
+                    notes=(
+                        notes or None
+                    ),
                 )
 
-                duplicate_items.append(
-                    duplicate_name
+                db.session.add(
+                    assignment
                 )
 
-                continue
+                created_count += 1
 
-            # =================================================
-            # CREATE ASSIGNMENT
-            # =================================================
-
-            assignment = TeacherSubject(
-                teacher_id=teacher.id,
-                institution_id=institution_id,
-                branch_id=branch_id,
-                academic_year_id=academic_year_id,
-            )
-
-            # =================================================
-            # OPTIONAL MODEL FIELDS
-            # =================================================
-
-            if hasattr(
-                TeacherSubject,
-                "program_id"
-            ):
-
-                assignment.program_id = (
-                    program_id
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "class_id"
-            ):
-
-                assignment.class_id = (
-                    class_id
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "section_id"
-            ):
-
-                assignment.section_id = (
-                    section_id
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "subject_id"
-            ):
-
-                assignment.subject_id = (
-                    subject_id
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "assignment_mode"
-            ):
-
-                assignment.assignment_mode = (
-                    mode
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "teaching_type"
-            ):
-
-                assignment.teaching_type = (
-                    teaching_type
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "status"
-            ):
-
-                assignment.status = (
-                    status
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "start_date"
-            ):
-
-                assignment.start_date = (
-                    start_date
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "end_date"
-            ):
-
-                assignment.end_date = (
-                    end_date
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "notes"
-            ):
-
-                assignment.notes = (
-                    notes
-                )
-
-            if hasattr(
-                TeacherSubject,
-                "is_primary"
-            ):
-
-                assignment.is_primary = (
-                    is_primary
-                )
-
-            # =================================================
-            # ADD
-            # =================================================
-
-            db.session.add(
-                assignment
-            )
-
-            created_count += 1
-
-        # ====================================================
-        # NOTHING CREATED
-        # ====================================================
-
-        if created_count == 0:
-
-            db.session.rollback()
-
-            if skipped_count:
-
-                flash(
-                    "All selected assignments already exist.",
-                    "warning"
-                )
-
-            else:
-
-                flash(
-                    "No valid assignments were created.",
-                    "warning"
-                )
-
-            return redirect(
-                url_for(
-                    "main.add_teacher_subject"
-                )
-            )
-
-        # ====================================================
-        # COMMIT
-        # ====================================================
-
-        try:
+            # ==================================================
+            # COMMIT
+            # ==================================================
 
             db.session.commit()
 
-        except Exception as exc:
-
-            db.session.rollback()
-
-            # Console logging for debugging
-            print(
-                "ADD TEACHER SUBJECT ERROR:",
-                repr(exc)
-            )
+            # ==================================================
+            # SUCCESS
+            # ==================================================
 
             flash(
-                "Could not save teacher subject assignments.",
-                "danger"
+                f"{created_count} teacher assignment(s) "
+                "created successfully.",
+                "success"
             )
 
             return redirect(
                 url_for(
-                    "main.add_teacher_subject"
+                    "main.all_teacher_subjects"
                 )
             )
 
-        # ====================================================
-        # SUCCESS MESSAGE
-        # ====================================================
+        # ========================================================
+        # VALIDATION ERROR
+        # ========================================================
 
-        message = (
-            f"{created_count} teacher subject "
-            f"assignment(s) created successfully."
-        )
+        except ValueError as exc:
 
-        if skipped_count:
+            db.session.rollback()
 
-            message += (
-                f" {skipped_count} duplicate "
-                f"assignment(s) were skipped."
+            flash(
+                str(exc),
+                "danger"
             )
 
-        flash(
-            message,
-            "success"
+        # ========================================================
+        # DATABASE ERROR
+        # ========================================================
+
+        except IntegrityError:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Teacher assignment IntegrityError"
+            )
+
+            flash(
+                "Unable to save teacher assignment because "
+                "of a database constraint.",
+                "danger"
+            )
+
+        # ========================================================
+        # GENERAL ERROR
+        # ========================================================
+
+        except Exception:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Teacher assignment creation failed"
+            )
+
+            flash(
+                "An unexpected error occurred while creating "
+                "teacher assignments.",
+                "danger"
+            )
+
+    # ============================================================
+    # SELECTED INSTITUTION
+    # ============================================================
+
+    selected_institution_id = None
+
+    if current_role == "superadmin":
+
+        if request.method == "POST":
+
+            selected_institution_id = safe_int(
+                request.form.get(
+                    "institution_id"
+                )
+            )
+
+    else:
+
+        selected_institution_id = (
+            current_institution_id
         )
 
-        return redirect(
-            url_for(
-                "main.all_teacher_subjects"
+    # ============================================================
+    # SELECTED BRANCH
+    # ============================================================
+
+    selected_branch_id = None
+
+    if current_role == "branch_admin":
+
+        # ----------------------------------------------
+        # BRANCH ADMIN:
+        # ALWAYS CURRENT BRANCH
+        # ----------------------------------------------
+
+        selected_branch_id = (
+            current_branch_id
+        )
+
+    elif request.method == "POST":
+
+        selected_branch_id = safe_int(
+            request.form.get(
+                "branch_id"
             )
         )
 
-    # ========================================================
-    # GET / RENDER
-    # ========================================================
+    # ============================================================
+    # SELECTED ACADEMIC YEAR
+    # ============================================================
+
+    selected_academic_year_id = None
+
+    if request.method == "POST":
+
+        selected_academic_year_id = safe_int(
+            request.form.get(
+                "academic_year_id"
+            )
+        )
+
+    # ============================================================
+    # LOAD BRANCHES
+    # ============================================================
+
+    if current_role == "superadmin":
+
+        # ----------------------------------------------
+        # SUPERADMIN:
+        # Branches depend on selected institution
+        # ----------------------------------------------
+
+        if selected_institution_id:
+
+            branches = (
+                Branch.query
+                .filter(
+                    Branch.institution_id
+                    == selected_institution_id
+                )
+                .order_by(
+                    Branch.name.asc()
+                )
+                .all()
+            )
+
+    elif current_role == "school_admin":
+
+        # ----------------------------------------------
+        # SCHOOL ADMIN:
+        # ALL BRANCHES IN OWN INSTITUTION
+        # ----------------------------------------------
+
+        branches = (
+            Branch.query
+            .filter(
+                Branch.institution_id
+                == current_institution_id
+            )
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    elif current_role == "branch_admin":
+
+        # ----------------------------------------------
+        # BRANCH ADMIN:
+        # ONLY CURRENT BRANCH
+        # ----------------------------------------------
+
+        current_branch = (
+            Branch.query
+            .filter(
+                Branch.id
+                == current_branch_id,
+
+                Branch.institution_id
+                == current_institution_id,
+            )
+            .first()
+        )
+
+        if current_branch:
+
+            branches = [
+                current_branch
+            ]
+
+        else:
+
+            branches = []
+
+    # ============================================================
+    # LOAD ACADEMIC YEARS
+    # ============================================================
+
+    if selected_institution_id:
+
+        academic_years = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.institution_id
+                == selected_institution_id
+            )
+            .order_by(
+                AcademicYear.start_date.desc()
+            )
+            .all()
+        )
+
+    # ============================================================
+    # LOAD TEACHERS
+    # ============================================================
+
+    if (
+        selected_institution_id
+        and selected_branch_id
+    ):
+
+        teachers = (
+            Teacher.query
+            .filter(
+                Teacher.institution_id
+                == selected_institution_id,
+
+                Teacher.branch_id
+                == selected_branch_id,
+            )
+            .order_by(
+                Teacher.full_name.asc()
+            )
+            .all()
+        )
+
+    # ============================================================
+    # LOAD PROGRAMS
+    # ============================================================
+
+    if selected_institution_id:
+
+        program_query = (
+            Program.query
+            .filter(
+                Program.institution_id
+                == selected_institution_id
+            )
+        )
+
+        if selected_branch_id:
+
+            program_query = (
+                program_query
+                .filter(
+                    db.or_(
+                        Program.branch_id
+                        == selected_branch_id,
+
+                        Program.branch_id.is_(None)
+                    )
+                )
+            )
+
+        programs = (
+            program_query
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    # ============================================================
+    # LOAD CLASSES
+    # ============================================================
+
+    if (
+        selected_institution_id
+        and selected_branch_id
+        and selected_academic_year_id
+    ):
+
+        classes = (
+            Class.query
+            .filter(
+                Class.institution_id
+                == selected_institution_id,
+
+                Class.branch_id
+                == selected_branch_id,
+
+                Class.academic_year_id
+                == selected_academic_year_id,
+            )
+            .order_by(
+                Class.name.asc()
+            )
+            .all()
+        )
+
+    # ============================================================
+    # LOAD SUBJECTS
+    # ============================================================
+
+    if (
+        selected_institution_id
+        and selected_branch_id
+    ):
+
+        subject_query = (
+            Subject.query
+            .filter(
+                Subject.institution_id
+                == selected_institution_id
+            )
+        )
+
+        subject_query = (
+            subject_query
+            .filter(
+                db.or_(
+                    Subject.branch_id
+                    == selected_branch_id,
+
+                    Subject.branch_id.is_(None)
+                )
+            )
+        )
+
+        subjects = (
+            subject_query
+            .order_by(
+                Subject.name.asc()
+            )
+            .all()
+        )
+
+    # ============================================================
+    # LOAD SECTIONS
+    # ============================================================
+
+    if (
+        selected_institution_id
+        and selected_branch_id
+        and selected_academic_year_id
+    ):
+
+        sections = (
+            Section.query
+            .filter(
+                Section.institution_id
+                == selected_institution_id,
+
+                Section.branch_id
+                == selected_branch_id,
+
+                Section.academic_year_id
+                == selected_academic_year_id,
+            )
+            .order_by(
+                Section.name.asc()
+            )
+            .all()
+        )
+
+    # ============================================================
+    # FORM VALUES
+    # ============================================================
+
+    form_values = {
+
+        "institution_id": (
+            selected_institution_id
+            or ""
+        ),
+
+        "branch_id": (
+            selected_branch_id
+            or ""
+        ),
+
+        "academic_year_id": (
+            selected_academic_year_id
+            or ""
+        ),
+
+        "teaching_type": (
+            request.form.get(
+                "teaching_type",
+                "teacher"
+            )
+            if request.method == "POST"
+            else "teacher"
+        ),
+
+        "status": (
+            request.form.get(
+                "status",
+                "active"
+            )
+            if request.method == "POST"
+            else "active"
+        ),
+
+        "start_date": (
+            request.form.get(
+                "start_date",
+                ""
+            )
+            if request.method == "POST"
+            else ""
+        ),
+
+        "end_date": (
+            request.form.get(
+                "end_date",
+                ""
+            )
+            if request.method == "POST"
+            else ""
+        ),
+
+        "notes": (
+            request.form.get(
+                "notes",
+                ""
+            )
+            if request.method == "POST"
+            else ""
+        ),
+
+        "is_primary": (
+            request.form.get(
+                "is_primary"
+            )
+            == "1"
+            if request.method == "POST"
+            else True
+        ),
+    }
+
+    # ============================================================
+    # RENDER
+    # ============================================================
 
     return render_template(
-        "backend/pages/teacher_subjects/add_teacher_subject.html",
+
+        "backend/pages/teacher_subjects/"
+        "add_teacher_subject.html",
+
+        # --------------------------------------------------------
+        # DATA
+        # --------------------------------------------------------
 
         institutions=institutions,
 
@@ -29479,18 +33521,68 @@ def add_teacher_subject():
 
         classes=classes,
 
-        sections=sections,
-
         subjects=subjects,
 
-        selected_institution_id=(
-            selected_institution_id
+        sections=sections,
+
+        # --------------------------------------------------------
+        # FORM
+        # --------------------------------------------------------
+
+        form_values=form_values,
+
+        # --------------------------------------------------------
+        # USER
+        # --------------------------------------------------------
+
+        user=current_user,
+
+        current_user=current_user,
+
+        # --------------------------------------------------------
+        # ROLE
+        # --------------------------------------------------------
+
+        current_role=current_role,
+
+        is_superadmin=(
+            current_role
+            == "superadmin"
         ),
 
-        selected_branch_id=(
-            selected_branch_id
+        is_school_admin=(
+            current_role
+            == "school_admin"
+        ),
+
+        is_branch_admin=(
+            current_role
+            == "branch_admin"
+        ),
+
+        # --------------------------------------------------------
+        # CURRENT SCOPE
+        # --------------------------------------------------------
+
+        current_institution_id=(
+            current_institution_id
+        ),
+
+        current_branch_id=(
+            current_branch_id
+        ),
+
+        # --------------------------------------------------------
+        # IMPORTANT FOR TEMPLATE
+        # --------------------------------------------------------
+
+        branch_locked=(
+            current_role
+            == "branch_admin"
         ),
     )
+
+
 
 
 
@@ -29755,6 +33847,9 @@ def view_teacher_subject(teacher_subject_id):
 # ============================================================
 # EDIT TEACHER SUBJECT
 # ============================================================
+# ============================================================
+# EDIT TEACHER SUBJECT / ASSIGNMENT
+# ============================================================
 
 @bp.route(
     "/teacher-subjects/<int:teacher_subject_id>/edit",
@@ -29764,12 +33859,23 @@ def view_teacher_subject(teacher_subject_id):
 def edit_teacher_subject(teacher_subject_id):
 
     # ========================================================
-    # PERMISSION
+    # ROLE SECURITY
     # ========================================================
 
-    if not _teacher_subject_can_manage():
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    current_role = (
+        getattr(current_user, "role", None) or ""
+    ).strip().lower()
+
+    if current_role not in allowed_roles:
+
         flash(
-            "You are not authorized to edit teacher subject assignments.",
+            "You do not have permission to edit teacher assignments.",
             "danger"
         )
 
@@ -29778,7 +33884,23 @@ def edit_teacher_subject(teacher_subject_id):
         )
 
     # ========================================================
-    # GET EXISTING ASSIGNMENT
+    # GET CURRENT USER SCOPE
+    # ========================================================
+
+    user_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # LOAD ASSIGNMENT
     # ========================================================
 
     assignment = (
@@ -29786,68 +33908,107 @@ def edit_teacher_subject(teacher_subject_id):
         .filter(
             TeacherSubject.id == teacher_subject_id
         )
-        .first_or_404()
+        .first()
     )
 
-    # ========================================================
-    # CURRENT USER SCOPE
-    # ========================================================
+    if not assignment:
 
-    user_institution_id = (
-        _teacher_subject_user_institution_id()
-    )
+        flash(
+            "Teacher assignment not found.",
+            "danger"
+        )
 
-    user_branch_id = (
-        _teacher_subject_user_branch_id()
-    )
-
-    role = getattr(
-        current_user,
-        "role",
-        None
-    )
+        return redirect(
+            url_for("main.all_teacher_subjects")
+        )
 
     # ========================================================
-    # SECURITY:
-    # INSTITUTION
+    # ASSIGNMENT ACCESS SECURITY
     # ========================================================
 
-    if (
-        user_institution_id
-        and assignment.institution_id
-        != user_institution_id
-    ):
-        abort(403)
+    # --------------------------------------------------------
+    # SUPERADMIN
+    # --------------------------------------------------------
 
-    # ========================================================
-    # SECURITY:
+    if current_role == "superadmin":
+
+        assignment_query = TeacherSubject.query.filter(
+            TeacherSubject.id == teacher_subject_id
+        )
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN
+    # --------------------------------------------------------
+
+    elif current_role == "school_admin":
+
+        if not user_institution_id:
+
+            flash(
+                "Your account is not linked to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_teacher_subjects")
+            )
+
+        assignment_query = TeacherSubject.query.filter(
+            TeacherSubject.id == teacher_subject_id,
+            TeacherSubject.institution_id == user_institution_id
+        )
+
+    # --------------------------------------------------------
     # BRANCH ADMIN
+    # --------------------------------------------------------
+
+    else:
+
+        if not user_institution_id or not user_branch_id:
+
+            flash(
+                "Your account is not properly linked to an institution and branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_teacher_subjects")
+            )
+
+        assignment_query = TeacherSubject.query.filter(
+            TeacherSubject.id == teacher_subject_id,
+            TeacherSubject.institution_id == user_institution_id,
+            TeacherSubject.branch_id == user_branch_id
+        )
+
+    assignment = assignment_query.first()
+
+    if not assignment:
+
+        flash(
+            "You do not have permission to edit this teacher assignment.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_teacher_subjects")
+        )
+
+    # ========================================================
+    # FORM VALUES
     # ========================================================
 
-    if (
-        role == "branch_admin"
-        and user_branch_id
-        and assignment.branch_id
-        != user_branch_id
-    ):
-        abort(403)
+    form_values = {}
 
     # ========================================================
-    # DEFAULT CURRENT VALUES
-    # ========================================================
-
-    institution_id = assignment.institution_id
-    branch_id = assignment.branch_id
-
-    # ========================================================
-    # POST REQUEST
+    # POST
     # ========================================================
 
     if request.method == "POST":
 
-        # ====================================================
-        # FORM VALUES
-        # ====================================================
+        # ----------------------------------------------------
+        # READ FORM VALUES
+        # ----------------------------------------------------
 
         institution_id = request.form.get(
             "institution_id",
@@ -29859,14 +34020,23 @@ def edit_teacher_subject(teacher_subject_id):
             type=int
         )
 
+        academic_year_id = request.form.get(
+            "academic_year_id",
+            type=int
+        )
+
         teacher_id = request.form.get(
             "teacher_id",
             type=int
         )
 
-        subject_id = request.form.get(
-            "subject_id",
-            type=int
+        assignment_type = (
+            request.form.get(
+                "assignment_type",
+                ""
+            )
+            .strip()
+            .lower()
         )
 
         program_id = request.form.get(
@@ -29879,74 +34049,149 @@ def edit_teacher_subject(teacher_subject_id):
             type=int
         )
 
+        subject_id = request.form.get(
+            "subject_id",
+            type=int
+        )
+
         section_id = request.form.get(
             "section_id",
             type=int
         )
 
-        academic_year_id = request.form.get(
-            "academic_year_id",
-            type=int
+        teaching_type = (
+            request.form.get(
+                "teaching_type",
+                "teacher"
+            )
+            .strip()
+            .lower()
         )
 
-        teaching_type = request.form.get(
-            "teaching_type",
-            "teacher"
-        ).strip().lower()
+        status = (
+            request.form.get(
+                "status",
+                "active"
+            )
+            .strip()
+            .lower()
+        )
 
-        status = request.form.get(
-            "status",
-            "active"
-        ).strip().lower()
+        start_date = (
+            request.form.get(
+                "start_date",
+                ""
+            )
+            .strip()
+            or None
+        )
+
+        end_date = (
+            request.form.get(
+                "end_date",
+                ""
+            )
+            .strip()
+            or None
+        )
 
         is_primary = (
             request.form.get("is_primary")
             in {
                 "1",
                 "true",
+                "True",
                 "on",
                 "yes"
             }
         )
 
-        start_date_raw = request.form.get(
-            "start_date",
-            ""
-        ).strip()
+        notes = (
+            request.form.get(
+                "notes",
+                ""
+            )
+            .strip()
+            or None
+        )
 
-        end_date_raw = request.form.get(
-            "end_date",
-            ""
-        ).strip()
+        scope = (
+            request.form.get(
+                "scope",
+                "specific"
+            )
+            .strip()
+            .lower()
+        )
 
-        notes = request.form.get(
-            "notes",
-            ""
-        ).strip()
+        # ----------------------------------------------------
+        # KEEP FORM VALUES FOR ERROR RENDERING
+        # ----------------------------------------------------
+
+        form_values = {
+            "institution_id": institution_id,
+            "branch_id": branch_id,
+            "academic_year_id": academic_year_id,
+            "teacher_id": teacher_id,
+            "assignment_type": assignment_type,
+            "program_id": program_id,
+            "class_id": class_id,
+            "subject_id": subject_id,
+            "section_id": section_id,
+            "teaching_type": teaching_type,
+            "status": status,
+            "start_date": start_date or "",
+            "end_date": end_date or "",
+            "is_primary": is_primary,
+            "notes": notes or "",
+            "scope": scope,
+        }
 
         # ====================================================
-        # ERROR COLLECTION
+        # ROLE-BASED INSTITUTION / BRANCH SECURITY
+        # ====================================================
+
+        if current_role == "school_admin":
+
+            institution_id = user_institution_id
+
+            form_values["institution_id"] = institution_id
+
+            if not institution_id:
+
+                flash(
+                    "Your account is not linked to an institution.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("main.all_teacher_subjects")
+                )
+
+        elif current_role == "branch_admin":
+
+            institution_id = user_institution_id
+            branch_id = user_branch_id
+
+            form_values["institution_id"] = institution_id
+            form_values["branch_id"] = branch_id
+
+            if not institution_id or not branch_id:
+
+                flash(
+                    "Your account is not properly linked to an institution and branch.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("main.all_teacher_subjects")
+                )
+
+        # ====================================================
+        # BASIC VALIDATION
         # ====================================================
 
         errors = []
-
-        # ====================================================
-        # FORCE USER INSTITUTION
-        # ====================================================
-
-        if user_institution_id:
-            institution_id = user_institution_id
-
-        # ====================================================
-        # FORCE BRANCH ADMIN BRANCH
-        # ====================================================
-
-        if role == "branch_admin":
-            branch_id = user_branch_id
-
-        # ====================================================
-        # REQUIRED FIELDS
-        # ====================================================
 
         if not institution_id:
             errors.append(
@@ -29958,89 +34203,218 @@ def edit_teacher_subject(teacher_subject_id):
                 "Branch is required."
             )
 
+        if not academic_year_id:
+            errors.append(
+                "Academic year is required."
+            )
+
         if not teacher_id:
             errors.append(
                 "Teacher is required."
             )
 
-        if not subject_id:
+        allowed_assignment_types = {
+            "program",
+            "class",
+            "subject",
+            "section",
+        }
+
+        if assignment_type not in allowed_assignment_types:
+
             errors.append(
-                "Subject is required."
+                "Invalid assignment type."
             )
 
-        if not academic_year_id:
-            errors.append(
-                "Academic Year is required."
-            )
+        allowed_teaching_types = {
+            "teacher",
+            "assistant",
+            "coordinator",
+            "substitute",
+        }
 
-        # ====================================================
-        # TEACHING TYPE
-        # ====================================================
+        if teaching_type not in allowed_teaching_types:
 
-        if teaching_type not in TEACHER_SUBJECT_TYPES:
             errors.append(
                 "Invalid teaching type."
             )
 
-        # ====================================================
-        # STATUS
-        # ====================================================
+        allowed_statuses = {
+            "active",
+            "inactive",
+        }
 
-        if status not in TEACHER_SUBJECT_STATUSES:
+        if status not in allowed_statuses:
+
             errors.append(
                 "Invalid assignment status."
             )
 
         # ====================================================
-        # DATE PARSING
+        # SCOPE
         # ====================================================
 
-        start_date = None
-        end_date = None
+        # TeacherSubject currently represents a specific
+        # assignment, therefore force scope=specific.
 
-        if start_date_raw:
+        scope = "specific"
+
+        # ====================================================
+        # ASSIGNMENT HIERARCHY VALIDATION
+        # ====================================================
+
+        # ----------------------------------------------------
+        # PROGRAM
+        # ----------------------------------------------------
+
+        if assignment_type in {
+            "program",
+            "class",
+            "subject",
+            "section",
+        }:
+
+            if not program_id:
+
+                errors.append(
+                    "Program is required for this assignment type."
+                )
+
+        # ----------------------------------------------------
+        # CLASS
+        # ----------------------------------------------------
+
+        if assignment_type in {
+            "class",
+            "subject",
+            "section",
+        }:
+
+            if not class_id:
+
+                errors.append(
+                    "Class is required for this assignment type."
+                )
+
+        # ----------------------------------------------------
+        # SUBJECT
+        # ----------------------------------------------------
+
+        if assignment_type in {
+            "subject",
+            "section",
+        }:
+
+            if not subject_id:
+
+                errors.append(
+                    "Subject is required for this assignment type."
+                )
+
+        # ----------------------------------------------------
+        # SECTION
+        # ----------------------------------------------------
+
+        if assignment_type == "section":
+
+            if not section_id:
+
+                errors.append(
+                    "Section is required for section assignment."
+                )
+
+        # ----------------------------------------------------
+        # CLEAR UNUSED HIERARCHY VALUES
+        # ----------------------------------------------------
+
+        if assignment_type == "program":
+
+            class_id = None
+            subject_id = None
+            section_id = None
+
+        elif assignment_type == "class":
+
+            subject_id = None
+            section_id = None
+
+        elif assignment_type == "subject":
+
+            section_id = None
+
+        form_values["program_id"] = program_id
+        form_values["class_id"] = class_id
+        form_values["subject_id"] = subject_id
+        form_values["section_id"] = section_id
+
+        # ====================================================
+        # DATE VALIDATION
+        # ====================================================
+
+        parsed_start_date = None
+        parsed_end_date = None
+
+        if start_date:
 
             try:
 
-                start_date = datetime.strptime(
-                    start_date_raw,
+                parsed_start_date = datetime.strptime(
+                    start_date,
                     "%Y-%m-%d"
                 ).date()
 
             except ValueError:
 
                 errors.append(
-                    "Invalid start date."
+                    "Start date must be a valid date."
                 )
 
-        if end_date_raw:
+        if end_date:
 
             try:
 
-                end_date = datetime.strptime(
-                    end_date_raw,
+                parsed_end_date = datetime.strptime(
+                    end_date,
                     "%Y-%m-%d"
                 ).date()
 
             except ValueError:
 
                 errors.append(
-                    "Invalid end date."
+                    "End date must be a valid date."
                 )
-
-        # ====================================================
-        # DATE ORDER
-        # ====================================================
 
         if (
-            start_date
-            and end_date
-            and end_date < start_date
+            parsed_start_date
+            and parsed_end_date
+            and parsed_end_date < parsed_start_date
         ):
 
             errors.append(
-                "End date cannot be before start date."
+                "End date cannot be earlier than start date."
             )
+
+        # ====================================================
+        # INSTITUTION VALIDATION
+        # ====================================================
+
+        institution = None
+
+        if institution_id:
+
+            institution = (
+                Institution.query
+                .filter(
+                    Institution.id == institution_id
+                )
+                .first()
+            )
+
+            if not institution:
+
+                errors.append(
+                    "Selected institution does not exist."
+                )
 
         # ====================================================
         # BRANCH VALIDATION
@@ -30048,17 +34422,12 @@ def edit_teacher_subject(teacher_subject_id):
 
         branch = None
 
-        if (
-            institution_id
-            and branch_id
-        ):
+        if branch_id:
 
             branch = (
                 Branch.query
                 .filter(
-                    Branch.id == branch_id,
-                    Branch.institution_id
-                    == institution_id
+                    Branch.id == branch_id
                 )
                 .first()
             )
@@ -30066,7 +34435,45 @@ def edit_teacher_subject(teacher_subject_id):
             if not branch:
 
                 errors.append(
-                    "Selected branch is invalid."
+                    "Selected branch does not exist."
+                )
+
+            elif institution and branch.institution_id != institution.id:
+
+                errors.append(
+                    "Selected branch does not belong to the selected institution."
+                )
+
+        # ====================================================
+        # ACADEMIC YEAR VALIDATION
+        # ====================================================
+
+        academic_year = None
+
+        if academic_year_id:
+
+            academic_year = (
+                AcademicYear.query
+                .filter(
+                    AcademicYear.id == academic_year_id
+                )
+                .first()
+            )
+
+            if not academic_year:
+
+                errors.append(
+                    "Selected academic year does not exist."
+                )
+
+            elif (
+                institution
+                and academic_year.institution_id
+                != institution.id
+            ):
+
+                errors.append(
+                    "Selected academic year does not belong to the selected institution."
                 )
 
         # ====================================================
@@ -30075,20 +34482,12 @@ def edit_teacher_subject(teacher_subject_id):
 
         teacher = None
 
-        if (
-            institution_id
-            and branch_id
-            and teacher_id
-        ):
+        if teacher_id:
 
             teacher = (
                 Teacher.query
                 .filter(
-                    Teacher.id == teacher_id,
-                    Teacher.institution_id
-                    == institution_id,
-                    Teacher.branch_id
-                    == branch_id
+                    Teacher.id == teacher_id
                 )
                 .first()
             )
@@ -30096,9 +34495,141 @@ def edit_teacher_subject(teacher_subject_id):
             if not teacher:
 
                 errors.append(
-                    "Selected teacher does not belong "
-                    "to the selected branch."
+                    "Selected teacher does not exist."
                 )
+
+            else:
+
+                if (
+                    institution
+                    and teacher.institution_id
+                    != institution.id
+                ):
+
+                    errors.append(
+                        "Selected teacher does not belong to the selected institution."
+                    )
+
+                if (
+                    branch
+                    and teacher.branch_id
+                    != branch.id
+                ):
+
+                    errors.append(
+                        "Selected teacher does not belong to the selected branch."
+                    )
+
+        # ====================================================
+        # PROGRAM VALIDATION
+        # ====================================================
+
+        program = None
+
+        if program_id:
+
+            program = (
+                Program.query
+                .filter(
+                    Program.id == program_id
+                )
+                .first()
+            )
+
+            if not program:
+
+                errors.append(
+                    "Selected program does not exist."
+                )
+
+            else:
+
+                if (
+                    institution
+                    and program.institution_id
+                    != institution.id
+                ):
+
+                    errors.append(
+                        "Selected program does not belong to the selected institution."
+                    )
+
+                # Program branch can be NULL, meaning
+                # institution-wide program.
+
+                if (
+                    branch
+                    and program.branch_id is not None
+                    and program.branch_id != branch.id
+                ):
+
+                    errors.append(
+                        "Selected program is not available in the selected branch."
+                    )
+
+        # ====================================================
+        # CLASS VALIDATION
+        # ====================================================
+
+        class_obj = None
+
+        if class_id:
+
+            class_obj = (
+                Class.query
+                .filter(
+                    Class.id == class_id
+                )
+                .first()
+            )
+
+            if not class_obj:
+
+                errors.append(
+                    "Selected class does not exist."
+                )
+
+            else:
+
+                if (
+                    institution
+                    and class_obj.institution_id
+                    != institution.id
+                ):
+
+                    errors.append(
+                        "Selected class does not belong to the selected institution."
+                    )
+
+                if (
+                    branch
+                    and class_obj.branch_id
+                    != branch.id
+                ):
+
+                    errors.append(
+                        "Selected class does not belong to the selected branch."
+                    )
+
+                if (
+                    academic_year
+                    and class_obj.academic_year_id
+                    != academic_year.id
+                ):
+
+                    errors.append(
+                        "Selected class does not belong to the selected academic year."
+                    )
+
+                if (
+                    program
+                    and class_obj.program_id
+                    != program.id
+                ):
+
+                    errors.append(
+                        "Selected class does not belong to the selected program."
+                    )
 
         # ====================================================
         # SUBJECT VALIDATION
@@ -30106,378 +34637,129 @@ def edit_teacher_subject(teacher_subject_id):
 
         subject = None
 
-        if (
-            institution_id
-            and branch_id
-            and subject_id
-        ):
+        if subject_id:
 
-            subject_query = (
+            subject = (
                 Subject.query
                 .filter(
-                    Subject.id == subject_id,
-                    Subject.institution_id
-                    == institution_id
+                    Subject.id == subject_id
                 )
+                .first()
             )
-
-            if hasattr(
-                Subject,
-                "branch_id"
-            ):
-
-                subject_query = (
-                    subject_query.filter(
-                        Subject.branch_id
-                        == branch_id
-                    )
-                )
-
-            subject = subject_query.first()
 
             if not subject:
 
                 errors.append(
-                    "Selected subject is invalid."
+                    "Selected subject does not exist."
                 )
 
-        # ====================================================
-        # PROGRAM VALIDATION
-        # ====================================================
+            else:
 
-        if program_id:
+                if (
+                    institution
+                    and subject.institution_id
+                    != institution.id
+                ):
 
-            program_query = (
-                Program.query
-                .filter(
-                    Program.id == program_id,
-                    Program.institution_id
-                    == institution_id
-                )
-            )
-
-            if hasattr(
-                Program,
-                "branch_id"
-            ):
-
-                program_query = (
-                    program_query.filter(
-                        Program.branch_id
-                        == branch_id
+                    errors.append(
+                        "Selected subject does not belong to the selected institution."
                     )
-                )
 
-            if not program_query.first():
+                # Subject branch may be NULL,
+                # meaning institution-wide subject.
 
-                errors.append(
-                    "Selected program is invalid."
-                )
+                if (
+                    branch
+                    and subject.branch_id is not None
+                    and subject.branch_id != branch.id
+                ):
 
-        # ====================================================
-        # CLASS VALIDATION
-        # ====================================================
-
-        if class_id:
-
-            class_query = (
-                Class.query
-                .filter(
-                    Class.id == class_id,
-                    Class.institution_id
-                    == institution_id
-                )
-            )
-
-            if hasattr(
-                Class,
-                "branch_id"
-            ):
-
-                class_query = (
-                    class_query.filter(
-                        Class.branch_id
-                        == branch_id
+                    errors.append(
+                        "Selected subject is not available in the selected branch."
                     )
-                )
 
-            if not class_query.first():
+                # Subject program may be NULL,
+                # meaning it can be institution/branch-wide.
 
-                errors.append(
-                    "Selected class is invalid."
-                )
+                if (
+                    program
+                    and subject.program_id is not None
+                    and subject.program_id != program.id
+                ):
+
+                    errors.append(
+                        "Selected subject does not belong to the selected program."
+                    )
 
         # ====================================================
         # SECTION VALIDATION
         # ====================================================
 
+        section = None
+
         if section_id:
 
-            section_query = (
+            section = (
                 Section.query
                 .filter(
-                    Section.id == section_id,
-                    Section.institution_id
-                    == institution_id
+                    Section.id == section_id
                 )
+                .first()
             )
 
-            if hasattr(
-                Section,
-                "branch_id"
-            ):
-
-                section_query = (
-                    section_query.filter(
-                        Section.branch_id
-                        == branch_id
-                    )
-                )
-
-            if (
-                class_id
-                and hasattr(
-                    Section,
-                    "class_id"
-                )
-            ):
-
-                section_query = (
-                    section_query.filter(
-                        Section.class_id
-                        == class_id
-                    )
-                )
-
-            if not section_query.first():
+            if not section:
 
                 errors.append(
-                    "Selected section is invalid."
-                )
-
-        # ====================================================
-        # ACADEMIC YEAR VALIDATION
-        # ====================================================
-
-        academic_year_query = (
-            AcademicYear.query
-            .filter(
-                AcademicYear.id
-                == academic_year_id
-            )
-        )
-
-        if hasattr(
-            AcademicYear,
-            "institution_id"
-        ):
-
-            academic_year_query = (
-                academic_year_query.filter(
-                    AcademicYear.institution_id
-                    == institution_id
-                )
-            )
-
-        if not academic_year_query.first():
-
-            errors.append(
-                "Selected academic year is invalid."
-            )
-
-        # ====================================================
-        # DUPLICATE CHECK
-        # ====================================================
-
-        if (
-            teacher_id
-            and subject_id
-            and academic_year_id
-            and not errors
-        ):
-
-            duplicate_query = (
-                TeacherSubject.query
-                .filter(
-                    TeacherSubject.id
-                    != assignment.id,
-
-                    TeacherSubject.teacher_id
-                    == teacher_id,
-
-                    TeacherSubject.subject_id
-                    == subject_id,
-
-                    TeacherSubject.academic_year_id
-                    == academic_year_id
-                )
-            )
-
-            # ------------------------------------------------
-            # CLASS
-            # ------------------------------------------------
-
-            if class_id is None:
-
-                duplicate_query = (
-                    duplicate_query.filter(
-                        TeacherSubject.class_id.is_(None)
-                    )
+                    "Selected section does not exist."
                 )
 
             else:
 
-                duplicate_query = (
-                    duplicate_query.filter(
-                        TeacherSubject.class_id
-                        == class_id
-                    )
-                )
-
-            # ------------------------------------------------
-            # SECTION
-            # ------------------------------------------------
-
-            if section_id is None:
-
-                duplicate_query = (
-                    duplicate_query.filter(
-                        TeacherSubject.section_id.is_(None)
-                    )
-                )
-
-            else:
-
-                duplicate_query = (
-                    duplicate_query.filter(
-                        TeacherSubject.section_id
-                        == section_id
-                    )
-                )
-
-            if duplicate_query.first():
-
-                errors.append(
-                    "Another assignment with the same "
-                    "teacher, subject, class, section "
-                    "and academic year already exists."
-                )
-
-        # ====================================================
-        # SAVE
-        # ====================================================
-
-        if not errors:
-
-            try:
-
-                assignment.institution_id = (
-                    institution_id
-                )
-
-                assignment.branch_id = (
-                    branch_id
-                )
-
-                assignment.teacher_id = (
-                    teacher_id
-                )
-
-                assignment.subject_id = (
-                    subject_id
-                )
-
-                assignment.program_id = (
-                    program_id
-                )
-
-                assignment.class_id = (
-                    class_id
-                )
-
-                assignment.section_id = (
-                    section_id
-                )
-
-                assignment.academic_year_id = (
-                    academic_year_id
-                )
-
-                assignment.teaching_type = (
-                    teaching_type
-                )
-
-                assignment.is_primary = (
-                    is_primary
-                )
-
-                assignment.status = (
-                    status
-                )
-
-                assignment.start_date = (
-                    start_date
-                )
-
-                assignment.end_date = (
-                    end_date
-                )
-
-                assignment.notes = (
-                    notes or None
-                )
-
-                # SQLAlchemy onupdate ayaa sidoo kale
-                # qaban kara updated_at.
-                # Haddii column-ku jiro:
-                if hasattr(
-                    assignment,
-                    "updated_at"
+                if (
+                    institution
+                    and section.institution_id
+                    != institution.id
                 ):
-                    assignment.updated_at = (
-                        datetime.utcnow()
+
+                    errors.append(
+                        "Selected section does not belong to the selected institution."
                     )
 
-                db.session.commit()
+                if (
+                    branch
+                    and section.branch_id
+                    != branch.id
+                ):
 
-                flash(
-                    "Teacher subject assignment updated successfully.",
-                    "success"
-                )
-
-                return redirect(
-                    url_for(
-                        "main.view_teacher_subject",
-                        teacher_subject_id=assignment.id
+                    errors.append(
+                        "Selected section does not belong to the selected branch."
                     )
-                )
 
-            except IntegrityError:
+                if (
+                    academic_year
+                    and section.academic_year_id
+                    != academic_year.id
+                ):
 
-                db.session.rollback()
+                    errors.append(
+                        "Selected section does not belong to the selected academic year."
+                    )
 
-                flash(
-                    "Unable to update assignment because "
-                    "of a duplicate or invalid relationship.",
-                    "danger"
-                )
+                if (
+                    class_obj
+                    and section.class_id
+                    != class_obj.id
+                ):
 
-            except Exception as e:
+                    errors.append(
+                        "Selected section does not belong to the selected class."
+                    )
 
-                db.session.rollback()
+        # ====================================================
+        # STOP IF VALIDATION ERRORS
+        # ====================================================
 
-                current_app.logger.exception(
-                    "Error updating TeacherSubject: %s",
-                    e
-                )
-
-                flash(
-                    "An unexpected error occurred while "
-                    "updating the assignment.",
-                    "danger"
-                )
-
-        else:
+        if errors:
 
             for error in errors:
 
@@ -30486,31 +34768,611 @@ def edit_teacher_subject(teacher_subject_id):
                     "danger"
                 )
 
+        else:
+
+            try:
+
+                # ====================================================
+                # DUPLICATE ASSIGNMENT CHECK
+                # ====================================================
+
+                duplicate_query = (
+                    TeacherSubject.query
+                    .filter(
+                        TeacherSubject.id != assignment.id,
+
+                        TeacherSubject.institution_id
+                        == institution_id,
+
+                        TeacherSubject.branch_id
+                        == branch_id,
+
+                        TeacherSubject.teacher_id
+                        == teacher_id,
+
+                        TeacherSubject.academic_year_id
+                        == academic_year_id,
+
+                        TeacherSubject.assignment_type
+                        == assignment_type,
+
+                        TeacherSubject.program_id
+                        == program_id,
+
+                        TeacherSubject.class_id
+                        == class_id,
+
+                        TeacherSubject.subject_id
+                        == subject_id,
+
+                        TeacherSubject.section_id
+                        == section_id,
+
+                        TeacherSubject.status
+                        == "active",
+                    )
+                )
+
+                duplicate = duplicate_query.first()
+
+                if duplicate:
+
+                    flash(
+                        "This teacher assignment already exists.",
+                        "danger"
+                    )
+
+                else:
+
+                    # ====================================================
+                    # UPDATE ASSIGNMENT
+                    # ====================================================
+
+                    assignment.institution_id = (
+                        institution_id
+                    )
+
+                    assignment.branch_id = (
+                        branch_id
+                    )
+
+                    assignment.teacher_id = (
+                        teacher_id
+                    )
+
+                    assignment.program_id = (
+                        program_id
+                    )
+
+                    assignment.subject_id = (
+                        subject_id
+                    )
+
+                    assignment.class_id = (
+                        class_id
+                    )
+
+                    assignment.section_id = (
+                        section_id
+                    )
+
+                    assignment.academic_year_id = (
+                        academic_year_id
+                    )
+
+                    assignment.assignment_type = (
+                        assignment_type
+                    )
+
+                    assignment.scope = (
+                        "specific"
+                    )
+
+                    assignment.teaching_type = (
+                        teaching_type
+                    )
+
+                    assignment.is_primary = (
+                        is_primary
+                    )
+
+                    assignment.status = (
+                        status
+                    )
+
+                    assignment.start_date = (
+                        parsed_start_date
+                    )
+
+                    assignment.end_date = (
+                        parsed_end_date
+                    )
+
+                    assignment.notes = (
+                        notes
+                    )
+
+                    # ====================================================
+                    # SAVE
+                    # ====================================================
+
+                    db.session.commit()
+
+                    flash(
+                        "Teacher assignment updated successfully.",
+                        "success"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.all_teacher_subjects"
+                        )
+                    )
+
+            except IntegrityError as exc:
+
+                db.session.rollback()
+
+                current_app.logger.exception(
+                    "IntegrityError while updating TeacherSubject %s",
+                    teacher_subject_id
+                )
+
+                flash(
+                    "Could not update the teacher assignment because of a database constraint.",
+                    "danger"
+                )
+
+            except Exception as exc:
+
+                db.session.rollback()
+
+                current_app.logger.exception(
+                    "Error while updating TeacherSubject %s",
+                    teacher_subject_id
+                )
+
+                flash(
+                    "An unexpected error occurred while updating the teacher assignment.",
+                    "danger"
+                )
+
     # ========================================================
-    # FORM CONTEXT
+    # GET / RENDER DATA
     # ========================================================
 
-    context = _teacher_subject_form_context(
-        institution_id=institution_id,
-        branch_id=branch_id
+    # --------------------------------------------------------
+    # INSTITUTIONS
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        institutions = (
+            Institution.query
+            .filter(
+                Institution.id
+                == user_institution_id
+            )
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    # --------------------------------------------------------
+    # BRANCHES
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        branches = (
+            Branch.query
+            .order_by(
+                Branch.name.asc()
+            )
+            .all()
+        )
+
+    elif user_institution_id:
+
+        if current_role == "branch_admin":
+
+            branches = (
+                Branch.query
+                .filter(
+                    Branch.id == user_branch_id,
+                    Branch.institution_id
+                    == user_institution_id
+                )
+                .order_by(
+                    Branch.name.asc()
+                )
+                .all()
+            )
+
+        else:
+
+            branches = (
+                Branch.query
+                .filter(
+                    Branch.institution_id
+                    == user_institution_id
+                )
+                .order_by(
+                    Branch.name.asc()
+                )
+                .all()
+            )
+
+    else:
+
+        branches = []
+
+    # --------------------------------------------------------
+    # ACADEMIC YEARS
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        academic_years = (
+            AcademicYear.query
+            .order_by(
+                AcademicYear.name.desc()
+            )
+            .all()
+        )
+
+    elif user_institution_id:
+
+        academic_years = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.institution_id
+                == user_institution_id
+            )
+            .order_by(
+                AcademicYear.name.desc()
+            )
+            .all()
+        )
+
+    else:
+
+        academic_years = []
+
+    # --------------------------------------------------------
+    # TEACHERS
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        teachers = (
+            Teacher.query
+            .order_by(
+                Teacher.full_name.asc()
+            )
+            .all()
+        )
+
+    elif current_role == "branch_admin":
+
+        teachers = (
+            Teacher.query
+            .filter(
+                Teacher.institution_id
+                == user_institution_id,
+                Teacher.branch_id
+                == user_branch_id
+            )
+            .order_by(
+                Teacher.full_name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        teachers = (
+            Teacher.query
+            .filter(
+                Teacher.institution_id
+                == user_institution_id
+            )
+            .order_by(
+                Teacher.full_name.asc()
+            )
+            .all()
+        )
+
+    # --------------------------------------------------------
+    # PROGRAMS
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        programs = (
+            Program.query
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    elif user_institution_id:
+
+        if current_role == "branch_admin":
+
+            programs = (
+                Program.query
+                .filter(
+                    Program.institution_id
+                    == user_institution_id,
+
+                    db.or_(
+                        Program.branch_id
+                        == user_branch_id,
+
+                        Program.branch_id.is_(None)
+                    )
+                )
+                .order_by(
+                    Program.name.asc()
+                )
+                .all()
+            )
+
+        else:
+
+            programs = (
+                Program.query
+                .filter(
+                    Program.institution_id
+                    == user_institution_id
+                )
+                .order_by(
+                    Program.name.asc()
+                )
+                .all()
+            )
+
+    else:
+
+        programs = []
+
+    # --------------------------------------------------------
+    # CLASSES
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        classes = (
+            Class.query
+            .order_by(
+                Class.name.asc()
+            )
+            .all()
+        )
+
+    elif user_institution_id:
+
+        if current_role == "branch_admin":
+
+            classes = (
+                Class.query
+                .filter(
+                    Class.institution_id
+                    == user_institution_id,
+
+                    Class.branch_id
+                    == user_branch_id
+                )
+                .order_by(
+                    Class.name.asc()
+                )
+                .all()
+            )
+
+        else:
+
+            classes = (
+                Class.query
+                .filter(
+                    Class.institution_id
+                    == user_institution_id
+                )
+                .order_by(
+                    Class.name.asc()
+                )
+                .all()
+            )
+
+    else:
+
+        classes = []
+
+    # --------------------------------------------------------
+    # SUBJECTS
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        subjects = (
+            Subject.query
+            .order_by(
+                Subject.name.asc()
+            )
+            .all()
+        )
+
+    elif user_institution_id:
+
+        if current_role == "branch_admin":
+
+            subjects = (
+                Subject.query
+                .filter(
+                    Subject.institution_id
+                    == user_institution_id,
+
+                    db.or_(
+                        Subject.branch_id
+                        == user_branch_id,
+
+                        Subject.branch_id.is_(None)
+                    )
+                )
+                .order_by(
+                    Subject.name.asc()
+                )
+                .all()
+            )
+
+        else:
+
+            subjects = (
+                Subject.query
+                .filter(
+                    Subject.institution_id
+                    == user_institution_id
+                )
+                .order_by(
+                    Subject.name.asc()
+                )
+                .all()
+            )
+
+    else:
+
+        subjects = []
+
+    # --------------------------------------------------------
+    # SECTIONS
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        sections = (
+            Section.query
+            .order_by(
+                Section.name.asc()
+            )
+            .all()
+        )
+
+    elif user_institution_id:
+
+        if current_role == "branch_admin":
+
+            sections = (
+                Section.query
+                .filter(
+                    Section.institution_id
+                    == user_institution_id,
+
+                    Section.branch_id
+                    == user_branch_id
+                )
+                .order_by(
+                    Section.name.asc()
+                )
+                .all()
+            )
+
+        else:
+
+            sections = (
+                Section.query
+                .filter(
+                    Section.institution_id
+                    == user_institution_id
+                )
+                .order_by(
+                    Section.name.asc()
+                )
+                .all()
+            )
+
+    else:
+
+        sections = []
+
+    # ========================================================
+    # CURRENT IDS
+    # ========================================================
+
+    current_institution_id = (
+        form_values.get(
+            "institution_id"
+        )
+        if request.method == "POST" and form_values
+        else assignment.institution_id
+    )
+
+    current_branch_id = (
+        form_values.get(
+            "branch_id"
+        )
+        if request.method == "POST" and form_values
+        else assignment.branch_id
+    )
+
+    current_academic_year_id = (
+        form_values.get(
+            "academic_year_id"
+        )
+        if request.method == "POST" and form_values
+        else assignment.academic_year_id
     )
 
     # ========================================================
-    # RENDER TEMPLATE
-    #
-    # IMPORTANT:
-    # Ha ku darin user=current_user halkan.
-    #
-    # Sababta:
-    # _teacher_subject_form_context() wuxuu u muuqdaa inuu
-    # horey u soo celinayo "user".
+    # RENDER
     # ========================================================
 
     return render_template(
         "backend/pages/teacher_subjects/edit_teacher_subject.html",
+
         assignment=assignment,
-        **context
+
+        institutions=institutions,
+        branches=branches,
+        academic_years=academic_years,
+        teachers=teachers,
+        programs=programs,
+        classes=classes,
+        subjects=subjects,
+        sections=sections,
+
+        form_values=form_values,
+
+        current_role=current_role,
+
+        current_institution_id=current_institution_id,
+        current_branch_id=current_branch_id,
+        current_academic_year_id=current_academic_year_id,
+
+        is_superadmin=(
+            current_role == "superadmin"
+        ),
+
+        is_school_admin=(
+            current_role == "school_admin"
+        ),
+
+        is_branch_admin=(
+            current_role == "branch_admin"
+        ),
     )
+
 
 # ============================================================
 # DELETE TEACHER SUBJECT

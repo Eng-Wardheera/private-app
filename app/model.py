@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 import enum
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -690,6 +690,16 @@ class Institution(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    # ========================================================
+    # `EXAMS
+    # ========================================================
+
+    exams = db.relationship(
+        "Exam",
+        back_populates="institution",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     def __repr__(self):
 
@@ -927,6 +937,16 @@ class Branch(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    # ========================================================
+    # EXAMS
+    # ========================================================
+
+    exams = db.relationship(
+        "Exam",
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # REPRESENTATION
@@ -1126,6 +1146,16 @@ class AcademicYear(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    # ========================================================
+    # EXAMS
+    # ========================================================
+
+    exams = db.relationship(
+        "Exam",
+        back_populates="academic_year",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # REPRESENTATION
@@ -1307,6 +1337,16 @@ class Term(db.Model):
     academic_year = db.relationship(
         "AcademicYear",
         back_populates="terms"
+    )
+    # ========================================================
+    # EXAMS
+    # ========================================================
+
+    exams = db.relationship(
+        "Exam",
+        back_populates="term",
+        cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
     # ========================================================
@@ -1561,6 +1601,16 @@ class Program(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    # ========================================================
+    # EXAMS
+    # ========================================================
+
+    exams = db.relationship(
+        "Exam",
+        back_populates="program",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # TABLE CONSTRAINTS
@@ -1806,6 +1856,16 @@ class AssessmentPlan(db.Model):
     academic_year = db.relationship(
         "AcademicYear",
         back_populates="assessment_plans"
+    )
+    # ========================================================
+    # EXAMS
+    # ========================================================
+
+    exams = db.relationship(
+        "Exam",
+        back_populates="assessment_plan",
+        cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
     # ========================================================
@@ -3310,7 +3370,6 @@ class TeacherSubject(db.Model):
 # ============================================================
 # STUDENT MODEL
 # PostgreSQL / Neon
-# Flask-Login Student Account
 # ============================================================
 
 class Student(UserMixin, db.Model):
@@ -4411,6 +4470,381 @@ class StudentCharge(db.Model):
             f"balance={self.balance} "
             f"status={self.status!r}>"
         )
+
+
+# ============================================================
+# EXAM MODEL
+# PostgreSQL / Neon
+# ============================================================
+
+class Exam(db.Model):
+
+    __tablename__ = "exams"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    # Exam-ku wuxuu ka dhacayaa branch gaar ah.
+    # Sidaas darteed branch_id waa REQUIRED.
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # PROGRAM
+    # ========================================================
+
+    # Exam-ku wuxuu leeyahay Program uu u yahay.
+    #
+    # Tusaale:
+    # English Program
+    # Computer Science Program
+    # Nursing Program
+
+    program_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "programs.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # ASSESSMENT PLAN
+    # ========================================================
+
+    # AssessmentPlan wuxuu qeexayaa:
+    #
+    # Monthly
+    # Bi-Monthly
+    # Quarterly
+    # Semester
+    # Custom
+    #
+    # NULL waa loo oggol yahay haddii uu yahay:
+    #
+    # Mock Exam
+    # Entrance Exam
+    # Resit Exam
+    # Supplementary Exam
+    # Special Exam
+
+    assessment_plan_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "assessment_plans.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # ACADEMIC YEAR
+    # ========================================================
+
+    academic_year_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "academic_years.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # TERM
+    # ========================================================
+
+    term_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "terms.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # EXAM NAME
+    # ========================================================
+
+    name = db.Column(
+        db.String(150),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # EXAM CODE
+    # ========================================================
+
+    code = db.Column(
+        db.String(50),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # EXAM TYPE
+    # ========================================================
+
+    exam_type = db.Column(
+        db.String(50),
+        nullable=False,
+        default="term",
+        server_default="term",
+        index=True
+    )
+
+    # Possible values:
+    #
+    # monthly
+    # bi_monthly
+    # quarterly
+    # semester
+    # midterm
+    # final
+    # annual
+    # mock
+    # entrance
+    # supplementary
+    # resit
+    # special
+
+    # ========================================================
+    # DESCRIPTION
+    # ========================================================
+
+    description = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # START DATE
+    # ========================================================
+
+    start_date = db.Column(
+        db.Date,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # END DATE
+    # ========================================================
+
+    end_date = db.Column(
+        db.Date,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(30),
+        nullable=False,
+        default="draft",
+        server_default="draft",
+        index=True
+    )
+
+    # Possible values:
+    #
+    # draft
+    # scheduled
+    # ongoing
+    # completed
+    # cancelled
+    # published
+
+    # ========================================================
+    # CREATED AT
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # UPDATED AT
+    # ========================================================
+
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="exams"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="exams"
+    )
+
+    program = db.relationship(
+        "Program",
+        back_populates="exams"
+    )
+
+    assessment_plan = db.relationship(
+        "AssessmentPlan",
+        back_populates="exams"
+    )
+
+    academic_year = db.relationship(
+        "AcademicYear",
+        back_populates="exams"
+    )
+
+    term = db.relationship(
+        "Term",
+        back_populates="exams"
+    )
+
+   
+    # ========================================================
+    # TABLE CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        # ----------------------------------------------------
+        # UNIQUE EXAM CODE PER BRANCH + ACADEMIC YEAR
+        # ----------------------------------------------------
+
+        db.UniqueConstraint(
+            "institution_id",
+            "branch_id",
+            "academic_year_id",
+            "code",
+            name="uq_exam_branch_year_code"
+        ),
+
+        # ----------------------------------------------------
+        # INSTITUTION + BRANCH
+        # ----------------------------------------------------
+
+        db.Index(
+            "ix_exams_institution_branch",
+            "institution_id",
+            "branch_id"
+        ),
+
+        # ----------------------------------------------------
+        # PROGRAM + ACADEMIC YEAR
+        # ----------------------------------------------------
+
+        db.Index(
+            "ix_exams_program_year",
+            "program_id",
+            "academic_year_id"
+        ),
+
+        # ----------------------------------------------------
+        # ASSESSMENT PLAN
+        # ----------------------------------------------------
+
+        db.Index(
+            "ix_exams_assessment_plan",
+            "assessment_plan_id"
+        ),
+
+        # ----------------------------------------------------
+        # ACADEMIC YEAR + TERM
+        # ----------------------------------------------------
+
+        db.Index(
+            "ix_exams_academic_year_term",
+            "academic_year_id",
+            "term_id"
+        ),
+
+        # ----------------------------------------------------
+        # EXAM DATE RANGE
+        # ----------------------------------------------------
+
+        db.Index(
+            "ix_exams_dates",
+            "start_date",
+            "end_date"
+        ),
+
+    )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<Exam "
+            f"id={self.id} "
+            f"code='{self.code}' "
+            f"name='{self.name}' "
+            f"program_id={self.program_id} "
+            f"assessment_plan_id={self.assessment_plan_id} "
+            f"status='{self.status}'>"
+        )
+
+
+
 
 
 
