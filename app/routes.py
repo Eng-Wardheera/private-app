@@ -27722,9 +27722,10 @@ def all_teacher_subjects():
 # ============================================================
 # ADD TEACHER SUBJECT
 # ============================================================
+
+
 # ============================================================
 # ADD TEACHER SUBJECT ASSIGNMENTS
-# MULTI ASSIGNMENT VERSION
 # ============================================================
 
 @bp.route(
@@ -27735,10 +27736,22 @@ def all_teacher_subjects():
 def add_teacher_subject():
 
     # ========================================================
-    # AUTHORIZATION
+    # ROLE SECURITY
     # ========================================================
 
-    if not _teacher_subject_can_manage():
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    current_role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    if current_role not in allowed_roles:
 
         flash(
             "You are not authorized to create teacher subject assignments.",
@@ -27746,41 +27759,317 @@ def add_teacher_subject():
         )
 
         return redirect(
-            url_for("main.all_teacher_subjects")
+            url_for("main.dashboard")
         )
 
-    role = getattr(
+    # ========================================================
+    # USER SCOPE
+    # ========================================================
+
+    user_institution_id = getattr(
         current_user,
-        "role",
+        "institution_id",
         None
     )
 
-    user_institution_id = \
-        _teacher_subject_user_institution_id()
-
-    user_branch_id = \
-        _teacher_subject_user_branch_id()
-
-    # ========================================================
-    # DEFAULT VALUES
-    # ========================================================
-
-    institution_id = (
-        user_institution_id
-        or request.args.get(
-            "institution_id",
-            type=int
-        )
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
     )
 
-    branch_id = (
-        user_branch_id
-        if role == "branch_admin"
-        else request.args.get(
-            "branch_id",
-            type=int
-        )
+    # ========================================================
+    # SELECTED INSTITUTION
+    # ========================================================
+
+    posted_institution_id = request.form.get(
+        "institution_id",
+        type=int
     )
+
+    selected_institution_id = (
+        posted_institution_id
+        or user_institution_id
+    )
+
+    # ========================================================
+    # INSTITUTIONS
+    # ========================================================
+
+    if current_role == "superadmin":
+
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        institutions = []
+
+        if user_institution_id:
+
+            institution = (
+                Institution.query
+                .filter(
+                    Institution.id ==
+                    user_institution_id
+                )
+                .first()
+            )
+
+            if institution:
+                institutions = [
+                    institution
+                ]
+
+    # ========================================================
+    # INSTITUTION SECURITY
+    # ========================================================
+
+    if current_role != "superadmin":
+
+        if (
+            selected_institution_id
+            and
+            selected_institution_id
+            != user_institution_id
+        ):
+
+            flash(
+                "You cannot use another institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+    # ========================================================
+    # BRANCH QUERY
+    # ========================================================
+
+    branch_query = Branch.query
+
+    if selected_institution_id:
+
+        branch_query = branch_query.filter(
+            Branch.institution_id ==
+            selected_institution_id
+        )
+
+    if current_role == "branch_admin":
+
+        branch_query = branch_query.filter(
+            Branch.id ==
+            user_branch_id
+        )
+
+    branches = (
+        branch_query
+        .order_by(
+            Branch.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # SELECTED BRANCH
+    # ========================================================
+
+    posted_branch_id = request.form.get(
+        "branch_id",
+        type=int
+    )
+
+    selected_branch_id = (
+        posted_branch_id
+        or user_branch_id
+    )
+
+    # ========================================================
+    # BRANCH SECURITY
+    # ========================================================
+
+    if current_role == "branch_admin":
+
+        if (
+            selected_branch_id
+            != user_branch_id
+        ):
+
+            flash(
+                "You cannot use another branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+    # ========================================================
+    # VERIFY SELECTED BRANCH
+    # ========================================================
+
+    selected_branch = None
+
+    if selected_branch_id:
+
+        selected_branch = (
+            Branch.query
+            .filter(
+                Branch.id ==
+                selected_branch_id,
+
+                Branch.institution_id ==
+                selected_institution_id
+            )
+            .first()
+        )
+
+    # ========================================================
+    # ACADEMIC YEARS
+    # ========================================================
+
+    academic_years = []
+
+    if selected_institution_id:
+
+        academic_years = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.institution_id ==
+                selected_institution_id
+            )
+            .order_by(
+                AcademicYear.id.desc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # TEACHERS
+    # ========================================================
+
+    teacher_query = Teacher.query
+
+    if selected_institution_id:
+
+        teacher_query = teacher_query.filter(
+            Teacher.institution_id ==
+            selected_institution_id
+        )
+
+    if selected_branch_id:
+
+        teacher_query = teacher_query.filter(
+            Teacher.branch_id ==
+            selected_branch_id
+        )
+
+    teachers = (
+        teacher_query
+        .order_by(
+            Teacher.full_name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # PROGRAMS
+    # ========================================================
+
+    programs = []
+
+    if selected_institution_id:
+
+        programs = (
+            Program.query
+            .filter(
+                Program.institution_id ==
+                selected_institution_id
+            )
+            .order_by(
+                Program.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # CLASSES
+    # ========================================================
+
+    classes = []
+
+    if selected_branch_id:
+
+        classes = (
+            Class.query
+            .filter(
+                Class.branch_id ==
+                selected_branch_id
+            )
+            .order_by(
+                Class.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # SECTIONS
+    # ========================================================
+
+    sections = []
+
+    if selected_branch_id:
+
+        sections = (
+            Section.query
+            .join(
+                Class,
+                Section.class_id ==
+                Class.id
+            )
+            .filter(
+                Class.branch_id ==
+                selected_branch_id
+            )
+            .order_by(
+                Section.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # SUBJECTS
+    # ========================================================
+
+    subjects = []
+
+    if selected_institution_id:
+
+        subjects = (
+            Subject.query
+            .filter(
+                or_(
+                    Subject.institution_id ==
+                    selected_institution_id,
+
+                    Subject.institution_id.is_(None)
+                )
+            )
+            .order_by(
+                Subject.name.asc()
+            )
+            .all()
+        )
 
     # ========================================================
     # POST
@@ -27789,8 +28078,7 @@ def add_teacher_subject():
     if request.method == "POST":
 
         # ====================================================
-        # SHARED FIELDS
-        # These are common to ALL assignment rows
+        # BASIC VALUES
         # ====================================================
 
         institution_id = request.form.get(
@@ -27803,961 +28091,1407 @@ def add_teacher_subject():
             type=int
         )
 
-        # ====================================================
-        # SECURITY OVERRIDE
-        # ====================================================
-
-        if user_institution_id:
-
-            institution_id = user_institution_id
-
-        if role == "branch_admin":
-
-            branch_id = user_branch_id
-
-        # ====================================================
-        # MULTIPLE ROW DATA
-        # ====================================================
-
-        teacher_ids = request.form.getlist(
-            "teacher_id[]"
+        academic_year_id = request.form.get(
+            "academic_year_id",
+            type=int
         )
 
-        subject_ids = request.form.getlist(
-            "subject_id[]"
-        )
-
-        teaching_types = request.form.getlist(
-            "teaching_type[]"
-        )
-
-        statuses = request.form.getlist(
-            "status[]"
-        )
-
-        is_primaries = request.form.getlist(
-            "is_primary[]"
-        )
-
-        program_ids = request.form.getlist(
-            "program_id[]"
-        )
-
-        class_ids = request.form.getlist(
-            "class_id[]"
-        )
-
-        section_ids = request.form.getlist(
-            "section_id[]"
-        )
-
-        academic_year_ids = request.form.getlist(
-            "academic_year_id[]"
-        )
-
-        start_dates = request.form.getlist(
-            "start_date[]"
-        )
-
-        end_dates = request.form.getlist(
-            "end_date[]"
-        )
-
-        notes_list = request.form.getlist(
-            "notes[]"
+        teacher_id = request.form.get(
+            "teacher_id",
+            type=int
         )
 
         # ====================================================
-        # NUMBER OF ASSIGNMENT ROWS
-        # ====================================================
-
-        row_count = len(teacher_ids)
-
-        errors = []
-
-        # ====================================================
-        # REQUIRED SHARED FIELDS
+        # BASIC VALIDATION
         # ====================================================
 
         if not institution_id:
 
-            errors.append(
-                "Institution is required."
+            flash(
+                "Institution is required.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
             )
 
         if not branch_id:
 
-            errors.append(
-                "Branch is required."
+            flash(
+                "Branch is required.",
+                "danger"
             )
 
-        if row_count == 0:
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
 
-            errors.append(
-                "Please add at least one teacher subject assignment."
+        if not academic_year_id:
+
+            flash(
+                "Academic year is required.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+        if not teacher_id:
+
+            flash(
+                "Teacher is required.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
             )
 
         # ====================================================
-        # ARRAY LENGTH VALIDATION
+        # SECURITY - INSTITUTION
         # ====================================================
 
-        arrays = {
-            "subject_ids": subject_ids,
-            "teaching_types": teaching_types,
-            "statuses": statuses,
-            "is_primaries": is_primaries,
-            "program_ids": program_ids,
-            "class_ids": class_ids,
-            "section_ids": section_ids,
-            "academic_year_ids": academic_year_ids,
-            "start_dates": start_dates,
-            "end_dates": end_dates,
-            "notes_list": notes_list,
+        if current_role != "superadmin":
+
+            if (
+                institution_id
+                != user_institution_id
+            ):
+
+                flash(
+                    "Invalid institution access.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_teacher_subject"
+                    )
+                )
+
+        # ====================================================
+        # SECURITY - BRANCH ADMIN
+        # ====================================================
+
+        if current_role == "branch_admin":
+
+            if branch_id != user_branch_id:
+
+                flash(
+                    "Invalid branch access.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_teacher_subject"
+                    )
+                )
+
+        # ====================================================
+        # VERIFY INSTITUTION
+        # ====================================================
+
+        institution = (
+            Institution.query
+            .filter(
+                Institution.id ==
+                institution_id
+            )
+            .first()
+        )
+
+        if not institution:
+
+            flash(
+                "Invalid institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+        # ====================================================
+        # VERIFY BRANCH
+        # ====================================================
+
+        branch = (
+            Branch.query
+            .filter(
+                Branch.id ==
+                branch_id,
+
+                Branch.institution_id ==
+                institution_id
+            )
+            .first()
+        )
+
+        if not branch:
+
+            flash(
+                "Selected branch does not belong to the selected institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+        # ====================================================
+        # VERIFY ACADEMIC YEAR
+        # ====================================================
+
+        academic_year = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.id ==
+                academic_year_id,
+
+                AcademicYear.institution_id ==
+                institution_id
+            )
+            .first()
+        )
+
+        if not academic_year:
+
+            flash(
+                "Invalid academic year for this institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+        # ====================================================
+        # VERIFY TEACHER
+        # ====================================================
+
+        teacher = (
+            Teacher.query
+            .filter(
+                Teacher.id ==
+                teacher_id,
+
+                Teacher.institution_id ==
+                institution_id,
+
+                Teacher.branch_id ==
+                branch_id
+            )
+            .first()
+        )
+
+        if not teacher:
+
+            flash(
+                "Selected teacher does not belong to this institution and branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+        # ====================================================
+        # GET ASSIGNMENTS JSON
+        # ====================================================
+
+        assignments_raw = (
+            request.form.get(
+                "assignments",
+                ""
+            )
+            .strip()
+        )
+
+        assignments = []
+
+        if assignments_raw:
+
+            try:
+
+                assignments = json.loads(
+                    assignments_raw
+                )
+
+            except (
+                ValueError,
+                TypeError,
+                json.JSONDecodeError
+            ):
+
+                flash(
+                    "Invalid assignment data.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_teacher_subject"
+                    )
+                )
+
+        # ====================================================
+        # ENSURE LIST
+        # ====================================================
+
+        if not isinstance(
+            assignments,
+            list
+        ):
+
+            flash(
+                "Assignment data must be a list.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+        # ====================================================
+        # FALLBACK SINGLE ASSIGNMENT
+        # ====================================================
+
+        if not assignments:
+
+            assignments = [
+                {
+                    "assignment_mode":
+                        request.form.get(
+                            "assignment_mode"
+                        ) or "subject",
+
+                    "program_id":
+                        request.form.get(
+                            "program_id",
+                            type=int
+                        ),
+
+                    "class_id":
+                        request.form.get(
+                            "class_id",
+                            type=int
+                        ),
+
+                    "section_id":
+                        request.form.get(
+                            "section_id",
+                            type=int
+                        ),
+
+                    "subject_id":
+                        request.form.get(
+                            "subject_id",
+                            type=int
+                        ),
+
+                    "teaching_type":
+                        request.form.get(
+                            "teaching_type"
+                        ) or "teacher",
+
+                    "status":
+                        request.form.get(
+                            "status"
+                        ) or "active",
+
+                    "start_date":
+                        request.form.get(
+                            "start_date"
+                        ),
+
+                    "end_date":
+                        request.form.get(
+                            "end_date"
+                        ),
+
+                    "notes":
+                        request.form.get(
+                            "notes"
+                        ) or "",
+
+                    "is_primary":
+                        request.form.get(
+                            "is_primary"
+                        ) in (
+                            "1",
+                            "true",
+                            "True",
+                            "on",
+                            "yes"
+                        ),
+                }
+            ]
+
+        # ====================================================
+        # EMPTY
+        # ====================================================
+
+        if not assignments:
+
+            flash(
+                "Please add at least one assignment.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+        # ====================================================
+        # HELPERS
+        # ====================================================
+
+        def safe_int(value):
+
+            if value in (
+                None,
+                "",
+                "null",
+                "None"
+            ):
+                return None
+
+            try:
+                return int(value)
+
+            except (
+                ValueError,
+                TypeError
+            ):
+                return None
+
+        # ----------------------------------------------------
+
+        def parse_date(value):
+
+            if not value:
+                return None
+
+            if hasattr(
+                value,
+                "year"
+            ):
+                return value
+
+            try:
+
+                return datetime.strptime(
+                    str(value),
+                    "%Y-%m-%d"
+                ).date()
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                return None
+
+        # ----------------------------------------------------
+
+        def parse_bool(value):
+
+            if isinstance(
+                value,
+                bool
+            ):
+                return value
+
+            if value is None:
+                return False
+
+            return str(value).lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+
+        # ====================================================
+        # TRACKING
+        # ====================================================
+
+        created_count = 0
+        skipped_count = 0
+        duplicate_items = []
+
+        # ====================================================
+        # ALLOWED ASSIGNMENT MODES
+        # ====================================================
+
+        mode_requirements = {
+
+            "subject": [
+                "subject"
+            ],
+
+            "program_all": [
+                "program"
+            ],
+
+            "class_all": [
+                "class"
+            ],
+
+            "section_all": [
+                "section"
+            ],
+
+            "program_subject": [
+                "program",
+                "subject"
+            ],
+
+            "class_subject": [
+                "class",
+                "subject"
+            ],
+
+            "section_subject": [
+                "section",
+                "subject"
+            ],
+
+            "program_class_subject": [
+                "program",
+                "class",
+                "subject"
+            ],
+
+            "class_section_subject": [
+                "class",
+                "section",
+                "subject"
+            ],
+
+            "full": [
+                "program",
+                "class",
+                "section",
+                "subject"
+            ],
         }
 
-        for field_name, values in arrays.items():
-
-            if len(values) != row_count:
-
-                errors.append(
-                    f"Invalid multi-assignment data for {field_name}."
-                )
-
         # ====================================================
-        # INSTITUTION
+        # PROCESS ASSIGNMENTS
         # ====================================================
 
-        institution = None
+        for index, item in enumerate(
+            assignments,
+            start=1
+        ):
 
-        if institution_id:
+            # =================================================
+            # VALID ITEM
+            # =================================================
 
-            institution = Institution.query.filter(
-                Institution.id == institution_id
-            ).first()
+            if not isinstance(
+                item,
+                dict
+            ):
 
-            if not institution:
-
-                errors.append(
-                    "Selected institution does not exist."
+                flash(
+                    f"Assignment #{index} is invalid.",
+                    "danger"
                 )
 
-        # ====================================================
-        # BRANCH
-        # ====================================================
+                db.session.rollback()
 
-        branch = None
-
-        if branch_id and institution_id:
-
-            branch = Branch.query.filter(
-                Branch.id == branch_id,
-                Branch.institution_id == institution_id
-            ).first()
-
-            if not branch:
-
-                errors.append(
-                    "Selected branch does not belong to the selected institution."
+                return redirect(
+                    url_for(
+                        "main.add_teacher_subject"
+                    )
                 )
 
-        # ====================================================
-        # PROCESS EACH ASSIGNMENT
-        # ========================================================
+            # =================================================
+            # VALUES
+            # =================================================
 
-        prepared_assignments = []
+            mode = str(
+                item.get(
+                    "assignment_mode"
+                )
+                or "subject"
+            ).strip()
 
-        if not errors:
+            program_id = safe_int(
+                item.get(
+                    "program_id"
+                )
+            )
 
-            for index in range(row_count):
+            class_id = safe_int(
+                item.get(
+                    "class_id"
+                )
+            )
 
-                assignment_number = index + 1
+            section_id = safe_int(
+                item.get(
+                    "section_id"
+                )
+            )
 
-                row_errors = []
+            subject_id = safe_int(
+                item.get(
+                    "subject_id"
+                )
+            )
 
-                # ==================================================
-                # REQUIRED IDS
-                # ==================================================
-
-                teacher_id = None
-                subject_id = None
-                academic_year_id = None
-
-                try:
-
-                    teacher_id = (
-                        int(teacher_ids[index])
-                        if teacher_ids[index]
-                        else None
+            teaching_type = (
+                str(
+                    item.get(
+                        "teaching_type"
                     )
+                    or "teacher"
+                )
+                .strip()
+            )
 
-                except (TypeError, ValueError):
-
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Invalid teacher."
+            status = (
+                str(
+                    item.get(
+                        "status"
                     )
+                    or "active"
+                )
+                .strip()
+            )
 
-                try:
+            start_date = parse_date(
+                item.get(
+                    "start_date"
+                )
+            )
 
-                    subject_id = (
-                        int(subject_ids[index])
-                        if subject_ids[index]
-                        else None
-                    )
+            end_date = parse_date(
+                item.get(
+                    "end_date"
+                )
+            )
 
-                except (TypeError, ValueError):
+            notes = str(
+                item.get(
+                    "notes"
+                )
+                or ""
+            ).strip()
 
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Invalid subject."
-                    )
+            is_primary = parse_bool(
+                item.get(
+                    "is_primary"
+                )
+            )
 
-                try:
+            # =================================================
+            # MODE CHECK
+            # =================================================
 
-                    academic_year_id = (
-                        int(academic_year_ids[index])
-                        if academic_year_ids[index]
-                        else None
-                    )
+            if mode not in mode_requirements:
 
-                except (TypeError, ValueError):
-
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Invalid academic year."
-                    )
-
-                # ==================================================
-                # REQUIRED VALIDATION
-                # ==================================================
-
-                if not teacher_id:
-
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Teacher is required."
-                    )
-
-                if not subject_id:
-
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Subject is required."
-                    )
-
-                if not academic_year_id:
-
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Academic Year is required."
-                    )
-
-                # ==================================================
-                # OPTIONAL IDS
-                # ==================================================
-
-                program_id = None
-                class_id = None
-                section_id = None
-
-                try:
-
-                    program_id = (
-                        int(program_ids[index])
-                        if program_ids[index]
-                        else None
-                    )
-
-                except (TypeError, ValueError):
-
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Invalid program."
-                    )
-
-                try:
-
-                    class_id = (
-                        int(class_ids[index])
-                        if class_ids[index]
-                        else None
-                    )
-
-                except (TypeError, ValueError):
-
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Invalid class."
-                    )
-
-                try:
-
-                    section_id = (
-                        int(section_ids[index])
-                        if section_ids[index]
-                        else None
-                    )
-
-                except (TypeError, ValueError):
-
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Invalid section."
-                    )
-
-                # ==================================================
-                # TEACHING TYPE
-                # ==================================================
-
-                teaching_type = (
-                    teaching_types[index].strip().lower()
-                    if teaching_types[index]
-                    else "teacher"
+                flash(
+                    f"Unsupported assignment mode: {mode}",
+                    "danger"
                 )
 
-                if teaching_type not in \
-                        TEACHER_SUBJECT_TYPES:
+                db.session.rollback()
 
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Invalid teaching type."
+                return redirect(
+                    url_for(
+                        "main.add_teacher_subject"
                     )
-
-                # ==================================================
-                # STATUS
-                # ==================================================
-
-                status = (
-                    statuses[index].strip().lower()
-                    if statuses[index]
-                    else "active"
                 )
 
-                if status not in \
-                        TEACHER_SUBJECT_STATUSES:
+            # =================================================
+            # DATE CHECK
+            # =================================================
 
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"Invalid assignment status."
+            if (
+                start_date
+                and end_date
+                and end_date < start_date
+            ):
+
+                flash(
+                    f"Assignment #{index}: End date cannot be before start date.",
+                    "danger"
+                )
+
+                db.session.rollback()
+
+                return redirect(
+                    url_for(
+                        "main.add_teacher_subject"
                     )
-
-                # ==================================================
-                # PRIMARY
-                # ==================================================
-
-                is_primary = (
-                    str(is_primaries[index]).lower()
-                    in {
-                        "1",
-                        "true",
-                        "on",
-                        "yes",
-                    }
                 )
 
-                # ==================================================
-                # START DATE
-                # ==================================================
+            # =================================================
+            # PROGRAM
+            # =================================================
 
-                start_date_raw = (
-                    start_dates[index].strip()
-                    if start_dates[index]
-                    else ""
-                )
+            program = None
 
-                start_date = None
+            if program_id:
 
-                if start_date_raw:
+                program = (
+                    Program.query
+                    .filter(
+                        Program.id ==
+                        program_id,
 
-                    try:
-
-                        start_date = datetime.strptime(
-                            start_date_raw,
-                            "%Y-%m-%d"
-                        ).date()
-
-                    except ValueError:
-
-                        row_errors.append(
-                            f"Assignment #{assignment_number}: "
-                            f"Invalid start date."
-                        )
-
-                # ==================================================
-                # END DATE
-                # ==================================================
-
-                end_date_raw = (
-                    end_dates[index].strip()
-                    if end_dates[index]
-                    else ""
-                )
-
-                end_date = None
-
-                if end_date_raw:
-
-                    try:
-
-                        end_date = datetime.strptime(
-                            end_date_raw,
-                            "%Y-%m-%d"
-                        ).date()
-
-                    except ValueError:
-
-                        row_errors.append(
-                            f"Assignment #{assignment_number}: "
-                            f"Invalid end date."
-                        )
-
-                # ==================================================
-                # DATE RANGE
-                # ==================================================
-
-                if (
-                    start_date
-                    and end_date
-                    and end_date < start_date
-                ):
-
-                    row_errors.append(
-                        f"Assignment #{assignment_number}: "
-                        f"End date cannot be before start date."
-                    )
-
-                # ==================================================
-                # NOTES
-                # ==================================================
-
-                notes = (
-                    notes_list[index].strip()
-                    if notes_list[index]
-                    else ""
-                )
-
-                # ==================================================
-                # TEACHER
-                # ==================================================
-
-                teacher = None
-
-                if (
-                    teacher_id
-                    and institution_id
-                    and branch_id
-                ):
-
-                    teacher = Teacher.query.filter(
-                        Teacher.id == teacher_id,
-                        Teacher.institution_id ==
-                        institution_id,
-                        Teacher.branch_id ==
-                        branch_id
-                    ).first()
-
-                    if not teacher:
-
-                        row_errors.append(
-                            f"Assignment #{assignment_number}: "
-                            f"Selected teacher does not belong "
-                            f"to the selected branch."
-                        )
-
-                # ==================================================
-                # SUBJECT
-                # ==================================================
-
-                subject = None
-
-                if subject_id and institution_id:
-
-                    subject_query = Subject.query.filter(
-                        Subject.id == subject_id,
-                        Subject.institution_id ==
-                        institution_id
-                    )
-
-                    if hasattr(
-                        Subject,
-                        "branch_id"
-                    ):
-
-                        subject_query = \
-                            subject_query.filter(
-                                Subject.branch_id ==
-                                branch_id
-                            )
-
-                    subject = subject_query.first()
-
-                    if not subject:
-
-                        row_errors.append(
-                            f"Assignment #{assignment_number}: "
-                            f"Selected subject does not belong "
-                            f"to the selected institution/branch."
-                        )
-
-                # ==================================================
-                # PROGRAM
-                # ==================================================
-
-                program = None
-
-                if program_id:
-
-                    program_query = Program.query.filter(
-                        Program.id == program_id,
                         Program.institution_id ==
                         institution_id
                     )
+                    .first()
+                )
 
-                    if hasattr(
-                        Program,
-                        "branch_id"
-                    ):
+                if not program:
 
-                        program_query = \
-                            program_query.filter(
-                                Program.branch_id ==
-                                branch_id
-                            )
-
-                    program = program_query.first()
-
-                    if not program:
-
-                        row_errors.append(
-                            f"Assignment #{assignment_number}: "
-                            f"Selected program is invalid."
-                        )
-
-                # ==================================================
-                # CLASS
-                # ==================================================
-
-                class_obj = None
-
-                if class_id:
-
-                    class_query = Class.query.filter(
-                        Class.id == class_id,
-                        Class.institution_id ==
-                        institution_id
+                    flash(
+                        f"Assignment #{index}: Invalid program selected.",
+                        "danger"
                     )
 
-                    if hasattr(
-                        Class,
-                        "branch_id"
-                    ):
+                    db.session.rollback()
 
-                        class_query = \
-                            class_query.filter(
-                                Class.branch_id ==
-                                branch_id
-                            )
-
-                    class_obj = class_query.first()
-
-                    if not class_obj:
-
-                        row_errors.append(
-                            f"Assignment #{assignment_number}: "
-                            f"Selected class is invalid."
+                    return redirect(
+                        url_for(
+                            "main.add_teacher_subject"
                         )
-
-                # ==================================================
-                # SECTION
-                # ==================================================
-
-                section = None
-
-                if section_id:
-
-                    section_query = Section.query.filter(
-                        Section.id == section_id,
-                        Section.institution_id ==
-                        institution_id
                     )
 
-                    if hasattr(
-                        Section,
-                        "branch_id"
-                    ):
+            # =================================================
+            # CLASS
+            # =================================================
 
-                        section_query = \
-                            section_query.filter(
-                                Section.branch_id ==
-                                branch_id
-                            )
+            class_obj = None
 
-                    if (
-                        class_id
-                        and hasattr(
-                            Section,
-                            "class_id"
+            if class_id:
+
+                class_obj = (
+                    Class.query
+                    .filter(
+                        Class.id ==
+                        class_id,
+
+                        Class.branch_id ==
+                        branch_id
+                    )
+                    .first()
+                )
+
+                if not class_obj:
+
+                    flash(
+                        f"Assignment #{index}: Invalid class selected.",
+                        "danger"
+                    )
+
+                    db.session.rollback()
+
+                    return redirect(
+                        url_for(
+                            "main.add_teacher_subject"
                         )
-                    ):
+                    )
 
-                        section_query = \
-                            section_query.filter(
-                                Section.class_id ==
-                                class_id
-                            )
+                # ---------------------------------------------
+                # CLASS -> PROGRAM
+                # ---------------------------------------------
 
-                    section = section_query.first()
-
-                    if not section:
-
-                        row_errors.append(
-                            f"Assignment #{assignment_number}: "
-                            f"Selected section is invalid "
-                            f"for the selected class."
-                        )
-
-                # ==================================================
-                # ACADEMIC YEAR
-                # ==================================================
-
-                academic_year = None
-
-                if academic_year_id:
-
-                    academic_year_query = \
-                        AcademicYear.query.filter(
-                            AcademicYear.id ==
-                            academic_year_id
-                        )
-
-                    if hasattr(
-                        AcademicYear,
-                        "institution_id"
-                    ):
-
-                        academic_year_query = \
-                            academic_year_query.filter(
-                                AcademicYear.institution_id ==
-                                institution_id
-                            )
-
-                    academic_year = \
-                        academic_year_query.first()
-
-                    if not academic_year:
-
-                        row_errors.append(
-                            f"Assignment #{assignment_number}: "
-                            f"Selected academic year is invalid."
-                        )
-
-                # ==================================================
-                # DUPLICATE CHECK
-                #
-                # Explicit NULL handling for PostgreSQL
-                # ==================================================
-
-                duplicate = None
+                class_program_id = getattr(
+                    class_obj,
+                    "program_id",
+                    None
+                )
 
                 if (
-                    teacher_id
-                    and subject_id
-                    and academic_year_id
-                    and not row_errors
+                    program_id
+                    and class_program_id
+                    and class_program_id
+                    != program_id
                 ):
 
-                    duplicate_query = TeacherSubject.query.filter(
-                        TeacherSubject.institution_id ==
-                        institution_id,
-
-                        TeacherSubject.branch_id ==
-                        branch_id,
-
-                        TeacherSubject.teacher_id ==
-                        teacher_id,
-
-                        TeacherSubject.subject_id ==
-                        subject_id,
-
-                        TeacherSubject.academic_year_id ==
-                        academic_year_id
+                    flash(
+                        f"Assignment #{index}: Selected class does not belong to the selected program.",
+                        "danger"
                     )
 
-                    # ------------------------------------------
-                    # PROGRAM
-                    # ------------------------------------------
+                    db.session.rollback()
 
-                    if program_id is None:
-
-                        duplicate_query = \
-                            duplicate_query.filter(
-                                TeacherSubject.program_id.is_(None)
-                            )
-
-                    else:
-
-                        duplicate_query = \
-                            duplicate_query.filter(
-                                TeacherSubject.program_id ==
-                                program_id
-                            )
-
-                    # ------------------------------------------
-                    # CLASS
-                    # ------------------------------------------
-
-                    if class_id is None:
-
-                        duplicate_query = \
-                            duplicate_query.filter(
-                                TeacherSubject.class_id.is_(None)
-                            )
-
-                    else:
-
-                        duplicate_query = \
-                            duplicate_query.filter(
-                                TeacherSubject.class_id ==
-                                class_id
-                            )
-
-                    # ------------------------------------------
-                    # SECTION
-                    # ------------------------------------------
-
-                    if section_id is None:
-
-                        duplicate_query = \
-                            duplicate_query.filter(
-                                TeacherSubject.section_id.is_(None)
-                            )
-
-                    else:
-
-                        duplicate_query = \
-                            duplicate_query.filter(
-                                TeacherSubject.section_id ==
-                                section_id
-                            )
-
-                    duplicate = duplicate_query.first()
-
-                    if duplicate:
-
-                        row_errors.append(
-                            f"Assignment #{assignment_number}: "
-                            f"This teacher is already assigned "
-                            f"to this subject for the selected "
-                            f"program, class, section and "
-                            f"academic year."
+                    return redirect(
+                        url_for(
+                            "main.add_teacher_subject"
                         )
+                    )
 
-                # ==================================================
-                # ADD ROW ERRORS
-                # ==================================================
+            # =================================================
+            # SECTION
+            # =================================================
 
-                if row_errors:
+            section = None
 
-                    errors.extend(
-                        row_errors
+            if section_id:
+
+                section = (
+                    Section.query
+                    .join(
+                        Class,
+                        Section.class_id ==
+                        Class.id
+                    )
+                    .filter(
+                        Section.id ==
+                        section_id,
+
+                        Class.branch_id ==
+                        branch_id
+                    )
+                    .first()
+                )
+
+                if not section:
+
+                    flash(
+                        f"Assignment #{index}: Invalid section selected.",
+                        "danger"
+                    )
+
+                    db.session.rollback()
+
+                    return redirect(
+                        url_for(
+                            "main.add_teacher_subject"
+                        )
+                    )
+
+                # ---------------------------------------------
+                # SECTION -> CLASS
+                # ---------------------------------------------
+
+                if (
+                    class_id
+                    and section.class_id
+                    != class_id
+                ):
+
+                    flash(
+                        f"Assignment #{index}: Selected section does not belong to the selected class.",
+                        "danger"
+                    )
+
+                    db.session.rollback()
+
+                    return redirect(
+                        url_for(
+                            "main.add_teacher_subject"
+                        )
+                    )
+
+            # =================================================
+            # SUBJECT
+            # =================================================
+
+            subject = None
+
+            if subject_id:
+
+                subject = (
+                    Subject.query
+                    .filter(
+                        Subject.id ==
+                        subject_id
+                    )
+                    .first()
+                )
+
+                if not subject:
+
+                    flash(
+                        f"Assignment #{index}: Invalid subject selected.",
+                        "danger"
+                    )
+
+                    db.session.rollback()
+
+                    return redirect(
+                        url_for(
+                            "main.add_teacher_subject"
+                        )
+                    )
+
+                # ---------------------------------------------
+                # SUBJECT -> INSTITUTION
+                # ---------------------------------------------
+
+                subject_institution_id = getattr(
+                    subject,
+                    "institution_id",
+                    None
+                )
+
+                if (
+                    subject_institution_id
+                    and
+                    subject_institution_id
+                    != institution_id
+                ):
+
+                    flash(
+                        f"Assignment #{index}: Selected subject does not belong to this institution.",
+                        "danger"
+                    )
+
+                    db.session.rollback()
+
+                    return redirect(
+                        url_for(
+                            "main.add_teacher_subject"
+                        )
+                    )
+
+                # ---------------------------------------------
+                # SUBJECT -> PROGRAM
+                # ---------------------------------------------
+
+                subject_program_id = getattr(
+                    subject,
+                    "program_id",
+                    None
+                )
+
+                if (
+                    program_id
+                    and
+                    subject_program_id
+                    and
+                    subject_program_id
+                    != program_id
+                ):
+
+                    flash(
+                        f"Assignment #{index}: Selected subject does not belong to the selected program.",
+                        "danger"
+                    )
+
+                    db.session.rollback()
+
+                    return redirect(
+                        url_for(
+                            "main.add_teacher_subject"
+                        )
+                    )
+
+            # =================================================
+            # REQUIRED FIELDS
+            # =================================================
+
+            requirements = mode_requirements.get(
+                mode,
+                []
+            )
+
+            missing = []
+
+            for required_item in requirements:
+
+                if (
+                    required_item == "program"
+                    and not program
+                ):
+                    missing.append(
+                        "Program"
+                    )
+
+                elif (
+                    required_item == "class"
+                    and not class_obj
+                ):
+                    missing.append(
+                        "Class"
+                    )
+
+                elif (
+                    required_item == "section"
+                    and not section
+                ):
+                    missing.append(
+                        "Section"
+                    )
+
+                elif (
+                    required_item == "subject"
+                    and not subject
+                ):
+                    missing.append(
+                        "Subject"
+                    )
+
+            if missing:
+
+                flash(
+                    f"Assignment #{index}: "
+                    f"{', '.join(missing)} "
+                    f"is required for this assignment mode.",
+                    "danger"
+                )
+
+                db.session.rollback()
+
+                return redirect(
+                    url_for(
+                        "main.add_teacher_subject"
+                    )
+                )
+
+            # =================================================
+            # DUPLICATE QUERY
+            # =================================================
+
+            duplicate_query = (
+                TeacherSubject.query
+                .filter(
+                    TeacherSubject.teacher_id ==
+                    teacher.id,
+
+                    TeacherSubject.institution_id ==
+                    institution_id,
+
+                    TeacherSubject.branch_id ==
+                    branch_id,
+
+                    TeacherSubject.academic_year_id ==
+                    academic_year_id
+                )
+            )
+
+            # =================================================
+            # PROGRAM DUPLICATE
+            # =================================================
+
+            if hasattr(
+                TeacherSubject,
+                "program_id"
+            ):
+
+                if program_id:
+
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.program_id ==
+                            program_id
+                        )
                     )
 
                 else:
 
-                    prepared_assignments.append({
-                        "teacher_id": teacher_id,
-                        "subject_id": subject_id,
-                        "program_id": program_id,
-                        "class_id": class_id,
-                        "section_id": section_id,
-                        "academic_year_id": academic_year_id,
-                        "teaching_type": teaching_type,
-                        "is_primary": is_primary,
-                        "status": status,
-                        "start_date": start_date,
-                        "end_date": end_date,
-                        "notes": notes or None,
-                    })
-
-        # ====================================================
-        # SAVE ALL ASSIGNMENTS
-        # ====================================================
-
-        if not errors:
-
-            try:
-
-                created_assignments = []
-
-                for data in prepared_assignments:
-
-                    assignment = TeacherSubject(
-                        institution_id=
-                            institution_id,
-
-                        branch_id=
-                            branch_id,
-
-                        teacher_id=
-                            data["teacher_id"],
-
-                        subject_id=
-                            data["subject_id"],
-
-                        program_id=
-                            data["program_id"],
-
-                        class_id=
-                            data["class_id"],
-
-                        section_id=
-                            data["section_id"],
-
-                        academic_year_id=
-                            data["academic_year_id"],
-
-                        teaching_type=
-                            data["teaching_type"],
-
-                        is_primary=
-                            data["is_primary"],
-
-                        status=
-                            data["status"],
-
-                        start_date=
-                            data["start_date"],
-
-                        end_date=
-                            data["end_date"],
-
-                        notes=
-                            data["notes"],
-                    )
-
-                    db.session.add(
-                        assignment
-                    )
-
-                    created_assignments.append(
-                        assignment
-                    )
-
-                # --------------------------------------------
-                # ONE COMMIT FOR ALL ROWS
-                # --------------------------------------------
-
-                db.session.commit()
-
-                created_count = len(
-                    created_assignments
-                )
-
-                # ==================================================
-                # SUCCESS
-                # ==================================================
-
-                flash(
-                    f"{created_count} teacher subject "
-                    f"assignment"
-                    f"{'s' if created_count != 1 else ''} "
-                    f"created successfully.",
-                    "success"
-                )
-
-                # ==================================================
-                # SINGLE ASSIGNMENT
-                # Redirect to VIEW
-                # ==================================================
-
-                if created_count == 1:
-
-                    return redirect(
-                        url_for(
-                            "main.view_teacher_subject",
-                            teacher_subject_id=
-                                created_assignments[0].id
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.program_id.is_(None)
                         )
                     )
 
-                # ==================================================
-                # MULTIPLE ASSIGNMENTS
-                # Redirect to ALL
-                # ==================================================
+            # =================================================
+            # CLASS DUPLICATE
+            # =================================================
 
-                return redirect(
-                    url_for(
-                        "main.all_teacher_subjects"
+            if hasattr(
+                TeacherSubject,
+                "class_id"
+            ):
+
+                if class_id:
+
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.class_id ==
+                            class_id
+                        )
                     )
+
+                else:
+
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.class_id.is_(None)
+                        )
+                    )
+
+            # =================================================
+            # SECTION DUPLICATE
+            # =================================================
+
+            if hasattr(
+                TeacherSubject,
+                "section_id"
+            ):
+
+                if section_id:
+
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.section_id ==
+                            section_id
+                        )
+                    )
+
+                else:
+
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.section_id.is_(None)
+                        )
+                    )
+
+            # =================================================
+            # SUBJECT DUPLICATE
+            # =================================================
+
+            if hasattr(
+                TeacherSubject,
+                "subject_id"
+            ):
+
+                if subject_id:
+
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.subject_id ==
+                            subject_id
+                        )
+                    )
+
+                else:
+
+                    duplicate_query = (
+                        duplicate_query
+                        .filter(
+                            TeacherSubject.subject_id.is_(None)
+                        )
+                    )
+
+            # =================================================
+            # CHECK DUPLICATE
+            # =================================================
+
+            existing_assignment = (
+                duplicate_query
+                .first()
+            )
+
+            if existing_assignment:
+
+                skipped_count += 1
+
+                duplicate_name = (
+                    getattr(
+                        subject,
+                        "name",
+                        None
+                    )
+                    or
+                    getattr(
+                        class_obj,
+                        "name",
+                        None
+                    )
+                    or
+                    getattr(
+                        section,
+                        "name",
+                        None
+                    )
+                    or
+                    getattr(
+                        program,
+                        "name",
+                        None
+                    )
+                    or
+                    "Assignment"
                 )
 
-            # ====================================================
-            # INTEGRITY ERROR
-            # ====================================================
-
-            except IntegrityError as e:
-
-                db.session.rollback()
-
-                current_app.logger.exception(
-                    "IntegrityError creating multiple "
-                    "TeacherSubject assignments: %s",
-                    e
+                duplicate_items.append(
+                    duplicate_name
                 )
 
-                flash(
-                    "Unable to create assignments. "
-                    "A duplicate or invalid relationship "
-                    "was detected.",
-                    "danger"
+                continue
+
+            # =================================================
+            # CREATE ASSIGNMENT
+            # =================================================
+
+            assignment = TeacherSubject(
+                teacher_id=teacher.id,
+                institution_id=institution_id,
+                branch_id=branch_id,
+                academic_year_id=academic_year_id,
+            )
+
+            # =================================================
+            # OPTIONAL MODEL FIELDS
+            # =================================================
+
+            if hasattr(
+                TeacherSubject,
+                "program_id"
+            ):
+
+                assignment.program_id = (
+                    program_id
                 )
 
-            # ====================================================
-            # GENERAL ERROR
-            # ====================================================
+            if hasattr(
+                TeacherSubject,
+                "class_id"
+            ):
 
-            except Exception as e:
-
-                db.session.rollback()
-
-                current_app.logger.exception(
-                    "Error creating multiple "
-                    "TeacherSubject assignments: %s",
-                    e
+                assignment.class_id = (
+                    class_id
                 )
 
-                flash(
-                    "An unexpected error occurred while "
-                    "creating the assignments.",
-                    "danger"
+            if hasattr(
+                TeacherSubject,
+                "section_id"
+            ):
+
+                assignment.section_id = (
+                    section_id
                 )
+
+            if hasattr(
+                TeacherSubject,
+                "subject_id"
+            ):
+
+                assignment.subject_id = (
+                    subject_id
+                )
+
+            if hasattr(
+                TeacherSubject,
+                "assignment_mode"
+            ):
+
+                assignment.assignment_mode = (
+                    mode
+                )
+
+            if hasattr(
+                TeacherSubject,
+                "teaching_type"
+            ):
+
+                assignment.teaching_type = (
+                    teaching_type
+                )
+
+            if hasattr(
+                TeacherSubject,
+                "status"
+            ):
+
+                assignment.status = (
+                    status
+                )
+
+            if hasattr(
+                TeacherSubject,
+                "start_date"
+            ):
+
+                assignment.start_date = (
+                    start_date
+                )
+
+            if hasattr(
+                TeacherSubject,
+                "end_date"
+            ):
+
+                assignment.end_date = (
+                    end_date
+                )
+
+            if hasattr(
+                TeacherSubject,
+                "notes"
+            ):
+
+                assignment.notes = (
+                    notes
+                )
+
+            if hasattr(
+                TeacherSubject,
+                "is_primary"
+            ):
+
+                assignment.is_primary = (
+                    is_primary
+                )
+
+            # =================================================
+            # ADD
+            # =================================================
+
+            db.session.add(
+                assignment
+            )
+
+            created_count += 1
 
         # ====================================================
-        # DISPLAY VALIDATION ERRORS
+        # NOTHING CREATED
         # ====================================================
 
-        else:
+        if created_count == 0:
 
-            for error in errors:
+            db.session.rollback()
+
+            if skipped_count:
 
                 flash(
-                    error,
-                    "danger"
+                    "All selected assignments already exist.",
+                    "warning"
                 )
 
-    # ========================================================
-    # FORM CONTEXT
-    # ========================================================
+            else:
 
-    context = _teacher_subject_form_context(
-        institution_id=institution_id,
-        branch_id=branch_id
-    )
+                flash(
+                    "No valid assignments were created.",
+                    "warning"
+                )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+        # ====================================================
+        # COMMIT
+        # ====================================================
+
+        try:
+
+            db.session.commit()
+
+        except Exception as exc:
+
+            db.session.rollback()
+
+            # Console logging for debugging
+            print(
+                "ADD TEACHER SUBJECT ERROR:",
+                repr(exc)
+            )
+
+            flash(
+                "Could not save teacher subject assignments.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_teacher_subject"
+                )
+            )
+
+        # ====================================================
+        # SUCCESS MESSAGE
+        # ====================================================
+
+        message = (
+            f"{created_count} teacher subject "
+            f"assignment(s) created successfully."
+        )
+
+        if skipped_count:
+
+            message += (
+                f" {skipped_count} duplicate "
+                f"assignment(s) were skipped."
+            )
+
+        flash(
+            message,
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.all_teacher_subjects"
+            )
+        )
+
+    # ========================================================
+    # GET / RENDER
+    # ========================================================
 
     return render_template(
         "backend/pages/teacher_subjects/add_teacher_subject.html",
-        **context
+
+        institutions=institutions,
+
+        branches=branches,
+
+        academic_years=academic_years,
+
+        teachers=teachers,
+
+        programs=programs,
+
+        classes=classes,
+
+        sections=sections,
+
+        subjects=subjects,
+
+        selected_institution_id=(
+            selected_institution_id
+        ),
+
+        selected_branch_id=(
+            selected_branch_id
+        ),
     )
+
 
 
 # ============================================================

@@ -3014,24 +3014,15 @@ class Teacher(db.Model):
 # TEACHER SUBJECT MODEL
 # PostgreSQL / Neon
 # ============================================================
-
 class TeacherSubject(db.Model):
 
     __tablename__ = "teacher_subjects"
-
-    # ========================================================
-    # PRIMARY KEY
-    # ========================================================
 
     id = db.Column(
         db.BigInteger,
         primary_key=True,
         autoincrement=True
     )
-
-    # ========================================================
-    # INSTITUTION RELATIONSHIP
-    # ========================================================
 
     institution_id = db.Column(
         db.BigInteger,
@@ -3043,10 +3034,6 @@ class TeacherSubject(db.Model):
         index=True
     )
 
-    # ========================================================
-    # BRANCH RELATIONSHIP
-    # ========================================================
-
     branch_id = db.Column(
         db.BigInteger,
         db.ForeignKey(
@@ -3056,10 +3043,6 @@ class TeacherSubject(db.Model):
         nullable=False,
         index=True
     )
-
-    # ========================================================
-    # TEACHER RELATIONSHIP
-    # ========================================================
 
     teacher_id = db.Column(
         db.BigInteger,
@@ -3072,21 +3055,7 @@ class TeacherSubject(db.Model):
     )
 
     # ========================================================
-    # SUBJECT RELATIONSHIP
-    # ========================================================
-
-    subject_id = db.Column(
-        db.BigInteger,
-        db.ForeignKey(
-            "subjects.id",
-            ondelete="CASCADE"
-        ),
-        nullable=False,
-        index=True
-    )
-
-    # ========================================================
-    # PROGRAM RELATIONSHIP
+    # PROGRAM
     # ========================================================
 
     program_id = db.Column(
@@ -3100,7 +3069,21 @@ class TeacherSubject(db.Model):
     )
 
     # ========================================================
-    # CLASS RELATIONSHIP
+    # SUBJECT
+    # ========================================================
+
+    subject_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "subjects.id",
+            ondelete="CASCADE"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # CLASS
     # ========================================================
 
     class_id = db.Column(
@@ -3114,7 +3097,7 @@ class TeacherSubject(db.Model):
     )
 
     # ========================================================
-    # SECTION RELATIONSHIP
+    # SECTION
     # ========================================================
 
     section_id = db.Column(
@@ -3128,7 +3111,7 @@ class TeacherSubject(db.Model):
     )
 
     # ========================================================
-    # ACADEMIC YEAR RELATIONSHIP
+    # ACADEMIC YEAR
     # ========================================================
 
     academic_year_id = db.Column(
@@ -3142,7 +3125,40 @@ class TeacherSubject(db.Model):
     )
 
     # ========================================================
-    # TEACHING ROLE / RESPONSIBILITY
+    # ASSIGNMENT TYPE
+    # ========================================================
+
+    assignment_type = db.Column(
+        db.String(30),
+        nullable=False,
+        default="subject",
+        server_default="subject",
+        index=True
+    )
+
+    # program
+    # class
+    # section
+    # subject
+
+    # ========================================================
+    # SCOPE
+    # ========================================================
+
+    scope = db.Column(
+        db.String(30),
+        nullable=False,
+        default="specific",
+        server_default="specific",
+        index=True
+    )
+
+    # all
+    # selected
+    # specific
+
+    # ========================================================
+    # TEACHING TYPE
     # ========================================================
 
     teaching_type = db.Column(
@@ -3153,7 +3169,6 @@ class TeacherSubject(db.Model):
         index=True
     )
 
-    # Examples:
     # teacher
     # assistant
     # coordinator
@@ -3183,12 +3198,8 @@ class TeacherSubject(db.Model):
         index=True
     )
 
-    # active
-    # inactive
-    # suspended
-
     # ========================================================
-    # START / END DATE
+    # DATES
     # ========================================================
 
     start_date = db.Column(
@@ -3203,18 +3214,10 @@ class TeacherSubject(db.Model):
         index=True
     )
 
-    # ========================================================
-    # NOTES
-    # ========================================================
-
     notes = db.Column(
         db.Text,
         nullable=True
     )
-
-    # ========================================================
-    # TIMESTAMPS
-    # ========================================================
 
     created_at = db.Column(
         db.DateTime,
@@ -3252,13 +3255,13 @@ class TeacherSubject(db.Model):
         back_populates="teacher_subjects"
     )
 
-    subject = db.relationship(
-        "Subject",
+    program = db.relationship(
+        "Program",
         back_populates="teacher_subjects"
     )
 
-    program = db.relationship(
-        "Program",
+    subject = db.relationship(
+        "Subject",
         back_populates="teacher_subjects"
     )
 
@@ -3277,48 +3280,32 @@ class TeacherSubject(db.Model):
         back_populates="teacher_subjects"
     )
 
-    # ========================================================
-    # CONSTRAINTS
-    # ========================================================
-
     __table_args__ = (
 
-        # Prevent duplicate teacher-subject assignment
-        db.UniqueConstraint(
-            "teacher_id",
-            "subject_id",
-            "class_id",
-            "section_id",
-            "academic_year_id",
-            name="uq_teacher_subject_class_section_year"
-        ),
-
-        # Valid teaching date range
         db.CheckConstraint(
-            "end_date IS NULL OR start_date IS NULL OR end_date >= start_date",
+            "end_date IS NULL OR "
+            "start_date IS NULL OR "
+            "end_date >= start_date",
             name="ck_teacher_subject_date_range"
         ),
 
     )
-
-    # ========================================================
-    # REPRESENTATION
-    # ========================================================
 
     def __repr__(self):
 
         return (
             f"<TeacherSubject "
             f"id={self.id} "
-            f"institution_id={self.institution_id} "
-            f"branch_id={self.branch_id} "
             f"teacher_id={self.teacher_id} "
-            f"subject_id={self.subject_id} "
+            f"program_id={self.program_id} "
             f"class_id={self.class_id} "
             f"section_id={self.section_id} "
-            f"academic_year_id={self.academic_year_id} "
-            f"status={self.status!r}>"
+            f"subject_id={self.subject_id} "
+            f"assignment_type={self.assignment_type!r} "
+            f"scope={self.scope!r}>"
         )
+
+
 
 # ============================================================
 # STUDENT MODEL

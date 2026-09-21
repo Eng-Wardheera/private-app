@@ -53,11 +53,12 @@ EAT = pytz.timezone("Africa/Nairobi")
 
 
 cloudinary.config(
-    cloud_name="dzhairplt",
-    api_key="597738172555213",
-    api_secret="x4UXHFVqzH4Oq_MeBV4VGYoZHns",
+    cloud_name="rkis8ilu",
+    api_key="152552426532227",
+    api_secret="pzPI7Wc7mlFvd52ffgzeBttZ5xg",
     secure=True
 )
+
 
 
 
