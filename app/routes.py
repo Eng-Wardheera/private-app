@@ -13,7 +13,7 @@ import uuid
 import bcrypt
 import cloudinary
 from cloudinary import uploader
-from flask import Blueprint, abort, app, current_app, flash, json, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, app, current_app, flash, g, json, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_mail import Message
 from openpyxl import load_workbook
@@ -29,6 +29,222 @@ from app.model import AcademicYear, AssessmentPlan, Branch, Class, Exam, ExamSub
 
 bp = Blueprint('main', __name__)
 
+
+# ============================================================
+# TEACHER LOGIN REQUIRED
+# ============================================================
+
+def teacher_login_required(view):
+
+    @wraps(view)
+    def wrapped_view(*args, **kwargs):
+
+        # ====================================================
+        # GET TEACHER ID FROM SESSION
+        # ====================================================
+
+        teacher_id = session.get(
+            "teacher_id"
+        )
+
+        # ====================================================
+        # NO TEACHER SESSION
+        # ====================================================
+
+        if not teacher_id:
+
+            flash(
+                "Please login as a teacher first.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("main.teacher_login")
+            )
+
+        # ====================================================
+        # FIND TEACHER
+        # ====================================================
+
+        teacher = db.session.get(
+            Teacher,
+            teacher_id
+        )
+
+        # ====================================================
+        # TEACHER NOT FOUND
+        # ====================================================
+
+        if not teacher:
+
+            session.pop(
+                "teacher_id",
+                None
+            )
+
+            session.pop(
+                "teacher_role",
+                None
+            )
+
+            session.pop(
+                "teacher_institution_id",
+                None
+            )
+
+            session.pop(
+                "teacher_branch_id",
+                None
+            )
+
+            flash(
+                "Teacher account was not found.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.teacher_login")
+            )
+
+        # ====================================================
+        # ACCOUNT ACTIVE
+        # ====================================================
+
+        if not teacher.is_active:
+
+            session.pop(
+                "teacher_id",
+                None
+            )
+
+            session.pop(
+                "teacher_role",
+                None
+            )
+
+            session.pop(
+                "teacher_institution_id",
+                None
+            )
+
+            session.pop(
+                "teacher_branch_id",
+                None
+            )
+
+            flash(
+                "Your teacher account is inactive.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.teacher_login")
+            )
+
+        # ====================================================
+        # STATUS
+        # ====================================================
+
+        if teacher.status != "active":
+
+            session.pop(
+                "teacher_id",
+                None
+            )
+
+            session.pop(
+                "teacher_role",
+                None
+            )
+
+            session.pop(
+                "teacher_institution_id",
+                None
+            )
+
+            session.pop(
+                "teacher_branch_id",
+                None
+            )
+
+            flash(
+                "Your teacher account is no longer active.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.teacher_login")
+            )
+
+        # ====================================================
+        # ROLE
+        # ====================================================
+
+        if teacher.role != "teacher":
+
+            session.pop(
+                "teacher_id",
+                None
+            )
+
+            session.pop(
+                "teacher_role",
+                None
+            )
+
+            session.pop(
+                "teacher_institution_id",
+                None
+            )
+
+            session.pop(
+                "teacher_branch_id",
+                None
+            )
+
+            flash(
+                "Invalid teacher account.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.teacher_login")
+            )
+
+        # ====================================================
+        # UPDATE LAST ACTIVE
+        # ====================================================
+
+        teacher.last_active = datetime.utcnow()
+
+        try:
+
+            db.session.commit()
+
+        except Exception:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Teacher last active update failed"
+            )
+
+        # ====================================================
+        # MAKE TEACHER AVAILABLE
+        # ====================================================
+
+        g.teacher = teacher
+
+        # ====================================================
+        # CONTINUE ROUTE
+        # ====================================================
+
+        return view(
+            *args,
+            **kwargs
+        )
+
+    return wrapped_view
 
 #------------------------------------------
 #---- Function: 1 | Func Allowed Files  ---
@@ -75,7 +291,7 @@ def index():
 def login():
 
     # ========================================================
-    # ALREADY LOGGED IN
+    # ALREADY LOGGED IN IN CURRENT BROWSER SESSION
     # ========================================================
 
     if current_user.is_authenticated:
@@ -151,7 +367,7 @@ def login():
     ).first()
 
     # ========================================================
-    # CHECK USER
+    # USER NOT FOUND
     # ========================================================
 
     if not user:
@@ -197,19 +413,49 @@ def login():
         )
 
     # ========================================================
-    # CHECK DATABASE AUTH STATUS
+    # NORMALIZE ROLE
     # ========================================================
 
-    if user.auth_status == "login":
+    role = (
+        getattr(user, "role", None) or ""
+    ).strip().lower()
+
+    # ========================================================
+    # CHECK DATABASE AUTH STATUS
+    #
+    # Superadmin is allowed to login again.
+    # Other users are restricted to one active login.
+    # ========================================================
+
+    if (
+        user.auth_status == "login"
+        and role != "superadmin"
+    ):
 
         flash(
-            "This account is already logged in.",
+            "This account is already logged in "
+            "on another session.",
             "warning"
         )
 
         return redirect(
             url_for("main.login")
         )
+
+    # ========================================================
+    # IF SUPERADMIN WAS ALREADY LOGGED IN
+    # RESET OLD SESSION DATA
+    # ========================================================
+
+    if role == "superadmin":
+
+        user.auth_status = "logout"
+
+        user.session_token = None
+
+        user.logout_time = datetime.utcnow()
+
+        db.session.commit()
 
     # ========================================================
     # LOGIN USER
@@ -221,7 +467,7 @@ def login():
     )
 
     # ========================================================
-    # UPDATE AUTH STATUS
+    # CREATE NEW SESSION
     # ========================================================
 
     now = datetime.utcnow()
@@ -235,10 +481,18 @@ def login():
     user.last_seen = now
 
     # ========================================================
-    # GENERATE SESSION TOKEN
+    # GENERATE NEW SESSION TOKEN
     # ========================================================
 
     user.session_token = secrets.token_hex(32)
+
+    # ========================================================
+    # CLEAR OLD LOGOUT TIME
+    # ========================================================
+
+    if hasattr(user, "logout_time"):
+
+        user.logout_time = None
 
     # ========================================================
     # SAVE
@@ -248,7 +502,7 @@ def login():
 
         db.session.commit()
 
-    except Exception as e:
+    except Exception:
 
         db.session.rollback()
 
@@ -259,7 +513,8 @@ def login():
         logout_user()
 
         flash(
-            "Unable to complete login. Please try again.",
+            "Unable to complete login. "
+            "Please try again.",
             "danger"
         )
 
@@ -284,6 +539,462 @@ def login():
     return redirect(
         url_for("main.dashboard")
     )
+
+
+# ============================================================
+# TEACHER LOGIN
+# ============================================================
+
+@bp.route("/teacher/login", methods=["GET", "POST"])
+def teacher_login():
+
+    # ========================================================
+    # ALREADY LOGGED IN AS TEACHER
+    # ========================================================
+
+    if session.get("teacher_id"):
+
+        flash(
+            "You are already logged in.",
+            "info"
+        )
+
+        return redirect(
+            url_for("main.teacher_dashboard")
+        )
+
+    # ========================================================
+    # GET
+    # ========================================================
+
+    if request.method == "GET":
+
+        return render_template(
+            "backend/auth/teacher_login.html"
+        )
+
+    # ========================================================
+    # FORM DATA
+    # ========================================================
+
+    username_or_email = request.form.get(
+        "username",
+        ""
+    ).strip()
+
+    password = request.form.get(
+        "password",
+        ""
+    )
+
+    # ========================================================
+    # VALIDATION
+    # ========================================================
+
+    if not username_or_email:
+
+        flash(
+            "Username or email is required.",
+            "danger"
+        )
+
+        return render_template(
+            "backend/auth/teacher_login.html"
+        )
+
+    if not password:
+
+        flash(
+            "Password is required.",
+            "danger"
+        )
+
+        return render_template(
+            "backend/auth/teacher_login.html"
+        )
+
+    # ========================================================
+    # FIND TEACHER
+    # ========================================================
+
+    teacher = Teacher.query.filter(
+        db.or_(
+            Teacher.username == username_or_email,
+            Teacher.email == username_or_email.lower()
+        )
+    ).first()
+
+    # ========================================================
+    # TEACHER NOT FOUND
+    # ========================================================
+
+    if not teacher:
+
+        flash(
+            "Invalid username/email or password.",
+            "danger"
+        )
+
+        return render_template(
+            "backend/auth/teacher_login.html"
+        )
+
+    # ========================================================
+    # CHECK PASSWORD
+    # ========================================================
+
+    if not teacher.check_password(password):
+
+        flash(
+            "Invalid username/email or password.",
+            "danger"
+        )
+
+        return render_template(
+            "backend/auth/teacher_login.html"
+        )
+
+    # ========================================================
+    # CHECK ACCOUNT ACTIVE
+    # ========================================================
+
+    if not teacher.is_active:
+
+        flash(
+            "Your teacher account is inactive. "
+            "Please contact the administrator.",
+            "danger"
+        )
+
+        return render_template(
+            "backend/auth/teacher_login.html"
+        )
+
+    # ========================================================
+    # CHECK TEACHER STATUS
+    # ========================================================
+
+    if teacher.status != "active":
+
+        if teacher.status == "suspended":
+
+            message = (
+                "Your teacher account has been suspended. "
+                "Please contact the administrator."
+            )
+
+        elif teacher.status == "resigned":
+
+            message = (
+                "This teacher account is no longer active."
+            )
+
+        else:
+
+            message = (
+                "Your teacher account is inactive. "
+                "Please contact the administrator."
+            )
+
+        flash(
+            message,
+            "danger"
+        )
+
+        return render_template(
+            "backend/auth/teacher_login.html"
+        )
+
+    # ========================================================
+    # CHECK ROLE
+    # ========================================================
+
+    if teacher.role != "teacher":
+
+        flash(
+            "This account is not registered as a teacher account.",
+            "danger"
+        )
+
+        return render_template(
+            "backend/auth/teacher_login.html"
+        )
+
+    # ========================================================
+    # CHECK DATABASE LOGIN STATUS
+    #
+    # We use last_active as the current session indicator.
+    # If you want strict one-device login, add a dedicated
+    # session_token/auth_status column to Teacher.
+    # ========================================================
+
+    # ========================================================
+    # CREATE TEACHER SESSION
+    # ========================================================
+
+    session.clear()
+
+    session["teacher_id"] = teacher.id
+    session["teacher_role"] = "teacher"
+    session["teacher_institution_id"] = teacher.institution_id
+    session["teacher_branch_id"] = teacher.branch_id
+
+    # ========================================================
+    # UPDATE LOGIN INFORMATION
+    # ========================================================
+
+    now = datetime.utcnow()
+
+    teacher.login_time = now
+    teacher.last_login = now
+    teacher.last_active = now
+
+    # ========================================================
+    # SAVE
+    # ========================================================
+
+    try:
+
+        db.session.commit()
+
+    except Exception:
+
+        db.session.rollback()
+
+        session.clear()
+
+        current_app.logger.exception(
+            "Teacher login update error"
+        )
+
+        flash(
+            "Unable to complete teacher login. "
+            "Please try again.",
+            "danger"
+        )
+
+        return render_template(
+            "backend/auth/teacher_login.html"
+        )
+
+    # ========================================================
+    # SUCCESS MESSAGE
+    # ========================================================
+
+    flash(
+        f"Welcome back, {teacher.full_name}!",
+        "success"
+    )
+
+    # ========================================================
+    # REDIRECT TEACHER DASHBOARD
+    # ========================================================
+
+    return redirect(
+        url_for("main.teacher_dashboard")
+    )
+
+
+# ============================================================
+# TEACHER DASHBOARD
+# ============================================================
+# ============================================================
+# TEACHER DASHBOARD
+# ============================================================
+
+@bp.route(
+    "/teacher/dashboard",
+    methods=["GET"]
+)
+@teacher_login_required
+def teacher_dashboard():
+
+    # ========================================================
+    # CURRENT TEACHER
+    # ========================================================
+
+    teacher = getattr(g, "teacher", None)
+
+    if not teacher:
+        abort(403)
+
+    # ========================================================
+    # BASIC TEACHER IDS
+    # ========================================================
+
+    teacher_id = teacher.id
+
+    institution_id = teacher.institution_id
+
+    branch_id = teacher.branch_id
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+    # Teacher -> Institution
+    #
+    # Waxaan si gaar ah u query-gareyneynaa si dashboard-ku
+    # u helo institution-ka saxda ah.
+
+    institution = None
+
+    if institution_id:
+
+        institution = (
+            Institution.query
+            .filter(
+                Institution.id == institution_id
+            )
+            .first()
+        )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+    # Branch waa inuu ka tirsan yahay institution-ka teacher-ka.
+
+    branch = None
+
+    if branch_id and institution_id:
+
+        branch = (
+            Branch.query
+            .filter(
+                Branch.id == branch_id,
+                Branch.institution_id == institution_id
+            )
+            .first()
+        )
+
+    # ========================================================
+    # TEACHER SUBJECT ASSIGNMENTS
+    # ========================================================
+    # TeacherSubject:
+    #
+    # Teacher
+    # Subject
+    # Program
+    # Class
+    # Section
+    # Academic Year
+    #
+    # Waxaan ku xireynaa institution + branch si aysan
+    # teacher-ku u arkin assignment branch kale.
+
+    teacher_subjects = (
+        TeacherSubject.query
+        .filter(
+            TeacherSubject.teacher_id == teacher_id,
+            TeacherSubject.institution_id == institution_id,
+            TeacherSubject.branch_id == branch_id
+        )
+        .order_by(
+            TeacherSubject.id.desc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # SUBJECT COUNT
+    # ========================================================
+
+    subjects_count = len(
+        teacher_subjects
+    )
+
+    # ========================================================
+    # EXAM SUBJECT ASSIGNMENTS
+    # ========================================================
+    # ExamSubject institution/branch columns ma laha.
+    #
+    # Sidaas darteed Exam ayaan JOIN gareyneynaa:
+    #
+    # ExamSubject -> Exam
+    #
+    # kadib waxaan ka filter-gareyneynaa institution iyo branch.
+
+    exam_subjects = (
+        ExamSubject.query
+        .join(
+            Exam,
+            Exam.id == ExamSubject.exam_id
+        )
+        .filter(
+            ExamSubject.teacher_id == teacher_id,
+            Exam.institution_id == institution_id,
+            Exam.branch_id == branch_id
+        )
+        .order_by(
+            ExamSubject.id.desc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # EXAM SUBJECT COUNT
+    # ========================================================
+
+    exam_subjects_count = len(
+        exam_subjects
+    )
+
+    # ========================================================
+    # LAST ACTIVE
+    # ========================================================
+
+    last_active = teacher.last_active
+
+    # ========================================================
+    # RENDER DASHBOARD
+    # ========================================================
+
+    return render_template(
+        "backend/teacher/home/dashboard.html",
+
+
+        # ----------------------------------------------------
+        # TEACHER
+        # ----------------------------------------------------
+
+        teacher=teacher,
+        teacher_id=teacher_id,
+
+        # ----------------------------------------------------
+        # INSTITUTION
+        # ----------------------------------------------------
+
+        institution=institution,
+        institution_id=institution_id,
+
+        # ----------------------------------------------------
+        # BRANCH
+        # ----------------------------------------------------
+
+        branch=branch,
+        branch_id=branch_id,
+
+        # ----------------------------------------------------
+        # TEACHER SUBJECTS
+        # ----------------------------------------------------
+
+        teacher_subjects=teacher_subjects,
+        subjects_count=subjects_count,
+
+        # ----------------------------------------------------
+        # EXAM SUBJECTS
+        # ----------------------------------------------------
+
+        exam_subjects=exam_subjects,
+        exam_subjects_count=exam_subjects_count,
+
+        # ----------------------------------------------------
+        # SESSION / ACTIVITY
+        # ----------------------------------------------------
+
+        last_active=last_active
+    )
+
+
 
 
 # ================= REGISTER =================
@@ -49683,27 +50394,6 @@ def _exam_subject_scope_query(query):
 # ============================================================
 # ADD EXAM SUBJECT
 # ============================================================
-# ============================================================
-# ADD MULTIPLE EXAM SUBJECTS
-# PostgreSQL / Neon
-#
-# FLOW:
-# Exam
-#   └── Program
-#        ├── Subjects
-#        └── TeacherSubject
-#              └── Teachers
-#
-# Supports:
-#   - Multiple subjects
-#   - Add More / Remove
-#   - Optional class
-#   - Optional section
-#   - Program teachers
-#   - Subject teachers
-#   - Duplicate protection
-#   - Institution / Branch security
-# ============================================================
 
 @bp.route(
     "/exam-subjects/add",
@@ -53783,6 +54473,9 @@ def delete_exam_subject(exam_subject_id):
 
 
 
+
+
+
 #---------------------------------------
 #---- Route: Ending |  Logout Sections ----
 #---------------------------------------
@@ -53822,6 +54515,62 @@ def logout():
         url_for("main.login")
     )
 
+
+# ---------------------------------------
+# ---- Route: Teacher Logout ------------
+# ---------------------------------------
+
+@bp.route("/teacher/logout")
+def teacher_logout():
+
+    # Get current teacher from session
+    teacher_id = session.get("teacher_id")
+
+    if teacher_id:
+
+        teacher = Teacher.query.get(teacher_id)
+
+        if teacher:
+            teacher.last_active = datetime.utcnow()
+
+            try:
+                db.session.commit()
+
+            except Exception:
+                db.session.rollback()
+
+                current_app.logger.exception(
+                    "Teacher logout update error"
+                )
+
+        # IMPORTANT:
+        # Remove ONLY teacher session data.
+        # Do NOT use session.clear()
+        # because Admin/User Flask-Login session
+        # must remain untouched.
+
+        session.pop("teacher_id", None)
+        session.pop("teacher_role", None)
+        session.pop("teacher_institution_id", None)
+        session.pop("teacher_branch_id", None)
+
+        flash(
+            "You have been logged out successfully.",
+            "success"
+        )
+
+    else:
+
+        flash(
+            "You are already logged out.",
+            "info"
+        )
+
+    return redirect(
+        url_for("main.teacher_login")
+    )
+
+    
 
 
 

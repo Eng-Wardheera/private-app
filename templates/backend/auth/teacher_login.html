@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Teacher Login | Private Management</title>
+
+    <!-- =========================================================
+         GOOGLE FONT
+    ========================================================== -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- =========================================================
+         FONT AWESOME
+    ========================================================== -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+
+        /* =====================================================
+           GLOBAL
+        ====================================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+
+            font-family: "Inter", sans-serif;
+
+            background:
+                radial-gradient(
+                    circle at top left,
+                    rgba(6, 36, 95, 0.12),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at bottom right,
+                    rgba(50, 183, 58, 0.10),
+                    transparent 35%
+                ),
+                #f5f7fb;
+
+            color: #172033;
+
+            overflow-x: hidden;
+        }
+
+        button,
+        input {
+            font-family: inherit;
+        }
+
+        /* =====================================================
+           PAGE
+        ====================================================== */
+
+        .login-page {
+
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 35px 20px;
+        }
+
+        /* =====================================================
+           MAIN CARD
+        ====================================================== */
+
+        .login-wrapper {
+
+            width: 100%;
+
+            max-width: 1050px;
+
+            min-height: 610px;
+
+            display: grid;
+
+            grid-template-columns:
+                0.95fr
+                1.05fr;
+
+            background: #ffffff;
+
+            border-radius: 24px;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                rgba(15, 23, 42, 0.05);
+
+            box-shadow:
+                0 25px 70px
+                rgba(15, 23, 42, 0.12);
+        }
+
+        /* =====================================================
+           LEFT INFORMATION
+        ====================================================== */
+
+        .login-info {
+
+            position: relative;
+
+            padding: 55px 45px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #06245f 0%,
+                    #102d70 45%,
+                    #1d4ed8 100%
+                );
+
+            overflow: hidden;
+        }
+
+        .login-info::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 290px;
+            height: 290px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(255, 255, 255, 0.05);
+
+            top: -110px;
+            right: -100px;
+        }
+
+        .login-info::after {
+
+            content: "";
+
+            position: absolute;
+
+            width: 230px;
+            height: 230px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(255, 255, 255, 0.04);
+
+            bottom: -100px;
+            left: -100px;
+        }
+
+        /* =====================================================
+           BRAND
+        ====================================================== */
+
+        .brand {
+
+            position: relative;
+
+            z-index: 2;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin-bottom: 48px;
+        }
+
+        .brand-icon {
+
+            width: 46px;
+            height: 46px;
+
+            border-radius: 13px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                rgba(255, 255, 255, 0.14);
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.15);
+
+            font-size: 20px;
+        }
+
+        .brand-name {
+
+            font-size: 19px;
+
+            font-weight: 800;
+
+            letter-spacing: -0.3px;
+        }
+
+        /* =====================================================
+           INFO CONTENT
+        ====================================================== */
+
+        .info-content {
+
+            position: relative;
+
+            z-index: 2;
+        }
+
+        .info-content h1 {
+
+            font-size: 40px;
+
+            line-height: 1.15;
+
+            font-weight: 800;
+
+            letter-spacing: -1.3px;
+
+            margin-bottom: 20px;
+        }
+
+        .info-content p {
+
+            max-width: 390px;
+
+            margin-bottom: 35px;
+
+            color:
+                rgba(255, 255, 255, 0.78);
+
+            font-size: 14px;
+
+            line-height: 1.8;
+        }
+
+        /* =====================================================
+           FEATURES
+        ====================================================== */
+
+        .features {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 17px;
+        }
+
+        .feature {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            color:
+                rgba(255, 255, 255, 0.90);
+
+            font-size: 13px;
+
+            font-weight: 500;
+        }
+
+        .feature-icon {
+
+            width: 34px;
+            height: 34px;
+
+            flex-shrink: 0;
+
+            border-radius: 10px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                rgba(255, 255, 255, 0.10);
+
+            font-size: 13px;
+        }
+
+        /* =====================================================
+           RIGHT FORM AREA
+        ====================================================== */
+
+        .login-form-area {
+
+            padding: 48px 50px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #ffffff;
+        }
+
+        .login-form-container {
+
+            width: 100%;
+
+            max-width: 430px;
+        }
+
+        /* =====================================================
+           FORM HEADER
+        ====================================================== */
+
+        .form-header {
+
+            margin-bottom: 30px;
+        }
+
+        .form-header h2 {
+
+            font-size: 28px;
+
+            font-weight: 800;
+
+            color: #111827;
+
+            letter-spacing: -0.7px;
+
+            margin-bottom: 8px;
+        }
+
+        .form-header p {
+
+            font-size: 13px;
+
+            color: #6b7280;
+
+            line-height: 1.6;
+        }
+
+        /* =====================================================
+           TEACHER BADGE
+        ====================================================== */
+
+        .teacher-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            padding: 7px 11px;
+
+            margin-bottom: 15px;
+
+            border-radius: 8px;
+
+            background: #eff6ff;
+
+            color: #1d4ed8;
+
+            border:
+                1px solid
+                #dbeafe;
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.5px;
+        }
+
+        /* =====================================================
+           FLASH MESSAGES
+        ====================================================== */
+
+        .flash-container {
+
+            margin-bottom: 22px;
+        }
+
+        .flash-message {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 10px;
+
+            padding: 12px 14px;
+
+            border-radius: 10px;
+
+            font-size: 12px;
+
+            line-height: 1.5;
+
+            margin-bottom: 8px;
+        }
+
+        .flash-message.success {
+
+            color: #166534;
+
+            background: #f0fdf4;
+
+            border:
+                1px solid
+                #bbf7d0;
+        }
+
+        .flash-message.danger,
+        .flash-message.error {
+
+            color: #991b1b;
+
+            background: #fef2f2;
+
+            border:
+                1px solid
+                #fecaca;
+        }
+
+        .flash-message.warning {
+
+            color: #92400e;
+
+            background: #fffbeb;
+
+            border:
+                1px solid
+                #fde68a;
+        }
+
+        .flash-message.info {
+
+            color: #1e40af;
+
+            background: #eff6ff;
+
+            border:
+                1px solid
+                #bfdbfe;
+        }
+
+        .flash-message > i {
+
+            margin-top: 2px;
+
+            flex-shrink: 0;
+        }
+
+        .flash-close {
+
+            margin-left: auto;
+
+            border: 0;
+
+            background: transparent;
+
+            color: inherit;
+
+            opacity: 0.6;
+
+            cursor: pointer;
+
+            padding: 0 2px;
+        }
+
+        .flash-close:hover {
+
+            opacity: 1;
+        }
+
+        /* =====================================================
+           FORM GROUP
+        ====================================================== */
+
+        .form-group {
+
+            margin-bottom: 19px;
+        }
+
+        .form-label {
+
+            display: block;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            color: #374151;
+
+            margin-bottom: 8px;
+        }
+
+        /* =====================================================
+           INPUT
+        ====================================================== */
+
+        .input-wrapper {
+
+            position: relative;
+        }
+
+        .input-icon {
+
+            position: absolute;
+
+            left: 14px;
+
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            color: #9ca3af;
+
+            font-size: 13px;
+
+            pointer-events: none;
+
+            transition: 0.2s ease;
+        }
+
+        .form-input {
+
+            width: 100%;
+
+            height: 48px;
+
+            border:
+                1px solid
+                #e5e7eb;
+
+            border-radius: 11px;
+
+            background: #f9fafb;
+
+            padding:
+                0 45px
+                0 40px;
+
+            outline: none;
+
+            color: #111827;
+
+            font-size: 13px;
+
+            transition:
+                border-color 0.2s ease,
+                background 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .form-input::placeholder {
+
+            color: #a1a1aa;
+        }
+
+        .form-input:hover {
+
+            border-color: #d1d5db;
+        }
+
+        .form-input:focus {
+
+            background: #ffffff;
+
+            border-color: #2563eb;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(37, 99, 235, 0.10);
+        }
+
+        .input-wrapper:focus-within
+        .input-icon {
+
+            color: #2563eb;
+        }
+
+        /* =====================================================
+           PASSWORD TOGGLE
+        ====================================================== */
+
+        .password-toggle {
+
+            position: absolute;
+
+            right: 12px;
+
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            width: 29px;
+
+            height: 29px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border: 0;
+
+            border-radius: 7px;
+
+            background: transparent;
+
+            color: #9ca3af;
+
+            cursor: pointer;
+
+            transition: 0.2s ease;
+        }
+
+        .password-toggle:hover {
+
+            color: #2563eb;
+
+            background: #eff6ff;
+        }
+
+        /* =====================================================
+           OPTIONS
+        ====================================================== */
+
+        .form-options {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: flex-end;
+
+            margin:
+                3px 0 21px;
+        }
+
+        .forgot-password {
+
+            font-size: 11px;
+
+            color: #2563eb;
+
+            font-weight: 600;
+
+            text-decoration: none;
+        }
+
+        .forgot-password:hover {
+
+            text-decoration: underline;
+        }
+
+        /* =====================================================
+           LOGIN BUTTON
+        ====================================================== */
+
+        .login-button {
+
+            width: 100%;
+
+            height: 48px;
+
+            border: 0;
+
+            border-radius: 11px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #06245f,
+                    #1d4ed8
+                );
+
+            color: #ffffff;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 9px;
+
+            box-shadow:
+                0 8px 20px
+                rgba(6, 36, 95, 0.20);
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                opacity 0.2s ease;
+        }
+
+        .login-button:hover {
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 12px 25px
+                rgba(6, 36, 95, 0.26);
+        }
+
+        .login-button:active {
+
+            transform:
+                translateY(0);
+        }
+
+        .login-button:disabled {
+
+            opacity: 0.7;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+        /* =====================================================
+           ADMIN CONTACT
+        ====================================================== */
+
+        .admin-contact {
+
+            text-align: center;
+
+            margin-top: 22px;
+
+            color: #6b7280;
+
+            font-size: 11px;
+
+            line-height: 1.6;
+        }
+
+        .admin-contact i {
+
+            color: #2563eb;
+
+            margin-right: 4px;
+        }
+
+        /* =====================================================
+           FOOTER
+        ====================================================== */
+
+        .form-footer {
+
+            text-align: center;
+
+            margin-top: 28px;
+
+            padding-top: 18px;
+
+            border-top:
+                1px solid
+                #f1f5f9;
+
+            color: #9ca3af;
+
+            font-size: 10px;
+        }
+
+        /* =====================================================
+           LOADING SPINNER
+        ====================================================== */
+
+        .spinner {
+
+            width: 15px;
+
+            height: 15px;
+
+            border:
+                2px solid
+                rgba(255, 255, 255, 0.35);
+
+            border-top-color: #ffffff;
+
+            border-radius: 50%;
+
+            animation:
+                spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =====================================================
+           TABLET
+        ====================================================== */
+
+        @media (max-width: 850px) {
+
+            .login-page {
+
+                padding: 20px 15px;
+            }
+
+            .login-wrapper {
+
+                max-width: 560px;
+
+                grid-template-columns: 1fr;
+
+                min-height: auto;
+
+                border-radius: 20px;
+            }
+
+            .login-info {
+
+                padding:
+                    32px 28px;
+            }
+
+            .brand {
+
+                margin-bottom: 25px;
+            }
+
+            .info-content h1 {
+
+                font-size: 28px;
+
+                letter-spacing: -0.8px;
+
+                margin-bottom: 12px;
+            }
+
+            .info-content p {
+
+                font-size: 12px;
+
+                line-height: 1.7;
+
+                margin-bottom: 22px;
+            }
+
+            .features {
+
+                display: grid;
+
+                grid-template-columns:
+                    1fr 1fr;
+
+                gap: 12px;
+            }
+
+            .feature {
+
+                font-size: 11px;
+            }
+
+            .feature-icon {
+
+                width: 30px;
+
+                height: 30px;
+            }
+
+            .login-form-area {
+
+                padding:
+                    35px 28px;
+            }
+        }
+
+        /* =====================================================
+           MOBILE
+        ====================================================== */
+
+        @media (max-width: 520px) {
+
+            .login-page {
+
+                padding: 0;
+
+                align-items: stretch;
+            }
+
+            .login-wrapper {
+
+                min-height: 100vh;
+
+                border-radius: 0;
+
+                border: 0;
+
+                box-shadow: none;
+            }
+
+            .login-info {
+
+                padding:
+                    28px 20px 25px;
+            }
+
+            .brand {
+
+                margin-bottom: 22px;
+            }
+
+            .brand-icon {
+
+                width: 40px;
+
+                height: 40px;
+
+                border-radius: 11px;
+            }
+
+            .brand-name {
+
+                font-size: 16px;
+            }
+
+            .info-content h1 {
+
+                font-size: 25px;
+            }
+
+            .info-content p {
+
+                font-size: 11px;
+
+                margin-bottom: 18px;
+            }
+
+            .features {
+
+                grid-template-columns: 1fr;
+
+                gap: 9px;
+            }
+
+            .feature {
+
+                font-size: 10.5px;
+            }
+
+            .feature-icon {
+
+                width: 28px;
+
+                height: 28px;
+            }
+
+            .login-form-area {
+
+                padding:
+                    30px 20px 35px;
+
+                align-items: flex-start;
+            }
+
+            .form-header {
+
+                margin-bottom: 24px;
+            }
+
+            .form-header h2 {
+
+                font-size: 23px;
+            }
+
+            .form-header p {
+
+                font-size: 11px;
+            }
+
+            .form-group {
+
+                margin-bottom: 15px;
+            }
+
+            .form-input {
+
+                height: 45px;
+
+                font-size: 12px;
+            }
+
+            .form-options {
+
+                margin-bottom: 19px;
+            }
+
+            .forgot-password {
+
+                font-size: 10.5px;
+            }
+
+            .login-button {
+
+                height: 46px;
+
+                font-size: 12px;
+            }
+
+            .admin-contact {
+
+                font-size: 10.5px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="login-page">
+
+    <div class="login-wrapper">
+
+        <!-- =================================================
+             LEFT SIDE
+        ================================================== -->
+
+        <section class="login-info">
+
+            <!-- BRAND -->
+
+            <div class="brand">
+
+                <div class="brand-icon">
+
+                    <i class="fa-solid fa-chalkboard-user"></i>
+
+                </div>
+
+                <div class="brand-name">
+
+                    Private Management
+
+                </div>
+
+            </div>
+
+
+            <!-- CONTENT -->
+
+            <div class="info-content">
+
+                <h1>
+
+                    Welcome, Teacher
+
+                </h1>
+
+                <p>
+
+                    Sign in to your teacher account and continue
+                    managing your classes, subjects, examinations,
+                    attendance, and student results securely.
+
+                </p>
+
+
+                <!-- FEATURES -->
+
+                <div class="features">
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+
+                            <i class="fa-solid fa-shield-halved"></i>
+
+                        </div>
+
+                        <span>
+
+                            Secure teacher access
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+
+                            <i class="fa-solid fa-book-open"></i>
+
+                        </div>
+
+                        <span>
+
+                            Manage assigned subjects
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+
+                            <i class="fa-solid fa-pen-to-square"></i>
+
+                        </div>
+
+                        <span>
+
+                            Enter examination results
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+
+                            <i class="fa-solid fa-chart-line"></i>
+
+                        </div>
+
+                        <span>
+
+                            Track student performance
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             RIGHT SIDE
+        ================================================== -->
+
+        <section class="login-form-area">
+
+            <div class="login-form-container">
+
+
+                <!-- =================================================
+                     HEADER
+                ================================================== -->
+
+                <div class="form-header">
+
+                    <div class="teacher-badge">
+
+                        <i class="fa-solid fa-chalkboard-user"></i>
+
+                        Teacher Portal
+
+                    </div>
+
+                    <h2>
+
+                        Teacher Sign In
+
+                    </h2>
+
+                    <p>
+
+                        Enter your teacher username or email and
+                        password to access your dashboard.
+
+                    </p>
+
+                </div>
+
+
+                <!-- =================================================
+                     FLASH MESSAGES
+                ================================================== -->
+
+                {% with messages =
+                    get_flashed_messages(
+                        with_categories=true
+                    )
+                %}
+
+                    {% if messages %}
+
+                        <div class="flash-container">
+
+                            {% for category, message in messages %}
+
+                                <div
+                                    class="flash-message {{ category }}"
+                                >
+
+                                    {% if category == "success" %}
+
+                                        <i
+                                            class="fa-solid fa-circle-check"
+                                        ></i>
+
+                                    {% elif category in
+                                        ["danger", "error"]
+                                    %}
+
+                                        <i
+                                            class="fa-solid fa-circle-exclamation"
+                                        ></i>
+
+                                    {% elif category == "warning" %}
+
+                                        <i
+                                            class="fa-solid fa-triangle-exclamation"
+                                        ></i>
+
+                                    {% else %}
+
+                                        <i
+                                            class="fa-solid fa-circle-info"
+                                        ></i>
+
+                                    {% endif %}
+
+
+                                    <span>
+
+                                        {{ message }}
+
+                                    </span>
+
+
+                                    <button
+                                        type="button"
+                                        class="flash-close"
+                                        onclick="
+                                            this.parentElement.remove()
+                                        "
+                                        aria-label="Close"
+                                    >
+
+                                        <i
+                                            class="fa-solid fa-xmark"
+                                        ></i>
+
+                                    </button>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                {% endwith %}
+
+
+                <!-- =================================================
+                     TEACHER LOGIN FORM
+                ================================================== -->
+
+                <form
+                    method="POST"
+                    action="{{ url_for('main.teacher_login') }}"
+                    id="teacherLoginForm"
+                    novalidate
+                >
+
+
+                    <!-- =================================================
+                         USERNAME / EMAIL
+                    ================================================== -->
+
+                    <div class="form-group">
+
+                        <label
+                            for="username"
+                            class="form-label"
+                        >
+
+                            Username or Email
+
+                        </label>
+
+
+                        <div class="input-wrapper">
+
+                            <i
+                                class="fa-solid fa-user-tie input-icon"
+                            ></i>
+
+
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                class="form-input"
+                                placeholder="Enter teacher username or email"
+                                autocomplete="username"
+                                value="{{ request.form.get('username', '') }}"
+                                required
+                                autofocus
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         PASSWORD
+                    ================================================== -->
+
+                    <div class="form-group">
+
+                        <label
+                            for="password"
+                            class="form-label"
+                        >
+
+                            Password
+
+                        </label>
+
+
+                        <div class="input-wrapper">
+
+                            <i
+                                class="fa-solid fa-lock input-icon"
+                            ></i>
+
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-input"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                id="passwordToggle"
+                                aria-label="Show password"
+                            >
+
+                                <i
+                                    class="fa-solid fa-eye"
+                                ></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         OPTIONS
+                    ================================================== -->
+
+                    <div class="form-options">
+
+                        <a
+                            href="#"
+                            class="forgot-password"
+                            onclick="
+                                alert(
+                                    'Please contact your school administrator to reset your teacher password.'
+                                );
+                                return false;
+                            "
+                        >
+
+                            Forgot password?
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         LOGIN BUTTON
+                    ================================================== -->
+
+                    <button
+                        type="submit"
+                        class="login-button"
+                        id="loginButton"
+                    >
+
+                        <i
+                            class="fa-solid fa-right-to-bracket"
+                        ></i>
+
+                        <span>
+
+                            Sign In as Teacher
+
+                        </span>
+
+                    </button>
+
+
+                    <!-- =================================================
+                         ADMIN CONTACT
+                    ================================================== -->
+
+                    <div class="admin-contact">
+
+                        <i
+                            class="fa-solid fa-circle-info"
+                        ></i>
+
+                        Teacher accounts are created and managed
+                        by the school administrator.
+
+                    </div>
+
+
+                    <!-- =================================================
+                         FOOTER
+                    ================================================== -->
+
+                    <div class="form-footer">
+
+                        © {{ current_year
+                            if current_year is defined
+                            else "2026"
+                        }}
+
+                        Private Management.
+
+                        All rights reserved.
+
+                    </div>
+
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+
+<!-- =============================================================
+     JAVASCRIPT
+============================================================== -->
+
+<script>
+
+    /* =========================================================
+       PASSWORD SHOW / HIDE
+    ========================================================== */
+
+    const passwordInput =
+        document.getElementById("password");
+
+    const passwordToggle =
+        document.getElementById("passwordToggle");
+
+
+    if (
+        passwordInput &&
+        passwordToggle
+    ) {
+
+        passwordToggle.addEventListener(
+            "click",
+            function () {
+
+                const icon =
+                    this.querySelector("i");
+
+
+                if (
+                    passwordInput.type ===
+                    "password"
+                ) {
+
+                    passwordInput.type =
+                        "text";
+
+                    icon.classList.remove(
+                        "fa-eye"
+                    );
+
+                    icon.classList.add(
+                        "fa-eye-slash"
+                    );
+
+                    this.setAttribute(
+                        "aria-label",
+                        "Hide password"
+                    );
+
+                } else {
+
+                    passwordInput.type =
+                        "password";
+
+                    icon.classList.remove(
+                        "fa-eye-slash"
+                    );
+
+                    icon.classList.add(
+                        "fa-eye"
+                    );
+
+                    this.setAttribute(
+                        "aria-label",
+                        "Show password"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       TEACHER LOGIN FORM
+    ========================================================== */
+
+    const teacherLoginForm =
+        document.getElementById(
+            "teacherLoginForm"
+        );
+
+    const loginButton =
+        document.getElementById(
+            "loginButton"
+        );
+
+
+    if (teacherLoginForm) {
+
+        teacherLoginForm.addEventListener(
+            "submit",
+            function (event) {
+
+                const username =
+                    document.getElementById(
+                        "username"
+                    );
+
+                const password =
+                    document.getElementById(
+                        "password"
+                    );
+
+
+                /* =============================================
+                   USERNAME VALIDATION
+                ============================================== */
+
+                if (
+                    !username.value.trim()
+                ) {
+
+                    event.preventDefault();
+
+                    username.focus();
+
+                    alert(
+                        "Please enter your teacher username or email."
+                    );
+
+                    return;
+                }
+
+
+                /* =============================================
+                   PASSWORD VALIDATION
+                ============================================== */
+
+                if (
+                    !password.value
+                ) {
+
+                    event.preventDefault();
+
+                    password.focus();
+
+                    alert(
+                        "Please enter your teacher password."
+                    );
+
+                    return;
+                }
+
+
+                /* =============================================
+                   LOADING STATE
+                ============================================== */
+
+                loginButton.disabled = true;
+
+                loginButton.innerHTML = `
+                    <span class="spinner"></span>
+                    <span>Signing In...</span>
+                `;
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       AUTO HIDE FLASH MESSAGES
+    ========================================================== */
+
+    setTimeout(
+        function () {
+
+            const messages =
+                document.querySelectorAll(
+                    ".flash-message"
+                );
+
+
+            messages.forEach(
+                function (message) {
+
+                    message.style.transition =
+                        "opacity 0.3s ease, transform 0.3s ease";
+
+                    message.style.opacity =
+                        "0";
+
+                    message.style.transform =
+                        "translateY(-5px)";
+
+
+                    setTimeout(
+                        function () {
+
+                            message.remove();
+
+                        },
+                        300
+                    );
+
+                }
+            );
+
+        },
+        6000
+    );
+
+</script>
+
+
+<!-- =============================================================
+     SWEETALERT2
+============================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+    const flashMessages =
+        {{ get_flashed_messages(
+            with_categories=True
+        ) | tojson | safe }};
+
+
+    if (
+        flashMessages.length > 0
+    ) {
+
+        const [
+            category,
+            message
+        ] = flashMessages[0];
+
+
+        const Toast =
+            Swal.mixin({
+
+                toast: true,
+
+                position: "top-end",
+
+                showConfirmButton: false,
+
+                timer: 3000,
+
+                timerProgressBar: true,
+
+                background: "#fff",
+
+                color: "#333",
+
+                didOpen: (toast) => {
+
+                    toast.addEventListener(
+                        "mouseenter",
+                        Swal.stopTimer
+                    );
+
+                    toast.addEventListener(
+                        "mouseleave",
+                        Swal.resumeTimer
+                    );
+
+                }
+
+            });
+
+
+        Toast.fire({
+
+            icon:
+                category === "success"
+                    ? "success"
+                    : category === "danger" ||
+                      category === "error"
+                        ? "error"
+                        : category === "warning"
+                            ? "warning"
+                            : "info",
+
+            title: message
+
+        });
+
+    }
+
+</script>
+
+
+</body>
+</html>

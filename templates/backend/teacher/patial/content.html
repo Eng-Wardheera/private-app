@@ -1,0 +1,1442 @@
+
+        <section class="dashboard-content">
+
+
+            <!-- =================================================
+                 WELCOME
+            ================================================== -->
+
+            <div class="welcome-card">
+
+                <div class="welcome-content">
+
+
+                    <div class="welcome-eyebrow">
+
+                        <i class="fa-solid fa-sun"></i>
+
+                        Welcome back, Teacher
+
+                    </div>
+
+
+                    <h2>
+
+                        Hello,
+                        {{ teacher.full_name }} 👋
+
+                    </h2>
+
+
+                    <p>
+
+                        Manage your subjects, examination assignments,
+                        student assessments and academic activities
+                        from your teacher workspace.
+
+                    </p>
+
+
+                    <div class="welcome-meta">
+
+
+                        <span class="meta-pill">
+
+                            <i class="fa-solid fa-building"></i>
+
+                            {{
+                                institution.name
+                                if institution
+                                else 'Institution Not Assigned'
+                            }}
+
+                        </span>
+
+
+                        <span class="meta-pill">
+
+                            <i class="fa-solid fa-code-branch"></i>
+
+                            {{
+                                branch.name
+                                if branch
+                                else 'Branch Not Assigned'
+                            }}
+
+                        </span>
+
+
+                        <span class="meta-pill">
+
+                            <i class="fa-solid fa-user-tie"></i>
+
+                            Teacher
+
+                        </span>
+
+
+                        <span class="meta-pill">
+
+                            <i class="fa-regular fa-clock"></i>
+
+                            <span id="liveClock">
+                                --:--
+                            </span>
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 STATISTICS
+            ================================================== -->
+
+            <div class="stats-grid">
+
+
+                <!-- SUBJECTS -->
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div>
+
+                            <div class="stat-label">
+                                Assigned Subjects
+                            </div>
+
+                            <div class="stat-value">
+                                {{ subjects_count }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="stat-icon blue">
+
+                            <i class="fa-solid fa-book-open"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-footer">
+
+                        <span class="status-dot"></span>
+
+                        Active teaching assignments
+
+                    </div>
+
+                </div>
+
+
+                <!-- EXAMS -->
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div>
+
+                            <div class="stat-label">
+                                Exam Subjects
+                            </div>
+
+                            <div class="stat-value">
+                                {{ exam_subjects_count }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="stat-icon purple">
+
+                            <i class="fa-solid fa-file-signature"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-footer">
+
+                        <span class="status-dot"></span>
+
+                        Examination assignments
+
+                    </div>
+
+                </div>
+
+
+                <!-- BRANCH -->
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div>
+
+                            <div class="stat-label">
+                                Branch
+                            </div>
+
+                            <div
+                                class="stat-value"
+                                style="
+                                    font-size:15px;
+                                    margin-top:8px;
+                                "
+                            >
+
+                                {{
+                                    branch.name
+                                    if branch
+                                    else 'Not Assigned'
+                                }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="stat-icon green">
+
+                            <i class="fa-solid fa-code-branch"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-footer">
+
+                        <span class="status-dot"></span>
+
+                        Current branch
+
+                    </div>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div>
+
+                            <div class="stat-label">
+                                Account Status
+                            </div>
+
+                            <div
+                                class="stat-value"
+                                style="
+                                    font-size:15px;
+                                    margin-top:8px;
+                                "
+                            >
+
+                                {% if teacher.is_active %}
+                                    Active
+                                {% else %}
+                                    Inactive
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="stat-icon orange">
+
+                            <i class="fa-solid fa-shield-halved"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-footer">
+
+                        <span class="status-dot"></span>
+
+                        Secure teacher account
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 MAIN GRID
+            ================================================== -->
+
+            <div class="dashboard-grid">
+
+
+                <!-- =============================================
+                     SUBJECTS
+                ============================================== -->
+
+                <div class="panel">
+
+
+                    <div class="panel-header">
+
+                        <div class="panel-title">
+
+                            <div class="panel-title-icon">
+
+                                <i class="fa-solid fa-book-open"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    My Teaching Subjects
+                                </h3>
+
+                                <p>
+                                    Subjects currently assigned to you
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <a
+                            href="#"
+                            class="view-all"
+                        >
+                            View All
+                        </a>
+
+                    </div>
+
+
+                    <div class="subject-list">
+
+
+                        {% if teacher_subjects %}
+
+
+                            {% for assignment in teacher_subjects[:6] %}
+
+                                <div class="subject-row">
+
+
+                                    <div class="subject-icon">
+
+                                        <i class="fa-solid fa-book"></i>
+
+                                    </div>
+
+
+                                    <div class="subject-info">
+
+                                        <div class="subject-name">
+
+                                            {% if assignment.subject %}
+
+                                                {{ assignment.subject.name }}
+
+                                            {% else %}
+
+                                                Subject Assignment
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="subject-meta">
+
+
+                                            {% if assignment.program %}
+
+                                                <span>
+
+                                                    <i class="fa-solid fa-layer-group"></i>
+
+                                                    {{ assignment.program.name }}
+
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            {% if assignment.class_ %}
+
+                                                <span>
+
+                                                    <i class="fa-solid fa-school"></i>
+
+                                                    {{ assignment.class_.name }}
+
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            {% if assignment.section %}
+
+                                                <span>
+
+                                                    <i class="fa-solid fa-users"></i>
+
+                                                    {{ assignment.section.name }}
+
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <span class="subject-status">
+
+                                        {{
+                                            assignment.status
+                                            if assignment.status
+                                            else 'Active'
+                                        }}
+
+                                    </span>
+
+                                </div>
+
+                            {% endfor %}
+
+
+                        {% else %}
+
+
+                            <div
+                                style="
+                                    padding:35px 20px;
+                                    text-align:center;
+                                    color:var(--text-muted);
+                                "
+                            >
+
+                                <i
+                                    class="fa-solid fa-book-open"
+                                    style="
+                                        font-size:25px;
+                                        opacity:.4;
+                                    "
+                                ></i>
+
+                                <div
+                                    style="
+                                        margin-top:10px;
+                                        font-size:11px;
+                                    "
+                                >
+                                    No teaching subjects assigned yet.
+                                </div>
+
+                            </div>
+
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     INSTITUTION
+                ============================================== -->
+
+                <div class="panel">
+
+
+                    <div class="panel-header">
+
+                        <div class="panel-title">
+
+                            <div class="panel-title-icon">
+
+                                <i class="fa-solid fa-building-columns"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Institution
+                                </h3>
+
+                                <p>
+                                    Your organizational information
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="institution-card">
+
+
+                        <div class="institution-logo-area">
+
+
+                            {% if institution and institution.main_logo %}
+
+                                <img
+                                    src="{{ url_for('static', filename=institution.main_logo) }}"
+                                    class="institution-logo"
+                                    alt="{{ institution.name }}"
+                                >
+
+                            {% else %}
+
+                                <div class="institution-logo-placeholder">
+
+                                    <i class="fa-solid fa-building-columns"></i>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div>
+
+                                <div class="institution-name">
+
+                                    {{
+                                        institution.name
+                                        if institution
+                                        else 'Institution Not Assigned'
+                                    }}
+
+                                </div>
+
+                                <div class="institution-type">
+
+                                    Educational Institution
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-list">
+
+
+                            <div class="info-item">
+
+                                <i class="fa-solid fa-code-branch"></i>
+
+                                <div>
+
+                                    <label>
+                                        Branch
+                                    </label>
+
+                                    <strong>
+
+                                        {{
+                                            branch.name
+                                            if branch
+                                            else 'Not Assigned'
+                                        }}
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="info-item">
+
+                                <i class="fa-solid fa-id-card"></i>
+
+                                <div>
+
+                                    <label>
+                                        Teacher ID
+                                    </label>
+
+                                    <strong>
+                                        {{ teacher.id }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="info-item">
+
+                                <i class="fa-solid fa-user-tie"></i>
+
+                                <div>
+
+                                    <label>
+                                        Username
+                                    </label>
+
+                                    <strong>
+                                        {{ teacher.username }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="info-item">
+
+                                <i class="fa-solid fa-envelope"></i>
+
+                                <div>
+
+                                    <label>
+                                        Email
+                                    </label>
+
+                                    <strong>
+
+                                        {{
+                                            teacher.email
+                                            if teacher.email
+                                            else 'Not Provided'
+                                        }}
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="info-item">
+
+                                <i class="fa-solid fa-phone"></i>
+
+                                <div>
+
+                                    <label>
+                                        Phone
+                                    </label>
+
+                                    <strong>
+
+                                        {{
+                                            teacher.phone
+                                            if teacher.phone
+                                            else 'Not Provided'
+                                        }}
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 QUICK ACTIONS
+            ================================================== -->
+
+            <div class="panel" style="margin-bottom:20px;">
+
+
+                <div class="panel-header">
+
+                    <div class="panel-title">
+
+                        <div class="panel-title-icon">
+
+                            <i class="fa-solid fa-bolt"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Quick Actions
+                            </h3>
+
+                            <p>
+                                Frequently used teacher functions
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="quick-actions">
+
+
+                    <a
+                        href="#"
+                        class="quick-action"
+                    >
+
+                        <i class="fa-solid fa-pen-to-square"></i>
+
+                        <strong>
+                            Enter Marks
+                        </strong>
+
+                        <span>
+                            Submit examination marks
+                        </span>
+
+                    </a>
+
+
+                    <a
+                        href="#"
+                        class="quick-action"
+                    >
+
+                        <i class="fa-solid fa-file-lines"></i>
+
+                        <strong>
+                            My Exams
+                        </strong>
+
+                        <span>
+                            View assigned exam subjects
+                        </span>
+
+                    </a>
+
+
+                    <a
+                        href="#"
+                        class="quick-action"
+                    >
+
+                        <i class="fa-solid fa-users"></i>
+
+                        <strong>
+                            Students
+                        </strong>
+
+                        <span>
+                            View your students
+                        </span>
+
+                    </a>
+
+
+                    <a
+                        href="#"
+                        class="quick-action"
+                    >
+
+                        <i class="fa-solid fa-calendar-days"></i>
+
+                        <strong>
+                            Timetable
+                        </strong>
+
+                        <span>
+                            Check examination schedule
+                        </span>
+
+                    </a>
+
+
+                    <a
+                        href="#"
+                        class="quick-action"
+                    >
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                        <strong>
+                            Results
+                        </strong>
+
+                        <span>
+                            Review submitted results
+                        </span>
+
+                    </a>
+
+
+                    <a
+                        href="#"
+                        class="quick-action"
+                    >
+
+                        <i class="fa-solid fa-user-gear"></i>
+
+                        <strong>
+                            My Profile
+                        </strong>
+
+                        <span>
+                            Manage your account
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 EXAM ASSIGNMENTS
+            ================================================== -->
+
+            <div class="panel" style="margin-bottom:20px;">
+
+
+                <div class="panel-header">
+
+                    <div class="panel-title">
+
+                        <div class="panel-title-icon">
+
+                            <i class="fa-solid fa-file-signature"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                My Examination Assignments
+                            </h3>
+
+                            <p>
+                                Examination subjects assigned to you
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <span class="view-all">
+
+                        {{ exam_subjects_count }} Assignments
+
+                    </span>
+
+                </div>
+
+
+                <div class="table-wrapper">
+
+                    <table class="exam-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Exam
+                                </th>
+
+                                <th>
+                                    Subject
+                                </th>
+
+                                <th>
+                                    Class
+                                </th>
+
+                                <th>
+                                    Section
+                                </th>
+
+                                <th>
+                                    Marks
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            {% if exam_subjects %}
+
+
+                                {% for item in exam_subjects[:8] %}
+
+                                    <tr>
+
+
+                                        <td>
+
+                                            <div class="exam-name">
+
+                                                {% if item.exam %}
+
+                                                    {{ item.exam.name }}
+
+                                                {% else %}
+
+                                                    Exam
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            {% if item.exam and item.exam.code %}
+
+                                                <div class="exam-code">
+
+                                                    {{ item.exam.code }}
+
+                                                </div>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <td>
+
+                                            {% if item.subject %}
+
+                                                {{ item.subject.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <td>
+
+                                            {% if item.class_ %}
+
+                                                {{ item.class_.name }}
+
+                                            {% else %}
+
+                                                All Classes
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <td>
+
+                                            {% if item.section %}
+
+                                                {{ item.section.name }}
+
+                                            {% else %}
+
+                                                All Sections
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <td>
+
+                                            {{ item.max_marks or 0 }}
+
+                                        </td>
+
+
+                                        <td>
+
+                                            {% set exam_status =
+                                                item.exam.status
+                                                if item.exam
+                                                and item.exam.status
+                                                else 'draft'
+                                            %}
+
+
+                                            <span
+                                                class="exam-status {{ exam_status|lower|replace(' ', '-') }}"
+                                            >
+
+                                                {{ exam_status }}
+
+                                            </span>
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+
+                            {% else %}
+
+
+                                <tr>
+
+                                    <td
+                                        colspan="6"
+                                        style="
+                                            text-align:center;
+                                            padding:35px;
+                                            color:var(--text-muted);
+                                        "
+                                    >
+
+                                        <i
+                                            class="fa-solid fa-clipboard-check"
+                                            style="
+                                                font-size:25px;
+                                                opacity:.4;
+                                            "
+                                        ></i>
+
+                                        <div
+                                            style="
+                                                margin-top:9px;
+                                            "
+                                        >
+                                            No examination assignments found.
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+
+                            {% endif %}
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 BOTTOM GRID
+            ================================================== -->
+
+            <div class="bottom-grid">
+
+
+                <!-- ACTIVITY -->
+
+                <div class="panel">
+
+
+                    <div class="panel-header">
+
+                        <div class="panel-title">
+
+                            <div class="panel-title-icon">
+
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Recent Activity
+                                </h3>
+
+                                <p>
+                                    Your latest account activity
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="activity-list">
+
+
+                        <div class="activity-item">
+
+                            <div class="activity-icon">
+
+                                <i class="fa-solid fa-right-to-bracket"></i>
+
+                            </div>
+
+
+                            <div class="activity-content">
+
+                                <strong>
+                                    Teacher account accessed
+                                </strong>
+
+                                <p>
+                                    You are currently logged into the
+                                    teacher portal.
+                                </p>
+
+                            </div>
+
+
+                            <span class="activity-time">
+                                Now
+                            </span>
+
+                        </div>
+
+
+                        <div class="activity-item">
+
+                            <div class="activity-icon">
+
+                                <i class="fa-solid fa-book"></i>
+
+                            </div>
+
+
+                            <div class="activity-content">
+
+                                <strong>
+                                    Subject assignments
+                                </strong>
+
+                                <p>
+
+                                    You currently have
+                                    {{ subjects_count }}
+                                    assigned teaching subject(s).
+
+                                </p>
+
+                            </div>
+
+
+                            <span class="activity-time">
+                                Today
+                            </span>
+
+                        </div>
+
+
+                        <div class="activity-item">
+
+                            <div class="activity-icon">
+
+                                <i class="fa-solid fa-file-circle-check"></i>
+
+                            </div>
+
+
+                            <div class="activity-content">
+
+                                <strong>
+                                    Examination assignments
+                                </strong>
+
+                                <p>
+
+                                    {{ exam_subjects_count }}
+                                    examination subject assignment(s)
+                                    are linked to your account.
+
+                                </p>
+
+                            </div>
+
+
+                            <span class="activity-time">
+                                Current
+                            </span>
+
+                        </div>
+
+
+                        {% if last_active %}
+
+                            <div class="activity-item">
+
+                                <div class="activity-icon">
+
+                                    <i class="fa-solid fa-history"></i>
+
+                                </div>
+
+
+                                <div class="activity-content">
+
+                                    <strong>
+                                        Last activity
+                                    </strong>
+
+                                    <p>
+                                        {{ last_active }}
+                                    </p>
+
+                                </div>
+
+
+                                <span class="activity-time">
+                                    Previous
+                                </span>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACCOUNT STATUS -->
+
+                <div class="panel">
+
+
+                    <div class="panel-header">
+
+                        <div class="panel-title">
+
+                            <div class="panel-title-icon">
+
+                                <i class="fa-solid fa-shield-halved"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Account Overview
+                                </h3>
+
+                                <p>
+                                    Teacher account information
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="status-panel">
+
+
+                        <div class="status-item">
+
+                            <div class="status-left">
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                                <span>
+                                    Account
+                                </span>
+
+                            </div>
+
+
+                            {% if teacher.is_active %}
+
+                                <span class="status-value active">
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-value inactive">
+                                    Inactive
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="status-item">
+
+                            <div class="status-left">
+
+                                <i class="fa-solid fa-user-shield"></i>
+
+                                <span>
+                                    Verification
+                                </span>
+
+                            </div>
+
+
+                            {% if teacher.is_verified %}
+
+                                <span class="status-value active">
+                                    Verified
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-value inactive">
+                                    Unverified
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="status-item">
+
+                            <div class="status-left">
+
+                                <i class="fa-solid fa-building"></i>
+
+                                <span>
+                                    Institution
+                                </span>
+
+                            </div>
+
+
+                            {% if institution %}
+
+                                <span class="status-value active">
+                                    Assigned
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-value inactive">
+                                    Missing
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="status-item">
+
+                            <div class="status-left">
+
+                                <i class="fa-solid fa-code-branch"></i>
+
+                                <span>
+                                    Branch
+                                </span>
+
+                            </div>
+
+
+                            {% if branch %}
+
+                                <span class="status-value active">
+                                    Assigned
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-value inactive">
+                                    Missing
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="status-item">
+
+                            <div class="status-left">
+
+                                <i class="fa-solid fa-key"></i>
+
+                                <span>
+                                    Role
+                                </span>
+
+                            </div>
+
+
+                            <span class="status-value active">
+                                Teacher
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+
+            <footer class="dashboard-footer">
+
+                ©
+                <span id="currentYear"></span>
+
+                {{
+                    institution.name
+                    if institution
+                    else 'Educational Institute'
+                }}
+
+                · Teacher Portal
+
+            </footer>
+
+
+        </section>

@@ -1,0 +1,128 @@
+
+        <header class="top-header">
+
+
+            <button
+                class="mobile-menu"
+                id="mobileMenu"
+                type="button"
+                aria-label="Open menu"
+            >
+
+                <i class="fa-solid fa-bars"></i>
+
+            </button>
+
+
+            <div class="page-title">
+
+                <h1>
+                    Teacher Dashboard
+                </h1>
+
+                <p>
+                    Academic management and examination workspace
+                </p>
+
+            </div>
+
+
+            <!-- SEARCH -->
+
+            <div class="header-search">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input
+                    type="search"
+                    id="globalSearch"
+                    placeholder="Search dashboard..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <!-- HEADER ACTIONS -->
+
+            <div class="header-actions">
+
+
+                <!-- THEME -->
+
+                <button
+                    class="header-btn"
+                    id="themeToggle"
+                    type="button"
+                    title="Toggle dark/light mode"
+                >
+
+                    <i
+                        class="fa-solid fa-moon"
+                        id="themeIcon"
+                    ></i>
+
+                </button>
+
+
+                <!-- NOTIFICATION -->
+
+                <button
+                    class="header-btn"
+                    id="notificationButton"
+                    type="button"
+                    title="Notifications"
+                >
+
+                    <i class="fa-regular fa-bell"></i>
+
+                    <span class="notification-dot"></span>
+
+                </button>
+
+
+                <!-- PROFILE -->
+
+                <div class="header-profile">
+
+
+                    {% if teacher.photo %}
+
+                        <img
+                            src="{{ url_for('static', filename=teacher.photo) }}"
+                            class="header-avatar"
+                            alt="{{ teacher.full_name }}"
+                        >
+
+                    {% else %}
+
+                        <div class="header-avatar">
+
+                            {{
+                                teacher.full_name[:1].upper()
+                                if teacher.full_name
+                                else 'T'
+                            }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="header-profile-info">
+
+                        <strong>
+                            {{ teacher.full_name }}
+                        </strong>
+
+                        <span>
+                            {{ teacher.username }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>

@@ -1,0 +1,313 @@
+
+    <aside
+        class="sidebar"
+        id="teacherSidebar"
+    >
+
+        <!-- BRAND -->
+
+        <div class="sidebar-brand">
+
+            {% if institution and institution.main_logo %}
+
+                <img
+                    src="{{ url_for('static', filename=institution.main_logo) }}"
+                    alt="{{ institution.name }}"
+                    class="brand-logo"
+                >
+
+            {% else %}
+
+                <div class="brand-placeholder">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+
+            {% endif %}
+
+
+            <div class="brand-info">
+
+                <div class="brand-name">
+
+                    {{ institution.name
+                       if institution
+                       else 'Educational Institute' }}
+
+                </div>
+
+                <div class="brand-role">
+                    Teacher Portal
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SIDEBAR CONTENT -->
+
+        <div class="sidebar-content">
+
+
+            <!-- MAIN -->
+
+            <div class="nav-title">
+                Main
+            </div>
+
+
+            <ul class="sidebar-nav">
+
+                <li>
+
+                    <a
+                        href="{{ url_for('main.teacher_dashboard') }}"
+                        class="sidebar-link active"
+                    >
+
+                        <i class="fa-solid fa-chart-pie"></i>
+
+                        <span>Dashboard</span>
+
+                    </a>
+
+                </li>
+
+
+                <li>
+
+                    <a
+                        href="#"
+                        class="sidebar-link"
+                    >
+
+                        <i class="fa-solid fa-book-open"></i>
+
+                        <span>My Subjects</span>
+
+                        <span class="nav-badge">
+                            {{ subjects_count }}
+                        </span>
+
+                    </a>
+
+                </li>
+
+
+                <li>
+
+                    <a
+                        href="#"
+                        class="sidebar-link"
+                    >
+
+                        <i class="fa-solid fa-clipboard-list"></i>
+
+                        <span>My Exams</span>
+
+                        <span class="nav-badge">
+                            {{ exam_subjects_count }}
+                        </span>
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+
+            <!-- ACADEMIC -->
+
+            <div class="nav-title">
+                Academic
+            </div>
+
+
+            <ul class="sidebar-nav">
+
+                <li>
+
+                    <a
+                        href="#"
+                        class="sidebar-link"
+                    >
+
+                        <i class="fa-solid fa-pen-to-square"></i>
+
+                        <span>Enter Marks</span>
+
+                    </a>
+
+                </li>
+
+
+                <li>
+
+                    <a
+                        href="#"
+                        class="sidebar-link"
+                    >
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                        <span>Results</span>
+
+                    </a>
+
+                </li>
+
+
+                <li>
+
+                    <a
+                        href="#"
+                        class="sidebar-link"
+                    >
+
+                        <i class="fa-solid fa-calendar-days"></i>
+
+                        <span>Exam Timetable</span>
+
+                    </a>
+
+                </li>
+
+
+                <li>
+
+                    <a
+                        href="#"
+                        class="sidebar-link"
+                    >
+
+                        <i class="fa-solid fa-users"></i>
+
+                        <span>My Students</span>
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+
+            <!-- MANAGEMENT -->
+
+            <div class="nav-title">
+                Management
+            </div>
+
+
+            <ul class="sidebar-nav">
+
+                <li>
+
+                    <a
+                        href="#"
+                        class="sidebar-link"
+                    >
+
+                        <i class="fa-solid fa-user"></i>
+
+                        <span>My Profile</span>
+
+                    </a>
+
+                </li>
+
+
+                <li>
+
+                    <a
+                        href="#"
+                        class="sidebar-link"
+                    >
+
+                        <i class="fa-solid fa-key"></i>
+
+                        <span>Change Password</span>
+
+                    </a>
+
+                </li>
+
+
+                <li>
+
+                    <a
+                        href="#"
+                        class="sidebar-link"
+                    >
+
+                        <i class="fa-solid fa-gear"></i>
+
+                        <span>Settings</span>
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+
+        <!-- SIDEBAR FOOTER -->
+
+        <div class="sidebar-footer">
+
+            <div class="sidebar-profile">
+
+
+                {% if teacher.photo %}
+
+                    <img
+                        src="{{ url_for('static', filename=teacher.photo) }}"
+                        class="sidebar-avatar"
+                        alt="{{ teacher.full_name }}"
+                    >
+
+                {% else %}
+
+                    <div class="sidebar-avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+
+                {% endif %}
+
+
+                <div class="sidebar-user">
+
+                    <strong>
+                        {{ teacher.full_name }}
+                    </strong>
+
+                    <span>
+                        Teacher
+                    </span>
+
+                </div>
+
+
+                <i
+                    class="fa-solid fa-circle"
+                    style="
+                        font-size:7px;
+                        color:#32b73a;
+                    "
+                ></i>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- SIDEBAR OVERLAY -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+    ></div>
+

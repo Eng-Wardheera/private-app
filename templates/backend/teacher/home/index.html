@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#06245f"
+    >
+
+    <title>
+        Teacher Dashboard
+        {% if institution %}
+            - {{ institution.name }}
+        {% endif %}
+    </title>
+
+    <!-- =========================================================
+         ICONS
+    ========================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <!-- =========================================================
+         GOOGLE FONT
+    ========================================================== -->
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+   <!-- Demo CSS (optional - don't include in production) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='backend/assets/css/teahcer.css') }}">
+
+</head>
+
+
+<body>
+
+<div class="teacher-app">
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+    {% include 'backend/teacher/patial/sidebar.html' %}
+    <!-- =====================================================
+         MAIN AREA
+    ====================================================== -->
+
+    <main class="main-area">
+
+
+        <!-- =================================================
+             TOP HEADER
+        ================================================== -->
+        {% include 'backend/teacher/patial/top-header.html' %}
+
+        <!-- =================================================
+             DASHBOARD CONTENT
+        ================================================== -->
+  {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     TOAST
+========================================================== -->
+
+ {% include 'backend/teacher/patial/toast.html' %}
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+
+
+<!-- Kaiadmin JS -->
+<script src="{{ url_for('static', filename='backend/assets/js/teacher.js') }}"></script>
+
+
+</body>
+</html>
