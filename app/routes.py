@@ -31214,12 +31214,34 @@ def _teacher_can_access(teacher):
 # ============================================================
 # 1. ALL TEACHERS
 # ============================================================
+# ============================================================
+# ALL TEACHERS
+# ============================================================
 
-@bp.route("/teachers", methods=["GET"])
+@bp.route(
+    "/teachers",
+    methods=["GET"]
+)
 @login_required
 def all_teachers():
 
-    if not _teacher_can_manage():
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if role not in allowed_roles:
 
         flash(
             "You are not authorized to manage teachers.",
@@ -31229,6 +31251,43 @@ def all_teachers():
         return redirect(
             url_for("main.dashboard")
         )
+
+    # ========================================================
+    # USER SCOPE
+    # ========================================================
+
+    user_institution_id = (
+        _teacher_get_user_institution_id()
+    )
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # ROLE REQUIREMENTS
+    # ========================================================
+
+    if role == "school_admin":
+
+        if user_institution_id is None:
+
+            abort(403)
+
+    if role == "branch_admin":
+
+        if (
+            user_institution_id is None
+            or user_branch_id is None
+        ):
+
+            abort(403)
+
+    # ========================================================
+    # FILTERS
+    # ========================================================
 
     search = request.args.get(
         "search",
@@ -31272,11 +31331,18 @@ def all_teachers():
         type=str
     ).strip().lower()
 
+    # ========================================================
+    # PAGINATION
+    # ========================================================
+
     page = request.args.get(
         "page",
         1,
         type=int
     )
+
+    if page < 1:
+        page = 1
 
     per_page = request.args.get(
         "per_page",
@@ -31292,42 +31358,84 @@ def all_teachers():
     }
 
     if per_page not in allowed_per_page:
+
         per_page = 25
 
-    if page < 1:
-        page = 1
+    # ========================================================
+    # BASE QUERY
+    # ========================================================
 
-    query = _teacher_scope_query(
-        Teacher.query
-    )
+    query = Teacher.query
 
-    # --------------------------------------------------------
-    # Institution filter
-    # --------------------------------------------------------
+    # ========================================================
+    # INSTITUTION SECURITY
+    # ========================================================
 
-    if institution_id:
+    if role == "superadmin":
 
-        try:
-            selected_institution_id = int(
-                institution_id
-            )
+        # Superadmin may filter by institution
 
-            if _teacher_is_global_user():
+        if institution_id:
+
+            try:
+
+                selected_institution_id = int(
+                    institution_id
+                )
 
                 query = query.filter(
                     Teacher.institution_id
                     == selected_institution_id
                 )
 
-        except ValueError:
+            except (
+                ValueError,
+                TypeError
+            ):
 
-            institution_id = ""
+                institution_id = ""
 
-    # --------------------------------------------------------
-    # Branch filter
-    # --------------------------------------------------------
+    else:
 
-    if branch_id:
+        # ----------------------------------------------------
+        # school_admin / branch_admin
+        # ----------------------------------------------------
+
+        query = query.filter(
+            Teacher.institution_id
+            == user_institution_id
+        )
+
+        # Prevent URL manipulation
+
+        institution_id = str(
+            user_institution_id
+        )
+
+    # ========================================================
+    # BRANCH SECURITY
+    # ========================================================
+
+    if role == "branch_admin":
+
+        # Branch admin MUST remain in own branch
+
+        query = query.filter(
+            Teacher.branch_id
+            == user_branch_id
+        )
+
+        # Prevent URL manipulation
+
+        branch_id = str(
+            user_branch_id
+        )
+
+    elif branch_id:
+
+        # ----------------------------------------------------
+        # Superadmin / school_admin may use branch filter
+        # ----------------------------------------------------
 
         try:
 
@@ -31335,22 +31443,65 @@ def all_teachers():
                 branch_id
             )
 
-            query = query.filter(
-                Teacher.branch_id
-                == selected_branch_id
+            # Make sure selected branch belongs
+            # to the current institution.
+
+            branch = (
+                Branch.query
+                .filter(
+                    Branch.id
+                    == selected_branch_id
+                )
+                .first()
             )
 
-        except ValueError:
+            if not branch:
+
+                branch_id = ""
+
+            elif role != "superadmin":
+
+                if (
+                    branch.institution_id
+                    != user_institution_id
+                ):
+
+                    # Do not allow another institution branch
+
+                    branch_id = ""
+
+                else:
+
+                    query = query.filter(
+                        Teacher.branch_id
+                        == selected_branch_id
+                    )
+
+            else:
+
+                # Superadmin can use any valid branch
+
+                query = query.filter(
+                    Teacher.branch_id
+                    == selected_branch_id
+                )
+
+        except (
+            ValueError,
+            TypeError
+        ):
 
             branch_id = ""
 
-    # --------------------------------------------------------
-    # Search
-    # --------------------------------------------------------
+    # ========================================================
+    # SEARCH
+    # ========================================================
 
     if search:
 
-        search_value = f"%{search}%"
+        search_value = (
+            f"%{search}%"
+        )
 
         query = query.filter(
             or_(
@@ -31363,10 +31514,6 @@ def all_teachers():
                 ),
 
                 Teacher.email.ilike(
-                    search_value
-                ),
-
-                Teacher.roll_no.ilike(
                     search_value
                 ),
 
@@ -31384,30 +31531,41 @@ def all_teachers():
             )
         )
 
-    # --------------------------------------------------------
-    # Gender
-    # --------------------------------------------------------
+    # ========================================================
+    # GENDER
+    # ========================================================
 
     if gender in TEACHER_GENDERS:
 
         query = query.filter(
-            func.lower(Teacher.gender)
+            func.lower(
+                Teacher.gender
+            )
             == gender
         )
 
-    # --------------------------------------------------------
-    # Status
-    # --------------------------------------------------------
+    else:
+
+        gender = ""
+
+    # ========================================================
+    # STATUS
+    # ========================================================
 
     if status in TEACHER_STATUSES:
 
         query = query.filter(
-            Teacher.status == status
+            Teacher.status
+            == status
         )
 
-    # --------------------------------------------------------
-    # Active
-    # --------------------------------------------------------
+    else:
+
+        status = ""
+
+    # ========================================================
+    # ACTIVE
+    # ========================================================
 
     if active == "1":
 
@@ -31421,9 +31579,13 @@ def all_teachers():
             Teacher.is_active.is_(False)
         )
 
-    # --------------------------------------------------------
-    # Verified
-    # --------------------------------------------------------
+    else:
+
+        active = ""
+
+    # ========================================================
+    # VERIFIED
+    # ========================================================
 
     if verified == "1":
 
@@ -31437,18 +31599,22 @@ def all_teachers():
             Teacher.is_verified.is_(False)
         )
 
-    # --------------------------------------------------------
-    # Ordering
-    # --------------------------------------------------------
+    else:
+
+        verified = ""
+
+    # ========================================================
+    # ORDERING
+    # ========================================================
 
     query = query.order_by(
         Teacher.full_name.asc(),
         Teacher.id.desc()
     )
 
-    # --------------------------------------------------------
-    # Pagination
-    # --------------------------------------------------------
+    # ========================================================
+    # PAGINATION
+    # ========================================================
 
     pagination = query.paginate(
         page=page,
@@ -31458,13 +31624,33 @@ def all_teachers():
 
     teachers = pagination.items
 
+    # ========================================================
+    # FILTER DROPDOWN DATA
+    # ========================================================
+
+    institutions = (
+        _teacher_allowed_institutions()
+    )
+
     # --------------------------------------------------------
-    # Filter dropdown data
+    # Institution selection for branch dropdown
     # --------------------------------------------------------
 
     selected_institution_for_branches = None
 
-    if institution_id:
+    if role == "branch_admin":
+
+        selected_institution_for_branches = (
+            user_institution_id
+        )
+
+    elif role == "school_admin":
+
+        selected_institution_for_branches = (
+            user_institution_id
+        )
+
+    elif institution_id:
 
         try:
 
@@ -31472,84 +31658,201 @@ def all_teachers():
                 institution_id
             )
 
-        except ValueError:
-            pass
+        except (
+            ValueError,
+            TypeError
+        ):
 
-    elif not _teacher_is_global_user():
+            selected_institution_for_branches = None
 
-        selected_institution_for_branches = (
-            _teacher_get_user_institution_id()
-        )
-
-    institutions = (
-        _teacher_allowed_institutions()
-    )
+    # ========================================================
+    # BRANCH DROPDOWN
+    # ========================================================
 
     branches = _teacher_allowed_branches(
         selected_institution_for_branches
     )
 
+    # ========================================================
+    # EXTRA DROPDOWN SECURITY
+    # ========================================================
+
+    if role == "branch_admin":
+
+        branches = [
+            branch
+            for branch in branches
+            if branch.id
+            == user_branch_id
+        ]
+
+    elif role == "school_admin":
+
+        branches = [
+            branch
+            for branch in branches
+            if branch.institution_id
+            == user_institution_id
+        ]
+
+    # ========================================================
+    # STATISTICS
+    # ========================================================
+
+    scoped_query = Teacher.query
+
     # --------------------------------------------------------
-    # Statistics
+    # Institution scope
     # --------------------------------------------------------
 
-    scoped_query = _teacher_scope_query(
-        Teacher.query
+    if role != "superadmin":
+
+        scoped_query = scoped_query.filter(
+            Teacher.institution_id
+            == user_institution_id
+        )
+
+    # --------------------------------------------------------
+    # Branch scope
+    # --------------------------------------------------------
+
+    if role == "branch_admin":
+
+        scoped_query = scoped_query.filter(
+            Teacher.branch_id
+            == user_branch_id
+        )
+
+    # ========================================================
+    # STATISTICS
+    # ========================================================
+
+    total_teachers = (
+        scoped_query.count()
     )
 
-    total_teachers = scoped_query.count()
+    active_teachers = (
+        scoped_query
+        .filter(
+            Teacher.is_active.is_(True),
+            Teacher.status == "active"
+        )
+        .count()
+    )
 
-    active_teachers = scoped_query.filter(
-        Teacher.is_active.is_(True),
-        Teacher.status == "active"
-    ).count()
+    inactive_teachers = (
+        scoped_query
+        .filter(
+            Teacher.is_active.is_(False)
+        )
+        .count()
+    )
 
-    inactive_teachers = scoped_query.filter(
-        Teacher.is_active.is_(False)
-    ).count()
+    verified_teachers = (
+        scoped_query
+        .filter(
+            Teacher.is_verified.is_(True)
+        )
+        .count()
+    )
 
-    verified_teachers = scoped_query.filter(
-        Teacher.is_verified.is_(True)
-    ).count()
+    suspended_teachers = (
+        scoped_query
+        .filter(
+            Teacher.status == "suspended"
+        )
+        .count()
+    )
 
-    suspended_teachers = scoped_query.filter(
-        Teacher.status == "suspended"
-    ).count()
+    resigned_teachers = (
+        scoped_query
+        .filter(
+            Teacher.status == "resigned"
+        )
+        .count()
+    )
 
-    resigned_teachers = scoped_query.filter(
-        Teacher.status == "resigned"
-    ).count()
+    # ========================================================
+    # RENDER
+    # ========================================================
 
     return render_template(
         "backend/pages/teachers/all_teachers.html",
 
+        # ----------------------------------------------------
+        # Data
+        # ----------------------------------------------------
+
         teachers=teachers,
+
         pagination=pagination,
 
         institutions=institutions,
+
         branches=branches,
 
+        # ----------------------------------------------------
+        # Teacher options
+        # ----------------------------------------------------
+
         teacher_genders=TEACHER_GENDERS,
+
         teacher_statuses=TEACHER_STATUSES,
 
+        # ----------------------------------------------------
+        # Filters
+        # ----------------------------------------------------
+
         search=search,
+
         institution_id=institution_id,
+
         branch_id=branch_id,
+
         gender=gender,
+
         status=status,
+
         active=active,
+
         verified=verified,
+
         per_page=per_page,
 
+        # ----------------------------------------------------
+        # Statistics
+        # ----------------------------------------------------
+
         total_teachers=total_teachers,
+
         active_teachers=active_teachers,
+
         inactive_teachers=inactive_teachers,
+
         verified_teachers=verified_teachers,
+
         suspended_teachers=suspended_teachers,
+
         resigned_teachers=resigned_teachers,
 
+        # ----------------------------------------------------
+        # Current user / scope
+        # ----------------------------------------------------
+
         user=current_user,
+
+        current_role=role,
+
+        user_institution_id=(
+            user_institution_id
+        ),
+
+        user_branch_id=(
+            user_branch_id
+        ),
     )
+
+
 
 # ============================================================
 # ADD TEACHER
@@ -46285,7 +46588,6 @@ def export_student_import_sample():
 # IMPORT STUDENTS FULL CSV
 # Student + Enrollment + StudentCharge
 # ============================================================
-
 @bp.route(
     "/students/import",
     methods=["POST"]
@@ -46296,7 +46598,9 @@ def import_students_full():
     import csv
     import io
     import secrets
-    from datetime import datetime
+    import re
+
+    from datetime import datetime, date
     from decimal import Decimal, InvalidOperation
 
     from flask import (
@@ -46305,6 +46609,8 @@ def import_students_full():
         url_for,
         flash,
         current_app,
+        session,
+        abort,
     )
 
     # ========================================================
@@ -46315,10 +46621,16 @@ def import_students_full():
         abort(403)
 
     # ========================================================
-    # GET CURRENT USER / INSTITUTION / BRANCH
+    # CURRENT USER
     # ========================================================
 
     current_user_obj = current_user
+
+    role = getattr(
+        current_user_obj,
+        "role",
+        None
+    )
 
     institution_id = getattr(
         current_user_obj,
@@ -46326,20 +46638,45 @@ def import_students_full():
         None
     )
 
-    branch_id = getattr(
+    user_branch_id = getattr(
         current_user_obj,
         "branch_id",
         None
     )
 
     if not institution_id:
+
         flash(
             "Institution information could not be determined.",
             "danger"
         )
+
         return redirect(
             url_for("main.all_students")
         )
+
+    # ========================================================
+    # BRANCH SECURITY
+    # ========================================================
+
+    if role == "branch_admin":
+
+        if not user_branch_id:
+
+            flash(
+                "Your branch could not be determined.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.all_students")
+            )
+
+    # --------------------------------------------------------
+    # For branch restricted users, always force own branch.
+    # --------------------------------------------------------
+
+    import_branch_id = user_branch_id
 
     # ========================================================
     # FILE
@@ -46378,6 +46715,7 @@ def import_students_full():
         raw_data = file.read()
 
         if not raw_data:
+
             flash(
                 "The CSV file is empty.",
                 "danger"
@@ -46386,10 +46724,6 @@ def import_students_full():
             return redirect(
                 url_for("main.all_students")
             )
-
-        # ----------------------------------------------------
-        # UTF-8-SIG handles Excel BOM
-        # ----------------------------------------------------
 
         text_data = raw_data.decode(
             "utf-8-sig"
@@ -46431,18 +46765,24 @@ def import_students_full():
     # ========================================================
     # REQUIRED COLUMNS
     # ========================================================
+    #
+    # ONLY Full Name is required from student identity.
+    #
+    # Admission No
+    # Roll No
+    # Username
+    # Email
+    #
+    # can all be generated automatically.
+    #
+    # ========================================================
 
     required_columns = {
-
-        "Admission No",
-        "Username",
         "Full Name",
-
         "Academic Year",
         "Program",
         "Class",
         "Enrollment No",
-
         "Charge Type",
         "Charge Name",
         "Amount",
@@ -46487,7 +46827,14 @@ def import_students_full():
 
         return value if value else None
 
-    def parse_date(value, field_name):
+    # ========================================================
+    # DATE
+    # ========================================================
+
+    def parse_date(
+        value,
+        field_name
+    ):
 
         value = clean(value)
 
@@ -46517,6 +46864,10 @@ def import_students_full():
             f"{field_name} has invalid date "
             f"'{value}'. Use YYYY-MM-DD."
         )
+
+    # ========================================================
+    # DECIMAL
+    # ========================================================
 
     def decimal_value(
         value,
@@ -46555,6 +46906,10 @@ def import_students_full():
             Decimal("0.01")
         )
 
+    # ========================================================
+    # NORMALIZE
+    # ========================================================
+
     def normalize(value):
 
         value = clean(value)
@@ -46562,14 +46917,245 @@ def import_students_full():
         if not value:
             return ""
 
+        return value.lower().strip()
+
+    # ========================================================
+    # SAFE USERNAME BASE
+    # ========================================================
+
+    def make_username_base(
+        full_name,
+        admission_no=None
+    ):
+
+        name = clean(full_name) or "student"
+
+        name = name.lower()
+
+        name = re.sub(
+            r"[^a-z0-9]+",
+            ".",
+            name
+        )
+
+        name = name.strip(".")
+
+        if not name:
+            name = "student"
+
+        if admission_no:
+
+            admission_clean = re.sub(
+                r"[^a-z0-9]+",
+                "",
+                admission_no.lower()
+            )
+
+            if admission_clean:
+
+                name = (
+                    f"{name}.{admission_clean}"
+                )
+
+        return name[:120]
+
+    # ========================================================
+    # GENERATE UNIQUE USERNAME
+    # ========================================================
+
+    def generate_unique_username(
+        full_name,
+        admission_no=None
+    ):
+
+        base = make_username_base(
+            full_name,
+            admission_no
+        )
+
+        candidate = base
+
+        counter = 1
+
+        while True:
+
+            exists = (
+                Student.query
+                .filter(
+                    Student.username
+                    == candidate
+                )
+                .first()
+            )
+
+            if not exists:
+                return candidate
+
+            candidate = (
+                f"{base}.{counter}"
+            )
+
+            counter += 1
+
+    # ========================================================
+    # GENERATE UNIQUE ADMISSION NO
+    # ========================================================
+
+    def generate_unique_admission_no():
+
+        year = datetime.utcnow().year
+
+        while True:
+
+            number = (
+                secrets.randbelow(900000)
+                + 100000
+            )
+
+            candidate = (
+                f"STU-{year}-{number}"
+            )
+
+            exists = (
+                Student.query
+                .filter(
+                    Student.institution_id
+                    == institution_id,
+
+                    Student.admission_no
+                    == candidate,
+                )
+                .first()
+            )
+
+            if not exists:
+                return candidate
+
+    # ========================================================
+    # GENERATE UNIQUE ROLL NO
+    # ========================================================
+
+    def generate_unique_roll_no():
+
+        while True:
+
+            number = (
+                secrets.randbelow(900000)
+                + 100000
+            )
+
+            candidate = str(number)
+
+            exists = (
+                Student.query
+                .filter(
+                    Student.institution_id
+                    == institution_id,
+
+                    Student.branch_id
+                    == import_branch_id,
+
+                    Student.roll_no
+                    == candidate,
+                )
+                .first()
+            )
+
+            if not exists:
+                return candidate
+
+    # ========================================================
+    # GENERATE EMAIL
+    # ========================================================
+    #
+    # IMPORTANT:
+    # This is a system-generated email.
+    # It is NOT a real email inbox.
+    #
+    # Example:
+    # stu-2026-123456@student.sooyaal.local
+    #
+    # ========================================================
+
+    def generate_unique_email(
+        admission_no
+    ):
+
+        safe_admission = re.sub(
+            r"[^a-zA-Z0-9]+",
+            "-",
+            admission_no
+        ).strip("-").lower()
+
+        base = (
+            f"stu-{safe_admission}"
+        )
+
+        domain = (
+            current_app.config.get(
+                "STUDENT_IMPORT_EMAIL_DOMAIN",
+                "student.sooyaal.local"
+            )
+        )
+
+        candidate = (
+            f"{base}@{domain}"
+        )
+
+        counter = 1
+
+        while True:
+
+            exists = (
+                Student.query
+                .filter(
+                    db.func.lower(
+                        Student.email
+                    )
+                    == candidate.lower()
+                )
+                .first()
+            )
+
+            if not exists:
+                return candidate
+
+            candidate = (
+                f"{base}-{counter}"
+                f"@{domain}"
+            )
+
+            counter += 1
+
+    # ========================================================
+    # GENERATE PASSWORD
+    # ========================================================
+
+    def generate_student_password():
+
+        # Example:
+        # Stu@A8k29LmQ7
+        #
+        # Password is returned only for newly
+        # created students.
+
+        alphabet = (
+            "ABCDEFGHJKLMNPQRSTUVWXYZ"
+            "abcdefghijkmnopqrstuvwxyz"
+            "23456789"
+        )
+
+        random_part = "".join(
+            secrets.choice(alphabet)
+            for _ in range(10)
+        )
+
         return (
-            value
-            .strip()
-            .lower()
+            f"Stu@{random_part}"
         )
 
     # ========================================================
-    # GENERIC MODEL NAME RESOLVER
+    # GENERIC MODEL RESOLVER
     # ========================================================
 
     def resolve_model(
@@ -46583,6 +47169,7 @@ def import_students_full():
         value = clean(value)
 
         if not value:
+
             raise ValueError(
                 f"{model_name} is required."
             )
@@ -46590,7 +47177,7 @@ def import_students_full():
         query = model.query
 
         # ----------------------------------------------------
-        # Institution filter
+        # Institution
         # ----------------------------------------------------
 
         if institution_id is not None:
@@ -46606,7 +47193,7 @@ def import_students_full():
                 )
 
         # ----------------------------------------------------
-        # Branch filter
+        # Branch
         # ----------------------------------------------------
 
         if branch_id is not None:
@@ -46622,7 +47209,7 @@ def import_students_full():
                 )
 
         # ----------------------------------------------------
-        # Try exact fields
+        # Exact fields
         # ----------------------------------------------------
 
         possible_fields = [
@@ -46646,7 +47233,9 @@ def import_students_full():
 
             obj = (
                 query
-                .filter(column == value)
+                .filter(
+                    column == value
+                )
                 .first()
             )
 
@@ -46654,7 +47243,7 @@ def import_students_full():
                 return obj
 
         # ----------------------------------------------------
-        # Case-insensitive lookup
+        # Case insensitive
         # ----------------------------------------------------
 
         for field_name in possible_fields:
@@ -46673,7 +47262,9 @@ def import_students_full():
                 obj = (
                     query
                     .filter(
-                        db.func.lower(column)
+                        db.func.lower(
+                            column
+                        )
                         == normalize(value)
                     )
                     .first()
@@ -46690,19 +47281,21 @@ def import_students_full():
         )
 
     # ========================================================
-    # IMPORT COUNTERS
+    # COUNTERS
     # ========================================================
 
     created_students = 0
     updated_students = 0
     created_enrollments = 0
+    updated_enrollments = 0
     created_charges = 0
-    skipped_rows = 0
+
+    generated_credentials = []
 
     errors = []
 
     # ========================================================
-    # PROCESS CSV
+    # PROCESS
     # ========================================================
 
     try:
@@ -46721,7 +47314,7 @@ def import_students_full():
             )
 
         # ====================================================
-        # TRANSACTION
+        # LOOP
         # ====================================================
 
         for row_number, raw_row in enumerate(
@@ -46732,7 +47325,7 @@ def import_students_full():
             try:
 
                 # --------------------------------------------
-                # CLEAN ROW KEYS
+                # CLEAN ROW
                 # --------------------------------------------
 
                 row = {
@@ -46741,44 +47334,29 @@ def import_students_full():
                     if key
                 }
 
-                # --------------------------------------------
-                # STUDENT DATA
-                # --------------------------------------------
-
-                admission_no = clean(
-                    row.get("Admission No")
-                )
-
-                username = clean(
-                    row.get("Username")
-                )
+                # =================================================
+                # FULL NAME
+                # =================================================
 
                 full_name = clean(
                     row.get("Full Name")
                 )
 
-                if not admission_no:
-                    raise ValueError(
-                        "Admission No is required."
-                    )
-
-                if not username:
-                    raise ValueError(
-                        "Username is required."
-                    )
-
                 if not full_name:
+
                     raise ValueError(
                         "Full Name is required."
                     )
 
-                # --------------------------------------------
-                # VALIDATE STATUS
-                # --------------------------------------------
+                # =================================================
+                # STUDENT STATUS
+                # =================================================
 
                 student_status = (
                     clean(
-                        row.get("Student Status")
+                        row.get(
+                            "Student Status"
+                        )
                     )
                     or "active"
                 ).lower()
@@ -46801,15 +47379,34 @@ def import_students_full():
                         f"'{student_status}'."
                     )
 
-                # --------------------------------------------
+                # =================================================
+                # ADMISSION NUMBER
+                # =================================================
+
+                admission_no = clean(
+                    row.get("Admission No")
+                )
+
+                # -------------------------------------------------
+                # Generate if missing
+                # -------------------------------------------------
+
+                if not admission_no:
+
+                    admission_no = (
+                        generate_unique_admission_no()
+                    )
+
+                # =================================================
                 # FIND EXISTING STUDENT
-                # --------------------------------------------
+                # =================================================
 
                 student = (
                     Student.query
                     .filter(
                         Student.institution_id
                         == institution_id,
+
                         Student.admission_no
                         == admission_no,
                     )
@@ -46817,34 +47414,104 @@ def import_students_full():
                 )
 
                 # =================================================
-                # CREATE STUDENT
+                # NEW STUDENT
                 # =================================================
 
                 if not student:
 
-                    # --------------------------------------------
-                    # Username collision check
-                    # --------------------------------------------
+                    # =============================================
+                    # BRANCH
+                    # =============================================
 
-                    username_exists = (
-                        Student.query
-                        .filter(
-                            Student.username
-                            == username
-                        )
-                        .first()
+                    student_branch_id = (
+                        import_branch_id
                     )
 
-                    if username_exists:
+                    if not student_branch_id:
 
-                        raise ValueError(
-                            f"Username '{username}' "
-                            f"already exists."
+                        csv_branch_value = clean(
+                            row.get("Branch")
                         )
 
-                    # --------------------------------------------
-                    # Email collision check
-                    # --------------------------------------------
+                        if csv_branch_value:
+
+                            branch_obj = resolve_model(
+                                Branch,
+                                csv_branch_value,
+                                "Branch",
+                                institution_id=(
+                                    institution_id
+                                ),
+                            )
+
+                            student_branch_id = (
+                                branch_obj.id
+                            )
+
+                    if not student_branch_id:
+
+                        raise ValueError(
+                            "Student branch could "
+                            "not be determined."
+                        )
+
+                    # ---------------------------------------------
+                    # BRANCH SECURITY
+                    # ---------------------------------------------
+
+                    if role == "branch_admin":
+
+                        if (
+                            student_branch_id
+                            != user_branch_id
+                        ):
+
+                            raise ValueError(
+                                "You cannot import "
+                                "students into another branch."
+                            )
+
+                    # =================================================
+                    # USERNAME
+                    # =================================================
+
+                    username = clean(
+                        row.get("Username")
+                    )
+
+                    if not username:
+
+                        username = (
+                            generate_unique_username(
+                                full_name,
+                                admission_no
+                            )
+                        )
+
+                    else:
+
+                        username_exists = (
+                            Student.query
+                            .filter(
+                                db.func.lower(
+                                    Student.username
+                                )
+                                == username.lower()
+                            )
+                            .first()
+                        )
+
+                        if username_exists:
+
+                            raise ValueError(
+                                f"Username "
+                                f"'{username}' "
+                                f"already exists."
+                            )
+
+                    # =================================================
+                    # EMAIL
+                    # =================================================
 
                     email = clean(
                         row.get("Email")
@@ -46855,8 +47522,10 @@ def import_students_full():
                         email_exists = (
                             Student.query
                             .filter(
-                                Student.email
-                                == email
+                                db.func.lower(
+                                    Student.email
+                                )
+                                == email.lower()
                             )
                             .first()
                         )
@@ -46868,14 +47537,39 @@ def import_students_full():
                                 f"already exists."
                             )
 
-                    # --------------------------------------------
-                    # Generate temporary password
-                    # --------------------------------------------
+                    else:
+
+                        email = (
+                            generate_unique_email(
+                                admission_no
+                            )
+                        )
+
+                    # =================================================
+                    # ROLL NUMBER
+                    # =================================================
+
+                    roll_no = clean(
+                        row.get("Roll No")
+                    )
+
+                    if not roll_no:
+
+                        roll_no = (
+                            generate_unique_roll_no()
+                        )
+
+                    # =================================================
+                    # PASSWORD
+                    # =================================================
 
                     temporary_password = (
-                        "Stu@"
-                        + secrets.token_hex(4)
+                        generate_student_password()
                     )
+
+                    # =================================================
+                    # CREATE STUDENT
+                    # =================================================
 
                     student = Student(
 
@@ -46884,13 +47578,7 @@ def import_students_full():
                         ),
 
                         branch_id=(
-                            branch_id
-                            if branch_id
-                            else getattr(
-                                current_user_obj,
-                                "branch_id",
-                                None
-                            )
+                            student_branch_id
                         ),
 
                         username=username,
@@ -46901,9 +47589,7 @@ def import_students_full():
                             admission_no
                         ),
 
-                        roll_no=clean(
-                            row.get("Roll No")
-                        ),
+                        roll_no=roll_no,
 
                         full_name=full_name,
 
@@ -46990,15 +47676,58 @@ def import_students_full():
                         is_verified=False,
                     )
 
+                    # ---------------------------------------------
+                    # HASH PASSWORD
+                    # ---------------------------------------------
+
                     student.set_password(
                         temporary_password
                     )
 
-                    db.session.add(student)
+                    db.session.add(
+                        student
+                    )
 
                     db.session.flush()
 
                     created_students += 1
+
+                    # ---------------------------------------------
+                    # SAVE GENERATED LOGIN DETAILS
+                    # ---------------------------------------------
+
+                    generated_credentials.append({
+
+                        "row": row_number,
+
+                        "student_id": (
+                            student.id
+                        ),
+
+                        "full_name": (
+                            student.full_name
+                        ),
+
+                        "admission_no": (
+                            student.admission_no
+                        ),
+
+                        "roll_no": (
+                            student.roll_no
+                        ),
+
+                        "username": (
+                            student.username
+                        ),
+
+                        "email": (
+                            student.email
+                        ),
+
+                        "password": (
+                            temporary_password
+                        ),
+                    })
 
                 # =================================================
                 # EXISTING STUDENT
@@ -47006,9 +47735,9 @@ def import_students_full():
 
                 else:
 
-                    # --------------------------------------------
-                    # Access check
-                    # --------------------------------------------
+                    # ---------------------------------------------
+                    # ACCESS CHECK
+                    # ---------------------------------------------
 
                     if not _student_has_access(
                         student
@@ -47016,43 +47745,82 @@ def import_students_full():
 
                         raise ValueError(
                             f"Access denied for "
-                            f"student '{admission_no}'."
+                            f"student "
+                            f"'{admission_no}'."
                         )
 
-                    # --------------------------------------------
-                    # Update student information
-                    # --------------------------------------------
+                    # ---------------------------------------------
+                    # Branch
+                    # ---------------------------------------------
 
-                    student.branch_id = (
-                        branch_id
-                        if branch_id
-                        else student.branch_id
+                    if role == "branch_admin":
+
+                        if (
+                            student.branch_id
+                            != user_branch_id
+                        ):
+
+                            raise ValueError(
+                                "You cannot update "
+                                "a student from "
+                                "another branch."
+                            )
+
+                    # ---------------------------------------------
+                    # Optional username
+                    # ---------------------------------------------
+
+                    csv_username = clean(
+                        row.get("Username")
                     )
 
-                    if clean(
-                        row.get("Roll No")
-                    ):
-                        student.roll_no = clean(
-                            row.get("Roll No")
+                    if csv_username:
+
+                        username_exists = (
+                            Student.query
+                            .filter(
+                                db.func.lower(
+                                    Student.username
+                                )
+                                == csv_username.lower(),
+
+                                Student.id
+                                != student.id,
+                            )
+                            .first()
                         )
 
-                    student.full_name = (
-                        full_name
-                    )
+                        if username_exists:
 
-                    if clean(
+                            raise ValueError(
+                                f"Username "
+                                f"'{csv_username}' "
+                                f"already belongs "
+                                f"to another student."
+                            )
+
+                        student.username = (
+                            csv_username
+                        )
+
+                    # ---------------------------------------------
+                    # Optional email
+                    # ---------------------------------------------
+
+                    csv_email = clean(
                         row.get("Email")
-                    ):
+                    )
 
-                        new_email = clean(
-                            row.get("Email")
-                        )
+                    if csv_email:
 
                         email_exists = (
                             Student.query
                             .filter(
-                                Student.email
-                                == new_email,
+                                db.func.lower(
+                                    Student.email
+                                )
+                                == csv_email.lower(),
+
                                 Student.id
                                 != student.id,
                             )
@@ -47063,18 +47831,45 @@ def import_students_full():
 
                             raise ValueError(
                                 f"Email "
-                                f"'{new_email}' "
+                                f"'{csv_email}' "
                                 f"already belongs "
                                 f"to another student."
                             )
 
                         student.email = (
-                            new_email
+                            csv_email
                         )
+
+                    # ---------------------------------------------
+                    # Roll No
+                    # ---------------------------------------------
+
+                    csv_roll_no = clean(
+                        row.get("Roll No")
+                    )
+
+                    if csv_roll_no:
+
+                        student.roll_no = (
+                            csv_roll_no
+                        )
+
+                    # ---------------------------------------------
+                    # Full name
+                    # ---------------------------------------------
+
+                    student.full_name = (
+                        full_name
+                    )
+
+                    # ---------------------------------------------
+                    # Personal information
+                    # ---------------------------------------------
 
                     if clean(
                         row.get("Gender")
                     ):
+
                         student.gender = clean(
                             row.get("Gender")
                         )
@@ -47087,91 +47882,116 @@ def import_students_full():
                     )
 
                     if dob:
-                        student.date_of_birth = dob
 
-                    student.place_of_birth = (
-                        clean(
-                            row.get(
-                                "Place of Birth"
+                        student.date_of_birth = (
+                            dob
+                        )
+
+                    if clean(
+                        row.get(
+                            "Place of Birth"
+                        )
+                    ):
+
+                        student.place_of_birth = (
+                            clean(
+                                row.get(
+                                    "Place of Birth"
+                                )
                             )
                         )
-                        or student.place_of_birth
-                    )
 
-                    student.nationality = (
-                        clean(
-                            row.get(
-                                "Nationality"
+                    if clean(
+                        row.get(
+                            "Nationality"
+                        )
+                    ):
+
+                        student.nationality = (
+                            clean(
+                                row.get(
+                                    "Nationality"
+                                )
                             )
                         )
-                        or student.nationality
-                    )
 
-                    student.phone = (
-                        clean(
+                    if clean(
+                        row.get("Phone")
+                    ):
+
+                        student.phone = clean(
                             row.get("Phone")
                         )
-                        or student.phone
-                    )
 
-                    student.address = (
-                        clean(
+                    if clean(
+                        row.get("Address")
+                    ):
+
+                        student.address = clean(
                             row.get("Address")
                         )
-                        or student.address
-                    )
 
-                    student.city = (
-                        clean(
+                    if clean(
+                        row.get("City")
+                    ):
+
+                        student.city = clean(
                             row.get("City")
                         )
-                        or student.city
-                    )
 
-                    student.parent_name = (
-                        clean(
-                            row.get(
-                                "Parent Name"
+                    # ---------------------------------------------
+                    # Parent
+                    # ---------------------------------------------
+
+                    if clean(
+                        row.get("Parent Name")
+                    ):
+
+                        student.parent_name = clean(
+                            row.get("Parent Name")
+                        )
+
+                    if clean(
+                        row.get("Parent Phone")
+                    ):
+
+                        student.parent_phone = clean(
+                            row.get("Parent Phone")
+                        )
+
+                    if clean(
+                        row.get("Parent Email")
+                    ):
+
+                        student.parent_email = clean(
+                            row.get("Parent Email")
+                        )
+
+                    if clean(
+                        row.get("Parent Address")
+                    ):
+
+                        student.parent_address = clean(
+                            row.get("Parent Address")
+                        )
+
+                    if clean(
+                        row.get(
+                            "Relationship to Student"
+                        )
+                    ):
+
+                        student.relationship_to_student = (
+                            clean(
+                                row.get(
+                                    "Relationship to Student"
+                                )
                             )
                         )
-                        or student.parent_name
-                    )
 
-                    student.parent_phone = (
-                        clean(
-                            row.get(
-                                "Parent Phone"
-                            )
-                        )
-                        or student.parent_phone
-                    )
-
-                    student.parent_email = (
-                        clean(
-                            row.get(
-                                "Parent Email"
-                            )
-                        )
-                        or student.parent_email
-                    )
-
-                    student.parent_address = (
-                        clean(
-                            row.get(
-                                "Parent Address"
-                            )
-                        )
-                        or student.parent_address
-                    )
-
-                    student.relationship_to_student = (
-                        clean(
-                            row.get(
-                                "Relationship to Student"
-                            )
-                        )
-                        or student.relationship_to_student
-                    )
+                    # ---------------------------------------------
+                    # Status
+                    # ---------------------------------------------
 
                     student.status = (
                         student_status
@@ -47199,7 +48019,7 @@ def import_students_full():
                     updated_students += 1
 
                 # =================================================
-                # BRANCH
+                # EFFECTIVE BRANCH
                 # =================================================
 
                 effective_branch_id = (
@@ -47209,8 +48029,8 @@ def import_students_full():
                 if not effective_branch_id:
 
                     raise ValueError(
-                        "Student branch could not "
-                        "be determined."
+                        "Student branch could "
+                        "not be determined."
                     )
 
                 # =================================================
@@ -47219,13 +48039,17 @@ def import_students_full():
 
                 academic_year = resolve_model(
                     AcademicYear,
+
                     row.get(
                         "Academic Year"
                     ),
+
                     "Academic Year",
+
                     institution_id=(
                         institution_id
                     ),
+
                     branch_id=(
                         effective_branch_id
                     ),
@@ -47237,11 +48061,17 @@ def import_students_full():
 
                 program = resolve_model(
                     Program,
-                    row.get("Program"),
+
+                    row.get(
+                        "Program"
+                    ),
+
                     "Program",
+
                     institution_id=(
                         institution_id
                     ),
+
                     branch_id=(
                         effective_branch_id
                     ),
@@ -47253,11 +48083,17 @@ def import_students_full():
 
                 class_obj = resolve_model(
                     Class,
-                    row.get("Class"),
+
+                    row.get(
+                        "Class"
+                    ),
+
                     "Class",
+
                     institution_id=(
                         institution_id
                     ),
+
                     branch_id=(
                         effective_branch_id
                     ),
@@ -47268,7 +48104,9 @@ def import_students_full():
                 # =================================================
 
                 section_value = clean(
-                    row.get("Section")
+                    row.get(
+                        "Section"
+                    )
                 )
 
                 section = None
@@ -47277,11 +48115,15 @@ def import_students_full():
 
                     section = resolve_model(
                         Section,
+
                         section_value,
+
                         "Section",
+
                         institution_id=(
                             institution_id
                         ),
+
                         branch_id=(
                             effective_branch_id
                         ),
@@ -47340,9 +48182,9 @@ def import_students_full():
                         f"'{enrollment_status}'."
                     )
 
-                # ------------------------------------------------
-                # Find by student + academic year
-                # ------------------------------------------------
+                # =================================================
+                # EXISTING ENROLLMENT
+                # =================================================
 
                 enrollment = (
                     StudentEnrollment.query
@@ -47357,10 +48199,6 @@ def import_students_full():
                 )
 
                 if enrollment:
-
-                    # --------------------------------------------
-                    # Update existing enrollment
-                    # --------------------------------------------
 
                     enrollment.branch_id = (
                         effective_branch_id
@@ -47400,11 +48238,13 @@ def import_students_full():
 
                     db.session.flush()
 
-                else:
+                    updated_enrollments += 1
 
-                    # --------------------------------------------
-                    # Check enrollment number
-                    # --------------------------------------------
+                # =================================================
+                # NEW ENROLLMENT
+                # =================================================
+
+                else:
 
                     enrollment_no_exists = (
                         StudentEnrollment.query
@@ -47540,17 +48380,23 @@ def import_students_full():
                     )
 
                 amount = decimal_value(
-                    row.get("Amount"),
+                    row.get(
+                        "Amount"
+                    ),
                     "Amount"
                 )
 
                 discount = decimal_value(
-                    row.get("Discount"),
+                    row.get(
+                        "Discount"
+                    ),
                     "Discount"
                 )
 
                 paid_amount = decimal_value(
-                    row.get("Paid Amount"),
+                    row.get(
+                        "Paid Amount"
+                    ),
                     "Paid Amount"
                 )
 
@@ -47573,7 +48419,8 @@ def import_students_full():
                     )
 
                 balance = (
-                    net_amount - paid_amount
+                    net_amount
+                    - paid_amount
                 )
 
                 if balance <= 0:
@@ -47589,7 +48436,9 @@ def import_students_full():
                     charge_status = "unpaid"
 
                 due_date = parse_date(
-                    row.get("Due Date"),
+                    row.get(
+                        "Due Date"
+                    ),
                     "Due Date"
                 )
 
@@ -47673,17 +48522,17 @@ def import_students_full():
                     f"{str(row_error)}"
                 )
 
-                # ----------------------------------------------
-                # Entire import will rollback
-                # ----------------------------------------------
-
                 raise
 
         # ========================================================
-        # COMMIT ALL
+        # COMMIT
         # ========================================================
 
         db.session.commit()
+
+    # ========================================================
+    # ROLLBACK
+    # ========================================================
 
     except Exception as exc:
 
@@ -47694,17 +48543,11 @@ def import_students_full():
             exc
         )
 
-        # --------------------------------------------------------
-        # Show useful row error
-        # --------------------------------------------------------
-
-        if errors:
-
-            error_message = errors[0]
-
-        else:
-
-            error_message = str(exc)
+        error_message = (
+            errors[0]
+            if errors
+            else str(exc)
+        )
 
         flash(
             "Import failed. No records were saved. "
@@ -47717,7 +48560,23 @@ def import_students_full():
         )
 
     # ========================================================
-    # SUCCESS
+    # SAVE GENERATED CREDENTIALS FOR DISPLAY
+    # ========================================================
+    #
+    # Passwords are NOT stored in database as plain text.
+    # They are only temporarily stored in session so an
+    # admin can see/download them after import.
+    #
+    # ========================================================
+
+    if generated_credentials:
+
+        session[
+            "student_import_credentials"
+        ] = generated_credentials
+
+    # ========================================================
+    # SUCCESS MESSAGE
     # ========================================================
 
     flash(
@@ -47725,15 +48584,24 @@ def import_students_full():
         f"Students created: {created_students}, "
         f"students updated: {updated_students}, "
         f"enrollments created: {created_enrollments}, "
+        f"enrollments updated: {updated_enrollments}, "
         f"charges created: {created_charges}.",
         "success"
     )
 
+    # ========================================================
+    # REDIRECT
+    # ========================================================
+
     return redirect(
-        url_for("main.all_students")
+        url_for(
+            "main.student_import_credentials"
+        )
+        if generated_credentials
+        else url_for(
+            "main.all_students"
+        )
     )
-
-
 
 # ============================================================
 # EXAM ROLE SECURITY
