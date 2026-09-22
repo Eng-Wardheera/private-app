@@ -1,0 +1,2723 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   EXAM SUBJECTS PAGE
+   ============================================================ */
+
+.exam-subjects-page {
+    width: 100%;
+    padding: 4px 0 35px;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.exam-subjects-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.exam-subjects-page-title {
+    min-width: 0;
+}
+
+.exam-subjects-page-title h1 {
+    margin: 0;
+    color: #06245f;
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.exam-subjects-page-title p {
+    margin: 7px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.exam-subjects-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.exam-subject-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s ease;
+    white-space: nowrap;
+}
+
+.exam-subject-btn-primary {
+    background: #06245f;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(6, 36, 95, .18);
+}
+
+.exam-subject-btn-primary:hover {
+    background: #041b49;
+    transform: translateY(-1px);
+}
+
+.exam-subject-btn-light {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.exam-subject-btn-light:hover {
+    background: #e2e8f0;
+}
+
+.exam-subject-btn-success {
+    background: #32b73a;
+    color: #fff;
+}
+
+.exam-subject-btn-success:hover {
+    background: #27952e;
+}
+
+.exam-subject-btn-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.exam-subject-btn-danger:hover {
+    background: #fecaca;
+}
+
+/* ============================================================
+   MAIN STATISTICS
+   ============================================================ */
+
+.exam-subjects-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.exam-subject-stat-card {
+    position: relative;
+    min-height: 118px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, .05);
+    overflow: hidden;
+}
+
+.exam-subject-stat-card::after {
+    content: "";
+    position: absolute;
+    right: -24px;
+    bottom: -30px;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgba(6, 36, 95, .04);
+}
+
+.exam-subject-stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.exam-subject-stat-label {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .35px;
+}
+
+.exam-subject-stat-icon {
+    width: 39px;
+    height: 39px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.exam-subject-stat-number {
+    margin-top: 12px;
+    color: #0f172a;
+    font-size: 26px;
+    font-weight: 800;
+}
+
+.exam-subject-stat-card.total
+.exam-subject-stat-icon {
+    background: #e8eef9;
+    color: #06245f;
+}
+
+.exam-subject-stat-card.active
+.exam-subject-stat-icon {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.exam-subject-stat-card.inactive
+.exam-subject-stat-icon {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.exam-subject-stat-card.assigned
+.exam-subject-stat-icon {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+/* ============================================================
+   SECONDARY STATISTICS
+   ============================================================ */
+
+.exam-subjects-secondary-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.exam-subject-secondary-stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 17px 19px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, .04);
+}
+
+.exam-subject-secondary-info strong {
+    display: block;
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.exam-subject-secondary-info span {
+    display: block;
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.exam-subject-secondary-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    color: #06245f;
+}
+
+/* ============================================================
+   FILTER CARD
+   ============================================================ */
+
+.exam-subject-filter-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, .05);
+    margin-bottom: 20px;
+}
+
+.exam-subject-filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 17px 20px;
+    border-bottom: 1px solid #edf0f3;
+}
+
+.exam-subject-filter-header h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.exam-subject-filter-header span {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.exam-subject-filter-body {
+    padding: 18px 20px 20px;
+}
+
+.exam-subject-filter-form {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 1.5fr)
+        repeat(6, minmax(135px, 1fr))
+        auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.exam-subject-field {
+    min-width: 0;
+}
+
+.exam-subject-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.exam-subject-field input,
+.exam-subject-field select {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #dbe1e8;
+    border-radius: 9px;
+    outline: none;
+    background: #fff;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 13px;
+    transition: .2s ease;
+    box-sizing: border-box;
+}
+
+.exam-subject-field input:focus,
+.exam-subject-field select:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.exam-subject-search-wrap {
+    position: relative;
+}
+
+.exam-subject-search-wrap i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.exam-subject-search-wrap input {
+    padding-left: 38px;
+}
+
+.exam-subject-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ============================================================
+   TABLE CARD
+   ============================================================ */
+
+.exam-subject-table-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, .05);
+    overflow: hidden;
+}
+
+.exam-subject-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #edf0f3;
+}
+
+.exam-subject-table-title {
+    min-width: 0;
+}
+
+.exam-subject-table-title h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.exam-subject-table-title p {
+    margin: 4px 0 0;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.exam-subject-table-meta {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+.exam-subject-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.exam-subject-table {
+    width: 100%;
+    min-width: 1350px;
+    border-collapse: collapse;
+}
+
+.exam-subject-table thead th {
+    padding: 13px 15px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: .35px;
+    white-space: nowrap;
+}
+
+.exam-subject-table tbody td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #eef2f6;
+    color: #334155;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.exam-subject-table tbody tr {
+    transition: background .15s ease;
+}
+
+.exam-subject-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+.exam-subject-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+/* ============================================================
+   SUBJECT INFO
+   ============================================================ */
+
+.exam-subject-main-info {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 190px;
+}
+
+.exam-subject-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: #e8eef9;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.exam-subject-main-name {
+    min-width: 0;
+}
+
+.exam-subject-main-name strong {
+    display: block;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.exam-subject-main-name span {
+    display: block;
+    margin-top: 3px;
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+/* ============================================================
+   CODE
+   ============================================================ */
+
+.exam-subject-code {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 8px;
+    border-radius: 7px;
+    background: #f1f5f9;
+    color: #334155;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   RELATION TEXT
+   ============================================================ */
+
+.exam-subject-relation strong {
+    display: block;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.exam-subject-relation span {
+    display: block;
+    margin-top: 3px;
+    color: #94a3b8;
+    font-size: 10px;
+}
+
+/* ============================================================
+   MARK SETTINGS
+   ============================================================ */
+
+.exam-subject-marks {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.exam-subject-mark-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #475569;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.exam-subject-mark-row strong {
+    color: #0f172a;
+    font-size: 12px;
+}
+
+.exam-subject-mark-label {
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   WEIGHT
+   ============================================================ */
+
+.exam-subject-weight {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 8px;
+    border-radius: 7px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   ORDER
+   ============================================================ */
+
+.exam-subject-order {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 7px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.exam-subject-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.exam-subject-status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.exam-subject-status.active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.exam-subject-status.active::before {
+    background: #16a34a;
+}
+
+.exam-subject-status.inactive {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.exam-subject-status.inactive::before {
+    background: #d97706;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.exam-subject-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.exam-subject-action-btn {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.exam-subject-action-view {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.exam-subject-action-view:hover {
+    background: #dbeafe;
+}
+
+.exam-subject-action-edit {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.exam-subject-action-edit:hover {
+    background: #ede9fe;
+}
+
+.exam-subject-action-delete {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.exam-subject-action-delete:hover {
+    background: #fee2e2;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.exam-subject-empty {
+    padding: 65px 20px;
+    text-align: center;
+}
+
+.exam-subject-empty-icon {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 15px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    color: #06245f;
+    font-size: 25px;
+}
+
+.exam-subject-empty h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.exam-subject-empty p {
+    max-width: 500px;
+    margin: 7px auto 18px;
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+
+.exam-subject-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 15px 20px;
+    border-top: 1px solid #edf0f3;
+}
+
+.exam-subject-pagination-info {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.exam-subject-pagination-info strong {
+    color: #334155;
+}
+
+.exam-subject-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.exam-subject-pagination-btn {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 9px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    transition: .18s ease;
+}
+
+.exam-subject-pagination-btn:hover {
+    border-color: #06245f;
+    color: #06245f;
+    background: #f8fbff;
+}
+
+.exam-subject-pagination-btn.active {
+    background: #06245f;
+    border-color: #06245f;
+    color: #fff;
+}
+
+.exam-subject-pagination-btn.disabled {
+    opacity: .45;
+    pointer-events: none;
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 1500px) {
+
+    .exam-subject-filter-form {
+        grid-template-columns:
+            repeat(4, minmax(160px, 1fr));
+    }
+
+    .exam-subject-search-field {
+        grid-column: span 2;
+    }
+
+}
+
+@media (max-width: 1100px) {
+
+    .exam-subjects-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .exam-subject-filter-form {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .exam-subject-search-field {
+        grid-column: span 2;
+    }
+
+    .exam-subject-filter-actions {
+        grid-column: span 2;
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .exam-subjects-page {
+        padding-bottom: 25px;
+    }
+
+    .exam-subjects-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .exam-subjects-header-actions {
+        width: 100%;
+    }
+
+    .exam-subjects-header-actions
+    .exam-subject-btn {
+        flex: 1;
+    }
+
+    .exam-subjects-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .exam-subject-stat-card {
+        min-height: 105px;
+        padding: 14px;
+    }
+
+    .exam-subject-stat-number {
+        font-size: 22px;
+    }
+
+    .exam-subjects-secondary-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .exam-subject-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .exam-subject-search-field {
+        grid-column: auto;
+    }
+
+    .exam-subject-filter-actions {
+        grid-column: auto;
+    }
+
+    .exam-subject-filter-actions
+    .exam-subject-btn {
+        flex: 1;
+    }
+
+    .exam-subject-table-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .exam-subject-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .exam-subject-pagination-controls {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+}
+
+@media (max-width: 450px) {
+
+    .exam-subjects-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .exam-subjects-page-title h1 {
+        font-size: 22px;
+    }
+
+    .exam-subject-filter-body {
+        padding: 15px;
+    }
+
+}
+
+</style>
+
+
+<div class="exam-subjects-page">
+
+    <!-- =====================================================
+         PAGE HEADER
+         ===================================================== -->
+
+    <div class="exam-subjects-page-header">
+
+        <div class="exam-subjects-page-title">
+
+            <h1>
+                <i class="fa-solid fa-book-open"></i>
+                Exam Subjects
+            </h1>
+
+            <p>
+                Manage subjects assigned to exams, classes,
+                sections, teachers and mark settings.
+            </p>
+
+        </div>
+
+
+        <div class="exam-subjects-header-actions">
+
+            <a
+                href="{{ url_for('main.add_exam_subject') }}"
+                class="exam-subject-btn exam-subject-btn-primary"
+            >
+                <i class="fa-solid fa-plus"></i>
+                Add Exam Subject
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN STATISTICS
+         ===================================================== -->
+
+    <div class="exam-subjects-stats">
+
+        <!-- TOTAL -->
+
+        <div class="exam-subject-stat-card total">
+
+            <div class="exam-subject-stat-top">
+
+                <span class="exam-subject-stat-label">
+                    Total Exam Subjects
+                </span>
+
+                <div class="exam-subject-stat-icon">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+
+            </div>
+
+            <div class="exam-subject-stat-number">
+                {{ total_exam_subjects }}
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE -->
+
+        <div class="exam-subject-stat-card active">
+
+            <div class="exam-subject-stat-top">
+
+                <span class="exam-subject-stat-label">
+                    Active
+                </span>
+
+                <div class="exam-subject-stat-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
+            </div>
+
+            <div class="exam-subject-stat-number">
+                {{ active_exam_subjects }}
+            </div>
+
+        </div>
+
+
+        <!-- INACTIVE -->
+
+        <div class="exam-subject-stat-card inactive">
+
+            <div class="exam-subject-stat-top">
+
+                <span class="exam-subject-stat-label">
+                    Inactive
+                </span>
+
+                <div class="exam-subject-stat-icon">
+                    <i class="fa-solid fa-pause"></i>
+                </div>
+
+            </div>
+
+            <div class="exam-subject-stat-number">
+                {{ inactive_exam_subjects }}
+            </div>
+
+        </div>
+
+
+        <!-- TEACHER ASSIGNED -->
+
+        <div class="exam-subject-stat-card assigned">
+
+            <div class="exam-subject-stat-top">
+
+                <span class="exam-subject-stat-label">
+                    Teacher Assigned
+                </span>
+
+                <div class="exam-subject-stat-icon">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                </div>
+
+            </div>
+
+            <div class="exam-subject-stat-number">
+                {{ exam_subjects_with_teacher }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SECONDARY STATISTICS
+         ===================================================== -->
+
+    <div class="exam-subjects-secondary-stats">
+
+        <div class="exam-subject-secondary-stat-card">
+
+            <div class="exam-subject-secondary-info">
+
+                <strong>
+                    {{ exam_subjects_without_teacher }}
+                </strong>
+
+                <span>
+                    Subjects Without Teacher
+                </span>
+
+            </div>
+
+            <div class="exam-subject-secondary-icon">
+
+                <i class="fa-solid fa-user-slash"></i>
+
+            </div>
+
+        </div>
+
+
+        <div class="exam-subject-secondary-stat-card">
+
+            <div class="exam-subject-secondary-info">
+
+                <strong>
+                    {{ exam_subjects_with_class }}
+                </strong>
+
+                <span>
+                    Subjects Assigned To Classes
+                </span>
+
+            </div>
+
+            <div class="exam-subject-secondary-icon">
+
+                <i class="fa-solid fa-chalkboard"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTER CARD
+         ===================================================== -->
+
+    <div class="exam-subject-filter-card">
+
+        <div class="exam-subject-filter-header">
+
+            <h3>
+                <i class="fa-solid fa-filter"></i>
+                Filter Exam Subjects
+            </h3>
+
+            <span>
+                Search and filter exam subject assignments
+            </span>
+
+        </div>
+
+
+        <div class="exam-subject-filter-body">
+
+            <form
+                method="GET"
+                action="{{ url_for('main.all_exam_subjects') }}"
+                class="exam-subject-filter-form"
+            >
+
+                <!-- SEARCH -->
+
+                <div class="exam-subject-field exam-subject-search-field">
+
+                    <label>
+                        Search
+                    </label>
+
+                    <div class="exam-subject-search-wrap">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ search or '' }}"
+                            placeholder="Search exam, subject, class, teacher..."
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- EXAM -->
+
+                <div class="exam-subject-field">
+
+                    <label>
+                        Exam
+                    </label>
+
+                    <select
+                        name="exam_id"
+                        id="examFilter"
+                    >
+
+                        <option value="">
+                            All Exams
+                        </option>
+
+                        {% for exam in exams %}
+
+                            <option
+                                value="{{ exam.id }}"
+                                {% if selected_exam_id|string == exam.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ exam.name }}
+
+                                {% if exam.code %}
+                                    — {{ exam.code }}
+                                {% endif %}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- SUBJECT -->
+
+                <div class="exam-subject-field">
+
+                    <label>
+                        Subject
+                    </label>
+
+                    <select
+                        name="subject_id"
+                        id="subjectFilter"
+                    >
+
+                        <option value="">
+                            All Subjects
+                        </option>
+
+                        {% for subject in subjects %}
+
+                            <option
+                                value="{{ subject.id }}"
+                                {% if selected_subject_id|string == subject.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ subject.name }}
+
+                                {% if subject.code %}
+                                    — {{ subject.code }}
+                                {% endif %}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- CLASS -->
+
+                <div class="exam-subject-field">
+
+                    <label>
+                        Class
+                    </label>
+
+                    <select
+                        name="class_id"
+                        id="classFilter"
+                    >
+
+                        <option value="">
+                            All Classes
+                        </option>
+
+                        {% for class in classes %}
+
+                            <option
+                                value="{{ class.id }}"
+                                {% if selected_class_id|string == class.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ class.name }}
+
+                                {% if class.code %}
+                                    — {{ class.code }}
+                                {% endif %}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- SECTION -->
+
+                <div class="exam-subject-field">
+
+                    <label>
+                        Section
+                    </label>
+
+                    <select
+                        name="section_id"
+                        id="sectionFilter"
+                    >
+
+                        <option value="">
+                            All Sections
+                        </option>
+
+                        {% for section in sections %}
+
+                            <option
+                                value="{{ section.id }}"
+                                {% if selected_section_id|string == section.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ section.name }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- TEACHER -->
+
+                <div class="exam-subject-field">
+
+                    <label>
+                        Teacher
+                    </label>
+
+                    <select
+                        name="teacher_id"
+                        id="teacherFilter"
+                    >
+
+                        <option value="">
+                            All Teachers
+                        </option>
+
+                        {% for teacher in teachers %}
+
+                            <option
+                                value="{{ teacher.id }}"
+                                {% if selected_teacher_id|string == teacher.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {% if teacher.full_name %}
+                                    {{ teacher.full_name }}
+                                {% elif teacher.name %}
+                                    {{ teacher.name }}
+                                {% elif teacher.username %}
+                                    {{ teacher.username }}
+                                {% else %}
+                                    Teacher #{{ teacher.id }}
+                                {% endif %}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="exam-subject-field">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <select name="status">
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option
+                            value="active"
+                            {% if selected_status == "active" %}
+                                selected
+                            {% endif %}
+                        >
+                            Active
+                        </option>
+
+                        <option
+                            value="inactive"
+                            {% if selected_status == "inactive" %}
+                                selected
+                            {% endif %}
+                        >
+                            Inactive
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- ACTIONS -->
+
+                <div class="exam-subject-filter-actions">
+
+                    <button
+                        type="submit"
+                        class="exam-subject-btn exam-subject-btn-primary"
+                    >
+                        <i class="fa-solid fa-filter"></i>
+                        Filter
+                    </button>
+
+                    <a
+                        href="{{ url_for('main.all_exam_subjects') }}"
+                        class="exam-subject-btn exam-subject-btn-light"
+                        title="Clear filters"
+                    >
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </a>
+
+                </div>
+
+
+                <!-- PER PAGE -->
+
+                <input
+                    type="hidden"
+                    name="per_page"
+                    value="{{ per_page }}"
+                >
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TABLE CARD
+         ===================================================== -->
+
+    <div class="exam-subject-table-card">
+
+        <div class="exam-subject-table-header">
+
+            <div class="exam-subject-table-title">
+
+                <h3>
+                    Exam Subject List
+                </h3>
+
+                <p>
+                    View and manage subjects assigned to examinations
+                </p>
+
+            </div>
+
+            <div class="exam-subject-table-meta">
+
+                {% if pagination.total %}
+
+                    {{ pagination.total }}
+                    result{% if pagination.total != 1 %}s{% endif %}
+
+                {% else %}
+
+                    0 results
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        {% if exam_subjects %}
+
+            <!-- =================================================
+                 TABLE
+                 ================================================= -->
+
+            <div class="exam-subject-table-wrapper">
+
+                <table class="exam-subject-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Subject
+                            </th>
+
+                            <th>
+                                Exam
+                            </th>
+
+                            <th>
+                                Class
+                            </th>
+
+                            <th>
+                                Section
+                            </th>
+
+                            <th>
+                                Teacher
+                            </th>
+
+                            <th>
+                                Marks
+                            </th>
+
+                            <th>
+                                Weight
+                            </th>
+
+                            <th>
+                                Order
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th style="text-align:right;">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for exam_subject in exam_subjects %}
+
+                            <tr
+                                id="exam-subject-row-{{ exam_subject.id }}"
+                            >
+
+                                <!-- =================================
+                                     SUBJECT
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="exam-subject-main-info">
+
+                                        <div class="exam-subject-avatar">
+
+                                            {% if exam_subject.subject
+                                                and exam_subject.subject.name %}
+
+                                                {{ exam_subject.subject.name[0]|upper }}
+
+                                            {% else %}
+
+                                                S
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="exam-subject-main-name">
+
+                                            <strong>
+
+                                                {% if exam_subject.subject %}
+
+                                                    {{ exam_subject.subject.name }}
+
+                                                {% else %}
+
+                                                    —
+
+                                                {% endif %}
+
+                                            </strong>
+
+
+                                            <span>
+
+                                                {% if exam_subject.subject
+                                                    and exam_subject.subject.code %}
+
+                                                    {{ exam_subject.subject.code }}
+
+                                                {% else %}
+
+                                                    Subject #{{ exam_subject.subject_id }}
+
+                                                {% endif %}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     EXAM
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="exam-subject-relation">
+
+                                        <strong>
+
+                                            {% if exam_subject.exam %}
+
+                                                {{ exam_subject.exam.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </strong>
+
+                                        <span>
+
+                                            {% if exam_subject.exam
+                                                and exam_subject.exam.code %}
+
+                                                {{ exam_subject.exam.code }}
+
+                                            {% else %}
+
+                                                Exam #{{ exam_subject.exam_id }}
+
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     CLASS
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="exam-subject-relation">
+
+                                        <strong>
+
+                                            {% if exam_subject.class_ %}
+
+                                                {{ exam_subject.class_.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </strong>
+
+                                        <span>
+
+                                            {% if exam_subject.class_
+                                                and exam_subject.class_.code %}
+
+                                                {{ exam_subject.class_.code }}
+
+                                            {% else %}
+
+                                                {% if exam_subject.class_id %}
+
+                                                    Class #{{ exam_subject.class_id }}
+
+                                                {% else %}
+
+                                                    Optional
+
+                                                {% endif %}
+
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     SECTION
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="exam-subject-relation">
+
+                                        <strong>
+
+                                            {% if exam_subject.section %}
+
+                                                {{ exam_subject.section.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </strong>
+
+                                        <span>
+
+                                            {% if exam_subject.section_id %}
+
+                                                Section
+
+                                            {% else %}
+
+                                                Optional
+
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     TEACHER
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="exam-subject-relation">
+
+                                        <strong>
+
+                                            {% if exam_subject.teacher %}
+
+                                                {% if exam_subject.teacher.full_name %}
+
+                                                    {{ exam_subject.teacher.full_name }}
+
+                                                {% elif exam_subject.teacher.name %}
+
+                                                    {{ exam_subject.teacher.name }}
+
+                                                {% elif exam_subject.teacher.username %}
+
+                                                    {{ exam_subject.teacher.username }}
+
+                                                {% else %}
+
+                                                    Teacher #{{ exam_subject.teacher_id }}
+
+                                                {% endif %}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </strong>
+
+                                        <span>
+
+                                            {% if exam_subject.teacher_id %}
+
+                                                Assigned
+
+                                            {% else %}
+
+                                                Not Assigned
+
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     MARKS
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="exam-subject-marks">
+
+                                        <div class="exam-subject-mark-row">
+
+                                            <span class="exam-subject-mark-label">
+                                                MAX
+                                            </span>
+
+                                            <strong>
+                                                {{ exam_subject.max_marks }}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="exam-subject-mark-row">
+
+                                            <span class="exam-subject-mark-label">
+                                                PASS
+                                            </span>
+
+                                            <strong>
+                                                {{ exam_subject.pass_marks }}
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     WEIGHT
+                                     ================================= -->
+
+                                <td>
+
+                                    <span class="exam-subject-weight">
+
+                                        {{ exam_subject.weight }}
+
+                                        %
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     DISPLAY ORDER
+                                     ================================= -->
+
+                                <td>
+
+                                    <span class="exam-subject-order">
+
+                                        {{ exam_subject.display_order }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     STATUS
+                                     ================================= -->
+
+                                <td>
+
+                                    <span
+                                        class="exam-subject-status
+                                        {{ exam_subject.status }}"
+                                    >
+
+                                        {{ exam_subject.status }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     ACTIONS
+                                     ================================= -->
+
+                                <td>
+
+                                    <div class="exam-subject-actions">
+
+                                        <!-- VIEW -->
+
+                                        <a
+                                            href="{{ url_for(
+                                                'main.view_exam_subject',
+                                                exam_subject_id=exam_subject.id
+                                            ) }}"
+                                            class="exam-subject-action-btn
+                                                   exam-subject-action-view"
+                                            title="View Exam Subject"
+                                        >
+
+                                            <i class="fa-solid fa-eye"></i>
+
+                                        </a>
+
+
+                                        <!-- EDIT -->
+
+                                        <a
+                                            href="{{ url_for(
+                                                'main.edit_exam_subject',
+                                                exam_subject_id=exam_subject.id
+                                            ) }}"
+                                            class="exam-subject-action-btn
+                                                   exam-subject-action-edit"
+                                            title="Edit Exam Subject"
+                                        >
+
+                                            <i class="fa-solid fa-pen"></i>
+
+                                        </a>
+
+
+                                        <!-- DELETE -->
+
+                                        <button
+                                            type="button"
+                                            class="exam-subject-action-btn
+                                                   exam-subject-action-delete"
+                                            title="Delete Exam Subject"
+                                            onclick="deleteExamSubject(
+                                                {{ exam_subject.id }},
+                                                {{ (
+                                                    exam_subject.subject.name
+                                                    if exam_subject.subject
+                                                    else 'Exam Subject #' ~ exam_subject.id
+                                                )|tojson }}
+                                            )"
+                                        >
+
+                                            <i class="fa-solid fa-trash"></i>
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- =================================================
+                 PAGINATION
+                 ================================================= -->
+
+            <div class="exam-subject-pagination">
+
+                <div class="exam-subject-pagination-info">
+
+                    {% if pagination.total %}
+
+                        Showing
+
+                        <strong>
+                            {{ pagination.first }}
+                        </strong>
+
+                        –
+
+                        <strong>
+                            {{ pagination.last }}
+                        </strong>
+
+                        of
+
+                        <strong>
+                            {{ pagination.total }}
+                        </strong>
+
+                    {% else %}
+
+                        No results
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="exam-subject-pagination-controls">
+
+                    <!-- FIRST -->
+
+                    {% if pagination.has_prev %}
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_exam_subjects',
+                                page=1,
+                                per_page=per_page,
+                                search=search,
+                                exam_id=selected_exam_id,
+                                subject_id=selected_subject_id,
+                                class_id=selected_class_id,
+                                section_id=selected_section_id,
+                                teacher_id=selected_teacher_id,
+                                status=selected_status
+                            ) }}"
+                            class="exam-subject-pagination-btn"
+                            title="First page"
+                        >
+
+                            <i class="fa-solid fa-angles-left"></i>
+
+                        </a>
+
+                    {% else %}
+
+                        <span
+                            class="exam-subject-pagination-btn disabled"
+                        >
+
+                            <i class="fa-solid fa-angles-left"></i>
+
+                        </span>
+
+                    {% endif %}
+
+
+                    <!-- PREVIOUS -->
+
+                    {% if pagination.has_prev %}
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_exam_subjects',
+                                page=pagination.prev_num,
+                                per_page=per_page,
+                                search=search,
+                                exam_id=selected_exam_id,
+                                subject_id=selected_subject_id,
+                                class_id=selected_class_id,
+                                section_id=selected_section_id,
+                                teacher_id=selected_teacher_id,
+                                status=selected_status
+                            ) }}"
+                            class="exam-subject-pagination-btn"
+                        >
+
+                            <i class="fa-solid fa-angle-left"></i>
+
+                        </a>
+
+                    {% endif %}
+
+
+                    <!-- PAGE NUMBERS -->
+
+                    {% set start_page = pagination.page - 2 %}
+                    {% set end_page = pagination.page + 2 %}
+
+
+                    {% if start_page < 1 %}
+
+                        {% set start_page = 1 %}
+
+                    {% endif %}
+
+
+                    {% if end_page > pagination.pages %}
+
+                        {% set end_page = pagination.pages %}
+
+                    {% endif %}
+
+
+                    {% for page_num in range(
+                        start_page,
+                        end_page + 1
+                    ) %}
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_exam_subjects',
+                                page=page_num,
+                                per_page=per_page,
+                                search=search,
+                                exam_id=selected_exam_id,
+                                subject_id=selected_subject_id,
+                                class_id=selected_class_id,
+                                section_id=selected_section_id,
+                                teacher_id=selected_teacher_id,
+                                status=selected_status
+                            ) }}"
+                            class="
+                                exam-subject-pagination-btn
+                                {% if page_num == pagination.page %}
+                                    active
+                                {% endif %}
+                            "
+                        >
+
+                            {{ page_num }}
+
+                        </a>
+
+                    {% endfor %}
+
+
+                    <!-- NEXT -->
+
+                    {% if pagination.has_next %}
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_exam_subjects',
+                                page=pagination.next_num,
+                                per_page=per_page,
+                                search=search,
+                                exam_id=selected_exam_id,
+                                subject_id=selected_subject_id,
+                                class_id=selected_class_id,
+                                section_id=selected_section_id,
+                                teacher_id=selected_teacher_id,
+                                status=selected_status
+                            ) }}"
+                            class="exam-subject-pagination-btn"
+                        >
+
+                            <i class="fa-solid fa-angle-right"></i>
+
+                        </a>
+
+                    {% endif %}
+
+
+                    <!-- LAST -->
+
+                    {% if pagination.has_next %}
+
+                        <a
+                            href="{{ url_for(
+                                'main.all_exam_subjects',
+                                page=pagination.pages,
+                                per_page=per_page,
+                                search=search,
+                                exam_id=selected_exam_id,
+                                subject_id=selected_subject_id,
+                                class_id=selected_class_id,
+                                section_id=selected_section_id,
+                                teacher_id=selected_teacher_id,
+                                status=selected_status
+                            ) }}"
+                            class="exam-subject-pagination-btn"
+                            title="Last page"
+                        >
+
+                            <i class="fa-solid fa-angles-right"></i>
+
+                        </a>
+
+                    {% else %}
+
+                        <span
+                            class="exam-subject-pagination-btn disabled"
+                        >
+
+                            <i class="fa-solid fa-angles-right"></i>
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <!-- =================================================
+                 EMPTY STATE
+                 ================================================= -->
+
+            <div class="exam-subject-empty">
+
+                <div class="exam-subject-empty-icon">
+
+                    <i class="fa-solid fa-book-open"></i>
+
+                </div>
+
+
+                <h3>
+                    No Exam Subjects Found
+                </h3>
+
+
+                <p>
+
+                    {% if search
+                        or selected_exam_id
+                        or selected_subject_id
+                        or selected_class_id
+                        or selected_section_id
+                        or selected_teacher_id
+                        or selected_status %}
+
+                        No exam subjects match your current
+                        filters. Try changing the filters
+                        or clear them.
+
+                    {% else %}
+
+                        No exam subjects have been assigned yet.
+                        Add a subject to an examination to get started.
+
+                    {% endif %}
+
+                </p>
+
+
+                {% if search
+                    or selected_exam_id
+                    or selected_subject_id
+                    or selected_class_id
+                    or selected_section_id
+                    or selected_teacher_id
+                    or selected_status %}
+
+                    <a
+                        href="{{ url_for('main.all_exam_subjects') }}"
+                        class="exam-subject-btn
+                               exam-subject-btn-light"
+                    >
+
+                        <i class="fa-solid fa-rotate-left"></i>
+
+                        Clear Filters
+
+                    </a>
+
+                {% else %}
+
+                    <a
+                        href="{{ url_for('main.add_exam_subject') }}"
+                        class="exam-subject-btn
+                               exam-subject-btn-primary"
+                    >
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Add First Exam Subject
+
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     DELETE SCRIPT
+     ============================================================ -->
+
+<script>
+
+async function deleteExamSubject(
+    examSubjectId,
+    subjectName
+) {
+
+    const confirmed =
+        await showExamSubjectDeleteConfirmation(
+            subjectName
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/exam-subjects/${examSubjectId}/delete`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest",
+
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+
+        let data = {};
+
+
+        try {
+
+            data =
+                await response.json();
+
+        } catch (jsonError) {
+
+            data = {};
+
+        }
+
+
+        if (
+            !response.ok
+            || !data.success
+        ) {
+
+            throw new Error(
+                data.message
+                ||
+                "Unable to delete the exam subject."
+            );
+
+        }
+
+
+        const row =
+            document.getElementById(
+                `exam-subject-row-${examSubjectId}`
+            );
+
+
+        if (row) {
+
+            row.style.transition =
+                "opacity .25s ease, transform .25s ease";
+
+            row.style.opacity =
+                "0";
+
+            row.style.transform =
+                "translateX(20px)";
+
+
+            setTimeout(
+                () => {
+
+                    row.remove();
+
+
+                    /*
+                     * Refresh the page when the last
+                     * visible row has been removed.
+                     */
+
+                    const remainingRows =
+                        document.querySelectorAll(
+                            ".exam-subject-table tbody tr"
+                        );
+
+
+                    if (
+                        remainingRows.length === 0
+                    ) {
+
+                        window.location.reload();
+
+                    }
+
+                },
+                250
+            );
+
+        }
+
+
+        showExamSubjectSuccess(
+            data.message
+            ||
+            "Exam subject deleted successfully."
+        );
+
+
+    } catch (error) {
+
+        showExamSubjectError(
+            error.message
+            ||
+            "Unable to delete the exam subject."
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   DELETE CONFIRMATION
+   ============================================================ */
+
+function showExamSubjectDeleteConfirmation(
+    subjectName
+) {
+
+    return new Promise(
+        (resolve) => {
+
+            /*
+             * SweetAlert2
+             */
+
+            if (
+                typeof Swal !== "undefined"
+            ) {
+
+                Swal.fire({
+
+                    title:
+                        "Delete Exam Subject?",
+
+                    html:
+                        "Are you sure you want to delete " +
+                        "<strong>" +
+                        escapeExamSubjectHtml(
+                            subjectName
+                        ) +
+                        "</strong> from this exam?",
+
+                    icon:
+                        "warning",
+
+                    showCancelButton:
+                        true,
+
+                    confirmButtonColor:
+                        "#dc2626",
+
+                    cancelButtonColor:
+                        "#64748b",
+
+                    confirmButtonText:
+                        "Yes, Delete",
+
+                    cancelButtonText:
+                        "Cancel",
+
+                    reverseButtons:
+                        true
+
+                }).then(
+                    (result) => {
+
+                        resolve(
+                            result.isConfirmed
+                        );
+
+                    }
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+             * Native fallback
+             */
+
+            resolve(
+                window.confirm(
+                    `Are you sure you want to delete "${subjectName}" from this exam?`
+                )
+            );
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   SUCCESS MESSAGE
+   ============================================================ */
+
+function showExamSubjectSuccess(
+    message
+) {
+
+    if (
+        typeof Swal !== "undefined"
+    ) {
+
+        Swal.fire({
+
+            icon:
+                "success",
+
+            title:
+                "Success",
+
+            text:
+                message,
+
+            timer:
+                1800,
+
+            showConfirmButton:
+                false
+
+        });
+
+        return;
+
+    }
+
+
+    alert(message);
+
+}
+
+
+/* ============================================================
+   ERROR MESSAGE
+   ============================================================ */
+
+function showExamSubjectError(
+    message
+) {
+
+    if (
+        typeof Swal !== "undefined"
+    ) {
+
+        Swal.fire({
+
+            icon:
+                "error",
+
+            title:
+                "Error",
+
+            text:
+                message
+
+        });
+
+        return;
+
+    }
+
+
+    alert(message);
+
+}
+
+
+/* ============================================================
+   HTML ESCAPE
+   ============================================================ */
+
+function escapeExamSubjectHtml(
+    value
+) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        value ?? "";
+
+
+    return div.innerHTML;
+
+}
+
+
+/* ============================================================
+   OPTIONAL:
+   EXAM → SUBJECT FILTER
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const examFilter =
+            document.getElementById(
+                "examFilter"
+            );
+
+
+        const subjectFilter =
+            document.getElementById(
+                "subjectFilter"
+            );
+
+
+        if (
+            !examFilter
+            || !subjectFilter
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+         * Only perform client-side filtering when
+         * subject options contain data-exam attributes.
+         *
+         * This keeps the template compatible with routes
+         * that return all subjects.
+         */
+
+        function filterExamSubjects() {
+
+            const examId =
+                examFilter.value;
+
+
+            Array.from(
+                subjectFilter.options
+            ).forEach(
+                function (
+                    option,
+                    index
+                ) {
+
+                    if (
+                        index === 0
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const optionExam =
+                        option.dataset.exam;
+
+
+                    /*
+                     * If the option does not have an
+                     * exam relation, leave it visible.
+                     */
+
+                    if (
+                        !optionExam
+                    ) {
+
+                        option.hidden =
+                            false;
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !examId
+                        ||
+                        optionExam === examId
+                    ) {
+
+                        option.hidden =
+                            false;
+
+                    } else {
+
+                        option.hidden =
+                            true;
+
+
+                        if (
+                            option.selected
+                        ) {
+
+                            subjectFilter.value =
+                                "";
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        examFilter.addEventListener(
+            "change",
+            filterExamSubjects
+        );
+
+
+        filterExamSubjects();
+
+    }
+);
+
+</script>
+
+{% endblock %}

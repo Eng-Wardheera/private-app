@@ -1,5 +1,5 @@
 import csv
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from functools import wraps
 from io import StringIO
@@ -25,7 +25,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from app import ALLOWED_EXTENSIONS
-from app.model import AcademicYear, AssessmentPlan, Branch, Class, Institution, Program, Section, Student, StudentCharge, StudentEnrollment, Subject, Teacher, TeacherSubject, Term, User, UserRole, db
+from app.model import AcademicYear, AssessmentPlan, Branch, Class, Exam, ExamSubject, Institution, Program, Section, Student, StudentCharge, StudentEnrollment, Subject, Teacher, TeacherSubject, Term, User, UserRole, db
 
 bp = Blueprint('main', __name__)
 
@@ -31052,243 +31052,6 @@ def _teacher_subject_allowed_branches(institution_id=None):
     ).all()
 
 
-# ============================================================
-# TEACHER SUBJECT FORM CONTEXT
-# ============================================================
-
-def _teacher_subject_form_context(
-    institution_id=None,
-    branch_id=None
-):
-
-    role = getattr(current_user, "role", None)
-
-    user_institution_id = _teacher_subject_user_institution_id()
-    user_branch_id = _teacher_subject_user_branch_id()
-
-    # --------------------------------------------------------
-    # Force scoped values
-    # --------------------------------------------------------
-
-    if user_institution_id:
-        institution_id = user_institution_id
-
-    if role == "branch_admin" and user_branch_id:
-        branch_id = user_branch_id
-
-    # ========================================================
-    # INSTITUTIONS
-    # ========================================================
-
-    institutions = _teacher_subject_allowed_institutions()
-
-    # ========================================================
-    # BRANCHES
-    #
-    # IMPORTANT:
-    # For superadmin/institution_admin, load ALL allowed
-    # branches when no branch has been selected.
-    # ========================================================
-
-    branches = _teacher_subject_allowed_branches(
-        institution_id
-    )
-
-    # ========================================================
-    # TEACHERS
-    #
-    # IMPORTANT FIX:
-    # Do NOT accidentally filter teachers only by branch when
-    # branch is None.
-    # ========================================================
-
-    teacher_query = Teacher.query
-
-    if institution_id:
-        teacher_query = teacher_query.filter(
-            Teacher.institution_id == institution_id
-        )
-    elif user_institution_id:
-        teacher_query = teacher_query.filter(
-            Teacher.institution_id == user_institution_id
-        )
-
-    if branch_id:
-        teacher_query = teacher_query.filter(
-            Teacher.branch_id == branch_id
-        )
-    elif role == "branch_admin" and user_branch_id:
-        teacher_query = teacher_query.filter(
-            Teacher.branch_id == user_branch_id
-        )
-
-    teacher_query = teacher_query.filter(
-        or_(
-            Teacher.is_active.is_(True),
-            Teacher.status == "active"
-        )
-    )
-
-    teachers = teacher_query.order_by(
-        Teacher.full_name.asc()
-    ).all()
-
-    # ========================================================
-    # SUBJECTS
-    # ========================================================
-
-    subject_query = Subject.query
-
-    if institution_id:
-        subject_query = subject_query.filter(
-            Subject.institution_id == institution_id
-        )
-    elif user_institution_id:
-        subject_query = subject_query.filter(
-            Subject.institution_id == user_institution_id
-        )
-
-    # Branch filtering only when Subject actually has branch
-    # relationship/data.
-    if branch_id and hasattr(Subject, "branch_id"):
-        subject_query = subject_query.filter(
-            Subject.branch_id == branch_id
-        )
-
-    subjects = subject_query.order_by(
-        Subject.name.asc()
-    ).all()
-
-    # ========================================================
-    # PROGRAMS
-    # ========================================================
-
-    program_query = Program.query
-
-    if institution_id:
-        program_query = program_query.filter(
-            Program.institution_id == institution_id
-        )
-    elif user_institution_id:
-        program_query = program_query.filter(
-            Program.institution_id == user_institution_id
-        )
-
-    if branch_id and hasattr(Program, "branch_id"):
-        program_query = program_query.filter(
-            Program.branch_id == branch_id
-        )
-
-    programs = program_query.order_by(
-        Program.name.asc()
-    ).all()
-
-    # ========================================================
-    # CLASSES
-    # ========================================================
-
-    class_query = Class.query
-
-    if institution_id:
-        class_query = class_query.filter(
-            Class.institution_id == institution_id
-        )
-    elif user_institution_id:
-        class_query = class_query.filter(
-            Class.institution_id == user_institution_id
-        )
-
-    if branch_id and hasattr(Class, "branch_id"):
-        class_query = class_query.filter(
-            Class.branch_id == branch_id
-        )
-
-    classes = class_query.order_by(
-        Class.name.asc()
-    ).all()
-
-    # ========================================================
-    # SECTIONS
-    # ========================================================
-
-    section_query = Section.query
-
-    if institution_id:
-        section_query = section_query.filter(
-            Section.institution_id == institution_id
-        )
-    elif user_institution_id:
-        section_query = section_query.filter(
-            Section.institution_id == user_institution_id
-        )
-
-    if branch_id and hasattr(Section, "branch_id"):
-        section_query = section_query.filter(
-            Section.branch_id == branch_id
-        )
-
-    sections = section_query.order_by(
-        Section.name.asc()
-    ).all()
-
-    # ========================================================
-    # ACADEMIC YEARS
-    # ========================================================
-
-    academic_year_query = AcademicYear.query
-
-    if institution_id and hasattr(
-        AcademicYear,
-        "institution_id"
-    ):
-        academic_year_query = academic_year_query.filter(
-            AcademicYear.institution_id == institution_id
-        )
-
-    academic_years = academic_year_query.order_by(
-        AcademicYear.name.desc()
-    ).all()
-
-    # ========================================================
-    # RETURN
-    # ========================================================
-
-    return {
-        "user": current_user,
-
-        "institutions": institutions,
-
-        "branches": branches,
-
-        "teachers": teachers,
-
-        "subjects": subjects,
-
-        "programs": programs,
-
-        "classes": classes,
-
-        "sections": sections,
-
-        "academic_years": academic_years,
-
-        "teacher_subject_types":
-            TEACHER_SUBJECT_TYPES,
-
-        "teacher_subject_statuses":
-            TEACHER_SUBJECT_STATUSES,
-
-        "institution_id": institution_id,
-
-        "branch_id": branch_id,
-
-        "default_institution_id":
-            user_institution_id,
-
-        "default_branch_id":
-            user_branch_id,
-    }
-
 
 # ============================================================
 # ALL TEACHER SUBJECTS
@@ -35862,267 +35625,6 @@ def _allowed_student_photo(file):
 
 
 # ============================================================
-# CLOUDINARY UPLOAD
-# ============================================================
-
-def _upload_student_photo(file, student_id=None, institution_id=None, branch_id=None):
-    """
-    Upload student photo to Cloudinary.
-
-    Folder:
-    students/institution_{id}/branch_{id}
-    """
-
-    if not file or not file.filename:
-        return None, None
-
-    if not _allowed_student_photo(file):
-        raise ValueError(
-            "Only JPG, JPEG, PNG and WEBP images are allowed."
-        )
-
-    # --------------------------------------------------------
-    # File size check
-    # --------------------------------------------------------
-
-    file.seek(0, os.SEEK_END)
-    file_size = file.tell()
-    file.seek(0)
-
-    if file_size > MAX_PHOTO_SIZE:
-        raise ValueError(
-            "Student photo must not exceed 5 MB."
-        )
-
-    # --------------------------------------------------------
-    # Cloudinary folder
-    # --------------------------------------------------------
-
-    folder = (
-        f"students/"
-        f"institution_{institution_id}/"
-        f"branch_{branch_id}"
-    )
-
-    # --------------------------------------------------------
-    # Public ID
-    # --------------------------------------------------------
-
-    if student_id:
-        public_id = f"student_{student_id}"
-    else:
-        public_id = f"student_{int(datetime.utcnow().timestamp())}"
-
-    result = cloudinary.uploader.upload(
-        file,
-        folder=folder,
-        public_id=public_id,
-        overwrite=True,
-        invalidate=True,
-        resource_type="image",
-        transformation=[
-            {
-                "width": 600,
-                "height": 600,
-                "crop": "fill",
-                "gravity": "face",
-                "quality": "auto",
-                "fetch_format": "auto",
-            }
-        ],
-    )
-
-    secure_url = result.get("secure_url")
-    returned_public_id = result.get("public_id")
-
-    if not secure_url:
-        raise ValueError(
-            "Cloudinary did not return a secure image URL."
-        )
-
-    return secure_url, returned_public_id
-
-
-# ============================================================
-# CLOUDINARY DELETE
-# ============================================================
-
-def _delete_student_photo(public_id):
-
-    if not public_id:
-        return
-
-    try:
-
-        cloudinary.uploader.destroy(
-            public_id,
-            invalidate=True,
-            resource_type="image",
-        )
-
-    except Exception as exc:
-
-        current_app.logger.warning(
-            "Unable to delete Cloudinary student image %s: %s",
-            public_id,
-            exc,
-        )
-
-
-# ============================================================
-# DATE PARSER
-# ============================================================
-
-def _parse_student_date(value):
-
-    if not value:
-        return None
-
-    if hasattr(value, "date"):
-        try:
-            return value.date()
-        except Exception:
-            pass
-
-    if hasattr(value, "year") and hasattr(value, "month"):
-        return value
-
-    value = str(value).strip()
-
-    if not value:
-        return None
-
-    formats = [
-        "%Y-%m-%d",
-        "%d-%m-%Y",
-        "%d/%m/%Y",
-        "%Y/%m/%d",
-    ]
-
-    for fmt in formats:
-        try:
-            return datetime.strptime(
-                value,
-                fmt
-            ).date()
-        except ValueError:
-            continue
-
-    raise ValueError(
-        f"Invalid date format: {value}"
-    )
-
-
-# ============================================================
-# INSTITUTIONS / BRANCHES CONTEXT
-# ============================================================
-
-def _student_form_context():
-
-    role = getattr(current_user, "role", None)
-
-    if role == "superadmin":
-
-        institutions = (
-            Institution.query
-            .order_by(Institution.name.asc())
-            .all()
-        )
-
-        branches = (
-            Branch.query
-            .order_by(Branch.name.asc())
-            .all()
-        )
-
-    elif role == "institution_admin":
-
-        institution_id = _student_user_institution_id()
-
-        institutions = (
-            Institution.query
-            .filter(
-                Institution.id == institution_id
-            )
-            .all()
-        )
-
-        branches = (
-            Branch.query
-            .filter(
-                Branch.institution_id == institution_id
-            )
-            .order_by(Branch.name.asc())
-            .all()
-        )
-
-    elif role == "branch_admin":
-
-        institution_id = _student_user_institution_id()
-        branch_id = _student_user_branch_id()
-
-        institutions = (
-            Institution.query
-            .filter(
-                Institution.id == institution_id
-            )
-            .all()
-        )
-
-        branches = (
-            Branch.query
-            .filter(
-                Branch.id == branch_id,
-                Branch.institution_id == institution_id
-            )
-            .all()
-        )
-
-    else:
-
-        institutions = []
-        branches = []
-
-    return {
-        "institutions": institutions,
-        "branches": branches,
-        "statuses": STUDENT_STATUSES,
-    }
-
-
-# ============================================================
-# STUDENT QUERY ACCESS
-# ============================================================
-
-def _student_scoped_query():
-
-    query = Student.query
-
-    role = getattr(current_user, "role", None)
-
-    if role == "superadmin":
-        return query
-
-    institution_id = _student_user_institution_id()
-    branch_id = _student_user_branch_id()
-
-    if role == "institution_admin":
-
-        return query.filter(
-            Student.institution_id == institution_id
-        )
-
-    if role == "branch_admin":
-
-        return query.filter(
-            Student.institution_id == institution_id,
-            Student.branch_id == branch_id,
-        )
-
-    return query.filter(db.false())
-
-
-# ============================================================
 # ALL STUDENTS
 # ============================================================
 @bp.route("/students", methods=["GET"])
@@ -36875,27 +36377,6 @@ def all_students():
 # HELPERS
 # ============================================================
 
-def _decimal(value, default=Decimal("0.00")):
-    """
-    Safely convert form values to Decimal.
-    """
-    if value is None:
-        return default
-
-    value = str(value).strip()
-
-    if not value:
-        return default
-
-    try:
-        number = Decimal(value)
-        if number < 0:
-            return default
-        return number.quantize(Decimal("0.01"))
-    except (InvalidOperation, ValueError, TypeError):
-        return default
-
-
 def _clean(value):
     """
     Clean normal form strings.
@@ -36907,32 +36388,6 @@ def _clean(value):
 
     return value if value else None
 
-
-def _parse_date(value):
-    """
-    Parse YYYY-MM-DD.
-    """
-    value = _clean(value)
-
-    if not value:
-        return None
-
-    try:
-        return datetime.strptime(value, "%Y-%m-%d").date()
-    except ValueError:
-        return None
-
-
-def _random_password(length=10):
-    """
-    Generate a password when the form doesn't provide one.
-    """
-    alphabet = string.ascii_letters + string.digits
-
-    return "".join(
-        secrets.choice(alphabet)
-        for _ in range(length)
-    )
 
 
 def _institution_prefix(institution):
@@ -37047,90 +36502,6 @@ def _next_sequence(institution_id):
 
     return prefix, highest + 1
 
-
-def _generate_student_numbers(
-    institution_id,
-    full_name
-):
-    """
-    Generate:
-
-        Admission:
-        PREFIX-ADM-000001
-
-        Roll:
-        PREFIX-FIRSTNAME-000001
-    """
-
-    prefix, sequence = _next_sequence(
-        institution_id
-    )
-
-    first_name = _first_name(full_name)
-
-    sequence_text = f"{sequence:06d}"
-
-    admission_no = (
-        f"{prefix}-ADM-{sequence_text}"
-    )
-
-    roll_no = (
-        f"{prefix}-{first_name}-{sequence_text}"
-    )
-
-    return admission_no, roll_no
-
-
-def _generate_enrollment_no(
-    institution_id,
-    academic_year_id,
-    program_id
-):
-    """
-    Generate unique enrollment number.
-
-    Example:
-
-        ENR-2026-PRG-000001
-    """
-
-    institution = db.session.get(
-        Institution,
-        institution_id
-    )
-
-    prefix = _institution_prefix(institution)
-
-    count = (
-        StudentEnrollment.query
-        .filter(
-            StudentEnrollment.institution_id
-            == institution_id
-        )
-        .count()
-    )
-
-    sequence = count + 1
-
-    while True:
-
-        enrollment_no = (
-            f"{prefix}-ENR-{sequence:06d}"
-        )
-
-        exists = (
-            StudentEnrollment.query
-            .filter_by(
-                institution_id=institution_id,
-                enrollment_no=enrollment_no
-            )
-            .first()
-        )
-
-        if not exists:
-            return enrollment_no
-
-        sequence += 1
 
 # ============================================================
 # ALL COUNTRIES
@@ -46089,7 +45460,8293 @@ def import_students_full():
 
 
 
+# ============================================================
+# EXAM ROLE SECURITY
+# ============================================================
 
+EXAM_MANAGE_ROLES = {
+    "superadmin",
+    "school_admin",
+    "branch_admin",
+}
+
+EXAM_VIEW_ROLES = {
+    "superadmin",
+    "school_admin",
+    "branch_admin",
+    "teacher",
+}
+
+
+def _exam_can_manage():
+    """
+    Exam create/edit/delete access.
+    """
+
+    return getattr(current_user, "role", None) in EXAM_MANAGE_ROLES
+
+
+def _exam_can_view():
+    """
+    Exam view access.
+    """
+
+    return getattr(current_user, "role", None) in EXAM_VIEW_ROLES
+
+
+# ============================================================
+# EXAM ACCESS FILTER
+# ============================================================
+
+def _exam_scope_query(query):
+    """
+    Restrict exams according to logged-in user's institution/branch.
+
+    superadmin:
+        Can see all exams.
+
+    school_admin:
+        Can see exams belonging to their institution.
+
+    branch_admin / teacher:
+        Can see exams belonging to their branch.
+    """
+
+    role = getattr(current_user, "role", None)
+
+    if role == "superadmin":
+        return query
+
+    institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    if role == "school_admin":
+
+        if not institution_id:
+            return query.filter(
+                db.literal(False)
+            )
+
+        return query.filter(
+            Exam.institution_id == institution_id
+        )
+
+    if role in {
+        "branch_admin",
+        "teacher",
+    }:
+
+        if not institution_id or not branch_id:
+            return query.filter(
+                db.literal(False)
+            )
+
+        return query.filter(
+            Exam.institution_id == institution_id,
+            Exam.branch_id == branch_id
+        )
+
+    return query.filter(
+        db.literal(False)
+    )
+
+
+
+# ============================================================
+# ALL EXAMS
+# ============================================================
+
+@bp.route("/exams", methods=["GET"])
+@login_required
+def all_exams():
+
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    current_role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    if current_role not in allowed_roles:
+
+        flash(
+            "You do not have permission to access examinations.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.dashboard")
+        )
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    user_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # SCHOOL ADMIN / BRANCH ADMIN MUST HAVE INSTITUTION
+    # ========================================================
+
+    if current_role in {
+        "school_admin",
+        "branch_admin",
+    }:
+
+        if not user_institution_id:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+    # ========================================================
+    # BRANCH ADMIN MUST HAVE BRANCH
+    # ========================================================
+
+    if current_role == "branch_admin":
+
+        if not user_branch_id:
+
+            flash(
+                "Your account is not assigned to a branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+    # ========================================================
+    # REQUEST FILTERS
+    # ========================================================
+
+    search = request.args.get(
+        "search",
+        "",
+        type=str
+    ).strip()
+
+    institution_id = request.args.get(
+        "institution_id",
+        type=int
+    )
+
+    branch_id = request.args.get(
+        "branch_id",
+        type=int
+    )
+
+    program_id = request.args.get(
+        "program_id",
+        type=int
+    )
+
+    academic_year_id = request.args.get(
+        "academic_year_id",
+        type=int
+    )
+
+    term_id = request.args.get(
+        "term_id",
+        type=int
+    )
+
+    exam_type = request.args.get(
+        "exam_type",
+        "",
+        type=str
+    ).strip()
+
+    status = request.args.get(
+        "status",
+        "",
+        type=str
+    ).strip()
+
+    # ========================================================
+    # PER PAGE
+    # ========================================================
+
+    per_page = request.args.get(
+        "per_page",
+        25,
+        type=int
+    )
+
+    allowed_per_page = {
+        10,
+        25,
+        50,
+        100
+    }
+
+    if per_page not in allowed_per_page:
+        per_page = 25
+
+    # ========================================================
+    # PAGE
+    # ========================================================
+
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+    if page < 1:
+        page = 1
+
+    # ========================================================
+    # BASE QUERY
+    # ========================================================
+
+    query = (
+        Exam.query
+        .options(
+            db.joinedload(
+                Exam.institution
+            ),
+
+            db.joinedload(
+                Exam.branch
+            ),
+
+            db.joinedload(
+                Exam.program
+            ),
+
+            db.joinedload(
+                Exam.assessment_plan
+            ),
+
+            db.joinedload(
+                Exam.academic_year
+            ),
+
+            db.joinedload(
+                Exam.term
+            ),
+        )
+    )
+
+    # ========================================================
+    # ROLE DATA SCOPE
+    # ========================================================
+
+    # --------------------------------------------------------
+    # SUPERADMIN
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        if institution_id:
+
+            query = query.filter(
+                Exam.institution_id
+                == institution_id
+            )
+
+        if branch_id:
+
+            query = query.filter(
+                Exam.branch_id
+                == branch_id
+            )
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN
+    # --------------------------------------------------------
+
+    elif current_role == "school_admin":
+
+        # NEVER allow another institution
+        query = query.filter(
+            Exam.institution_id
+            == user_institution_id
+        )
+
+        # If branch selected, it must belong
+        # to this institution.
+        if branch_id:
+
+            valid_branch = (
+                Branch.query
+                .filter(
+                    Branch.id == branch_id,
+                    Branch.institution_id
+                    == user_institution_id
+                )
+                .first()
+            )
+
+            if not valid_branch:
+
+                flash(
+                    "You do not have permission to access this branch.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("main.all_exams")
+                )
+
+            query = query.filter(
+                Exam.branch_id == branch_id
+            )
+
+        institution_id = user_institution_id
+
+    # --------------------------------------------------------
+    # BRANCH ADMIN
+    # --------------------------------------------------------
+
+    elif current_role == "branch_admin":
+
+        # Branch admin is locked to:
+        #
+        # institution_id = current user's institution
+        # branch_id      = current user's branch
+
+        query = query.filter(
+            Exam.institution_id
+            == user_institution_id,
+
+            Exam.branch_id
+            == user_branch_id
+        )
+
+        # Ignore manipulated URL values.
+        institution_id = user_institution_id
+        branch_id = user_branch_id
+
+    # ========================================================
+    # SEARCH
+    # ========================================================
+
+    if search:
+
+        search_pattern = f"%{search}%"
+
+        query = query.filter(
+            db.or_(
+                Exam.name.ilike(
+                    search_pattern
+                ),
+
+                Exam.code.ilike(
+                    search_pattern
+                ),
+
+                Exam.description.ilike(
+                    search_pattern
+                ),
+            )
+        )
+
+    # ========================================================
+    # PROGRAM FILTER
+    # ========================================================
+
+    if program_id:
+
+        program_query = (
+            Program.query
+            .filter(
+                Program.id == program_id
+            )
+        )
+
+        # Non-superadmin cannot use
+        # another institution's program.
+
+        if current_role != "superadmin":
+
+            program_query = program_query.filter(
+                Program.institution_id
+                == user_institution_id
+            )
+
+        elif institution_id:
+
+            program_query = program_query.filter(
+                Program.institution_id
+                == institution_id
+            )
+
+        valid_program = (
+            program_query.first()
+        )
+
+        if valid_program:
+
+            query = query.filter(
+                Exam.program_id
+                == program_id
+            )
+
+        else:
+
+            # Invalid program for this user's scope
+            query = query.filter(
+                db.false()
+            )
+
+    # ========================================================
+    # ACADEMIC YEAR FILTER
+    # ========================================================
+
+    if academic_year_id:
+
+        academic_year_query = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.id
+                == academic_year_id
+            )
+        )
+
+        if current_role != "superadmin":
+
+            academic_year_query = (
+                academic_year_query
+                .filter(
+                    AcademicYear.institution_id
+                    == user_institution_id
+                )
+            )
+
+        elif institution_id:
+
+            academic_year_query = (
+                academic_year_query
+                .filter(
+                    AcademicYear.institution_id
+                    == institution_id
+                )
+            )
+
+        valid_academic_year = (
+            academic_year_query.first()
+        )
+
+        if valid_academic_year:
+
+            query = query.filter(
+                Exam.academic_year_id
+                == academic_year_id
+            )
+
+        else:
+
+            query = query.filter(
+                db.false()
+            )
+
+    # ========================================================
+    # TERM FILTER
+    # ========================================================
+
+    if term_id:
+
+        term_query = (
+            Term.query
+            .filter(
+                Term.id == term_id
+            )
+        )
+
+        if current_role != "superadmin":
+
+            term_query = term_query.filter(
+                Term.institution_id
+                == user_institution_id
+            )
+
+        elif institution_id:
+
+            term_query = term_query.filter(
+                Term.institution_id
+                == institution_id
+            )
+
+        if academic_year_id:
+
+            term_query = term_query.filter(
+                Term.academic_year_id
+                == academic_year_id
+            )
+
+        valid_term = (
+            term_query.first()
+        )
+
+        if valid_term:
+
+            query = query.filter(
+                Exam.term_id == term_id
+            )
+
+        else:
+
+            query = query.filter(
+                db.false()
+            )
+
+    # ========================================================
+    # EXAM TYPE
+    # ========================================================
+
+    allowed_exam_types = {
+        "monthly",
+        "bi_monthly",
+        "quarterly",
+        "semester",
+        "midterm",
+        "final",
+        "annual",
+        "mock",
+        "entrance",
+        "supplementary",
+        "resit",
+        "special",
+    }
+
+    if exam_type:
+
+        if exam_type in allowed_exam_types:
+
+            query = query.filter(
+                Exam.exam_type
+                == exam_type
+            )
+
+        else:
+
+            query = query.filter(
+                db.false()
+            )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    allowed_statuses = {
+        "draft",
+        "scheduled",
+        "ongoing",
+        "completed",
+        "cancelled",
+        "published",
+    }
+
+    if status:
+
+        if status in allowed_statuses:
+
+            query = query.filter(
+                Exam.status == status
+            )
+
+        else:
+
+            query = query.filter(
+                db.false()
+            )
+
+    # ========================================================
+    # ORDER
+    # ========================================================
+
+    query = query.order_by(
+        Exam.start_date.asc().nullslast(),
+        Exam.id.desc()
+    )
+
+    # ========================================================
+    # PAGINATION
+    # ========================================================
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    exams = pagination.items
+
+    # ========================================================
+    # INSTITUTIONS DROPDOWN
+    # ========================================================
+
+    if current_role == "superadmin":
+
+        institutions = (
+            Institution.query
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    else:
+
+        institutions = (
+            Institution.query
+            .filter(
+                Institution.id
+                == user_institution_id
+            )
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # BRANCHES DROPDOWN
+    # ========================================================
+
+    if current_role == "superadmin":
+
+        branch_query = Branch.query
+
+        if institution_id:
+
+            branch_query = (
+                branch_query
+                .filter(
+                    Branch.institution_id
+                    == institution_id
+                )
+            )
+
+    elif current_role == "school_admin":
+
+        branch_query = (
+            Branch.query
+            .filter(
+                Branch.institution_id
+                == user_institution_id
+            )
+        )
+
+    else:
+
+        # branch_admin sees ONLY own branch
+        branch_query = (
+            Branch.query
+            .filter(
+                Branch.id
+                == user_branch_id,
+
+                Branch.institution_id
+                == user_institution_id
+            )
+        )
+
+    branches = (
+        branch_query
+        .order_by(
+            Branch.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # PROGRAMS DROPDOWN
+    # ========================================================
+
+    program_query = Program.query
+
+    if current_role != "superadmin":
+
+        program_query = (
+            program_query
+            .filter(
+                Program.institution_id
+                == user_institution_id
+            )
+        )
+
+    elif institution_id:
+
+        program_query = (
+            program_query
+            .filter(
+                Program.institution_id
+                == institution_id
+            )
+        )
+
+    programs = (
+        program_query
+        .order_by(
+            Program.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # ACADEMIC YEARS DROPDOWN
+    # ========================================================
+
+    academic_year_query = (
+        AcademicYear.query
+    )
+
+    if current_role != "superadmin":
+
+        academic_year_query = (
+            academic_year_query
+            .filter(
+                AcademicYear.institution_id
+                == user_institution_id
+            )
+        )
+
+    elif institution_id:
+
+        academic_year_query = (
+            academic_year_query
+            .filter(
+                AcademicYear.institution_id
+                == institution_id
+            )
+        )
+
+    academic_years = (
+        academic_year_query
+        .order_by(
+            AcademicYear.id.desc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # TERMS DROPDOWN
+    # ========================================================
+
+    term_query = Term.query
+
+    if current_role != "superadmin":
+
+        term_query = (
+            term_query
+            .filter(
+                Term.institution_id
+                == user_institution_id
+            )
+        )
+
+    elif institution_id:
+
+        term_query = (
+            term_query
+            .filter(
+                Term.institution_id
+                == institution_id
+            )
+        )
+
+    if academic_year_id:
+
+        term_query = (
+            term_query
+            .filter(
+                Term.academic_year_id
+                == academic_year_id
+            )
+        )
+
+    terms = (
+        term_query
+        .order_by(
+            Term.id.desc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # STATUS COUNTS
+    #
+    # Counts are based on USER'S DATA SCOPE,
+    # not on arbitrary URL filters.
+    # ========================================================
+
+    count_query = Exam.query
+
+    # --------------------------------------------------------
+    # SUPERADMIN COUNT SCOPE
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        if institution_id:
+
+            count_query = count_query.filter(
+                Exam.institution_id
+                == institution_id
+            )
+
+        if branch_id:
+
+            count_query = count_query.filter(
+                Exam.branch_id
+                == branch_id
+            )
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN COUNT SCOPE
+    # --------------------------------------------------------
+
+    elif current_role == "school_admin":
+
+        count_query = count_query.filter(
+            Exam.institution_id
+            == user_institution_id
+        )
+
+        if branch_id:
+
+            count_query = count_query.filter(
+                Exam.branch_id
+                == branch_id
+            )
+
+    # --------------------------------------------------------
+    # BRANCH ADMIN COUNT SCOPE
+    # --------------------------------------------------------
+
+    elif current_role == "branch_admin":
+
+        count_query = count_query.filter(
+            Exam.institution_id
+            == user_institution_id,
+
+            Exam.branch_id
+            == user_branch_id
+        )
+
+    # ========================================================
+    # COUNTS
+    # ========================================================
+
+    total_count = (
+        count_query
+        .count()
+    )
+
+    draft_count = (
+        count_query
+        .filter(
+            Exam.status == "draft"
+        )
+        .count()
+    )
+
+    scheduled_count = (
+        count_query
+        .filter(
+            Exam.status == "scheduled"
+        )
+        .count()
+    )
+
+    ongoing_count = (
+        count_query
+        .filter(
+            Exam.status == "ongoing"
+        )
+        .count()
+    )
+
+    completed_count = (
+        count_query
+        .filter(
+            Exam.status == "completed"
+        )
+        .count()
+    )
+
+    published_count = (
+        count_query
+        .filter(
+            Exam.status == "published"
+        )
+        .count()
+    )
+
+    cancelled_count = (
+        count_query
+        .filter(
+            Exam.status == "cancelled"
+        )
+        .count()
+    )
+
+    # ========================================================
+    # EXAM TYPES
+    # ========================================================
+
+    exam_types = [
+        "monthly",
+        "bi_monthly",
+        "quarterly",
+        "semester",
+        "midterm",
+        "final",
+        "annual",
+        "mock",
+        "entrance",
+        "supplementary",
+        "resit",
+        "special",
+    ]
+
+    # ========================================================
+    # STATUSES
+    # ========================================================
+
+    statuses = [
+        "draft",
+        "scheduled",
+        "ongoing",
+        "completed",
+        "cancelled",
+        "published",
+    ]
+
+    # ========================================================
+    # RENDER TEMPLATE
+    # ========================================================
+
+    return render_template(
+        "backend/pages/exams/all_exams.html",
+
+        # ----------------------------------------------------
+        # DATA
+        # ----------------------------------------------------
+
+        exams=exams,
+        pagination=pagination,
+
+        # ----------------------------------------------------
+        # CURRENT ROLE
+        # ----------------------------------------------------
+
+        current_role=current_role,
+        user=current_user,
+
+        # ----------------------------------------------------
+        # FILTER VALUES
+        # ----------------------------------------------------
+
+        search=search,
+
+        institution_id=(
+            institution_id
+        ),
+
+        branch_id=(
+            branch_id
+        ),
+
+        program_id=(
+            program_id
+        ),
+
+        academic_year_id=(
+            academic_year_id
+        ),
+
+        term_id=(
+            term_id
+        ),
+
+        exam_type=(
+            exam_type
+        ),
+
+        status=(
+            status
+        ),
+
+        per_page=(
+            per_page
+        ),
+
+        # ----------------------------------------------------
+        # DROPDOWNS
+        # ----------------------------------------------------
+
+        institutions=institutions,
+
+        branches=branches,
+
+        programs=programs,
+
+        academic_years=academic_years,
+
+        terms=terms,
+
+        # ----------------------------------------------------
+        # OPTIONS
+        # ----------------------------------------------------
+
+        exam_types=exam_types,
+
+        statuses=statuses,
+
+        # ----------------------------------------------------
+        # STATISTICS
+        # ----------------------------------------------------
+
+        total_count=total_count,
+
+        draft_count=draft_count,
+
+        scheduled_count=scheduled_count,
+
+        ongoing_count=ongoing_count,
+
+        completed_count=completed_count,
+
+        published_count=published_count,
+
+        cancelled_count=cancelled_count,
+    )
+
+
+
+
+# ============================================================
+# ADD EXAM
+# ============================================================
+# ============================================================
+# ADD EXAM
+# ============================================================
+
+@bp.route(
+    "/exams/add",
+    methods=["GET", "POST"]
+)
+@login_required
+def add_exam():
+
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    current_role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    if current_role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # ROLE / USER SCOPE
+    # ========================================================
+
+    user_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # EXAM TYPE
+    # ========================================================
+
+    allowed_exam_types = {
+        "term",
+        "monthly",
+        "bi_monthly",
+        "quarterly",
+        "semester",
+        "midterm",
+        "final",
+        "annual",
+        "mock",
+        "entrance",
+        "supplementary",
+        "resit",
+        "special",
+    }
+
+    # ========================================================
+    # EXAM STATUS
+    # ========================================================
+
+    allowed_statuses = {
+        "draft",
+        "scheduled",
+        "ongoing",
+        "completed",
+        "cancelled",
+        "published",
+    }
+
+    # ========================================================
+    # GET DATA FOR FORM
+    # ========================================================
+
+    institutions_query = Institution.query
+
+    branches_query = Branch.query
+
+    programs_query = Program.query
+
+    assessment_plans_query = AssessmentPlan.query
+
+    academic_years_query = AcademicYear.query
+
+    terms_query = Term.query
+
+    # ========================================================
+    # ROLE SCOPE
+    # ========================================================
+
+    if current_role != "superadmin":
+
+        if not user_institution_id:
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+        institutions_query = institutions_query.filter(
+            Institution.id == user_institution_id
+        )
+
+        branches_query = branches_query.filter(
+            Branch.institution_id == user_institution_id
+        )
+
+        programs_query = programs_query.filter(
+            Program.institution_id == user_institution_id
+        )
+
+        # ----------------------------------------------------
+        # Assessment Plans
+        # ----------------------------------------------------
+
+        if hasattr(
+            AssessmentPlan,
+            "institution_id"
+        ):
+            assessment_plans_query = (
+                assessment_plans_query.filter(
+                    AssessmentPlan.institution_id
+                    == user_institution_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # Academic Years
+        # ----------------------------------------------------
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+            academic_years_query = (
+                academic_years_query.filter(
+                    AcademicYear.institution_id
+                    == user_institution_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # Branch Admin
+        # ----------------------------------------------------
+
+        if (
+            current_role == "branch_admin"
+            and user_branch_id
+        ):
+
+            branches_query = branches_query.filter(
+                Branch.id == user_branch_id
+            )
+
+            # Programs may either have:
+            #
+            # 1. branch_id = current branch
+            # 2. branch_id = NULL
+            #
+            # NULL means the program can be used
+            # in multiple branches.
+
+            programs_query = programs_query.filter(
+                db.or_(
+                    Program.branch_id == user_branch_id,
+                    Program.branch_id.is_(None)
+                )
+            )
+
+    # ========================================================
+    # EXECUTE GET QUERIES
+    # ========================================================
+
+    institutions = (
+        institutions_query
+        .order_by(Institution.name.asc())
+        .all()
+    )
+
+    branches = (
+        branches_query
+        .order_by(Branch.name.asc())
+        .all()
+    )
+
+    programs = (
+        programs_query
+        .order_by(Program.name.asc())
+        .all()
+    )
+
+    assessment_plans = (
+        assessment_plans_query
+        .order_by(AssessmentPlan.name.asc())
+        .all()
+    )
+
+    academic_years = (
+        academic_years_query
+        .order_by(
+            AcademicYear.id.desc()
+        )
+        .all()
+    )
+
+    terms = (
+        terms_query
+        .order_by(
+            Term.id.desc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # POST
+    # ========================================================
+
+    if request.method == "POST":
+
+        # ====================================================
+        # GET FORM VALUES
+        # ====================================================
+
+        institution_id = request.form.get(
+            "institution_id",
+            type=int
+        )
+
+        branch_id = request.form.get(
+            "branch_id",
+            type=int
+        )
+
+        program_id = request.form.get(
+            "program_id",
+            type=int
+        )
+
+        # ----------------------------------------------------
+        # OPTIONAL ASSESSMENT PLAN
+        # ----------------------------------------------------
+
+        assessment_plan_id = request.form.get(
+            "assessment_plan_id",
+            type=int
+        )
+
+        # Empty string should become None
+        if not assessment_plan_id:
+            assessment_plan_id = None
+
+        # ----------------------------------------------------
+        # ACADEMIC YEAR
+        # ----------------------------------------------------
+
+        academic_year_id = request.form.get(
+            "academic_year_id",
+            type=int
+        )
+
+        # ----------------------------------------------------
+        # TERM
+        # ----------------------------------------------------
+
+        term_id = request.form.get(
+            "term_id",
+            type=int
+        )
+
+        # ----------------------------------------------------
+        # EXAM INFORMATION
+        # ----------------------------------------------------
+
+        name = (
+            request.form.get("name", "")
+            .strip()
+        )
+
+        code = (
+            request.form.get("code", "")
+            .strip()
+            .upper()
+        )
+
+        exam_type = (
+            request.form.get(
+                "exam_type",
+                "term"
+            )
+            .strip()
+            .lower()
+        )
+
+        description = (
+            request.form.get(
+                "description",
+                ""
+            )
+            .strip()
+        )
+
+        # ----------------------------------------------------
+        # DATES
+        # ----------------------------------------------------
+
+        start_date = (
+            request.form.get(
+                "start_date",
+                ""
+            )
+            .strip()
+        )
+
+        end_date = (
+            request.form.get(
+                "end_date",
+                ""
+            )
+            .strip()
+        )
+
+        # ----------------------------------------------------
+        # STATUS
+        # ----------------------------------------------------
+
+        status = (
+            request.form.get(
+                "status",
+                "draft"
+            )
+            .strip()
+            .lower()
+        )
+
+        # ====================================================
+        # BASIC VALIDATION
+        # ====================================================
+
+        if not institution_id:
+            flash(
+                "Please select an institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        if not branch_id:
+            flash(
+                "Please select a branch.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        if not program_id:
+            flash(
+                "Please select a program.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        if not academic_year_id:
+            flash(
+                "Please select an academic year.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        if not name:
+            flash(
+                "Exam name is required.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # EXAM TYPE VALIDATION
+        # ====================================================
+
+        if exam_type not in allowed_exam_types:
+
+            flash(
+                "Invalid exam type selected.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # STATUS VALIDATION
+        # ====================================================
+
+        if status not in allowed_statuses:
+
+            flash(
+                "Invalid exam status selected.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # GET INSTITUTION
+        # ====================================================
+
+        institution = (
+            Institution.query
+            .filter(
+                Institution.id == institution_id
+            )
+            .first()
+        )
+
+        if not institution:
+
+            flash(
+                "Selected institution was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # USER INSTITUTION SECURITY
+        # ====================================================
+
+        if (
+            current_role != "superadmin"
+            and institution.id != user_institution_id
+        ):
+
+            abort(403)
+
+        # ====================================================
+        # GET BRANCH
+        # ====================================================
+
+        branch = (
+            Branch.query
+            .filter(
+                Branch.id == branch_id
+            )
+            .first()
+        )
+
+        if not branch:
+
+            flash(
+                "Selected branch was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # BRANCH → INSTITUTION
+        # ====================================================
+
+        if branch.institution_id != institution.id:
+
+            flash(
+                "Selected branch does not belong to the selected institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # BRANCH ADMIN SECURITY
+        # ====================================================
+
+        if (
+            current_role == "branch_admin"
+            and user_branch_id
+            and branch.id != user_branch_id
+        ):
+
+            abort(403)
+
+        # ====================================================
+        # GET PROGRAM
+        # ====================================================
+
+        program = (
+            Program.query
+            .filter(
+                Program.id == program_id
+            )
+            .first()
+        )
+
+        if not program:
+
+            flash(
+                "Selected program was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # PROGRAM → INSTITUTION
+        # ====================================================
+
+        if program.institution_id != institution.id:
+
+            flash(
+                "Selected program does not belong to the selected institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # PROGRAM → BRANCH
+        #
+        # branch_id = NULL means multi-branch program
+        # ====================================================
+
+        if (
+            getattr(program, "branch_id", None)
+            and program.branch_id != branch.id
+        ):
+
+            flash(
+                "Selected program is not available in this branch.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # GET ACADEMIC YEAR
+        # ====================================================
+
+        academic_year = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.id == academic_year_id
+            )
+            .first()
+        )
+
+        if not academic_year:
+
+            flash(
+                "Selected academic year was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # ACADEMIC YEAR → INSTITUTION
+        # ====================================================
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            if (
+                academic_year.institution_id
+                != institution.id
+            ):
+
+                flash(
+                    "Selected academic year does not belong to the selected institution.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/add_exam.html",
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                )
+
+        # ====================================================
+        # OPTIONAL TERM VALIDATION
+        # ====================================================
+
+        term = None
+
+        if term_id:
+
+            term = (
+                Term.query
+                .filter(
+                    Term.id == term_id
+                )
+                .first()
+            )
+
+            if not term:
+
+                flash(
+                    "Selected term was not found.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/add_exam.html",
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                )
+
+            # ------------------------------------------------
+            # TERM → ACADEMIC YEAR
+            # ------------------------------------------------
+
+            if hasattr(
+                Term,
+                "academic_year_id"
+            ):
+
+                if (
+                    term.academic_year_id
+                    != academic_year.id
+                ):
+
+                    flash(
+                        "Selected term does not belong to the selected academic year.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "backend/pages/exams/add_exam.html",
+                        institutions=institutions,
+                        branches=branches,
+                        programs=programs,
+                        assessment_plans=assessment_plans,
+                        academic_years=academic_years,
+                        terms=terms,
+                    )
+
+        # ====================================================
+        # OPTIONAL ASSESSMENT PLAN
+        # ====================================================
+
+        assessment_plan = None
+
+        if assessment_plan_id:
+
+            assessment_plan = (
+                AssessmentPlan.query
+                .filter(
+                    AssessmentPlan.id
+                    == assessment_plan_id
+                )
+                .first()
+            )
+
+            if not assessment_plan:
+
+                flash(
+                    "Selected assessment plan was not found.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/add_exam.html",
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                )
+
+            # ------------------------------------------------
+            # ASSESSMENT PLAN → INSTITUTION
+            # ------------------------------------------------
+
+            if hasattr(
+                AssessmentPlan,
+                "institution_id"
+            ):
+
+                if (
+                    assessment_plan.institution_id
+                    != institution.id
+                ):
+
+                    flash(
+                        "Selected assessment plan does not belong to the selected institution.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "backend/pages/exams/add_exam.html",
+                        institutions=institutions,
+                        branches=branches,
+                        programs=programs,
+                        assessment_plans=assessment_plans,
+                        academic_years=academic_years,
+                        terms=terms,
+                    )
+
+            # ------------------------------------------------
+            # ASSESSMENT PLAN → PROGRAM
+            # ------------------------------------------------
+
+            if hasattr(
+                AssessmentPlan,
+                "program_id"
+            ):
+
+                if (
+                    assessment_plan.program_id
+                    != program.id
+                ):
+
+                    flash(
+                        "Selected assessment plan does not belong to the selected program.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "backend/pages/exams/add_exam.html",
+                        institutions=institutions,
+                        branches=branches,
+                        programs=programs,
+                        assessment_plans=assessment_plans,
+                        academic_years=academic_years,
+                        terms=terms,
+                    )
+
+        # ====================================================
+        # DATE VALIDATION
+        # ====================================================
+
+        parsed_start_date = None
+        parsed_end_date = None
+
+        if start_date:
+
+            try:
+                parsed_start_date = datetime.strptime(
+                    start_date,
+                    "%Y-%m-%d"
+                ).date()
+
+            except ValueError:
+
+                flash(
+                    "Invalid start date.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/add_exam.html",
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                )
+
+        if end_date:
+
+            try:
+                parsed_end_date = datetime.strptime(
+                    end_date,
+                    "%Y-%m-%d"
+                ).date()
+
+            except ValueError:
+
+                flash(
+                    "Invalid end date.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/add_exam.html",
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                )
+
+        if (
+            parsed_start_date
+            and parsed_end_date
+            and parsed_end_date < parsed_start_date
+        ):
+
+            flash(
+                "End date cannot be earlier than start date.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # GENERATE CODE IF EMPTY
+        # ====================================================
+
+        if not code:
+
+            # ------------------------------------------------
+            # PROGRAM CODE
+            # ------------------------------------------------
+
+            program_code = (
+                getattr(
+                    program,
+                    "code",
+                    None
+                )
+                or getattr(
+                    program,
+                    "short_name",
+                    None
+                )
+                or getattr(
+                    program,
+                    "name",
+                    "PRG"
+                )
+            )
+
+            # ------------------------------------------------
+            # ACADEMIC YEAR CODE
+            # ------------------------------------------------
+
+            year_code = (
+                getattr(
+                    academic_year,
+                    "name",
+                    None
+                )
+                or getattr(
+                    academic_year,
+                    "code",
+                    None
+                )
+                or getattr(
+                    academic_year,
+                    "academic_year",
+                    None
+                )
+                or str(
+                    academic_year.id
+                )
+            )
+
+            # ------------------------------------------------
+            # EXAM TYPE CODE
+            # ------------------------------------------------
+
+            exam_type_codes = {
+                "term": "TERM",
+                "monthly": "MON",
+                "bi_monthly": "BIM",
+                "quarterly": "QTR",
+                "semester": "SEM",
+                "midterm": "MID",
+                "final": "FIN",
+                "annual": "ANN",
+                "mock": "MOCK",
+                "entrance": "ENT",
+                "supplementary": "SUP",
+                "resit": "RES",
+                "special": "SPC",
+            }
+
+            type_code = exam_type_codes.get(
+                exam_type,
+                exam_type.upper()[:5]
+            )
+
+            # ------------------------------------------------
+            # CLEAN CODE
+            # ------------------------------------------------
+
+            import re
+
+            program_code = re.sub(
+                r"[^A-Z0-9]+",
+                "-",
+                str(
+                    program_code
+                ).upper()
+            ).strip("-")
+
+            if not program_code:
+                program_code = "PRG"
+
+            program_code = program_code[:12]
+
+            year_code = re.sub(
+                r"[^A-Z0-9]+",
+                "-",
+                str(
+                    year_code
+                ).upper()
+            ).strip("-")
+
+            if not year_code:
+                year_code = str(
+                    academic_year.id
+                )
+
+            # ------------------------------------------------
+            # BASE CODE
+            # ------------------------------------------------
+
+            base_code = (
+                f"{program_code}-"
+                f"{type_code}-"
+                f"{year_code}"
+            )
+
+            # ------------------------------------------------
+            # UNIQUE SEQUENCE
+            # ------------------------------------------------
+
+            sequence = 1
+
+            while True:
+
+                generated_code = (
+                    f"{base_code}-"
+                    f"{sequence:03d}"
+                )
+
+                existing_exam = (
+                    Exam.query
+                    .filter(
+                        Exam.code
+                        == generated_code
+                    )
+                    .first()
+                )
+
+                if not existing_exam:
+                    code = generated_code
+                    break
+
+                sequence += 1
+
+                if sequence > 9999:
+
+                    flash(
+                        "Unable to generate a unique exam code.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "backend/pages/exams/add_exam.html",
+                        institutions=institutions,
+                        branches=branches,
+                        programs=programs,
+                        assessment_plans=assessment_plans,
+                        academic_years=academic_years,
+                        terms=terms,
+                    )
+
+        # ====================================================
+        # CODE DUPLICATE CHECK
+        # ====================================================
+
+        existing_code = (
+            Exam.query
+            .filter(
+                db.func.upper(
+                    Exam.code
+                ) == code.upper()
+            )
+            .first()
+        )
+
+        if existing_code:
+
+            flash(
+                f"Exam code '{code}' already exists.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+        # ====================================================
+        # CREATE EXAM
+        # ====================================================
+
+        exam = Exam(
+            institution_id=institution.id,
+            branch_id=branch.id,
+            program_id=program.id,
+
+            # Optional
+            assessment_plan_id=(
+                assessment_plan.id
+                if assessment_plan
+                else None
+            ),
+
+            academic_year_id=academic_year.id,
+
+            # Optional
+            term_id=(
+                term.id
+                if term
+                else None
+            ),
+
+            name=name,
+            code=code,
+            exam_type=exam_type,
+            description=(
+                description
+                if description
+                else None
+            ),
+
+            start_date=parsed_start_date,
+            end_date=parsed_end_date,
+
+            status=status,
+        )
+
+        # ====================================================
+        # OPTIONAL USER CREATOR
+        # ====================================================
+        #
+        # Only enable this section if Exam model has
+        # created_by / created_by_id.
+        #
+        # Example:
+        #
+        # exam.created_by = current_user.id
+        #
+        # ====================================================
+
+        # ====================================================
+        # SAVE
+        # ====================================================
+
+        try:
+
+            db.session.add(exam)
+
+            db.session.commit()
+
+            flash(
+                f"Exam '{exam.name}' was created successfully.",
+                "success"
+            )
+
+            return redirect(
+                url_for(
+                    "main.all_exams"
+                )
+            )
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Error while creating exam"
+            )
+
+            flash(
+                "An error occurred while creating the exam. Please try again.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/add_exam.html",
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+            )
+
+    # ========================================================
+    # GET
+    # ========================================================
+
+    return render_template(
+        "backend/pages/exams/add_exam.html",
+
+        # ----------------------------------------------
+        # ORGANIZATION
+        # ----------------------------------------------
+
+        institutions=institutions,
+        branches=branches,
+        programs=programs,
+
+        # ----------------------------------------------
+        # OPTIONAL ASSESSMENT PLANS
+        # ----------------------------------------------
+
+        assessment_plans=assessment_plans,
+
+        # ----------------------------------------------
+        # ACADEMIC PERIOD
+        # ----------------------------------------------
+
+        academic_years=academic_years,
+        terms=terms,
+
+        # ----------------------------------------------
+        # EXTRA
+        # ----------------------------------------------
+
+        allowed_exam_types=allowed_exam_types,
+        allowed_statuses=allowed_statuses,
+        user=current_user
+    )
+
+
+
+
+# ============================================================
+# GENERATE EXAM CODE
+# ============================================================
+
+@bp.route(
+    "/exams/generate-code",
+    methods=["GET"]
+)
+@login_required
+def generate_exam_code():
+
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    current_role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    if current_role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # GET REQUEST PARAMETERS
+    # ========================================================
+
+    institution_id = request.args.get(
+        "institution_id",
+        type=int
+    )
+
+    branch_id = request.args.get(
+        "branch_id",
+        type=int
+    )
+
+    program_id = request.args.get(
+        "program_id",
+        type=int
+    )
+
+    academic_year_id = request.args.get(
+        "academic_year_id",
+        type=int
+    )
+
+    exam_type = (
+        request.args.get(
+            "exam_type",
+            "term"
+        )
+        .strip()
+        .lower()
+    )
+
+    # ========================================================
+    # REQUIRED DATA
+    # ========================================================
+
+    if not institution_id:
+        return {
+            "success": False,
+            "message": "Institution is required."
+        }, 400
+
+    if not branch_id:
+        return {
+            "success": False,
+            "message": "Branch is required."
+        }, 400
+
+    if not program_id:
+        return {
+            "success": False,
+            "message": "Program is required."
+        }, 400
+
+    if not academic_year_id:
+        return {
+            "success": False,
+            "message": "Academic year is required."
+        }, 400
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+
+    institution = (
+        Institution.query
+        .filter_by(
+            id=institution_id
+        )
+        .first()
+    )
+
+    if not institution:
+        return {
+            "success": False,
+            "message": "Institution not found."
+        }, 404
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    branch = (
+        Branch.query
+        .filter_by(
+            id=branch_id
+        )
+        .first()
+    )
+
+    if not branch:
+        return {
+            "success": False,
+            "message": "Branch not found."
+        }, 404
+
+    # Branch must belong to institution
+    if branch.institution_id != institution.id:
+        return {
+            "success": False,
+            "message": "Selected branch does not belong to the selected institution."
+        }, 400
+
+    # ========================================================
+    # PROGRAM
+    # ========================================================
+
+    program = (
+        Program.query
+        .filter_by(
+            id=program_id
+        )
+        .first()
+    )
+
+    if not program:
+        return {
+            "success": False,
+            "message": "Program not found."
+        }, 404
+
+    # Program must belong to institution
+    if program.institution_id != institution.id:
+        return {
+            "success": False,
+            "message": "Selected program does not belong to the selected institution."
+        }, 400
+
+    # ========================================================
+    # PROGRAM BRANCH VALIDATION
+    # ========================================================
+
+    # Program.branch_id can be NULL because
+    # the program may be available to multiple branches.
+
+    if (
+        getattr(program, "branch_id", None)
+        and program.branch_id != branch.id
+    ):
+        return {
+            "success": False,
+            "message": "Selected program is not available in this branch."
+        }, 400
+
+    # ========================================================
+    # ACADEMIC YEAR
+    # ========================================================
+
+    academic_year = (
+        AcademicYear.query
+        .filter_by(
+            id=academic_year_id
+        )
+        .first()
+    )
+
+    if not academic_year:
+        return {
+            "success": False,
+            "message": "Academic year not found."
+        }, 404
+
+    # ========================================================
+    # YEAR CODE
+    # ========================================================
+
+    year_code = None
+
+    # Try common academic-year fields
+    if hasattr(academic_year, "name"):
+        year_code = academic_year.name
+
+    elif hasattr(academic_year, "code"):
+        year_code = academic_year.code
+
+    elif hasattr(academic_year, "academic_year"):
+        year_code = academic_year.academic_year
+
+    else:
+        year_code = str(academic_year_id)
+
+    # Clean year
+    year_code = str(
+        year_code
+    ).strip().upper()
+
+    # ========================================================
+    # PROGRAM CODE
+    # ========================================================
+
+    program_code = getattr(
+        program,
+        "code",
+        None
+    )
+
+    if not program_code:
+        program_code = getattr(
+            program,
+            "short_name",
+            None
+        )
+
+    if not program_code:
+        program_code = getattr(
+            program,
+            "name",
+            "PRG"
+        )
+
+    # ========================================================
+    # EXAM TYPE CODE
+    # ========================================================
+
+    exam_type_codes = {
+
+        "term": "TERM",
+
+        "monthly": "MON",
+
+        "bi_monthly": "BIM",
+
+        "quarterly": "QTR",
+
+        "semester": "SEM",
+
+        "midterm": "MID",
+
+        "final": "FIN",
+
+        "annual": "ANN",
+
+        "mock": "MOCK",
+
+        "entrance": "ENT",
+
+        "supplementary": "SUP",
+
+        "resit": "RES",
+
+        "special": "SPC",
+
+    }
+
+    type_code = exam_type_codes.get(
+        exam_type,
+        exam_type.upper()[:5]
+    )
+
+    # ========================================================
+    # CLEAN PROGRAM CODE
+    # ========================================================
+
+    import re
+
+    program_code = re.sub(
+        r"[^A-Z0-9]+",
+        "-",
+        str(program_code).upper()
+    ).strip("-")
+
+    if not program_code:
+        program_code = "PRG"
+
+    # Keep code manageable
+    program_code = program_code[:12]
+
+    # ========================================================
+    # CLEAN YEAR CODE
+    # ========================================================
+
+    year_code = re.sub(
+        r"[^A-Z0-9]+",
+        "-",
+        year_code
+    ).strip("-")
+
+    if not year_code:
+        year_code = str(
+            getattr(
+                academic_year,
+                "id",
+                academic_year_id
+            )
+        )
+
+    # ========================================================
+    # BASE CODE
+    # ========================================================
+
+    base_code = (
+        f"{program_code}-"
+        f"{type_code}-"
+        f"{year_code}"
+    )
+
+    # ========================================================
+    # FIND NEXT NUMBER
+    # ========================================================
+
+    sequence = 1
+
+    while True:
+
+        generated_code = (
+            f"{base_code}-"
+            f"{sequence:03d}"
+        )
+
+        # ====================================================
+        # CHECK DUPLICATE
+        # ====================================================
+
+        existing_exam = (
+            Exam.query
+            .filter(
+                Exam.code == generated_code
+            )
+            .first()
+        )
+
+        if not existing_exam:
+            break
+
+        sequence += 1
+
+        # Safety protection
+        if sequence > 9999:
+
+            return {
+                "success": False,
+                "message": "Unable to generate a unique exam code."
+            }, 500
+
+    # ========================================================
+    # RETURN JSON
+    # ========================================================
+
+    return {
+        "success": True,
+        "code": generated_code
+    }, 200
+
+
+
+# ============================================================
+# VIEW EXAM
+# ============================================================
+
+@bp.route(
+    "/exams/<int:exam_id>",
+    methods=["GET"]
+)
+@login_required
+def view_exam(exam_id):
+
+    if not _exam_can_view():
+        abort(403)
+
+    query = _exam_scope_query(
+        Exam.query
+    )
+
+    exam = (
+        query
+        .filter(
+            Exam.id == exam_id
+        )
+        .first_or_404()
+    )
+
+    return render_template(
+        "backend/pages/exams/view_exam.html",
+        exam=exam,
+    )
+
+
+# ============================================================
+# EDIT EXAM
+# ============================================================
+# ============================================================
+# EDIT EXAM
+# ============================================================
+
+@bp.route(
+    "/exams/<int:exam_id>/edit",
+    methods=["GET", "POST"]
+)
+@login_required
+def edit_exam(exam_id):
+
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    current_role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    if current_role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # USER SCOPE
+    # ========================================================
+
+    user_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # GET EXAM
+    # ========================================================
+
+    exam = (
+        Exam.query
+        .filter(
+            Exam.id == exam_id
+        )
+        .first()
+    )
+
+    if not exam:
+        flash(
+            "Exam not found.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_exams")
+        )
+
+    # ========================================================
+    # EXAM INSTITUTION SECURITY
+    # ========================================================
+
+    if (
+        current_role != "superadmin"
+        and user_institution_id
+        and exam.institution_id
+        != user_institution_id
+    ):
+        abort(403)
+
+    # ========================================================
+    # BRANCH ADMIN SECURITY
+    # ========================================================
+
+    if (
+        current_role == "branch_admin"
+        and user_branch_id
+        and exam.branch_id != user_branch_id
+    ):
+        abort(403)
+
+    # ========================================================
+    # ALLOWED EXAM TYPES
+    # ========================================================
+
+    allowed_exam_types = {
+        "term",
+        "monthly",
+        "bi_monthly",
+        "quarterly",
+        "semester",
+        "midterm",
+        "final",
+        "annual",
+        "mock",
+        "entrance",
+        "supplementary",
+        "resit",
+        "special",
+    }
+
+    # ========================================================
+    # ALLOWED STATUS
+    # ========================================================
+
+    allowed_statuses = {
+        "draft",
+        "scheduled",
+        "ongoing",
+        "completed",
+        "cancelled",
+        "published",
+    }
+
+    # ========================================================
+    # FORM DATA
+    # ========================================================
+
+    institutions_query = Institution.query
+    branches_query = Branch.query
+    programs_query = Program.query
+    assessment_plans_query = AssessmentPlan.query
+    academic_years_query = AcademicYear.query
+    terms_query = Term.query
+
+    # ========================================================
+    # USER SCOPE
+    # ========================================================
+
+    if current_role != "superadmin":
+
+        if not user_institution_id:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("main.dashboard")
+            )
+
+        # ----------------------------------------------------
+        # INSTITUTIONS
+        # ----------------------------------------------------
+
+        institutions_query = (
+            institutions_query.filter(
+                Institution.id
+                == user_institution_id
+            )
+        )
+
+        # ----------------------------------------------------
+        # BRANCHES
+        # ----------------------------------------------------
+
+        branches_query = (
+            branches_query.filter(
+                Branch.institution_id
+                == user_institution_id
+            )
+        )
+
+        # ----------------------------------------------------
+        # PROGRAMS
+        # ----------------------------------------------------
+
+        programs_query = (
+            programs_query.filter(
+                Program.institution_id
+                == user_institution_id
+            )
+        )
+
+        # ----------------------------------------------------
+        # ASSESSMENT PLANS
+        # ----------------------------------------------------
+
+        if hasattr(
+            AssessmentPlan,
+            "institution_id"
+        ):
+
+            assessment_plans_query = (
+                assessment_plans_query.filter(
+                    AssessmentPlan.institution_id
+                    == user_institution_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # ACADEMIC YEARS
+        # ----------------------------------------------------
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            academic_years_query = (
+                academic_years_query.filter(
+                    AcademicYear.institution_id
+                    == user_institution_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN
+        # ----------------------------------------------------
+
+        if (
+            current_role == "branch_admin"
+            and user_branch_id
+        ):
+
+            branches_query = (
+                branches_query.filter(
+                    Branch.id
+                    == user_branch_id
+                )
+            )
+
+            programs_query = (
+                programs_query.filter(
+                    or_(
+                        Program.branch_id
+                        == user_branch_id,
+
+                        Program.branch_id.is_(None)
+                    )
+                )
+            )
+
+    # ========================================================
+    # EXECUTE QUERIES
+    # ========================================================
+
+    institutions = (
+        institutions_query
+        .order_by(
+            Institution.name.asc()
+        )
+        .all()
+    )
+
+    branches = (
+        branches_query
+        .order_by(
+            Branch.name.asc()
+        )
+        .all()
+    )
+
+    programs = (
+        programs_query
+        .order_by(
+            Program.name.asc()
+        )
+        .all()
+    )
+
+    assessment_plans = (
+        assessment_plans_query
+        .order_by(
+            AssessmentPlan.name.asc()
+        )
+        .all()
+    )
+
+    academic_years = (
+        academic_years_query
+        .order_by(
+            AcademicYear.id.desc()
+        )
+        .all()
+    )
+
+    terms = (
+        terms_query
+        .order_by(
+            Term.id.desc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # POST
+    # ========================================================
+
+    if request.method == "POST":
+
+        # ====================================================
+        # FORM VALUES
+        # ====================================================
+
+        institution_id = request.form.get(
+            "institution_id",
+            type=int
+        )
+
+        branch_id = request.form.get(
+            "branch_id",
+            type=int
+        )
+
+        program_id = request.form.get(
+            "program_id",
+            type=int
+        )
+
+        assessment_plan_id = request.form.get(
+            "assessment_plan_id",
+            type=int
+        )
+
+        if not assessment_plan_id:
+            assessment_plan_id = None
+
+        academic_year_id = request.form.get(
+            "academic_year_id",
+            type=int
+        )
+
+        term_id = request.form.get(
+            "term_id",
+            type=int
+        )
+
+        if not term_id:
+            term_id = None
+
+        name = (
+            request.form.get(
+                "name",
+                ""
+            )
+            .strip()
+        )
+
+        code = (
+            request.form.get(
+                "code",
+                ""
+            )
+            .strip()
+            .upper()
+        )
+
+        exam_type = (
+            request.form.get(
+                "exam_type",
+                "term"
+            )
+            .strip()
+            .lower()
+        )
+
+        description = (
+            request.form.get(
+                "description",
+                ""
+            )
+            .strip()
+        )
+
+        start_date = (
+            request.form.get(
+                "start_date",
+                ""
+            )
+            .strip()
+        )
+
+        end_date = (
+            request.form.get(
+                "end_date",
+                ""
+            )
+            .strip()
+        )
+
+        status = (
+            request.form.get(
+                "status",
+                "draft"
+            )
+            .strip()
+            .lower()
+        )
+
+        # ====================================================
+        # BASIC VALIDATION
+        # ====================================================
+
+        if not institution_id:
+
+            flash(
+                "Please select an institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        if not branch_id:
+
+            flash(
+                "Please select a branch.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        if not program_id:
+
+            flash(
+                "Please select a program.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        if not academic_year_id:
+
+            flash(
+                "Please select an academic year.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        if not name:
+
+            flash(
+                "Exam name is required.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # EXAM TYPE
+        # ====================================================
+
+        if exam_type not in allowed_exam_types:
+
+            flash(
+                "Invalid exam type selected.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # STATUS
+        # ====================================================
+
+        if status not in allowed_statuses:
+
+            flash(
+                "Invalid exam status selected.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # INSTITUTION
+        # ====================================================
+
+        institution = (
+            Institution.query
+            .filter(
+                Institution.id
+                == institution_id
+            )
+            .first()
+        )
+
+        if not institution:
+
+            flash(
+                "Selected institution was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # INSTITUTION SCOPE
+        # ====================================================
+
+        if (
+            current_role != "superadmin"
+            and institution.id
+            != user_institution_id
+        ):
+            abort(403)
+
+        # ====================================================
+        # BRANCH
+        # ====================================================
+
+        branch = (
+            Branch.query
+            .filter(
+                Branch.id == branch_id
+            )
+            .first()
+        )
+
+        if not branch:
+
+            flash(
+                "Selected branch was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # BRANCH → INSTITUTION
+        # ====================================================
+
+        if branch.institution_id != institution.id:
+
+            flash(
+                "Selected branch does not belong to the selected institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # BRANCH ADMIN SCOPE
+        # ====================================================
+
+        if (
+            current_role == "branch_admin"
+            and user_branch_id
+            and branch.id != user_branch_id
+        ):
+            abort(403)
+
+        # ====================================================
+        # PROGRAM
+        # ====================================================
+
+        program = (
+            Program.query
+            .filter(
+                Program.id == program_id
+            )
+            .first()
+        )
+
+        if not program:
+
+            flash(
+                "Selected program was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # PROGRAM → INSTITUTION
+        # ====================================================
+
+        if program.institution_id != institution.id:
+
+            flash(
+                "Selected program does not belong to the selected institution.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # PROGRAM → BRANCH
+        #
+        # NULL = available to multiple branches
+        # ====================================================
+
+        if (
+            getattr(
+                program,
+                "branch_id",
+                None
+            )
+            and program.branch_id
+            != branch.id
+        ):
+
+            flash(
+                "Selected program is not available in this branch.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # ACADEMIC YEAR
+        # ====================================================
+
+        academic_year = (
+            AcademicYear.query
+            .filter(
+                AcademicYear.id
+                == academic_year_id
+            )
+            .first()
+        )
+
+        if not academic_year:
+
+            flash(
+                "Selected academic year was not found.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # ACADEMIC YEAR → INSTITUTION
+        # ====================================================
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            if (
+                academic_year.institution_id
+                != institution.id
+            ):
+
+                flash(
+                    "Selected academic year does not belong to the selected institution.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/edit_exam.html",
+                    exam=exam,
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                    allowed_exam_types=allowed_exam_types,
+                    allowed_statuses=allowed_statuses,
+                )
+
+        # ====================================================
+        # TERM - OPTIONAL
+        # ====================================================
+
+        term = None
+
+        if term_id:
+
+            term = (
+                Term.query
+                .filter(
+                    Term.id == term_id
+                )
+                .first()
+            )
+
+            if not term:
+
+                flash(
+                    "Selected term was not found.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/edit_exam.html",
+                    exam=exam,
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                    allowed_exam_types=allowed_exam_types,
+                    allowed_statuses=allowed_statuses,
+                )
+
+            # ------------------------------------------------
+            # TERM → ACADEMIC YEAR
+            # ------------------------------------------------
+
+            if hasattr(
+                Term,
+                "academic_year_id"
+            ):
+
+                if (
+                    term.academic_year_id
+                    != academic_year.id
+                ):
+
+                    flash(
+                        "Selected term does not belong to the selected academic year.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "backend/pages/exams/edit_exam.html",
+                        exam=exam,
+                        institutions=institutions,
+                        branches=branches,
+                        programs=programs,
+                        assessment_plans=assessment_plans,
+                        academic_years=academic_years,
+                        terms=terms,
+                        allowed_exam_types=allowed_exam_types,
+                        allowed_statuses=allowed_statuses,
+                    )
+
+        # ====================================================
+        # ASSESSMENT PLAN - OPTIONAL
+        # ====================================================
+
+        assessment_plan = None
+
+        if assessment_plan_id:
+
+            assessment_plan = (
+                AssessmentPlan.query
+                .filter(
+                    AssessmentPlan.id
+                    == assessment_plan_id
+                )
+                .first()
+            )
+
+            if not assessment_plan:
+
+                flash(
+                    "Selected assessment plan was not found.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/edit_exam.html",
+                    exam=exam,
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                    allowed_exam_types=allowed_exam_types,
+                    allowed_statuses=allowed_statuses,
+                )
+
+            # ------------------------------------------------
+            # PLAN → INSTITUTION
+            # ------------------------------------------------
+
+            if hasattr(
+                AssessmentPlan,
+                "institution_id"
+            ):
+
+                if (
+                    assessment_plan.institution_id
+                    != institution.id
+                ):
+
+                    flash(
+                        "Selected assessment plan does not belong to the selected institution.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "backend/pages/exams/edit_exam.html",
+                        exam=exam,
+                        institutions=institutions,
+                        branches=branches,
+                        programs=programs,
+                        assessment_plans=assessment_plans,
+                        academic_years=academic_years,
+                        terms=terms,
+                        allowed_exam_types=allowed_exam_types,
+                        allowed_statuses=allowed_statuses,
+                    )
+
+            # ------------------------------------------------
+            # PLAN → PROGRAM
+            # ------------------------------------------------
+
+            if hasattr(
+                AssessmentPlan,
+                "program_id"
+            ):
+
+                if (
+                    assessment_plan.program_id
+                    != program.id
+                ):
+
+                    flash(
+                        "Selected assessment plan does not belong to the selected program.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "backend/pages/exams/edit_exam.html",
+                        exam=exam,
+                        institutions=institutions,
+                        branches=branches,
+                        programs=programs,
+                        assessment_plans=assessment_plans,
+                        academic_years=academic_years,
+                        terms=terms,
+                        allowed_exam_types=allowed_exam_types,
+                        allowed_statuses=allowed_statuses,
+                    )
+
+        # ====================================================
+        # DATE VALIDATION
+        # ====================================================
+
+        parsed_start_date = None
+        parsed_end_date = None
+
+        if start_date:
+
+            try:
+
+                parsed_start_date = (
+                    datetime.strptime(
+                        start_date,
+                        "%Y-%m-%d"
+                    ).date()
+                )
+
+            except ValueError:
+
+                flash(
+                    "Invalid start date.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/edit_exam.html",
+                    exam=exam,
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                    allowed_exam_types=allowed_exam_types,
+                    allowed_statuses=allowed_statuses,
+                )
+
+        if end_date:
+
+            try:
+
+                parsed_end_date = (
+                    datetime.strptime(
+                        end_date,
+                        "%Y-%m-%d"
+                    ).date()
+                )
+
+            except ValueError:
+
+                flash(
+                    "Invalid end date.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/exams/edit_exam.html",
+                    exam=exam,
+                    institutions=institutions,
+                    branches=branches,
+                    programs=programs,
+                    assessment_plans=assessment_plans,
+                    academic_years=academic_years,
+                    terms=terms,
+                    allowed_exam_types=allowed_exam_types,
+                    allowed_statuses=allowed_statuses,
+                )
+
+        if (
+            parsed_start_date
+            and parsed_end_date
+            and parsed_end_date < parsed_start_date
+        ):
+
+            flash(
+                "End date cannot be earlier than start date.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # CODE VALIDATION
+        # ====================================================
+
+        if not code:
+
+            flash(
+                "Exam code is required.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # DUPLICATE CODE CHECK
+        #
+        # Ignore current exam itself
+        # ====================================================
+
+        duplicate_exam = (
+            Exam.query
+            .filter(
+                db.func.upper(
+                    Exam.code
+                ) == code.upper(),
+
+                Exam.id != exam.id
+            )
+            .first()
+        )
+
+        if duplicate_exam:
+
+            flash(
+                f"Exam code '{code}' is already used by another exam.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+        # ====================================================
+        # UPDATE EXAM
+        # ====================================================
+
+        exam.institution_id = institution.id
+
+        exam.branch_id = branch.id
+
+        exam.program_id = program.id
+
+        # Optional
+        exam.assessment_plan_id = (
+            assessment_plan.id
+            if assessment_plan
+            else None
+        )
+
+        exam.academic_year_id = (
+            academic_year.id
+        )
+
+        # Optional
+        exam.term_id = (
+            term.id
+            if term
+            else None
+        )
+
+        exam.name = name
+
+        exam.code = code
+
+        exam.exam_type = exam_type
+
+        exam.description = (
+            description
+            if description
+            else None
+        )
+
+        exam.start_date = parsed_start_date
+
+        exam.end_date = parsed_end_date
+
+        exam.status = status
+
+        # ====================================================
+        # SAVE
+        # ====================================================
+
+        try:
+
+            db.session.commit()
+
+            flash(
+                f"Exam '{exam.name}' was updated successfully.",
+                "success"
+            )
+
+            return redirect(
+                url_for(
+                    "main.all_exams"
+                )
+            )
+
+        except Exception:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Error while updating exam"
+            )
+
+            flash(
+                "An error occurred while updating the exam. Please try again.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/exams/edit_exam.html",
+                exam=exam,
+                institutions=institutions,
+                branches=branches,
+                programs=programs,
+                assessment_plans=assessment_plans,
+                academic_years=academic_years,
+                terms=terms,
+                allowed_exam_types=allowed_exam_types,
+                allowed_statuses=allowed_statuses,
+            )
+
+    # ========================================================
+    # GET
+    # ========================================================
+
+    return render_template(
+        "backend/pages/exams/edit_exam.html",
+
+        exam=exam,
+
+        institutions=institutions,
+
+        branches=branches,
+
+        programs=programs,
+
+        assessment_plans=assessment_plans,
+
+        academic_years=academic_years,
+
+        terms=terms,
+
+        allowed_exam_types=allowed_exam_types,
+
+        allowed_statuses=allowed_statuses,
+        user=current_user
+    )
+
+
+
+
+# ============================================================
+# DELETE EXAM
+# ============================================================
+
+@bp.route(
+    "/exams/<int:exam_id>/delete",
+    methods=["POST"]
+)
+@login_required
+def delete_exam(exam_id):
+
+    if not _exam_can_manage():
+        abort(403)
+
+    # --------------------------------------------------------
+    # GET EXAM WITH USER SCOPE
+    # --------------------------------------------------------
+
+    query = _exam_scope_query(
+        Exam.query
+    )
+
+    exam = (
+        query
+        .filter(
+            Exam.id == exam_id
+        )
+        .first_or_404()
+    )
+
+    try:
+
+        db.session.delete(
+            exam
+        )
+
+        db.session.commit()
+
+        flash(
+            "Exam deleted successfully.",
+            "success"
+        )
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        flash(
+            "This exam cannot be deleted because it may already have related examination records.",
+            "danger"
+        )
+
+    return redirect(
+        url_for(
+            "main.all_exams"
+        )
+    )
+
+
+
+
+
+# ============================================================
+# EXAM SUBJECT ROUTES
+# ============================================================
+
+# ============================================================
+# ROLE PERMISSION
+# ============================================================
+
+def _exam_subject_can_manage():
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    return role in {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+
+# ============================================================
+# ROLE PERMISSION - VIEW
+# ============================================================
+
+def _exam_subject_can_view():
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    return role in {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+        "teacher",
+    }
+
+
+# ============================================================
+# HELPER
+# CURRENT USER INSTITUTION / BRANCH SCOPE
+# ============================================================
+
+def _exam_subject_scope_query(query):
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    # --------------------------------------------------------
+    # SUPERADMIN
+    # --------------------------------------------------------
+
+    if role == "superadmin":
+        return query
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN
+    # --------------------------------------------------------
+
+    if role == "school_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        if not institution_id:
+            return query.filter(False)
+
+        return query.filter(
+            Exam.institution_id == institution_id
+        )
+
+    # --------------------------------------------------------
+    # BRANCH ADMIN
+    # --------------------------------------------------------
+
+    if role == "branch_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        branch_id = getattr(
+            current_user,
+            "branch_id",
+            None
+        )
+
+        if not institution_id or not branch_id:
+            return query.filter(False)
+
+        return query.filter(
+            Exam.institution_id == institution_id,
+            Exam.branch_id == branch_id
+        )
+
+    # --------------------------------------------------------
+    # OTHER ROLES
+    # --------------------------------------------------------
+
+    return query.filter(False)
+
+
+# ============================================================
+# ADD EXAM SUBJECT
+# ============================================================
+# ============================================================
+# ADD MULTIPLE EXAM SUBJECTS
+# PostgreSQL / Neon
+#
+# FLOW:
+# Exam
+#   └── Program
+#        ├── Subjects
+#        └── TeacherSubject
+#              └── Teachers
+#
+# Supports:
+#   - Multiple subjects
+#   - Add More / Remove
+#   - Optional class
+#   - Optional section
+#   - Program teachers
+#   - Subject teachers
+#   - Duplicate protection
+#   - Institution / Branch security
+# ============================================================
+
+@bp.route(
+    "/exam-subjects/add",
+    methods=["GET", "POST"]
+)
+@login_required
+def add_exam_subject():
+
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    current_role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    if current_role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # EXAM QUERY
+    # ========================================================
+
+    exams_query = (
+        Exam.query
+        .join(
+            Program,
+            Program.id == Exam.program_id
+        )
+    )
+
+    # --------------------------------------------------------
+    # SUPERADMIN
+    # --------------------------------------------------------
+
+    if current_role == "superadmin":
+
+        pass
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN
+    # --------------------------------------------------------
+
+    elif current_role == "school_admin":
+
+        if not institution_id:
+            abort(403)
+
+        exams_query = exams_query.filter(
+            Exam.institution_id == institution_id
+        )
+
+    # --------------------------------------------------------
+    # BRANCH ADMIN
+    # --------------------------------------------------------
+
+    elif current_role == "branch_admin":
+
+        if not institution_id or not branch_id:
+            abort(403)
+
+        exams_query = exams_query.filter(
+            Exam.institution_id == institution_id,
+            Exam.branch_id == branch_id
+        )
+
+    exams = (
+        exams_query
+        .order_by(
+            Exam.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # POST
+    # ========================================================
+
+    if request.method == "POST":
+
+        # ====================================================
+        # EXAM
+        # ====================================================
+
+        exam_id = request.form.get(
+            "exam_id",
+            type=int
+        )
+
+        if not exam_id:
+
+            flash(
+                "Please select an exam.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_exam_subject"
+                )
+            )
+
+        # ====================================================
+        # LOAD EXAM WITH SECURITY
+        # ====================================================
+
+        exam_query = Exam.query.filter(
+            Exam.id == exam_id
+        )
+
+        if current_role == "school_admin":
+
+            exam_query = exam_query.filter(
+                Exam.institution_id == institution_id
+            )
+
+        elif current_role == "branch_admin":
+
+            exam_query = exam_query.filter(
+                Exam.institution_id == institution_id,
+                Exam.branch_id == branch_id
+            )
+
+        exam = exam_query.first()
+
+        if not exam:
+
+            flash(
+                "The selected exam does not exist or you do not have permission to manage it.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_exam_subject"
+                )
+            )
+
+        # ====================================================
+        # PROGRAM
+        # ====================================================
+
+        if not exam.program_id:
+
+            flash(
+                "The selected exam has no program assigned.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_exam_subject"
+                )
+            )
+
+        program = (
+            Program.query
+            .filter(
+                Program.id == exam.program_id
+            )
+            .first()
+        )
+
+        if not program:
+
+            flash(
+                "The program assigned to this exam was not found.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_exam_subject"
+                )
+            )
+
+        # ====================================================
+        # SUBJECT IDS
+        #
+        # Accept BOTH:
+        #
+        # subject_ids[]
+        # subject_id[]
+        #
+        # This prevents template naming mismatch.
+        # ====================================================
+
+        subject_ids = request.form.getlist(
+            "subject_ids[]"
+        )
+
+        if not subject_ids:
+
+            subject_ids = request.form.getlist(
+                "subject_id[]"
+            )
+
+        # ====================================================
+        # CLASS IDS
+        # ====================================================
+
+        class_ids = request.form.getlist(
+            "class_ids[]"
+        )
+
+        if not class_ids:
+
+            class_ids = request.form.getlist(
+                "class_id[]"
+            )
+
+        # ====================================================
+        # SECTION IDS
+        # ====================================================
+
+        section_ids = request.form.getlist(
+            "section_ids[]"
+        )
+
+        if not section_ids:
+
+            section_ids = request.form.getlist(
+                "section_id[]"
+            )
+
+        # ====================================================
+        # TEACHER IDS
+        # ====================================================
+
+        teacher_ids = request.form.getlist(
+            "teacher_ids[]"
+        )
+
+        if not teacher_ids:
+
+            teacher_ids = request.form.getlist(
+                "teacher_id[]"
+            )
+
+        # ====================================================
+        # MAX MARKS
+        # ====================================================
+
+        max_marks_list = request.form.getlist(
+            "max_marks[]"
+        )
+
+        # ====================================================
+        # PASS MARKS
+        # ====================================================
+
+        pass_marks_list = request.form.getlist(
+            "pass_marks[]"
+        )
+
+        # ====================================================
+        # WEIGHT
+        # ====================================================
+
+        weight_list = request.form.getlist(
+            "weight[]"
+        )
+
+        # ====================================================
+        # DISPLAY ORDER
+        # ====================================================
+
+        display_order_list = request.form.getlist(
+            "display_order[]"
+        )
+
+        # ====================================================
+        # STATUS
+        # ====================================================
+
+        status = request.form.get(
+            "status",
+            "active"
+        )
+
+        status = (
+            status.strip().lower()
+            if status
+            else "active"
+        )
+
+        if status not in {
+            "active",
+            "inactive"
+        }:
+
+            status = "active"
+
+        # ====================================================
+        # CHECK SUBJECT ROWS
+        # ====================================================
+
+        if not subject_ids:
+
+            flash(
+                "Please add at least one subject.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_exam_subject",
+                    exam_id=exam.id
+                )
+            )
+
+        # ====================================================
+        # ROW COUNT
+        # ====================================================
+
+        row_count = len(subject_ids)
+
+        # ====================================================
+        # NORMALIZE LIST LENGTHS
+        # ========================================================
+
+        def normalize_list(
+            values,
+            count,
+            default_value=""
+        ):
+
+            values = list(values)
+
+            if len(values) < count:
+
+                values.extend(
+                    [default_value]
+                    * (
+                        count
+                        - len(values)
+                    )
+                )
+
+            elif len(values) > count:
+
+                values = values[:count]
+
+            return values
+
+        class_ids = normalize_list(
+            class_ids,
+            row_count,
+            ""
+        )
+
+        section_ids = normalize_list(
+            section_ids,
+            row_count,
+            ""
+        )
+
+        teacher_ids = normalize_list(
+            teacher_ids,
+            row_count,
+            ""
+        )
+
+        max_marks_list = normalize_list(
+            max_marks_list,
+            row_count,
+            "100"
+        )
+
+        pass_marks_list = normalize_list(
+            pass_marks_list,
+            row_count,
+            "50"
+        )
+
+        weight_list = normalize_list(
+            weight_list,
+            row_count,
+            "100"
+        )
+
+        display_order_list = normalize_list(
+            display_order_list,
+            row_count,
+            ""
+        )
+
+        # ====================================================
+        # VALID PROGRAM SUBJECTS
+        #
+        # Subject must belong to:
+        #
+        # Exam.program_id
+        #
+        # AND
+        #
+        # Exam.institution_id
+        # ====================================================
+
+        valid_subject_query = (
+            Subject.query
+            .filter(
+                Subject.program_id == exam.program_id,
+                Subject.institution_id == exam.institution_id,
+                Subject.status == "active"
+            )
+        )
+
+        # ----------------------------------------------------
+        # Branch
+        #
+        # branch_id NULL = shared subject
+        # ----------------------------------------------------
+
+        if exam.branch_id:
+
+            valid_subject_query = (
+                valid_subject_query
+                .filter(
+                    db.or_(
+                        Subject.branch_id == exam.branch_id,
+                        Subject.branch_id.is_(None)
+                    )
+                )
+            )
+
+        valid_subjects = (
+            valid_subject_query
+            .all()
+        )
+
+        valid_subject_map = {
+            int(subject.id): subject
+            for subject in valid_subjects
+        }
+
+        # ====================================================
+        # VALID PROGRAM CLASSES
+        # ====================================================
+
+        valid_classes_query = (
+            Class.query
+            .filter(
+                Class.program_id == exam.program_id,
+                Class.institution_id == exam.institution_id
+            )
+        )
+
+        # ----------------------------------------------------
+        # Branch
+        # ----------------------------------------------------
+
+        if exam.branch_id:
+
+            valid_classes_query = (
+                valid_classes_query
+                .filter(
+                    Class.branch_id == exam.branch_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # Academic Year
+        # ----------------------------------------------------
+
+        if exam.academic_year_id:
+
+            valid_classes_query = (
+                valid_classes_query
+                .filter(
+                    Class.academic_year_id ==
+                    exam.academic_year_id
+                )
+            )
+
+        valid_classes = (
+            valid_classes_query
+            .all()
+        )
+
+        valid_class_map = {
+            int(item.id): item
+            for item in valid_classes
+        }
+
+        # ====================================================
+        # VALID SECTIONS
+        # ====================================================
+
+        valid_class_ids = list(
+            valid_class_map.keys()
+        )
+
+        valid_section_map = {}
+
+        if valid_class_ids:
+
+            valid_sections = (
+                Section.query
+                .filter(
+                    Section.class_id.in_(
+                        valid_class_ids
+                    )
+                )
+                .all()
+            )
+
+            valid_section_map = {
+                int(section.id): section
+                for section in valid_sections
+            }
+
+        # ====================================================
+        # VALID TEACHERS
+        #
+        # Teacher must be assigned through TeacherSubject.
+        #
+        # Program:
+        #
+        # Exam
+        #   ↓
+        # Program
+        #   ↓
+        # TeacherSubject
+        #   ↓
+        # Teacher
+        # ====================================================
+
+        valid_teacher_query = (
+            Teacher.query
+            .join(
+                TeacherSubject,
+                TeacherSubject.teacher_id ==
+                Teacher.id
+            )
+            .filter(
+                Teacher.institution_id ==
+                exam.institution_id,
+
+                Teacher.is_active.is_(True),
+
+                Teacher.status == "active",
+
+                TeacherSubject.institution_id ==
+                exam.institution_id,
+
+                TeacherSubject.program_id ==
+                exam.program_id,
+
+                TeacherSubject.status == "active"
+            )
+        )
+
+        # ----------------------------------------------------
+        # Branch
+        # ----------------------------------------------------
+
+        if exam.branch_id:
+
+            valid_teacher_query = (
+                valid_teacher_query
+                .filter(
+                    Teacher.branch_id ==
+                    exam.branch_id
+                )
+                .filter(
+                    db.or_(
+                        TeacherSubject.branch_id ==
+                        exam.branch_id,
+
+                        TeacherSubject.branch_id.is_(None)
+                    )
+                )
+            )
+
+        valid_teachers = (
+            valid_teacher_query
+            .distinct()
+            .all()
+        )
+
+        valid_teacher_map = {
+            int(teacher.id): teacher
+            for teacher in valid_teachers
+        }
+
+        # ====================================================
+        # EXISTING EXAM SUBJECTS
+        # ====================================================
+
+        existing_rows = (
+            ExamSubject.query
+            .filter(
+                ExamSubject.exam_id ==
+                exam.id
+            )
+            .all()
+        )
+
+        existing_combinations = set()
+
+        for item in existing_rows:
+
+            existing_combinations.add(
+                (
+                    int(item.subject_id),
+
+                    int(item.class_id)
+                    if item.class_id is not None
+                    else None,
+
+                    int(item.section_id)
+                    if item.section_id is not None
+                    else None
+                )
+            )
+
+        # ====================================================
+        # REQUEST DUPLICATES
+        # ====================================================
+
+        request_combinations = set()
+
+        # ====================================================
+        # NEW OBJECTS
+        # ====================================================
+
+        new_exam_subjects = []
+
+        # ====================================================
+        # PROCESS EACH ROW
+        # ====================================================
+
+        for index in range(row_count):
+
+            row_number = index + 1
+
+            # ==================================================
+            # SUBJECT
+            # ==================================================
+
+            raw_subject_id = (
+                subject_ids[index]
+                if index < len(subject_ids)
+                else ""
+            )
+
+            raw_subject_id = (
+                str(raw_subject_id).strip()
+            )
+
+            if not raw_subject_id:
+
+                flash(
+                    f"Please select a subject on row {row_number}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            try:
+
+                subject_id = int(
+                    raw_subject_id
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                flash(
+                    f"Invalid subject on row {row_number}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            subject = valid_subject_map.get(
+                subject_id
+            )
+
+            if not subject:
+
+                flash(
+                    f"Subject on row {row_number} does not belong to the selected exam program.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            # ==================================================
+            # CLASS
+            # ==================================================
+
+            raw_class_id = (
+                class_ids[index]
+                if index < len(class_ids)
+                else ""
+            )
+
+            raw_class_id = (
+                str(raw_class_id).strip()
+                if raw_class_id
+                else ""
+            )
+
+            class_id = None
+            selected_class = None
+
+            if raw_class_id:
+
+                try:
+
+                    class_id = int(
+                        raw_class_id
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
+                ):
+
+                    flash(
+                        f"Invalid class on row {row_number}.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.add_exam_subject",
+                            exam_id=exam.id
+                        )
+                    )
+
+                selected_class = (
+                    valid_class_map.get(
+                        class_id
+                    )
+                )
+
+                if not selected_class:
+
+                    flash(
+                        f"Class on row {row_number} does not belong to the selected exam program.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.add_exam_subject",
+                            exam_id=exam.id
+                        )
+                    )
+
+            # ==================================================
+            # SECTION
+            # ==================================================
+
+            raw_section_id = (
+                section_ids[index]
+                if index < len(section_ids)
+                else ""
+            )
+
+            raw_section_id = (
+                str(raw_section_id).strip()
+                if raw_section_id
+                else ""
+            )
+
+            section_id = None
+
+            if raw_section_id:
+
+                # ----------------------------------------------
+                # Section requires Class
+                # ----------------------------------------------
+
+                if not class_id:
+
+                    flash(
+                        f"Please select a class before selecting a section on row {row_number}.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.add_exam_subject",
+                            exam_id=exam.id
+                        )
+                    )
+
+                try:
+
+                    section_id = int(
+                        raw_section_id
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
+                ):
+
+                    flash(
+                        f"Invalid section on row {row_number}.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.add_exam_subject",
+                            exam_id=exam.id
+                        )
+                    )
+
+                section = (
+                    valid_section_map.get(
+                        section_id
+                    )
+                )
+
+                if not section:
+
+                    flash(
+                        f"Section on row {row_number} is not valid.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.add_exam_subject",
+                            exam_id=exam.id
+                        )
+                    )
+
+                if int(section.class_id) != int(
+                    class_id
+                ):
+
+                    flash(
+                        f"Section on row {row_number} does not belong to the selected class.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.add_exam_subject",
+                            exam_id=exam.id
+                        )
+                    )
+
+            # ==================================================
+            # TEACHER
+            # ==================================================
+
+            raw_teacher_id = (
+                teacher_ids[index]
+                if index < len(teacher_ids)
+                else ""
+            )
+
+            raw_teacher_id = (
+                str(raw_teacher_id).strip()
+                if raw_teacher_id
+                else ""
+            )
+
+            teacher_id = None
+
+            if raw_teacher_id:
+
+                try:
+
+                    teacher_id = int(
+                        raw_teacher_id
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
+                ):
+
+                    flash(
+                        f"Invalid teacher on row {row_number}.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.add_exam_subject",
+                            exam_id=exam.id
+                        )
+                    )
+
+                teacher = valid_teacher_map.get(
+                    teacher_id
+                )
+
+                if not teacher:
+
+                    flash(
+                        f"Teacher on row {row_number} is not assigned to the selected program.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.add_exam_subject",
+                            exam_id=exam.id
+                        )
+                    )
+
+                # ----------------------------------------------
+                # Verify TeacherSubject
+                # Program + Subject
+                # ----------------------------------------------
+
+                teacher_assignment_query = (
+                    TeacherSubject.query
+                    .filter(
+                        TeacherSubject.teacher_id ==
+                        teacher_id,
+
+                        TeacherSubject.program_id ==
+                        exam.program_id,
+
+                        TeacherSubject.subject_id ==
+                        subject_id,
+
+                        TeacherSubject.institution_id ==
+                        exam.institution_id,
+
+                        TeacherSubject.status ==
+                        "active"
+                    )
+                )
+
+                # ------------------------------------------------
+                # Branch assignment
+                # ------------------------------------------------
+
+                if exam.branch_id:
+
+                    teacher_assignment_query = (
+                        teacher_assignment_query
+                        .filter(
+                            db.or_(
+                                TeacherSubject.branch_id ==
+                                exam.branch_id,
+
+                                TeacherSubject.branch_id.is_(None)
+                            )
+                        )
+                    )
+
+                teacher_assignment = (
+                    teacher_assignment_query
+                    .first()
+                )
+
+                # ------------------------------------------------
+                # If no subject-specific assignment exists,
+                # allow program-level assignment.
+                # ------------------------------------------------
+
+                if not teacher_assignment:
+
+                    teacher_assignment_query = (
+                        TeacherSubject.query
+                        .filter(
+                            TeacherSubject.teacher_id ==
+                            teacher_id,
+
+                            TeacherSubject.program_id ==
+                            exam.program_id,
+
+                            TeacherSubject.institution_id ==
+                            exam.institution_id,
+
+                            TeacherSubject.status ==
+                            "active",
+
+                            db.or_(
+                                TeacherSubject.subject_id.is_(None),
+                                TeacherSubject.subject_id ==
+                                subject_id
+                            )
+                        )
+                    )
+
+                    if exam.branch_id:
+
+                        teacher_assignment_query = (
+                            teacher_assignment_query
+                            .filter(
+                                db.or_(
+                                    TeacherSubject.branch_id ==
+                                    exam.branch_id,
+
+                                    TeacherSubject.branch_id.is_(None)
+                                )
+                            )
+                        )
+
+                    teacher_assignment = (
+                        teacher_assignment_query
+                        .first()
+                    )
+
+                if not teacher_assignment:
+
+                    flash(
+                        f"{teacher.full_name} is not assigned to {subject.name}.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "main.add_exam_subject",
+                            exam_id=exam.id
+                        )
+                    )
+
+            # ==================================================
+            # MAX MARKS
+            # ==================================================
+
+            raw_max_marks = (
+                max_marks_list[index]
+                if index < len(max_marks_list)
+                else "100"
+            )
+
+            try:
+
+                max_marks = float(
+                    raw_max_marks
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                flash(
+                    f"Invalid maximum marks on row {row_number}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            if max_marks <= 0:
+
+                flash(
+                    f"Maximum marks must be greater than zero on row {row_number}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            # ==================================================
+            # PASS MARKS
+            # ==================================================
+
+            raw_pass_marks = (
+                pass_marks_list[index]
+                if index < len(pass_marks_list)
+                else "50"
+            )
+
+            try:
+
+                pass_marks = float(
+                    raw_pass_marks
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                flash(
+                    f"Invalid pass marks on row {row_number}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            if pass_marks < 0:
+
+                flash(
+                    f"Pass marks cannot be negative on row {row_number}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            if pass_marks > max_marks:
+
+                flash(
+                    f"Pass marks cannot exceed maximum marks on row {row_number}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            # ==================================================
+            # WEIGHT
+            # ==================================================
+
+            raw_weight = (
+                weight_list[index]
+                if index < len(weight_list)
+                else "100"
+            )
+
+            try:
+
+                weight = float(
+                    raw_weight
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                flash(
+                    f"Invalid weight on row {row_number}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            if weight <= 0:
+
+                flash(
+                    f"Weight must be greater than zero on row {row_number}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            # ==================================================
+            # DISPLAY ORDER
+            # ==================================================
+
+            raw_display_order = (
+                display_order_list[index]
+                if index < len(display_order_list)
+                else ""
+            )
+
+            try:
+
+                display_order = int(
+                    raw_display_order
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                display_order = (
+                    index + 1
+                )
+
+            if display_order <= 0:
+
+                display_order = (
+                    index + 1
+                )
+
+            # ==================================================
+            # DUPLICATE KEY
+            #
+            # exam + subject + class + section
+            # ==================================================
+
+            combination = (
+                subject_id,
+                class_id,
+                section_id
+            )
+
+            # ==================================================
+            # DUPLICATE IN CURRENT REQUEST
+            # ==================================================
+
+            if combination in request_combinations:
+
+                class_text = (
+                    selected_class.name
+                    if selected_class
+                    else "All Classes"
+                )
+
+                flash(
+                    f"{subject.name} is duplicated on row {row_number} for {class_text}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            request_combinations.add(
+                combination
+            )
+
+            # ==================================================
+            # DUPLICATE IN DATABASE
+            # ==================================================
+
+            if combination in existing_combinations:
+
+                class_text = (
+                    selected_class.name
+                    if selected_class
+                    else "All Classes"
+                )
+
+                flash(
+                    f"{subject.name} already exists for {class_text}.",
+                    "warning"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_exam_subject",
+                        exam_id=exam.id
+                    )
+                )
+
+            # ==================================================
+            # CREATE EXAM SUBJECT
+            # ==================================================
+
+            exam_subject = ExamSubject(
+                exam_id=exam.id,
+
+                subject_id=subject_id,
+
+                class_id=class_id,
+
+                section_id=section_id,
+
+                teacher_id=teacher_id,
+
+                max_marks=max_marks,
+
+                pass_marks=pass_marks,
+
+                weight=weight,
+
+                display_order=display_order,
+
+                status=status
+            )
+
+            new_exam_subjects.append(
+                exam_subject
+            )
+
+        # ====================================================
+        # NOTHING TO SAVE
+        # ====================================================
+
+        if not new_exam_subjects:
+
+            flash(
+                "No exam subjects were prepared.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_exam_subject",
+                    exam_id=exam.id
+                )
+            )
+
+        # ====================================================
+        # SAVE ALL
+        # ====================================================
+
+        try:
+
+            db.session.add_all(
+                new_exam_subjects
+            )
+
+            db.session.commit()
+
+        except Exception as exc:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Failed to create multiple exam subjects: %s",
+                exc
+            )
+
+            flash(
+                "An error occurred while adding the exam subjects. No changes were saved.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_exam_subject",
+                    exam_id=exam.id
+                )
+            )
+
+        # ====================================================
+        # SUCCESS
+        # ====================================================
+
+        flash(
+            f"{len(new_exam_subjects)} exam subject(s) added successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.all_exam_subjects",
+                exam_id=exam.id
+            )
+        )
+
+    # ========================================================
+    # GET DATA
+    # ========================================================
+
+    # ========================================================
+    # AVAILABLE PROGRAM IDS
+    # ========================================================
+
+    program_ids = list({
+        int(exam.program_id)
+        for exam in exams
+        if exam.program_id
+    })
+
+    # ========================================================
+    # SUBJECTS
+    #
+    # IMPORTANT:
+    # All subjects belonging to available programs.
+    # ========================================================
+
+    subjects = []
+
+    if program_ids:
+
+        subjects_query = (
+            Subject.query
+            .filter(
+                Subject.program_id.in_(
+                    program_ids
+                ),
+                Subject.status == "active"
+            )
+        )
+
+        # ----------------------------------------------------
+        # Institution
+        # ----------------------------------------------------
+
+        if current_role != "superadmin":
+
+            subjects_query = (
+                subjects_query
+                .filter(
+                    Subject.institution_id ==
+                    institution_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # Branch
+        #
+        # NULL branch = shared subject
+        # ----------------------------------------------------
+
+        if current_role == "branch_admin":
+
+            subjects_query = (
+                subjects_query
+                .filter(
+                    db.or_(
+                        Subject.branch_id ==
+                        branch_id,
+
+                        Subject.branch_id.is_(None)
+                    )
+                )
+            )
+
+        subjects = (
+            subjects_query
+            .order_by(
+                Subject.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # CLASSES
+    # ========================================================
+
+    classes = []
+
+    if program_ids:
+
+        classes_query = (
+            Class.query
+            .filter(
+                Class.program_id.in_(
+                    program_ids
+                )
+            )
+        )
+
+        # ----------------------------------------------------
+        # Institution
+        # ----------------------------------------------------
+
+        if current_role != "superadmin":
+
+            classes_query = (
+                classes_query
+                .filter(
+                    Class.institution_id ==
+                    institution_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # Branch
+        # ----------------------------------------------------
+
+        if current_role == "branch_admin":
+
+            classes_query = (
+                classes_query
+                .filter(
+                    Class.branch_id ==
+                    branch_id
+                )
+            )
+
+        classes = (
+            classes_query
+            .order_by(
+                Class.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # SECTIONS
+    # ========================================================
+
+    sections = []
+
+    available_class_ids = [
+        int(item.id)
+        for item in classes
+    ]
+
+    if available_class_ids:
+
+        sections = (
+            Section.query
+            .filter(
+                Section.class_id.in_(
+                    available_class_ids
+                )
+            )
+            .order_by(
+                Section.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # TEACHERS
+    #
+    # ONLY PROGRAM ASSIGNED TEACHERS
+    #
+    # NOT ALL BRANCH TEACHERS
+    # ========================================================
+
+    teachers = []
+
+    if program_ids:
+
+        teachers_query = (
+            Teacher.query
+            .join(
+                TeacherSubject,
+                TeacherSubject.teacher_id ==
+                Teacher.id
+            )
+            .filter(
+                Teacher.is_active.is_(True),
+
+                Teacher.status == "active",
+
+                TeacherSubject.program_id.in_(
+                    program_ids
+                ),
+
+                TeacherSubject.status == "active"
+            )
+        )
+
+        # ----------------------------------------------------
+        # SUPERADMIN
+        # ----------------------------------------------------
+
+        if current_role == "superadmin":
+
+            pass
+
+        # ----------------------------------------------------
+        # SCHOOL ADMIN
+        # ----------------------------------------------------
+
+        elif current_role == "school_admin":
+
+            if not institution_id:
+                abort(403)
+
+            teachers_query = (
+                teachers_query
+                .filter(
+                    Teacher.institution_id ==
+                    institution_id,
+
+                    TeacherSubject.institution_id ==
+                    institution_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN
+        # ----------------------------------------------------
+
+        elif current_role == "branch_admin":
+
+            if not institution_id or not branch_id:
+                abort(403)
+
+            teachers_query = (
+                teachers_query
+                .filter(
+                    Teacher.institution_id ==
+                    institution_id,
+
+                    Teacher.branch_id ==
+                    branch_id,
+
+                    db.or_(
+                        TeacherSubject.branch_id ==
+                        branch_id,
+
+                        TeacherSubject.branch_id.is_(None)
+                    )
+                )
+            )
+
+        teachers = (
+            teachers_query
+            .distinct()
+            .order_by(
+                Teacher.full_name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # SELECTED EXAM
+    # ========================================================
+
+    selected_exam_id = request.args.get(
+        "exam_id",
+        type=int
+    )
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
+    return render_template(
+        "backend/pages/exam_subjects/add_exam_subject.html",
+
+        exams=exams,
+
+        subjects=subjects,
+
+        classes=classes,
+
+        sections=sections,
+
+        teachers=teachers,
+
+        selected_exam_id=selected_exam_id,
+
+        user=current_user
+    )
+
+
+
+
+# ============================================================
+# VIEW SINGLE EXAM SUBJECT
+# ============================================================
+
+@bp.route(
+    "/exam-subjects/<int:exam_subject_id>",
+    methods=["GET"]
+)
+@login_required
+def view_exam_subject(exam_subject_id):
+
+    # ========================================================
+    # SECURITY
+    # ========================================================
+
+    if not _exam_subject_can_view():
+        abort(403)
+
+    # ========================================================
+    # QUERY
+    # ========================================================
+
+    query = (
+        ExamSubject.query
+        .join(
+            Exam,
+            Exam.id == ExamSubject.exam_id
+        )
+        .filter(
+            ExamSubject.id == exam_subject_id
+        )
+    )
+
+    # ========================================================
+    # SCOPE
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    if role == "school_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        query = query.filter(
+            Exam.institution_id == institution_id
+        )
+
+    elif role == "branch_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        branch_id = getattr(
+            current_user,
+            "branch_id",
+            None
+        )
+
+        query = query.filter(
+            Exam.institution_id == institution_id,
+            Exam.branch_id == branch_id
+        )
+
+    elif role == "teacher":
+
+        # Teacher can see only subjects assigned to them.
+        teacher_id = getattr(
+            current_user,
+            "teacher_id",
+            None
+        )
+
+        if teacher_id:
+
+            query = query.filter(
+                ExamSubject.teacher_id == teacher_id
+            )
+
+        else:
+
+            query = query.filter(False)
+
+    exam_subject = query.first()
+
+    if not exam_subject:
+        abort(404)
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
+    return render_template(
+        "backend/pages/exam_subjects/view_exam_subject.html",
+        exam_subject=exam_subject,
+    )
+
+
+# ============================================================
+# ALL EXAM SUBJECTS
+# ============================================================
+
+@bp.route(
+    "/exam-subjects",
+    methods=["GET"]
+)
+@login_required
+def all_exam_subjects():
+
+    # ========================================================
+    # SECURITY
+    # ========================================================
+
+    if not _exam_subject_can_view():
+        abort(403)
+
+    # ========================================================
+    # CURRENT ROLE
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    # ========================================================
+    # FILTERS
+    # ========================================================
+
+    search = (
+        request.args.get(
+            "search",
+            ""
+        )
+        .strip()
+    )
+
+    status = (
+        request.args.get(
+            "status",
+            ""
+        )
+        .strip()
+        .lower()
+    )
+
+    exam_id = request.args.get(
+        "exam_id",
+        type=int
+    )
+
+    subject_id = request.args.get(
+        "subject_id",
+        type=int
+    )
+
+    class_id = request.args.get(
+        "class_id",
+        type=int
+    )
+
+    section_id = request.args.get(
+        "section_id",
+        type=int
+    )
+
+    teacher_id = request.args.get(
+        "teacher_id",
+        type=int
+    )
+
+    # ========================================================
+    # PAGINATION
+    # ========================================================
+
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+    per_page = request.args.get(
+        "per_page",
+        25,
+        type=int
+    )
+
+    allowed_per_page = {
+        10,
+        25,
+        50,
+        100,
+    }
+
+    if per_page not in allowed_per_page:
+        per_page = 25
+
+    # ========================================================
+    # BASE QUERY
+    # ========================================================
+
+    query = (
+        ExamSubject.query
+        .join(
+            Exam,
+            Exam.id == ExamSubject.exam_id
+        )
+        .join(
+            Subject,
+            Subject.id == ExamSubject.subject_id
+        )
+    )
+
+    # ========================================================
+    # ROLE SCOPE
+    # ========================================================
+
+    if role == "superadmin":
+
+        # Superadmin can see everything.
+        pass
+
+    elif role == "school_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        if not institution_id:
+
+            query = query.filter(False)
+
+        else:
+
+            query = query.filter(
+                Exam.institution_id == institution_id
+            )
+
+    elif role == "branch_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        branch_id = getattr(
+            current_user,
+            "branch_id",
+            None
+        )
+
+        if not institution_id or not branch_id:
+
+            query = query.filter(False)
+
+        else:
+
+            query = query.filter(
+                Exam.institution_id == institution_id,
+                Exam.branch_id == branch_id
+            )
+
+    elif role == "teacher":
+
+        current_teacher_id = getattr(
+            current_user,
+            "teacher_id",
+            None
+        )
+
+        if not current_teacher_id:
+
+            query = query.filter(False)
+
+        else:
+
+            query = query.filter(
+                ExamSubject.teacher_id ==
+                current_teacher_id
+            )
+
+    else:
+
+        query = query.filter(False)
+
+    # ========================================================
+    # SEARCH
+    # ========================================================
+
+    if search:
+
+        search_term = f"%{search}%"
+
+        query = query.filter(
+            db.or_(
+                Exam.name.ilike(search_term),
+                Exam.code.ilike(search_term),
+                Subject.name.ilike(search_term),
+                Subject.code.ilike(search_term),
+            )
+        )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    if status:
+
+        query = query.filter(
+            ExamSubject.status == status
+        )
+
+    # ========================================================
+    # EXAM
+    # ========================================================
+
+    if exam_id:
+
+        query = query.filter(
+            ExamSubject.exam_id == exam_id
+        )
+
+    # ========================================================
+    # SUBJECT
+    # ========================================================
+
+    if subject_id:
+
+        query = query.filter(
+            ExamSubject.subject_id == subject_id
+        )
+
+    # ========================================================
+    # CLASS
+    # ========================================================
+
+    if class_id:
+
+        query = query.filter(
+            ExamSubject.class_id == class_id
+        )
+
+    # ========================================================
+    # SECTION
+    # ========================================================
+
+    if section_id:
+
+        query = query.filter(
+            ExamSubject.section_id == section_id
+        )
+
+    # ========================================================
+    # TEACHER
+    # ========================================================
+
+    if teacher_id:
+
+        query = query.filter(
+            ExamSubject.teacher_id == teacher_id
+        )
+
+    # ========================================================
+    # ORDER
+    # ========================================================
+
+    query = query.order_by(
+        ExamSubject.display_order.asc(),
+        ExamSubject.id.desc()
+    )
+
+    # ========================================================
+    # PAGINATION
+    # ========================================================
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    # ========================================================
+    # FILTER DATA
+    # ========================================================
+
+    # --------------------------------------------------------
+    # EXAMS
+    # --------------------------------------------------------
+
+    exams_query = Exam.query
+
+    if role == "school_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        exams_query = exams_query.filter(
+            Exam.institution_id == institution_id
+        )
+
+    elif role == "branch_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        branch_id = getattr(
+            current_user,
+            "branch_id",
+            None
+        )
+
+        exams_query = exams_query.filter(
+            Exam.institution_id == institution_id,
+            Exam.branch_id == branch_id
+        )
+
+    elif role == "teacher":
+
+        current_teacher_id = getattr(
+            current_user,
+            "teacher_id",
+            None
+        )
+
+        if current_teacher_id:
+
+            exams_query = (
+                exams_query
+                .join(
+                    ExamSubject,
+                    ExamSubject.exam_id == Exam.id
+                )
+                .filter(
+                    ExamSubject.teacher_id ==
+                    current_teacher_id
+                )
+                .distinct()
+            )
+
+        else:
+
+            exams_query = exams_query.filter(False)
+
+    elif role not in {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+        "teacher",
+    }:
+
+        exams_query = exams_query.filter(False)
+
+    exams = (
+        exams_query
+        .order_by(
+            Exam.name.asc()
+        )
+        .all()
+    )
+
+    # --------------------------------------------------------
+    # SUBJECTS
+    # --------------------------------------------------------
+
+    subjects_query = Subject.query
+
+    if role == "teacher":
+
+        current_teacher_id = getattr(
+            current_user,
+            "teacher_id",
+            None
+        )
+
+        if current_teacher_id:
+
+            subjects_query = (
+                subjects_query
+                .join(
+                    ExamSubject,
+                    ExamSubject.subject_id == Subject.id
+                )
+                .filter(
+                    ExamSubject.teacher_id ==
+                    current_teacher_id
+                )
+                .distinct()
+            )
+
+        else:
+
+            subjects_query = subjects_query.filter(False)
+
+    elif role not in {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }:
+
+        subjects_query = subjects_query.filter(False)
+
+    subjects = (
+        subjects_query
+        .order_by(
+            Subject.name.asc()
+        )
+        .all()
+    )
+
+    # --------------------------------------------------------
+    # CLASSES
+    # --------------------------------------------------------
+
+    classes_query = Class.query
+
+    if role == "teacher":
+
+        current_teacher_id = getattr(
+            current_user,
+            "teacher_id",
+            None
+        )
+
+        if current_teacher_id:
+
+            classes_query = (
+                classes_query
+                .join(
+                    ExamSubject,
+                    ExamSubject.class_id == Class.id
+                )
+                .filter(
+                    ExamSubject.teacher_id ==
+                    current_teacher_id
+                )
+                .distinct()
+            )
+
+        else:
+
+            classes_query = classes_query.filter(False)
+
+    elif role not in {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }:
+
+        classes_query = classes_query.filter(False)
+
+    classes = (
+        classes_query
+        .order_by(
+            Class.name.asc()
+        )
+        .all()
+    )
+
+    # --------------------------------------------------------
+    # SECTIONS
+    # --------------------------------------------------------
+
+    sections_query = Section.query
+
+    if role == "teacher":
+
+        current_teacher_id = getattr(
+            current_user,
+            "teacher_id",
+            None
+        )
+
+        if current_teacher_id:
+
+            sections_query = (
+                sections_query
+                .join(
+                    ExamSubject,
+                    ExamSubject.section_id == Section.id
+                )
+                .filter(
+                    ExamSubject.teacher_id ==
+                    current_teacher_id
+                )
+                .distinct()
+            )
+
+        else:
+
+            sections_query = sections_query.filter(False)
+
+    elif role not in {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }:
+
+        sections_query = sections_query.filter(False)
+
+    sections = (
+        sections_query
+        .order_by(
+            Section.name.asc()
+        )
+        .all()
+    )
+
+    # --------------------------------------------------------
+    # TEACHERS
+    # --------------------------------------------------------
+
+    teachers_query = Teacher.query
+
+    if role == "teacher":
+
+        current_teacher_id = getattr(
+            current_user,
+            "teacher_id",
+            None
+        )
+
+        if current_teacher_id:
+
+            teachers_query = teachers_query.filter(
+                Teacher.id == current_teacher_id
+            )
+
+        else:
+
+            teachers_query = teachers_query.filter(False)
+
+    elif role not in {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }:
+
+        teachers_query = teachers_query.filter(False)
+
+    teachers = (
+        teachers_query
+        .order_by(
+            Teacher.full_name.asc()
+            if hasattr(Teacher, "full_name")
+            else Teacher.id.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # STATISTICS
+    # ========================================================
+
+    # --------------------------------------------------------
+    # Statistics query
+    #
+    # IMPORTANT:
+    # We use the same ROLE SCOPE but do NOT use the
+    # user's current filters.
+    # --------------------------------------------------------
+
+    stats_query = (
+        ExamSubject.query
+        .join(
+            Exam,
+            Exam.id == ExamSubject.exam_id
+        )
+    )
+
+    # ========================================================
+    # STATISTICS ROLE SCOPE
+    # ========================================================
+
+    if role == "superadmin":
+
+        pass
+
+    elif role == "school_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        if not institution_id:
+
+            stats_query = stats_query.filter(False)
+
+        else:
+
+            stats_query = stats_query.filter(
+                Exam.institution_id == institution_id
+            )
+
+    elif role == "branch_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        branch_id = getattr(
+            current_user,
+            "branch_id",
+            None
+        )
+
+        if not institution_id or not branch_id:
+
+            stats_query = stats_query.filter(False)
+
+        else:
+
+            stats_query = stats_query.filter(
+                Exam.institution_id == institution_id,
+                Exam.branch_id == branch_id
+            )
+
+    elif role == "teacher":
+
+        current_teacher_id = getattr(
+            current_user,
+            "teacher_id",
+            None
+        )
+
+        if not current_teacher_id:
+
+            stats_query = stats_query.filter(False)
+
+        else:
+
+            stats_query = stats_query.filter(
+                ExamSubject.teacher_id ==
+                current_teacher_id
+            )
+
+    else:
+
+        stats_query = stats_query.filter(False)
+
+    # ========================================================
+    # TOTAL
+    # ========================================================
+
+    total_exam_subjects = (
+        stats_query
+        .with_entities(
+            db.func.count(
+                ExamSubject.id
+            )
+        )
+        .scalar()
+        or 0
+    )
+
+    # ========================================================
+    # ACTIVE
+    # ========================================================
+
+    active_exam_subjects = (
+        stats_query
+        .filter(
+            ExamSubject.status == "active"
+        )
+        .with_entities(
+            db.func.count(
+                ExamSubject.id
+            )
+        )
+        .scalar()
+        or 0
+    )
+
+    # ========================================================
+    # INACTIVE
+    # ========================================================
+
+    inactive_exam_subjects = (
+        stats_query
+        .filter(
+            ExamSubject.status == "inactive"
+        )
+        .with_entities(
+            db.func.count(
+                ExamSubject.id
+            )
+        )
+        .scalar()
+        or 0
+    )
+
+    # ========================================================
+    # TEACHER ASSIGNED
+    # ========================================================
+
+    exam_subjects_with_teacher = (
+        stats_query
+        .filter(
+            ExamSubject.teacher_id.isnot(None)
+        )
+        .with_entities(
+            db.func.count(
+                ExamSubject.id
+            )
+        )
+        .scalar()
+        or 0
+    )
+
+    # ========================================================
+    # TEACHER NOT ASSIGNED
+    # ========================================================
+
+    exam_subjects_without_teacher = (
+        stats_query
+        .filter(
+            ExamSubject.teacher_id.is_(None)
+        )
+        .with_entities(
+            db.func.count(
+                ExamSubject.id
+            )
+        )
+        .scalar()
+        or 0
+    )
+
+    # ========================================================
+    # CLASS ASSIGNED
+    # ========================================================
+
+    exam_subjects_with_class = (
+        stats_query
+        .filter(
+            ExamSubject.class_id.isnot(None)
+        )
+        .with_entities(
+            db.func.count(
+                ExamSubject.id
+            )
+        )
+        .scalar()
+        or 0
+    )
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
+    return render_template(
+
+        "backend/pages/exam_subjects/all_exam_subjects.html",
+
+        # ----------------------------------------------------
+        # MAIN DATA
+        # ----------------------------------------------------
+
+        exam_subjects=pagination.items,
+
+        pagination=pagination,
+
+        # ----------------------------------------------------
+        # FILTER DATA
+        # ----------------------------------------------------
+
+        exams=exams,
+
+        subjects=subjects,
+
+        classes=classes,
+
+        sections=sections,
+
+        teachers=teachers,
+
+        # ----------------------------------------------------
+        # FILTER VALUES
+        # ----------------------------------------------------
+
+        search=search,
+
+        status=status,
+
+        selected_exam_id=exam_id,
+
+        selected_subject_id=subject_id,
+
+        selected_class_id=class_id,
+
+        selected_section_id=section_id,
+
+        selected_teacher_id=teacher_id,
+
+        selected_status=status,
+
+        per_page=per_page,
+
+        # ----------------------------------------------------
+        # STATISTICS
+        # ----------------------------------------------------
+
+        total_exam_subjects=total_exam_subjects,
+
+        active_exam_subjects=active_exam_subjects,
+
+        inactive_exam_subjects=inactive_exam_subjects,
+
+        exam_subjects_with_teacher=
+            exam_subjects_with_teacher,
+
+        exam_subjects_without_teacher=
+            exam_subjects_without_teacher,
+
+        exam_subjects_with_class=
+            exam_subjects_with_class,
+
+        # ----------------------------------------------------
+        # CURRENT USER
+        # ----------------------------------------------------
+
+        user=current_user
+    )
+
+
+# ============================================================
+# EDIT EXAM SUBJECT
+# ============================================================
+
+@bp.route(
+    "/exam-subjects/<int:exam_subject_id>/edit",
+    methods=["GET", "POST"]
+)
+@login_required
+def edit_exam_subject(exam_subject_id):
+
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    current_role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    if current_role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # LOAD EXAM SUBJECT
+    # ========================================================
+
+    exam_subject_query = (
+        ExamSubject.query
+        .join(
+            Exam,
+            Exam.id == ExamSubject.exam_id
+        )
+        .filter(
+            ExamSubject.id == exam_subject_id
+        )
+    )
+
+    # ========================================================
+    # INSTITUTION / BRANCH SECURITY
+    # ========================================================
+
+    if current_role == "school_admin":
+
+        if not institution_id:
+            abort(403)
+
+        exam_subject_query = (
+            exam_subject_query
+            .filter(
+                Exam.institution_id == institution_id
+            )
+        )
+
+    elif current_role == "branch_admin":
+
+        if not institution_id or not branch_id:
+            abort(403)
+
+        exam_subject_query = (
+            exam_subject_query
+            .filter(
+                Exam.institution_id == institution_id,
+                Exam.branch_id == branch_id
+            )
+        )
+
+    # ========================================================
+    # GET EXAM SUBJECT
+    # ========================================================
+
+    exam_subject = (
+        exam_subject_query
+        .first()
+    )
+
+    if not exam_subject:
+        abort(404)
+
+    # ========================================================
+    # EXAM
+    # ========================================================
+
+    exam = exam_subject.exam
+
+    if not exam:
+        abort(404)
+
+    # ========================================================
+    # PROGRAM
+    # ========================================================
+
+    if not exam.program_id:
+        flash(
+            "The exam has no program assigned.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "main.all_exam_subjects"
+            )
+        )
+
+    program = (
+        Program.query
+        .filter(
+            Program.id == exam.program_id
+        )
+        .first()
+    )
+
+    if not program:
+        flash(
+            "The program assigned to this exam was not found.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "main.all_exam_subjects"
+            )
+        )
+
+    # ========================================================
+    # POST
+    # ========================================================
+
+    if request.method == "POST":
+
+        # ====================================================
+        # SUBJECT
+        # ====================================================
+
+        raw_subject_id = request.form.get(
+            "subject_id"
+        )
+
+        raw_subject_id = (
+            str(raw_subject_id).strip()
+            if raw_subject_id
+            else ""
+        )
+
+        if not raw_subject_id:
+
+            flash(
+                "Please select a subject.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        try:
+
+            subject_id = int(
+                raw_subject_id
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            flash(
+                "Invalid subject.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        # ====================================================
+        # VALID SUBJECT
+        #
+        # Subject must belong to:
+        #
+        # Exam.program_id
+        # Exam.institution_id
+        #
+        # Branch can be:
+        #
+        #   exam.branch_id
+        #   NULL/shared
+        # ====================================================
+
+        subject_query = (
+            Subject.query
+            .filter(
+                Subject.id == subject_id,
+                Subject.program_id == exam.program_id,
+                Subject.institution_id == exam.institution_id,
+                Subject.status == "active"
+            )
+        )
+
+        if exam.branch_id:
+
+            subject_query = (
+                subject_query
+                .filter(
+                    db.or_(
+                        Subject.branch_id == exam.branch_id,
+                        Subject.branch_id.is_(None)
+                    )
+                )
+            )
+
+        subject = (
+            subject_query
+            .first()
+        )
+
+        if not subject:
+
+            flash(
+                "The selected subject does not belong to the selected exam program.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        # ====================================================
+        # CLASS
+        # ====================================================
+
+        raw_class_id = request.form.get(
+            "class_id"
+        )
+
+        raw_class_id = (
+            str(raw_class_id).strip()
+            if raw_class_id
+            else ""
+        )
+
+        class_id = None
+        selected_class = None
+
+        if raw_class_id:
+
+            try:
+
+                class_id = int(
+                    raw_class_id
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                flash(
+                    "Invalid class.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_exam_subject",
+                        exam_subject_id=exam_subject.id
+                    )
+                )
+
+            class_query = (
+                Class.query
+                .filter(
+                    Class.id == class_id,
+                    Class.program_id == exam.program_id,
+                    Class.institution_id == exam.institution_id
+                )
+            )
+
+            # ------------------------------------------------
+            # Branch
+            # ------------------------------------------------
+
+            if exam.branch_id:
+
+                class_query = (
+                    class_query
+                    .filter(
+                        Class.branch_id == exam.branch_id
+                    )
+                )
+
+            # ------------------------------------------------
+            # Academic Year
+            # ------------------------------------------------
+
+            if exam.academic_year_id:
+
+                class_query = (
+                    class_query
+                    .filter(
+                        Class.academic_year_id ==
+                        exam.academic_year_id
+                    )
+                )
+
+            selected_class = (
+                class_query
+                .first()
+            )
+
+            if not selected_class:
+
+                flash(
+                    "The selected class does not belong to the exam program.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_exam_subject",
+                        exam_subject_id=exam_subject.id
+                    )
+                )
+
+        # ====================================================
+        # SECTION
+        # ====================================================
+
+        raw_section_id = request.form.get(
+            "section_id"
+        )
+
+        raw_section_id = (
+            str(raw_section_id).strip()
+            if raw_section_id
+            else ""
+        )
+
+        section_id = None
+        selected_section = None
+
+        if raw_section_id:
+
+            # ------------------------------------------------
+            # Section requires class
+            # ------------------------------------------------
+
+            if not class_id:
+
+                flash(
+                    "Please select a class before selecting a section.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_exam_subject",
+                        exam_subject_id=exam_subject.id
+                    )
+                )
+
+            try:
+
+                section_id = int(
+                    raw_section_id
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                flash(
+                    "Invalid section.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_exam_subject",
+                        exam_subject_id=exam_subject.id
+                    )
+                )
+
+            selected_section = (
+                Section.query
+                .filter(
+                    Section.id == section_id,
+                    Section.class_id == class_id
+                )
+                .first()
+            )
+
+            if not selected_section:
+
+                flash(
+                    "The selected section does not belong to the selected class.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_exam_subject",
+                        exam_subject_id=exam_subject.id
+                    )
+                )
+
+        # ====================================================
+        # TEACHER
+        # ====================================================
+
+        raw_teacher_id = request.form.get(
+            "teacher_id"
+        )
+
+        raw_teacher_id = (
+            str(raw_teacher_id).strip()
+            if raw_teacher_id
+            else ""
+        )
+
+        teacher_id = None
+        teacher = None
+
+        if raw_teacher_id:
+
+            try:
+
+                teacher_id = int(
+                    raw_teacher_id
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                flash(
+                    "Invalid teacher.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_exam_subject",
+                        exam_subject_id=exam_subject.id
+                    )
+                )
+
+            # ------------------------------------------------
+            # Teacher base validation
+            # ------------------------------------------------
+
+            teacher_query = (
+                Teacher.query
+                .filter(
+                    Teacher.id == teacher_id,
+                    Teacher.institution_id ==
+                    exam.institution_id,
+                    Teacher.is_active.is_(True),
+                    Teacher.status == "active"
+                )
+            )
+
+            if exam.branch_id:
+
+                teacher_query = (
+                    teacher_query
+                    .filter(
+                        Teacher.branch_id ==
+                        exam.branch_id
+                    )
+                )
+
+            teacher = (
+                teacher_query
+                .first()
+            )
+
+            if not teacher:
+
+                flash(
+                    "The selected teacher is not available for this exam.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_exam_subject",
+                        exam_subject_id=exam_subject.id
+                    )
+                )
+
+            # ------------------------------------------------
+            # TeacherSubject
+            #
+            # Program + Subject
+            # ------------------------------------------------
+
+            teacher_assignment_query = (
+                TeacherSubject.query
+                .filter(
+                    TeacherSubject.teacher_id ==
+                    teacher_id,
+
+                    TeacherSubject.program_id ==
+                    exam.program_id,
+
+                    TeacherSubject.institution_id ==
+                    exam.institution_id,
+
+                    TeacherSubject.status ==
+                    "active",
+
+                    db.or_(
+                        TeacherSubject.subject_id.is_(None),
+                        TeacherSubject.subject_id ==
+                        subject_id
+                    )
+                )
+            )
+
+            # ------------------------------------------------
+            # Branch
+            # ------------------------------------------------
+
+            if exam.branch_id:
+
+                teacher_assignment_query = (
+                    teacher_assignment_query
+                    .filter(
+                        db.or_(
+                            TeacherSubject.branch_id ==
+                            exam.branch_id,
+
+                            TeacherSubject.branch_id.is_(None)
+                        )
+                    )
+                )
+
+            # ------------------------------------------------
+            # Academic Year
+            # ------------------------------------------------
+
+            if exam.academic_year_id:
+
+                teacher_assignment_query = (
+                    teacher_assignment_query
+                    .filter(
+                        db.or_(
+                            TeacherSubject.academic_year_id ==
+                            exam.academic_year_id,
+
+                            TeacherSubject.academic_year_id.is_(None)
+                        )
+                    )
+                )
+
+            teacher_assignment = (
+                teacher_assignment_query
+                .first()
+            )
+
+            if not teacher_assignment:
+
+                flash(
+                    f"{teacher.full_name} is not assigned to {subject.name}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_exam_subject",
+                        exam_subject_id=exam_subject.id
+                    )
+                )
+
+            # ------------------------------------------------
+            # Class / Section compatibility
+            #
+            # TeacherSubject class_id NULL
+            # = program-wide assignment
+            #
+            # TeacherSubject section_id NULL
+            # = all sections
+            # ------------------------------------------------
+
+            compatible_assignment_query = (
+                TeacherSubject.query
+                .filter(
+                    TeacherSubject.teacher_id ==
+                    teacher_id,
+
+                    TeacherSubject.program_id ==
+                    exam.program_id,
+
+                    TeacherSubject.institution_id ==
+                    exam.institution_id,
+
+                    TeacherSubject.status ==
+                    "active",
+
+                    db.or_(
+                        TeacherSubject.subject_id.is_(None),
+                        TeacherSubject.subject_id ==
+                        subject_id
+                    )
+                )
+            )
+
+            if exam.branch_id:
+
+                compatible_assignment_query = (
+                    compatible_assignment_query
+                    .filter(
+                        db.or_(
+                            TeacherSubject.branch_id ==
+                            exam.branch_id,
+
+                            TeacherSubject.branch_id.is_(None)
+                        )
+                    )
+                )
+
+            if exam.academic_year_id:
+
+                compatible_assignment_query = (
+                    compatible_assignment_query
+                    .filter(
+                        db.or_(
+                            TeacherSubject.academic_year_id ==
+                            exam.academic_year_id,
+
+                            TeacherSubject.academic_year_id.is_(None)
+                        )
+                    )
+                )
+
+            # ------------------------------------------------
+            # Class compatibility
+            # ------------------------------------------------
+
+            if class_id:
+
+                compatible_assignment_query = (
+                    compatible_assignment_query
+                    .filter(
+                        db.or_(
+                            TeacherSubject.class_id.is_(None),
+                            TeacherSubject.class_id ==
+                            class_id
+                        )
+                    )
+                )
+
+            else:
+
+                compatible_assignment_query = (
+                    compatible_assignment_query
+                    .filter(
+                        TeacherSubject.class_id.is_(None)
+                    )
+                )
+
+            # ------------------------------------------------
+            # Section compatibility
+            # ------------------------------------------------
+
+            if section_id:
+
+                compatible_assignment_query = (
+                    compatible_assignment_query
+                    .filter(
+                        db.or_(
+                            TeacherSubject.section_id.is_(None),
+                            TeacherSubject.section_id ==
+                            section_id
+                        )
+                    )
+                )
+
+            else:
+
+                compatible_assignment_query = (
+                    compatible_assignment_query
+                    .filter(
+                        TeacherSubject.section_id.is_(None)
+                    )
+                )
+
+            compatible_assignment = (
+                compatible_assignment_query
+                .first()
+            )
+
+            if not compatible_assignment:
+
+                flash(
+                    f"{teacher.full_name} is not assigned to the selected class/section for {subject.name}.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_exam_subject",
+                        exam_subject_id=exam_subject.id
+                    )
+                )
+
+        # ====================================================
+        # MAX MARKS
+        # ====================================================
+
+        raw_max_marks = request.form.get(
+            "max_marks",
+            "100"
+        )
+
+        try:
+
+            max_marks = float(
+                raw_max_marks
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            flash(
+                "Invalid maximum marks.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        if max_marks <= 0:
+
+            flash(
+                "Maximum marks must be greater than zero.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        # ====================================================
+        # PASS MARKS
+        # ====================================================
+
+        raw_pass_marks = request.form.get(
+            "pass_marks",
+            "50"
+        )
+
+        try:
+
+            pass_marks = float(
+                raw_pass_marks
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            flash(
+                "Invalid pass marks.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        if pass_marks < 0:
+
+            flash(
+                "Pass marks cannot be negative.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        if pass_marks > max_marks:
+
+            flash(
+                "Pass marks cannot exceed maximum marks.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        # ====================================================
+        # WEIGHT
+        # ====================================================
+
+        raw_weight = request.form.get(
+            "weight",
+            "100"
+        )
+
+        try:
+
+            weight = float(
+                raw_weight
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            flash(
+                "Invalid weight.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        if weight <= 0:
+
+            flash(
+                "Weight must be greater than zero.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        # ====================================================
+        # DISPLAY ORDER
+        # ====================================================
+
+        raw_display_order = request.form.get(
+            "display_order",
+            "1"
+        )
+
+        try:
+
+            display_order = int(
+                raw_display_order
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            display_order = 1
+
+        if display_order <= 0:
+
+            display_order = 1
+
+        # ====================================================
+        # STATUS
+        # ====================================================
+
+        status = request.form.get(
+            "status",
+            "active"
+        )
+
+        status = (
+            status.strip().lower()
+            if status
+            else "active"
+        )
+
+        if status not in {
+            "active",
+            "inactive"
+        }:
+
+            status = "active"
+
+        # ====================================================
+        # DUPLICATE PROTECTION
+        #
+        # exam + subject + class + section
+        #
+        # EXCLUDE CURRENT RECORD
+        # ====================================================
+
+        duplicate_query = (
+            ExamSubject.query
+            .filter(
+                ExamSubject.exam_id == exam.id,
+
+                ExamSubject.subject_id ==
+                subject_id,
+
+                ExamSubject.id !=
+                exam_subject.id
+            )
+        )
+
+        # ----------------------------------------------------
+        # Class
+        # ----------------------------------------------------
+
+        if class_id is None:
+
+            duplicate_query = (
+                duplicate_query
+                .filter(
+                    ExamSubject.class_id.is_(None)
+                )
+            )
+
+        else:
+
+            duplicate_query = (
+                duplicate_query
+                .filter(
+                    ExamSubject.class_id ==
+                    class_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # Section
+        # ----------------------------------------------------
+
+        if section_id is None:
+
+            duplicate_query = (
+                duplicate_query
+                .filter(
+                    ExamSubject.section_id.is_(None)
+                )
+            )
+
+        else:
+
+            duplicate_query = (
+                duplicate_query
+                .filter(
+                    ExamSubject.section_id ==
+                    section_id
+                )
+            )
+
+        duplicate = (
+            duplicate_query
+            .first()
+        )
+
+        if duplicate:
+
+            class_text = (
+                selected_class.name
+                if selected_class
+                else "All Classes"
+            )
+
+            section_text = (
+                selected_section.name
+                if selected_section
+                else "All Sections"
+            )
+
+            flash(
+                f"{subject.name} already exists for {class_text} / {section_text}.",
+                "warning"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        # ====================================================
+        # UPDATE
+        # ====================================================
+
+        exam_subject.subject_id = subject_id
+        exam_subject.class_id = class_id
+        exam_subject.section_id = section_id
+        exam_subject.teacher_id = teacher_id
+        exam_subject.max_marks = max_marks
+        exam_subject.pass_marks = pass_marks
+        exam_subject.weight = weight
+        exam_subject.display_order = display_order
+        exam_subject.status = status
+
+        # ====================================================
+        # SAVE
+        # ====================================================
+
+        try:
+
+            db.session.commit()
+
+        except Exception as exc:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Failed to update exam subject %s: %s",
+                exam_subject_id,
+                exc
+            )
+
+            flash(
+                "An error occurred while updating the exam subject. No changes were saved.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_exam_subject",
+                    exam_subject_id=exam_subject.id
+                )
+            )
+
+        # ====================================================
+        # SUCCESS
+        # ====================================================
+
+        flash(
+            "Exam subject updated successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.view_exam_subject",
+                exam_subject_id=exam_subject.id
+            )
+        )
+
+    # ========================================================
+    # GET DATA
+    # ========================================================
+
+    # ========================================================
+    # SUBJECTS
+    #
+    # Only subjects belonging to this exam's program.
+    # ========================================================
+
+    subjects_query = (
+        Subject.query
+        .filter(
+            Subject.program_id == exam.program_id,
+            Subject.institution_id == exam.institution_id,
+            Subject.status == "active"
+        )
+    )
+
+    if exam.branch_id:
+
+        subjects_query = (
+            subjects_query
+            .filter(
+                db.or_(
+                    Subject.branch_id == exam.branch_id,
+                    Subject.branch_id.is_(None)
+                )
+            )
+        )
+
+    subjects = (
+        subjects_query
+        .order_by(
+            Subject.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # CLASSES
+    #
+    # Optional.
+    #
+    # Some programs have no classes.
+    # ========================================================
+
+    classes_query = (
+        Class.query
+        .filter(
+            Class.program_id == exam.program_id,
+            Class.institution_id == exam.institution_id
+        )
+    )
+
+    if exam.branch_id:
+
+        classes_query = (
+            classes_query
+            .filter(
+                Class.branch_id == exam.branch_id
+            )
+        )
+
+    if exam.academic_year_id:
+
+        classes_query = (
+            classes_query
+            .filter(
+                Class.academic_year_id ==
+                exam.academic_year_id
+            )
+        )
+
+    classes = (
+        classes_query
+        .order_by(
+            Class.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # SECTIONS
+    # ========================================================
+
+    class_ids = [
+        int(item.id)
+        for item in classes
+    ]
+
+    sections = []
+
+    if class_ids:
+
+        sections = (
+            Section.query
+            .filter(
+                Section.class_id.in_(
+                    class_ids
+                )
+            )
+            .order_by(
+                Section.name.asc()
+            )
+            .all()
+        )
+
+    # ========================================================
+    # PROGRAM TEACHERS
+    #
+    # IMPORTANT:
+    # NOT ALL BRANCH TEACHERS.
+    #
+    # Only teachers assigned to:
+    #
+    # Exam Program
+    #      ↓
+    # TeacherSubject
+    #      ↓
+    # Teacher
+    # ========================================================
+
+    teachers_query = (
+        Teacher.query
+        .join(
+            TeacherSubject,
+            TeacherSubject.teacher_id ==
+            Teacher.id
+        )
+        .filter(
+            Teacher.institution_id ==
+            exam.institution_id,
+
+            Teacher.is_active.is_(True),
+
+            Teacher.status == "active",
+
+            TeacherSubject.institution_id ==
+            exam.institution_id,
+
+            TeacherSubject.program_id ==
+            exam.program_id,
+
+            TeacherSubject.status ==
+            "active"
+        )
+    )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    if exam.branch_id:
+
+        teachers_query = (
+            teachers_query
+            .filter(
+                Teacher.branch_id ==
+                exam.branch_id,
+
+                db.or_(
+                    TeacherSubject.branch_id ==
+                    exam.branch_id,
+
+                    TeacherSubject.branch_id.is_(None)
+                )
+            )
+        )
+
+    # ========================================================
+    # ACADEMIC YEAR
+    # ========================================================
+
+    if exam.academic_year_id:
+
+        teachers_query = (
+            teachers_query
+            .filter(
+                db.or_(
+                    TeacherSubject.academic_year_id ==
+                    exam.academic_year_id,
+
+                    TeacherSubject.academic_year_id.is_(None)
+                )
+            )
+        )
+
+    teachers = (
+        teachers_query
+        .distinct()
+        .order_by(
+            Teacher.full_name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
+    return render_template(
+        "backend/pages/exam_subjects/edit_exam_subject.html",
+
+        exam_subject=exam_subject,
+
+        exam=exam,
+
+        program=program,
+
+        subjects=subjects,
+
+        classes=classes,
+
+        sections=sections,
+
+        teachers=teachers,
+
+        user=current_user
+    )
+
+
+
+
+# ============================================================
+# DELETE EXAM SUBJECT
+# ============================================================
+
+@bp.route(
+    "/exam-subjects/<int:exam_subject_id>/delete",
+    methods=["POST"]
+)
+@login_required
+def delete_exam_subject(exam_subject_id):
+
+    # ========================================================
+    # SECURITY
+    # ========================================================
+
+    if not _exam_subject_can_manage():
+        abort(403)
+
+    # ========================================================
+    # LOAD WITH SCOPE
+    # ========================================================
+
+    query = (
+        ExamSubject.query
+        .join(
+            Exam,
+            Exam.id == ExamSubject.exam_id
+        )
+        .filter(
+            ExamSubject.id == exam_subject_id
+        )
+    )
+
+    query = _exam_subject_scope_query(
+        query
+    )
+
+    exam_subject = query.first()
+
+    if not exam_subject:
+        abort(404)
+
+    # ========================================================
+    # DELETE
+    # ========================================================
+
+    try:
+
+        db.session.delete(
+            exam_subject
+        )
+
+        db.session.commit()
+
+        flash(
+            "Exam subject deleted successfully.",
+            "success"
+        )
+
+    except Exception:
+
+        db.session.rollback()
+
+        flash(
+            "Unable to delete exam subject.",
+            "danger"
+        )
+
+    # ========================================================
+    # REDIRECT
+    # ========================================================
+
+    return redirect(
+        url_for(
+            "main.all_exam_subjects"
+        )
+    )
 
 
 

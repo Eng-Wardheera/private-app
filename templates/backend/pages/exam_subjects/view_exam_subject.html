@@ -1,0 +1,1282 @@
+{# ============================================================
+   VIEW EXAM SUBJECT
+   templates/backend/pages/exam_subjects/view_exam_subject.html
+   ============================================================ #}
+
+{% extends "backend/home/base.html" %}
+
+{% block title %}
+    View Exam Subject
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .exam-subject-page {
+        padding: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* ========================================================
+       HEADER
+       ======================================================== */
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .page-header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .back-button {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #06245f;
+        background: #eef3fb;
+        border: 1px solid #dce5f2;
+        transition: 0.2s ease;
+    }
+
+    .back-button:hover {
+        background: #06245f;
+        color: #ffffff;
+        border-color: #06245f;
+    }
+
+    .page-title {
+        margin: 0;
+        font-size: 25px;
+        font-weight: 700;
+        color: #06245f;
+    }
+
+    .page-subtitle {
+        margin: 5px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        min-height: 40px;
+        padding: 0 15px;
+        border-radius: 9px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .btn-primary {
+        background: #06245f;
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background: #041b49;
+    }
+
+    .btn-secondary {
+        background: #ffffff;
+        color: #06245f;
+        border-color: #d8e0ec;
+    }
+
+    .btn-secondary:hover {
+        background: #f5f7fb;
+    }
+
+    /* ========================================================
+       STATUS
+       ======================================================== */
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: capitalize;
+    }
+
+    .status-badge::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .status-active {
+        color: #16803c;
+        background: #eaf8ef;
+    }
+
+    .status-inactive {
+        color: #a15c00;
+        background: #fff5df;
+    }
+
+    .status-closed {
+        color: #6b7280;
+        background: #f1f3f5;
+    }
+
+    /* ========================================================
+       CARDS
+       ======================================================== */
+
+    .card {
+        background: #ffffff;
+        border: 1px solid #e4e9f1;
+        border-radius: 14px;
+        box-shadow: 0 3px 14px rgba(6, 36, 95, 0.05);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #e8edf4;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
+        color: #06245f;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    /* ========================================================
+       EXAM SUMMARY
+       ======================================================== */
+
+    .exam-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .info-item {
+        background: #f8faff;
+        border: 1px solid #e6ecf5;
+        border-radius: 11px;
+        padding: 15px;
+    }
+
+    .info-label {
+        display: block;
+        color: #7a8494;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    .info-value {
+        color: #1f2937;
+        font-size: 14px;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .info-value a {
+        color: #06245f;
+        text-decoration: none;
+    }
+
+    .info-value a:hover {
+        text-decoration: underline;
+    }
+
+    /* ========================================================
+       SUBJECT HERO
+       ======================================================== */
+
+    .subject-hero {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .subject-icon {
+        width: 62px;
+        height: 62px;
+        border-radius: 14px;
+        background: #eef2ff;
+        color: #33206f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+        font-weight: 800;
+    }
+
+    .subject-name {
+        margin: 0 0 5px;
+        font-size: 22px;
+        font-weight: 750;
+        color: #06245f;
+    }
+
+    .subject-code {
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .subject-status {
+        text-align: right;
+    }
+
+    /* ========================================================
+       DETAILS GRID
+       ======================================================== */
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .detail-box {
+        border: 1px solid #e5eaf1;
+        border-radius: 11px;
+        padding: 16px;
+        background: #ffffff;
+    }
+
+    .detail-box-label {
+        display: block;
+        font-size: 12px;
+        color: #7b8491;
+        margin-bottom: 7px;
+        font-weight: 600;
+    }
+
+    .detail-box-value {
+        color: #1f2937;
+        font-size: 15px;
+        font-weight: 650;
+    }
+
+    /* ========================================================
+       MARKS
+       ======================================================== */
+
+    .marks-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .mark-card {
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid #e5eaf1;
+        background: #fafcff;
+    }
+
+    .mark-label {
+        display: block;
+        color: #7b8491;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .mark-value {
+        color: #06245f;
+        font-size: 24px;
+        font-weight: 750;
+    }
+
+    .mark-small {
+        color: #6b7280;
+        font-size: 12px;
+        margin-left: 3px;
+    }
+
+    /* ========================================================
+       TIMESTAMPS
+       ======================================================== */
+
+    .timestamps {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .timestamp-box {
+        background: #f8fafc;
+        border-radius: 10px;
+        border: 1px solid #e5eaf1;
+        padding: 14px 16px;
+    }
+
+    .timestamp-label {
+        display: block;
+        font-size: 12px;
+        color: #7b8491;
+        margin-bottom: 5px;
+    }
+
+    .timestamp-value {
+        color: #374151;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* ========================================================
+       EMPTY / NULL
+       ======================================================== */
+
+    .muted {
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    /* ========================================================
+       RESPONSIVE
+       ======================================================== */
+
+    @media (max-width: 1100px) {
+
+        .exam-summary,
+        .marks-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .details-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 700px) {
+
+        .exam-subject-page {
+            padding: 15px;
+        }
+
+        .page-title {
+            font-size: 21px;
+        }
+
+        .exam-summary,
+        .marks-grid,
+        .details-grid,
+        .timestamps {
+            grid-template-columns: 1fr;
+        }
+
+        .subject-hero {
+            grid-template-columns: auto 1fr;
+        }
+
+        .subject-status {
+            grid-column: 1 / -1;
+            text-align: left;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-actions .btn {
+            flex: 1;
+        }
+    }
+</style>
+
+
+<div class="exam-subject-page">
+
+    <!-- ======================================================
+         PAGE HEADER
+         ====================================================== -->
+
+    <div class="page-header">
+
+        <div class="page-header-left">
+
+            <a
+                href="{{ url_for('main.all_exam_subjects') }}"
+                class="back-button"
+                title="Back"
+            >
+                ←
+            </a>
+
+            <div>
+                <h1 class="page-title">
+                    Exam Subject Details
+                </h1>
+
+                <p class="page-subtitle">
+                    View detailed information about this exam subject.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            {% if exam_subject.exam %}
+
+                <a
+                    href="{{ url_for(
+                        'main.add_exam_subject',
+                        exam_id=exam_subject.exam_id
+                    ) }}"
+                    class="btn btn-primary"
+                >
+                    + Add Subject
+                </a>
+
+            {% endif %}
+
+            <a
+                href="{{ url_for('main.all_exam_subjects') }}"
+                class="btn btn-secondary"
+            >
+                Back
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         SUBJECT HEADER
+         ====================================================== -->
+
+    <div class="card">
+
+        <div class="card-body">
+
+            <div class="subject-hero">
+
+                <div class="subject-icon">
+                    {{ exam_subject.subject.name[:1]|upper
+                       if exam_subject.subject
+                       else '?' }}
+                </div>
+
+
+                <div>
+
+                    <h2 class="subject-name">
+
+                        {% if exam_subject.subject %}
+                            {{ exam_subject.subject.name }}
+                        {% else %}
+                            Unknown Subject
+                        {% endif %}
+
+                    </h2>
+
+                    <div class="subject-code">
+
+                        {% if exam_subject.subject and exam_subject.subject.code %}
+
+                            Subject Code:
+                            <strong>
+                                {{ exam_subject.subject.code }}
+                            </strong>
+
+                        {% else %}
+
+                            <span class="muted">
+                                No subject code
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <div class="subject-status">
+
+                    {% if exam_subject.status == "active" %}
+
+                        <span class="status-badge status-active">
+                            Active
+                        </span>
+
+                    {% elif exam_subject.status == "inactive" %}
+
+                        <span class="status-badge status-inactive">
+                            Inactive
+                        </span>
+
+                    {% elif exam_subject.status == "closed" %}
+
+                        <span class="status-badge status-closed">
+                            Closed
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-badge status-closed">
+                            {{ exam_subject.status or "Unknown" }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         EXAM INFORMATION
+         ====================================================== -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2 class="card-title">
+                Exam Information
+            </h2>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="exam-summary">
+
+                <!-- Exam -->
+
+                <div class="info-item">
+
+                    <span class="info-label">
+                        Exam
+                    </span>
+
+                    <div class="info-value">
+
+                        {% if exam_subject.exam %}
+
+                            {{ exam_subject.exam.name
+                               or exam_subject.exam.title
+                               or "—" }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Exam Code -->
+
+                <div class="info-item">
+
+                    <span class="info-label">
+                        Exam Code
+                    </span>
+
+                    <div class="info-value">
+
+                        {% if exam_subject.exam and exam_subject.exam.code %}
+
+                            {{ exam_subject.exam.code }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Program -->
+
+                <div class="info-item">
+
+                    <span class="info-label">
+                        Program
+                    </span>
+
+                    <div class="info-value">
+
+                        {% if exam_subject.exam and exam_subject.exam.program %}
+
+                            {{ exam_subject.exam.program.name }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                No Program
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Academic Year -->
+
+                <div class="info-item">
+
+                    <span class="info-label">
+                        Academic Year
+                    </span>
+
+                    <div class="info-value">
+
+                        {% if exam_subject.exam and exam_subject.exam.academic_year %}
+
+                            {{ exam_subject.exam.academic_year.name }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Term -->
+
+                <div class="info-item">
+
+                    <span class="info-label">
+                        Term
+                    </span>
+
+                    <div class="info-value">
+
+                        {% if exam_subject.exam and exam_subject.exam.term %}
+
+                            {{ exam_subject.exam.term.name }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Assessment Plan -->
+
+                <div class="info-item">
+
+                    <span class="info-label">
+                        Assessment Plan
+                    </span>
+
+                    <div class="info-value">
+
+                        {% if exam_subject.exam
+                              and exam_subject.exam.assessment_plan %}
+
+                            {{ exam_subject.exam.assessment_plan.name }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                No Assessment Plan
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         SUBJECT ASSIGNMENT
+         ====================================================== -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2 class="card-title">
+                Subject Assignment
+            </h2>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="details-grid">
+
+                <!-- Subject -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Subject
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {% if exam_subject.subject %}
+
+                            {{ exam_subject.subject.name }}
+
+                            {% if exam_subject.subject.short_name %}
+
+                                <span class="muted">
+                                    ({{ exam_subject.subject.short_name }})
+                                </span>
+
+                            {% endif %}
+
+                        {% else %}
+
+                            <span class="muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Class -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Class
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {% if exam_subject.class_ %}
+
+                            {{ exam_subject.class_.name }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                All Classes / Not Applicable
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Section -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Section
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {% if exam_subject.section %}
+
+                            {{ exam_subject.section.name }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                All Sections / Not Applicable
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Teacher -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Assigned Teacher
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {% if exam_subject.teacher %}
+
+                            {{ exam_subject.teacher.full_name }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                No Teacher Assigned
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Subject Type -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Subject Type
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {% if exam_subject.subject
+                              and exam_subject.subject.subject_type %}
+
+                            {{ exam_subject.subject.subject_type|replace("_", " ")|title }}
+
+                        {% else %}
+
+                            <span class="muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Display Order -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Display Order
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {{ exam_subject.display_order or 1 }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         MARKS & WEIGHT
+         ====================================================== -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2 class="card-title">
+                Marks & Weight
+            </h2>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="marks-grid">
+
+                <!-- Maximum Marks -->
+
+                <div class="mark-card">
+
+                    <span class="mark-label">
+                        Maximum Marks
+                    </span>
+
+                    <div class="mark-value">
+
+                        {{ exam_subject.max_marks }}
+
+                        <span class="mark-small">
+                            marks
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Pass Marks -->
+
+                <div class="mark-card">
+
+                    <span class="mark-label">
+                        Pass Marks
+                    </span>
+
+                    <div class="mark-value">
+
+                        {{ exam_subject.pass_marks }}
+
+                        <span class="mark-small">
+                            marks
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Weight -->
+
+                <div class="mark-card">
+
+                    <span class="mark-label">
+                        Weight
+                    </span>
+
+                    <div class="mark-value">
+
+                        {{ exam_subject.weight }}
+
+                        <span class="mark-small">
+                            %
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Pass Percentage -->
+
+                <div class="mark-card">
+
+                    <span class="mark-label">
+                        Pass Percentage
+                    </span>
+
+                    <div class="mark-value">
+
+                        {% if exam_subject.max_marks
+                              and exam_subject.max_marks > 0 %}
+
+                            {{ (
+                                (exam_subject.pass_marks /
+                                exam_subject.max_marks) * 100
+                            )|round(2) }}
+
+                        {% else %}
+
+                            0
+
+                        {% endif %}
+
+                        <span class="mark-small">
+                            %
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         SUBJECT INFORMATION
+         ====================================================== -->
+
+    {% if exam_subject.subject %}
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2 class="card-title">
+                Subject Information
+            </h2>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="details-grid">
+
+                <!-- Short Name -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Short Name
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {{ exam_subject.subject.short_name
+                           or "—" }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Weekly Hours -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Weekly Hours
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {{ exam_subject.subject.weekly_hours
+                           or "—" }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Credit Hours -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Credit Hours
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {{ exam_subject.subject.credit_hours
+                           or "—" }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Subject Max Marks -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Subject Max Marks
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {{ exam_subject.subject.max_marks
+                           or "—" }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Subject Pass Marks -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Subject Pass Marks
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {{ exam_subject.subject.pass_marks
+                           or "—" }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Subject Status -->
+
+                <div class="detail-box">
+
+                    <span class="detail-box-label">
+                        Subject Status
+                    </span>
+
+                    <div class="detail-box-value">
+
+                        {{ exam_subject.subject.status
+                           or "—" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ======================================================
+         RECORD INFORMATION
+         ====================================================== -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2 class="card-title">
+                Record Information
+            </h2>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="timestamps">
+
+                <div class="timestamp-box">
+
+                    <span class="timestamp-label">
+                        Created At
+                    </span>
+
+                    <div class="timestamp-value">
+
+                        {% if exam_subject.created_at %}
+
+                            {{ exam_subject.created_at.strftime(
+                                "%d %b %Y, %I:%M %p"
+                            ) }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <div class="timestamp-box">
+
+                    <span class="timestamp-label">
+                        Last Updated
+                    </span>
+
+                    <div class="timestamp-value">
+
+                        {% if exam_subject.updated_at %}
+
+                            {{ exam_subject.updated_at.strftime(
+                                "%d %b %Y, %I:%M %p"
+                            ) }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,3397 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   ADD EXAM PAGE
+   ============================================================ */
+
+.add-exam-page {
+    width: 100%;
+    max-width: 1450px;
+    margin: 0 auto;
+    padding: 5px 0 35px;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.add-exam-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.add-exam-header-left {
+    min-width: 0;
+}
+
+.add-exam-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.add-exam-breadcrumb a {
+    color: #64748b;
+    text-decoration: none;
+}
+
+.add-exam-breadcrumb a:hover {
+    color: #06245f;
+}
+
+.add-exam-breadcrumb i {
+    font-size: 8px;
+}
+
+.add-exam-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.add-exam-subtitle {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.add-exam-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.exam-btn {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.exam-btn:hover {
+    transform: translateY(-1px);
+}
+
+.exam-btn-primary {
+    background: #06245f;
+    color: #fff;
+}
+
+.exam-btn-primary:hover {
+    background: #041b49;
+    color: #fff;
+}
+
+.exam-btn-success {
+    background: #32b73a;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(50,183,58,.16);
+}
+
+.exam-btn-success:hover {
+    background: #299d31;
+    color: #fff;
+}
+
+.exam-btn-light {
+    background: #fff;
+    color: #334155;
+    border-color: #dbe3ef;
+}
+
+.exam-btn-light:hover {
+    background: #f8fafc;
+    border-color: #bdc9da;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+
+.add-exam-layout {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 340px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* ============================================================
+   CARD
+   ============================================================ */
+
+.exam-card,
+.exam-side-card {
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 15px;
+    box-shadow: 0 4px 18px rgba(15,23,42,.045);
+    overflow: hidden;
+}
+
+.exam-card + .exam-card,
+.exam-side-card + .exam-side-card {
+    margin-top: 18px;
+}
+
+.exam-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e8edf4;
+}
+
+.exam-card-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+}
+
+.exam-card-title-wrap {
+    min-width: 0;
+}
+
+.exam-card-title {
+    margin: 0;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.exam-card-subtitle {
+    margin: 3px 0 0;
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.exam-card-body {
+    padding: 20px;
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.exam-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 17px;
+}
+
+.exam-field {
+    min-width: 0;
+}
+
+.exam-field-full {
+    grid-column: 1 / -1;
+}
+
+.exam-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.exam-required {
+    color: #dc2626;
+}
+
+.exam-input,
+.exam-select,
+.exam-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    transition: .18s ease;
+}
+
+.exam-input,
+.exam-select {
+    height: 43px;
+    padding: 0 12px;
+}
+
+.exam-textarea {
+    min-height: 125px;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.exam-input:focus,
+.exam-select:focus,
+.exam-textarea:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6,36,95,.08);
+}
+
+.exam-input:disabled,
+.exam-select:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.exam-help {
+    margin-top: 6px;
+    color: #94a3b8;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   SELECT
+   ============================================================ */
+
+.exam-select-wrapper {
+    position: relative;
+}
+
+.exam-select-wrapper::after {
+    content: "\f078";
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: #94a3b8;
+    pointer-events: none;
+    font-size: 10px;
+}
+
+.exam-select-wrapper select {
+    appearance: none;
+    padding-right: 35px;
+}
+
+/* ============================================================
+   CODE
+   ============================================================ */
+
+.exam-code-wrapper {
+    position: relative;
+}
+
+.exam-code-wrapper .exam-input {
+    padding-right: 43px;
+    font-family: Consolas, Monaco, monospace;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+}
+
+.exam-code-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #32b73a;
+    pointer-events: none;
+}
+
+.code-auto-badge {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: #edf9ef;
+    color: #269530;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   INFO ALERT
+   ============================================================ */
+
+.exam-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 13px 15px;
+    border: 1px solid #dbe7f7;
+    border-radius: 11px;
+    background: #f5f9ff;
+}
+
+.exam-alert-icon {
+    color: #06245f;
+    margin-top: 2px;
+}
+
+.exam-alert-title {
+    color: #06245f;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.exam-alert-text {
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   TYPE
+   ============================================================ */
+
+.exam-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 9px;
+}
+
+.exam-type-option,
+.exam-status-option {
+    position: relative;
+}
+
+.exam-type-option input,
+.exam-status-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.exam-type-label {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #fff;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.exam-type-label:hover {
+    border-color: #b9c9e3;
+    background: #f8fafc;
+}
+
+.exam-type-option input:checked + .exam-type-label {
+    border-color: #06245f;
+    background: #f2f6fc;
+}
+
+.exam-type-icon {
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 11px;
+}
+
+.exam-type-text {
+    color: #334155;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.exam-status-options {
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 10px;
+}
+
+.exam-status-label {
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 12px;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #fff;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.exam-status-label:hover {
+    background: #f8fafc;
+}
+
+.exam-status-option input:checked + .exam-status-label {
+    border-color: #32b73a;
+    background: #f1fbf2;
+}
+
+.exam-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: 0 0 9px;
+}
+
+.exam-status-dot.draft { background:#94a3b8; }
+.exam-status-dot.scheduled { background:#2563eb; }
+.exam-status-dot.ongoing { background:#f59e0b; }
+.exam-status-dot.completed { background:#16a34a; }
+.exam-status-dot.cancelled { background:#dc2626; }
+.exam-status-dot.published { background:#7c3aed; }
+
+.exam-status-name {
+    display: block;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.exam-status-description {
+    display: block;
+    margin-top: 2px;
+    color: #94a3b8;
+    font-size: 8px;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.exam-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e8edf4;
+}
+
+.exam-form-footer-left {
+    color: #94a3b8;
+    font-size: 10px;
+}
+
+.exam-form-footer-actions {
+    display: flex;
+    gap: 9px;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.exam-side-header {
+    padding: 17px 18px;
+    border-bottom: 1px solid #e8edf4;
+}
+
+.exam-side-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.exam-side-title i {
+    color: #06245f;
+}
+
+.exam-side-body {
+    padding: 18px;
+}
+
+/* ============================================================
+   PREVIEW
+   ============================================================ */
+
+.exam-preview {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.exam-preview-top {
+    padding: 20px;
+    background: linear-gradient(135deg,#06245f,#173f84);
+    color: #fff;
+}
+
+.exam-preview-icon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(255,255,255,.12);
+    margin-bottom: 13px;
+}
+
+.exam-preview-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.exam-preview-code {
+    margin-top: 6px;
+    opacity: .78;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.exam-preview-body {
+    padding: 15px;
+}
+
+.preview-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 9px 0;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.preview-row:last-child {
+    border-bottom: none;
+}
+
+.preview-label {
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.preview-value {
+    color: #334155;
+    font-size: 10px;
+    font-weight: 800;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* ============================================================
+   INFO LIST
+   ============================================================ */
+
+.exam-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.exam-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.exam-info-icon {
+    width: 31px;
+    height: 31px;
+    flex: 0 0 31px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 12px;
+}
+
+.exam-info-title {
+    color: #334155;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.exam-info-text {
+    margin-top: 2px;
+    color: #94a3b8;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   ASSESSMENT NOTICE
+   ============================================================ */
+
+.assessment-status {
+    display: none;
+    margin-top: 7px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.assessment-status.show {
+    display: block;
+}
+
+.assessment-status.info {
+    background: #f1f6ff;
+    border: 1px solid #d9e6fb;
+    color: #315987;
+}
+
+.assessment-status.success {
+    background: #f0fbf2;
+    border: 1px solid #d6f1da;
+    color: #278632;
+}
+
+.assessment-status.warning {
+    background: #fff8eb;
+    border: 1px solid #f7dfae;
+    color: #9a6a10;
+}
+
+/* ============================================================
+   CODE LOADING
+   ============================================================ */
+
+.code-loading .exam-code-icon {
+    animation: codeSpin .8s linear infinite;
+}
+
+@keyframes codeSpin {
+    from { transform:translateY(-50%) rotate(0deg); }
+    to { transform:translateY(-50%) rotate(360deg); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width:1200px) {
+    .exam-type-grid,
+    .exam-status-options {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+}
+
+@media (max-width:1100px) {
+    .add-exam-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .exam-side-column {
+        display: grid;
+        grid-template-columns: repeat(2,minmax(0,1fr));
+        gap: 18px;
+    }
+
+    .exam-side-card + .exam-side-card {
+        margin-top: 0;
+    }
+}
+
+@media (max-width:800px) {
+    .add-exam-header {
+        flex-direction: column;
+    }
+
+    .exam-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .exam-field-full {
+        grid-column: auto;
+    }
+
+    .exam-side-column {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width:600px) {
+    .add-exam-title {
+        font-size: 23px;
+    }
+
+    .exam-card-body {
+        padding: 15px;
+    }
+
+    .exam-card-header {
+        padding: 15px;
+    }
+
+    .exam-type-grid,
+    .exam-status-options {
+        grid-template-columns: 1fr;
+    }
+
+    .exam-form-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .exam-form-footer-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+</style>
+
+<div class="add-exam-page">
+
+```
+<!-- ========================================================
+     HEADER
+     ======================================================== -->
+
+<div class="add-exam-header">
+
+    <div class="add-exam-header-left">
+
+        <div class="add-exam-breadcrumb">
+
+            <a href="{{ url_for('main.dashboard') }}">
+                Dashboard
+            </a>
+
+            <i class="fa-solid fa-chevron-right"></i>
+
+            <a href="{{ url_for('main.all_exams') }}">
+                Exams
+            </a>
+
+            <i class="fa-solid fa-chevron-right"></i>
+
+            <span>Add Exam</span>
+
+        </div>
+
+        <h1 class="add-exam-title">
+            <i class="fa-solid fa-file-circle-plus"></i>
+            Add New Exam
+        </h1>
+
+        <p class="add-exam-subtitle">
+            Create and configure an examination for a
+            branch, program and academic period.
+        </p>
+
+    </div>
+
+    <div class="add-exam-header-actions">
+
+        <a
+            href="{{ url_for('main.all_exams') }}"
+            class="exam-btn exam-btn-light"
+        >
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to Exams
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     ALERT
+     ======================================================== -->
+
+<div class="exam-alert">
+
+    <div class="exam-alert-icon">
+        <i class="fa-solid fa-circle-info"></i>
+    </div>
+
+    <div>
+
+        <div class="exam-alert-title">
+            Exam Configuration
+        </div>
+
+        <div class="exam-alert-text">
+            Institution, branch and program are connected.
+            Assessment Plan is optional. If the selected
+            program has an assessment plan, it will appear
+            automatically.
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     MAIN LAYOUT
+     ======================================================== -->
+
+<div class="add-exam-layout">
+
+    <div>
+
+        <form
+            method="POST"
+            action="{{ url_for('main.add_exam') }}"
+            id="addExamForm"
+            autocomplete="off"
+        >
+
+            {% if csrf_token is defined %}
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+            {% endif %}
+
+
+            <!-- ==================================================
+                 ORGANIZATION
+                 ================================================== -->
+
+            <div class="exam-card">
+
+                <div class="exam-card-header">
+
+                    <div class="exam-card-icon">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+
+                    <div class="exam-card-title-wrap">
+
+                        <h2 class="exam-card-title">
+                            Organization Assignment
+                        </h2>
+
+                        <p class="exam-card-subtitle">
+                            Connect the exam with institution,
+                            branch, program and assessment plan.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="exam-card-body">
+
+                    <div class="exam-form-grid">
+
+
+                        <!-- INSTITUTION -->
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="institution_id"
+                            >
+                                Institution
+                                <span class="exam-required">*</span>
+                            </label>
+
+                            <div class="exam-select-wrapper">
+
+                                <select
+                                    id="institution_id"
+                                    name="institution_id"
+                                    class="exam-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select institution
+                                    </option>
+
+                                    {% for institution in institutions %}
+
+                                        <option
+                                            value="{{ institution.id }}"
+                                            {% if request.form.get('institution_id') == institution.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ institution.name }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                            <div class="exam-help">
+                                Select the institution that owns this examination.
+                            </div>
+
+                        </div>
+
+
+                        <!-- BRANCH -->
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="branch_id"
+                            >
+                                Branch
+                                <span class="exam-required">*</span>
+                            </label>
+
+                            <div class="exam-select-wrapper">
+
+                                <select
+                                    id="branch_id"
+                                    name="branch_id"
+                                    class="exam-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select branch
+                                    </option>
+
+                                    {% for branch in branches %}
+
+                                        <option
+                                            value="{{ branch.id }}"
+                                            data-institution-id="{{ branch.institution_id }}"
+                                            {% if request.form.get('branch_id') == branch.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ branch.name }}
+                                            {% if branch.code %}
+                                                — {{ branch.code }}
+                                            {% endif %}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                            <div class="exam-help">
+                                Only branches belonging to the selected institution are shown.
+                            </div>
+
+                        </div>
+
+
+                        <!-- PROGRAM -->
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="program_id"
+                            >
+                                Program
+                                <span class="exam-required">*</span>
+                            </label>
+
+                            <div class="exam-select-wrapper">
+
+                                <select
+                                    id="program_id"
+                                    name="program_id"
+                                    class="exam-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select program
+                                    </option>
+
+                                    {% for program in programs %}
+
+                                        <option
+                                            value="{{ program.id }}"
+                                            data-institution-id="{{ program.institution_id }}"
+                                            data-branch-id="{{ program.branch_id or '' }}"
+                                            {% if request.form.get('program_id') == program.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {{ program.name }}
+
+                                            {% if program.code %}
+                                                — {{ program.code }}
+                                            {% endif %}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                            <div class="exam-help">
+                                Programs can belong to one branch or be shared across branches.
+                            </div>
+
+                        </div>
+
+
+                        <!-- ASSESSMENT PLAN -->
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="assessment_plan_id"
+                            >
+                                Assessment Plan
+                            </label>
+
+                            <div class="exam-select-wrapper">
+
+                                <select
+                                    id="assessment_plan_id"
+                                    name="assessment_plan_id"
+                                    class="exam-select"
+                                >
+
+                                    <option value="">
+                                        No assessment plan
+                                    </option>
+
+                                    {% for plan in assessment_plans %}
+
+                                        <option
+                                            value="{{ plan.id }}"
+                                            data-program-id="{{ plan.program_id if plan.program_id is defined else '' }}"
+                                            data-institution-id="{{ plan.institution_id if plan.institution_id is defined else '' }}"
+                                            {% if request.form.get('assessment_plan_id') == plan.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {{ plan.name }}
+
+                                            {% if plan.code is defined and plan.code %}
+                                                — {{ plan.code }}
+                                            {% endif %}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                            <div
+                                id="assessmentPlanStatus"
+                                class="assessment-status"
+                            ></div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 ACADEMIC PERIOD
+                 ================================================== -->
+
+            <div class="exam-card">
+
+                <div class="exam-card-header">
+
+                    <div class="exam-card-icon">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+
+                    <div class="exam-card-title-wrap">
+
+                        <h2 class="exam-card-title">
+                            Academic Period
+                        </h2>
+
+                        <p class="exam-card-subtitle">
+                            Define the academic year and optional term.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="exam-card-body">
+
+                    <div class="exam-form-grid">
+
+
+                        <!-- ACADEMIC YEAR -->
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="academic_year_id"
+                            >
+                                Academic Year
+                                <span class="exam-required">*</span>
+                            </label>
+
+                            <div class="exam-select-wrapper">
+
+                                <select
+                                    id="academic_year_id"
+                                    name="academic_year_id"
+                                    class="exam-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select academic year
+                                    </option>
+
+                                    {% for academic_year in academic_years %}
+
+                                        <option
+                                            value="{{ academic_year.id }}"
+                                            {% if request.form.get('academic_year_id') == academic_year.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ academic_year.name }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                            <div class="exam-help">
+                                Required for generating the unique exam code.
+                            </div>
+
+                        </div>
+
+
+                        <!-- TERM -->
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="term_id"
+                            >
+                                Term / Assessment Period
+                            </label>
+
+                            <div class="exam-select-wrapper">
+
+                                <select
+                                    id="term_id"
+                                    name="term_id"
+                                    class="exam-select"
+                                >
+
+                                    <option value="">
+                                        No specific term
+                                    </option>
+
+                                    {% for term in terms %}
+
+                                        <option
+                                            value="{{ term.id }}"
+                                            data-academic-year-id="{{ term.academic_year_id if term.academic_year_id is defined else '' }}"
+                                            {% if request.form.get('term_id') == term.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {{ term.name }}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                            <div class="exam-help">
+                                Optional. Useful for term-based examinations.
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 EXAM INFORMATION
+                 ================================================== -->
+
+            <div class="exam-card">
+
+                <div class="exam-card-header">
+
+                    <div class="exam-card-icon">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </div>
+
+                    <div class="exam-card-title-wrap">
+
+                        <h2 class="exam-card-title">
+                            Examination Information
+                        </h2>
+
+                        <p class="exam-card-subtitle">
+                            Enter the examination identity and type.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="exam-card-body">
+
+                    <div class="exam-form-grid">
+
+
+                        <!-- NAME -->
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="name"
+                            >
+                                Exam Name
+                                <span class="exam-required">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                class="exam-input"
+                                maxlength="150"
+                                required
+                                value="{{ request.form.get('name', '') }}"
+                                placeholder="e.g. First Term Final Examination"
+                            >
+
+                        </div>
+
+
+                        <!-- CODE -->
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="code"
+                            >
+
+                                Exam Code
+
+                                <span class="exam-required">*</span>
+
+                                <span class="code-auto-badge">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    AUTO
+                                </span>
+
+                            </label>
+
+                            <div
+                                class="exam-code-wrapper"
+                                id="codeWrapper"
+                            >
+
+                                <input
+                                    type="text"
+                                    id="code"
+                                    name="code"
+                                    class="exam-input"
+                                    maxlength="50"
+                                    required
+                                    value="{{ request.form.get('code', '') }}"
+                                    placeholder="PROGRAM-TERM-YEAR-001"
+                                >
+
+                                <i
+                                    class="fa-solid fa-code exam-code-icon"
+                                    id="codeIcon"
+                                ></i>
+
+                            </div>
+
+                            <div class="exam-help">
+                                Automatically generated from Program,
+                                Exam Type and Academic Year.
+                            </div>
+
+                        </div>
+
+
+                        <!-- EXAM TYPE -->
+
+                        <div class="exam-field exam-field-full">
+
+                            <label class="exam-label">
+
+                                Exam Type
+                                <span class="exam-required">*</span>
+
+                            </label>
+
+
+                            <div class="exam-type-grid">
+
+
+                                {% set selected_type = request.form.get('exam_type', 'term') %}
+
+
+                                <!-- TERM -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_term"
+                                        name="exam_type"
+                                        value="term"
+                                        {% if selected_type == 'term' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_term"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-calendar"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Term
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- MONTHLY -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_monthly"
+                                        name="exam_type"
+                                        value="monthly"
+                                        {% if selected_type == 'monthly' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_monthly"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-calendar-day"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Monthly
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- BI MONTHLY -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_bi_monthly"
+                                        name="exam_type"
+                                        value="bi_monthly"
+                                        {% if selected_type == 'bi_monthly' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_bi_monthly"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-calendar-week"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Bi-Monthly
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- QUARTERLY -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_quarterly"
+                                        name="exam_type"
+                                        value="quarterly"
+                                        {% if selected_type == 'quarterly' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_quarterly"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-calendar"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Quarterly
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- SEMESTER -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_semester"
+                                        name="exam_type"
+                                        value="semester"
+                                        {% if selected_type == 'semester' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_semester"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-layer-group"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Semester
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- MIDTERM -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_midterm"
+                                        name="exam_type"
+                                        value="midterm"
+                                        {% if selected_type == 'midterm' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_midterm"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Midterm
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- FINAL -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_final"
+                                        name="exam_type"
+                                        value="final"
+                                        {% if selected_type == 'final' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_final"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-graduation-cap"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Final
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- ANNUAL -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_annual"
+                                        name="exam_type"
+                                        value="annual"
+                                        {% if selected_type == 'annual' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_annual"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-calendar-check"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Annual
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- MOCK -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_mock"
+                                        name="exam_type"
+                                        value="mock"
+                                        {% if selected_type == 'mock' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_mock"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-vial"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Mock
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- ENTRANCE -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_entrance"
+                                        name="exam_type"
+                                        value="entrance"
+                                        {% if selected_type == 'entrance' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_entrance"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-door-open"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Entrance
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- SUPPLEMENTARY -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_supplementary"
+                                        name="exam_type"
+                                        value="supplementary"
+                                        {% if selected_type == 'supplementary' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_supplementary"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-rotate"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Supplementary
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- RESIT -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_resit"
+                                        name="exam_type"
+                                        value="resit"
+                                        {% if selected_type == 'resit' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_resit"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-arrow-rotate-left"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Resit
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <!-- SPECIAL -->
+
+                                <div class="exam-type-option">
+
+                                    <input
+                                        type="radio"
+                                        id="type_special"
+                                        name="exam_type"
+                                        value="special"
+                                        {% if selected_type == 'special' %}checked{% endif %}
+                                    >
+
+                                    <label
+                                        for="type_special"
+                                        class="exam-type-label"
+                                    >
+
+                                        <span class="exam-type-icon">
+                                            <i class="fa-solid fa-star"></i>
+                                        </span>
+
+                                        <span class="exam-type-text">
+                                            Special
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- DESCRIPTION -->
+
+                        <div class="exam-field exam-field-full">
+
+                            <label
+                                class="exam-label"
+                                for="description"
+                            >
+                                Description
+                            </label>
+
+                            <textarea
+                                id="description"
+                                name="description"
+                                class="exam-textarea"
+                                maxlength="5000"
+                                placeholder="Write a short description..."
+                            >{{ request.form.get('description','') }}</textarea>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 DATES
+                 ================================================== -->
+
+            <div class="exam-card">
+
+                <div class="exam-card-header">
+
+                    <div class="exam-card-icon">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+
+                    <div class="exam-card-title-wrap">
+
+                        <h2 class="exam-card-title">
+                            Examination Schedule
+                        </h2>
+
+                        <p class="exam-card-subtitle">
+                            Define the examination dates.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="exam-card-body">
+
+                    <div class="exam-form-grid">
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="start_date"
+                            >
+                                Start Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="start_date"
+                                name="start_date"
+                                class="exam-input"
+                                value="{{ request.form.get('start_date','') }}"
+                            >
+
+                        </div>
+
+
+                        <div class="exam-field">
+
+                            <label
+                                class="exam-label"
+                                for="end_date"
+                            >
+                                End Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="end_date"
+                                name="end_date"
+                                class="exam-input"
+                                value="{{ request.form.get('end_date','') }}"
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 STATUS
+                 ================================================== -->
+
+            <div class="exam-card">
+
+                <div class="exam-card-header">
+
+                    <div class="exam-card-icon">
+                        <i class="fa-solid fa-toggle-on"></i>
+                    </div>
+
+                    <div class="exam-card-title-wrap">
+
+                        <h2 class="exam-card-title">
+                            Examination Status
+                        </h2>
+
+                        <p class="exam-card-subtitle">
+                            Select the current examination status.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="exam-card-body">
+
+                    {% set selected_status = request.form.get('status','draft') %}
+
+                    <div class="exam-status-options">
+
+
+                        {% for status, label, description in [
+
+                            ('draft','Draft','Still being prepared.'),
+                            ('scheduled','Scheduled','Ready and scheduled.'),
+                            ('ongoing','Ongoing','Examination is in progress.'),
+                            ('completed','Completed','Examination has ended.'),
+                            ('cancelled','Cancelled','Examination was cancelled.'),
+                            ('published','Published','Exam/results are published.')
+
+                        ] %}
+
+                            <div class="exam-status-option">
+
+                                <input
+                                    type="radio"
+                                    id="status_{{ status }}"
+                                    name="status"
+                                    value="{{ status }}"
+                                    {% if selected_status == status %}
+                                        checked
+                                    {% endif %}
+                                >
+
+                                <label
+                                    for="status_{{ status }}"
+                                    class="exam-status-label"
+                                >
+
+                                    <span class="exam-status-dot {{ status }}"></span>
+
+                                    <span>
+
+                                        <span class="exam-status-name">
+                                            {{ label }}
+                                        </span>
+
+                                        <span class="exam-status-description">
+                                            {{ description }}
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+                        {% endfor %}
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 FOOTER
+                 ================================================== -->
+
+            <div class="exam-form-footer">
+
+                <div class="exam-form-footer-left">
+
+                    <i class="fa-solid fa-circle-info"></i>
+
+                    Fields marked with
+                    <span class="exam-required">*</span>
+                    are required.
+
+                </div>
+
+
+                <div class="exam-form-footer-actions">
+
+                    <a
+                        href="{{ url_for('main.all_exams') }}"
+                        class="exam-btn exam-btn-light"
+                    >
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="exam-btn exam-btn-success"
+                        id="saveExamBtn"
+                    >
+
+                        <i class="fa-solid fa-floppy-disk"></i>
+
+                        Create Exam
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+
+    <!-- ========================================================
+         RIGHT SIDEBAR
+         ======================================================== -->
+
+    <div class="exam-side-column">
+
+
+        <!-- LIVE PREVIEW -->
+
+        <div class="exam-side-card">
+
+            <div class="exam-side-header">
+
+                <h3 class="exam-side-title">
+
+                    <i class="fa-solid fa-eye"></i>
+
+                    Live Preview
+
+                </h3>
+
+            </div>
+
+
+            <div class="exam-side-body">
+
+                <div class="exam-preview">
+
+                    <div class="exam-preview-top">
+
+                        <div class="exam-preview-icon">
+
+                            <i
+                                id="previewIcon"
+                                class="fa-solid fa-file-pen"
+                            ></i>
+
+                        </div>
+
+                        <h3
+                            id="previewName"
+                            class="exam-preview-name"
+                        >
+                            New Examination
+                        </h3>
+
+                        <div
+                            id="previewCode"
+                            class="exam-preview-code"
+                        >
+                            EXAM
+                        </div>
+
+                    </div>
+
+
+                    <div class="exam-preview-body">
+
+                        <div class="preview-row">
+                            <span class="preview-label">Institution</span>
+                            <span id="previewInstitution" class="preview-value">—</span>
+                        </div>
+
+                        <div class="preview-row">
+                            <span class="preview-label">Branch</span>
+                            <span id="previewBranch" class="preview-value">—</span>
+                        </div>
+
+                        <div class="preview-row">
+                            <span class="preview-label">Program</span>
+                            <span id="previewProgram" class="preview-value">—</span>
+                        </div>
+
+                        <div class="preview-row">
+                            <span class="preview-label">Assessment</span>
+                            <span id="previewAssessment" class="preview-value">—</span>
+                        </div>
+
+                        <div class="preview-row">
+                            <span class="preview-label">Academic Year</span>
+                            <span id="previewAcademicYear" class="preview-value">—</span>
+                        </div>
+
+                        <div class="preview-row">
+                            <span class="preview-label">Term</span>
+                            <span id="previewTerm" class="preview-value">—</span>
+                        </div>
+
+                        <div class="preview-row">
+                            <span class="preview-label">Type</span>
+                            <span id="previewType" class="preview-value">Term</span>
+                        </div>
+
+                        <div class="preview-row">
+                            <span class="preview-label">Dates</span>
+                            <span id="previewDates" class="preview-value">—</span>
+                        </div>
+
+                        <div class="preview-row">
+                            <span class="preview-label">Status</span>
+                            <span id="previewStatus" class="preview-value">Draft</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- INFORMATION -->
+
+        <div class="exam-side-card">
+
+            <div class="exam-side-header">
+
+                <h3 class="exam-side-title">
+
+                    <i class="fa-solid fa-circle-info"></i>
+
+                    Exam Information
+
+                </h3>
+
+            </div>
+
+
+            <div class="exam-side-body">
+
+                <div class="exam-info-list">
+
+
+                    <div class="exam-info-item">
+
+                        <div class="exam-info-icon">
+                            <i class="fa-solid fa-diagram-project"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="exam-info-title">
+                                Program Connection
+                            </div>
+
+                            <div class="exam-info-text">
+                                The selected program controls which
+                                assessment plans are displayed.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="exam-info-item">
+
+                        <div class="exam-info-icon">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="exam-info-title">
+                                Assessment Plan
+                            </div>
+
+                            <div class="exam-info-text">
+                                Assessment Plan is optional. A program
+                                does not need one to create an exam.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="exam-info-item">
+
+                        <div class="exam-info-icon">
+                            <i class="fa-solid fa-code"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="exam-info-title">
+                                Automatic Code
+                            </div>
+
+                            <div class="exam-info-text">
+                                The code is generated from the selected
+                                program, exam type and academic year.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="exam-info-item">
+
+                        <div class="exam-info-icon">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="exam-info-title">
+                                Academic Period
+                            </div>
+
+                            <div class="exam-info-text">
+                                Academic Year is required. Term can be
+                                left empty for exams such as entrance,
+                                mock or special examinations.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<script>
+
+/* ============================================================
+   ADD EXAM JAVASCRIPT
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    "use strict";
+
+
+    /* ========================================================
+       ELEMENTS
+       ======================================================== */
+
+    const form = document.getElementById("addExamForm");
+
+    const institutionSelect =
+        document.getElementById("institution_id");
+
+    const branchSelect =
+        document.getElementById("branch_id");
+
+    const programSelect =
+        document.getElementById("program_id");
+
+    const assessmentSelect =
+        document.getElementById("assessment_plan_id");
+
+    const academicYearSelect =
+        document.getElementById("academic_year_id");
+
+    const termSelect =
+        document.getElementById("term_id");
+
+    const nameInput =
+        document.getElementById("name");
+
+    const codeInput =
+        document.getElementById("code");
+
+    const codeWrapper =
+        document.getElementById("codeWrapper");
+
+    const saveExamBtn =
+        document.getElementById("saveExamBtn");
+
+    const assessmentStatus =
+        document.getElementById("assessmentPlanStatus");
+
+
+    /* ========================================================
+       PREVIEW ELEMENTS
+       ======================================================== */
+
+    const previewName =
+        document.getElementById("previewName");
+
+    const previewCode =
+        document.getElementById("previewCode");
+
+    const previewInstitution =
+        document.getElementById("previewInstitution");
+
+    const previewBranch =
+        document.getElementById("previewBranch");
+
+    const previewProgram =
+        document.getElementById("previewProgram");
+
+    const previewAssessment =
+        document.getElementById("previewAssessment");
+
+    const previewAcademicYear =
+        document.getElementById("previewAcademicYear");
+
+    const previewTerm =
+        document.getElementById("previewTerm");
+
+    const previewType =
+        document.getElementById("previewType");
+
+    const previewDates =
+        document.getElementById("previewDates");
+
+    const previewStatus =
+        document.getElementById("previewStatus");
+
+
+    /* ========================================================
+       HELPERS
+       ======================================================== */
+
+    function getSelectedText(select) {
+
+        if (!select || !select.value) {
+            return "—";
+        }
+
+        const option =
+            select.options[select.selectedIndex];
+
+        return option
+            ? option.text.trim()
+            : "—";
+    }
+
+
+    function getSelectedValue(select) {
+
+        if (!select) {
+            return "";
+        }
+
+        return select.value || "";
+    }
+
+
+    function escapeText(value) {
+
+        if (!value) {
+            return "—";
+        }
+
+        return value;
+    }
+
+
+    /* ========================================================
+       FILTER BRANCHES
+       ======================================================== */
+
+    function filterBranches() {
+
+        const institutionId =
+            getSelectedValue(institutionSelect);
+
+        const currentBranch =
+            "{{ request.form.get('branch_id','') }}";
+
+        let validBranchExists = false;
+
+
+        Array.from(branchSelect.options).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+            const visible =
+                institutionId &&
+                optionInstitution === institutionId;
+
+            option.hidden = !visible;
+            option.disabled = !visible;
+
+
+            if (
+                visible &&
+                option.value === currentBranch
+            ) {
+                validBranchExists = true;
+            }
+
+        });
+
+
+        if (!validBranchExists) {
+
+            const selected =
+                branchSelect.options[
+                    branchSelect.selectedIndex
+                ];
+
+            if (
+                selected &&
+                selected.value &&
+                selected.disabled
+            ) {
+                branchSelect.value = "";
+            }
+
+        }
+
+    }
+
+
+    /* ========================================================
+       FILTER PROGRAMS
+       ======================================================== */
+
+    function filterPrograms() {
+
+        const institutionId =
+            getSelectedValue(institutionSelect);
+
+        const branchId =
+            getSelectedValue(branchSelect);
+
+        const selectedProgram =
+            "{{ request.form.get('program_id','') }}";
+
+        let validProgramExists = false;
+
+
+        Array.from(programSelect.options).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+            const optionBranch =
+                option.dataset.branchId || "";
+
+
+            const institutionMatch =
+                institutionId &&
+                optionInstitution === institutionId;
+
+
+            /*
+             * branch_id NULL means program is available
+             * to multiple branches.
+             */
+
+            const branchMatch =
+                !optionBranch ||
+                optionBranch === branchId;
+
+
+            const visible =
+                Boolean(
+                    institutionMatch &&
+                    branchId &&
+                    branchMatch
+                );
+
+
+            option.hidden = !visible;
+            option.disabled = !visible;
+
+
+            if (
+                visible &&
+                option.value === selectedProgram
+            ) {
+                validProgramExists = true;
+            }
+
+        });
+
+
+        if (!validProgramExists) {
+
+            const selected =
+                programSelect.options[
+                    programSelect.selectedIndex
+                ];
+
+            if (
+                selected &&
+                selected.value &&
+                selected.disabled
+            ) {
+                programSelect.value = "";
+            }
+
+        }
+
+    }
+
+
+    /* ========================================================
+       FILTER ASSESSMENT PLANS
+       ======================================================== */
+
+    function filterAssessmentPlans() {
+
+        const programId =
+            getSelectedValue(programSelect);
+
+        const institutionId =
+            getSelectedValue(institutionSelect);
+
+        const selectedAssessment =
+            "{{ request.form.get('assessment_plan_id','') }}";
+
+        let count = 0;
+        let selectedStillValid = false;
+
+
+        Array.from(assessmentSelect.options).forEach(function (option, index) {
+
+            if (index === 0) {
+
+                option.hidden = false;
+                option.disabled = false;
+
+                return;
+            }
+
+
+            const optionProgram =
+                option.dataset.programId || "";
+
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+
+            /*
+             * Main rule:
+             *
+             * Assessment Plan belongs to selected Program.
+             *
+             * If program_id exists, it must match.
+             */
+
+            let visible = false;
+
+
+            if (programId) {
+
+                if (optionProgram) {
+
+                    visible =
+                        optionProgram === programId;
+
+                } else if (optionInstitution) {
+
+                    /*
+                     * Fallback for institution-level
+                     * assessment plans.
+                     */
+
+                    visible =
+                        optionInstitution === institutionId;
+
+                }
+
+            }
+
+
+            option.hidden = !visible;
+            option.disabled = !visible;
+
+
+            if (visible) {
+
+                count++;
+
+                if (
+                    option.value === selectedAssessment
+                ) {
+                    selectedStillValid = true;
+                }
+
+            }
+
+        });
+
+
+        /*
+         * Clear invalid selection.
+         */
+
+        if (!selectedStillValid) {
+            assessmentSelect.value = "";
+        }
+
+
+        /*
+         * Show status.
+         */
+
+        assessmentStatus.className =
+            "assessment-status";
+
+
+        if (!programId) {
+
+            assessmentStatus.classList.add(
+                "show",
+                "info"
+            );
+
+            assessmentStatus.innerHTML =
+                '<i class="fa-solid fa-circle-info"></i> ' +
+                'Select a program to see its assessment plans.';
+
+            return;
+        }
+
+
+        if (count === 0) {
+
+            assessmentStatus.classList.add(
+                "show",
+                "warning"
+            );
+
+            assessmentStatus.innerHTML =
+                '<i class="fa-solid fa-circle-info"></i> ' +
+                'This program has no assessment plan. ' +
+                'You can still create the examination without one.';
+
+            return;
+        }
+
+
+        assessmentStatus.classList.add(
+            "show",
+            "success"
+        );
+
+        assessmentStatus.innerHTML =
+            '<i class="fa-solid fa-circle-check"></i> ' +
+            count +
+            ' assessment plan(s) available for this program.';
+
+    }
+
+
+    /* ========================================================
+       FILTER TERMS BY ACADEMIC YEAR
+       ======================================================== */
+
+    function filterTerms() {
+
+        const academicYearId =
+            getSelectedValue(academicYearSelect);
+
+
+        Array.from(termSelect.options).forEach(function (option, index) {
+
+            if (index === 0) {
+
+                option.hidden = false;
+                option.disabled = false;
+
+                return;
+            }
+
+
+            const optionYear =
+                option.dataset.academicYearId || "";
+
+
+            /*
+             * If term has no academic_year_id,
+             * keep it visible.
+             */
+
+            const visible =
+                !optionYear ||
+                optionYear === academicYearId;
+
+
+            option.hidden = !visible;
+            option.disabled = !visible;
+
+        });
+
+
+        const selected =
+            termSelect.options[
+                termSelect.selectedIndex
+            ];
+
+
+        if (
+            selected &&
+            selected.value &&
+            selected.disabled
+        ) {
+            termSelect.value = "";
+        }
+
+    }
+
+
+    /* ========================================================
+       GENERATE EXAM CODE
+       ======================================================== */
+
+    let codeRequestId = 0;
+
+
+    async function generateExamCode() {
+
+        const institutionId =
+            getSelectedValue(institutionSelect);
+
+        const branchId =
+            getSelectedValue(branchSelect);
+
+        const programId =
+            getSelectedValue(programSelect);
+
+        const academicYearId =
+            getSelectedValue(academicYearSelect);
+
+
+        const typeElement =
+            document.querySelector(
+                'input[name="exam_type"]:checked'
+            );
+
+
+        const examType =
+            typeElement
+                ? typeElement.value
+                : "term";
+
+
+        /*
+         * Required data not ready.
+         */
+
+        if (
+            !institutionId ||
+            !branchId ||
+            !programId ||
+            !academicYearId
+        ) {
+
+            codeInput.value = "";
+
+            previewCode.textContent = "EXAM";
+
+            return;
+
+        }
+
+
+        const requestId =
+            ++codeRequestId;
+
+
+        codeWrapper.classList.add(
+            "code-loading"
+        );
+
+
+        try {
+
+            const params =
+                new URLSearchParams({
+
+                    institution_id:
+                        institutionId,
+
+                    branch_id:
+                        branchId,
+
+                    program_id:
+                        programId,
+
+                    academic_year_id:
+                        academicYearId,
+
+                    exam_type:
+                        examType
+
+                });
+
+
+            const response =
+                await fetch(
+                    "{{ url_for('main.generate_exam_code') }}" +
+                    "?" +
+                    params.toString(),
+                    {
+                        method: "GET",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (requestId !== codeRequestId) {
+                return;
+            }
+
+
+            if (
+                response.ok &&
+                data.success &&
+                data.code
+            ) {
+
+                codeInput.value =
+                    data.code.toUpperCase();
+
+                previewCode.textContent =
+                    data.code.toUpperCase();
+
+            } else {
+
+                codeInput.value = "";
+
+                previewCode.textContent =
+                    "CODE ERROR";
+
+                console.error(
+                    "Exam code error:",
+                    data.message || data
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Exam code request failed:",
+                error
+            );
+
+            codeInput.value = "";
+
+            previewCode.textContent =
+                "CODE ERROR";
+
+        } finally {
+
+            if (requestId === codeRequestId) {
+
+                codeWrapper.classList.remove(
+                    "code-loading"
+                );
+
+            }
+
+        }
+
+    }
+
+
+    /* ========================================================
+       PREVIEW
+       ======================================================== */
+
+    function updatePreview() {
+
+        previewName.textContent =
+            nameInput.value.trim() ||
+            "New Examination";
+
+
+        previewInstitution.textContent =
+            getSelectedText(institutionSelect);
+
+
+        previewBranch.textContent =
+            getSelectedText(branchSelect);
+
+
+        previewProgram.textContent =
+            getSelectedText(programSelect);
+
+
+        previewAssessment.textContent =
+            getSelectedText(assessmentSelect);
+
+
+        previewAcademicYear.textContent =
+            getSelectedText(academicYearSelect);
+
+
+        previewTerm.textContent =
+            getSelectedText(termSelect);
+
+
+        const selectedType =
+            document.querySelector(
+                'input[name="exam_type"]:checked'
+            );
+
+
+        if (selectedType) {
+
+            const typeLabel =
+                document.querySelector(
+                    'label[for="' +
+                    selectedType.id +
+                    '"] .exam-type-text'
+                );
+
+            previewType.textContent =
+                typeLabel
+                    ? typeLabel.textContent.trim()
+                    : selectedType.value;
+
+        } else {
+
+            previewType.textContent =
+                "Term";
+
+        }
+
+
+        const startDate =
+            document.getElementById(
+                "start_date"
+            ).value;
+
+        const endDate =
+            document.getElementById(
+                "end_date"
+            ).value;
+
+
+        if (startDate && endDate) {
+
+            previewDates.textContent =
+                startDate +
+                " → " +
+                endDate;
+
+        } else if (startDate) {
+
+            previewDates.textContent =
+                startDate;
+
+        } else if (endDate) {
+
+            previewDates.textContent =
+                "→ " +
+                endDate;
+
+        } else {
+
+            previewDates.textContent =
+                "—";
+
+        }
+
+
+        const selectedStatus =
+            document.querySelector(
+                'input[name="status"]:checked'
+            );
+
+
+        if (selectedStatus) {
+
+            const statusLabel =
+                document.querySelector(
+                    'label[for="' +
+                    selectedStatus.id +
+                    '"] .exam-status-name'
+                );
+
+            previewStatus.textContent =
+                statusLabel
+                    ? statusLabel.textContent.trim()
+                    : selectedStatus.value;
+
+        } else {
+
+            previewStatus.textContent =
+                "Draft";
+
+        }
+
+
+        if (codeInput.value.trim()) {
+
+            previewCode.textContent =
+                codeInput.value
+                    .trim()
+                    .toUpperCase();
+
+        }
+
+    }
+
+
+    /* ========================================================
+       DATE VALIDATION
+       ======================================================== */
+
+    function validateDates() {
+
+        const startDate =
+            document.getElementById(
+                "start_date"
+            ).value;
+
+        const endDate =
+            document.getElementById(
+                "end_date"
+            ).value;
+
+
+        if (
+            startDate &&
+            endDate &&
+            endDate < startDate
+        ) {
+
+            alert(
+                "End date cannot be before start date."
+            );
+
+            return false;
+
+        }
+
+
+        return true;
+
+    }
+
+
+    /* ========================================================
+       EVENT: INSTITUTION
+       ======================================================== */
+
+    institutionSelect.addEventListener(
+        "change",
+        function () {
+
+            filterBranches();
+
+            filterPrograms();
+
+            filterAssessmentPlans();
+
+            updatePreview();
+
+            generateExamCode();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: BRANCH
+       ======================================================== */
+
+    branchSelect.addEventListener(
+        "change",
+        function () {
+
+            filterPrograms();
+
+            filterAssessmentPlans();
+
+            updatePreview();
+
+            generateExamCode();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: PROGRAM
+       ======================================================== */
+
+    programSelect.addEventListener(
+        "change",
+        function () {
+
+            filterAssessmentPlans();
+
+            updatePreview();
+
+            generateExamCode();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: ACADEMIC YEAR
+       ======================================================== */
+
+    academicYearSelect.addEventListener(
+        "change",
+        function () {
+
+            filterTerms();
+
+            updatePreview();
+
+            generateExamCode();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: TERM
+       ======================================================== */
+
+    termSelect.addEventListener(
+        "change",
+        updatePreview
+    );
+
+
+    /* ========================================================
+       EVENT: NAME
+       ======================================================== */
+
+    nameInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+
+    /* ========================================================
+       EVENT: CODE MANUAL CHANGE
+       ======================================================== */
+
+    codeInput.addEventListener(
+        "input",
+        function () {
+
+            this.value =
+                this.value
+                    .toUpperCase()
+                    .replace(/\s+/g, "-");
+
+            updatePreview();
+
+        }
+    );
+
+
+    /* ========================================================
+       EVENT: TYPE
+       ======================================================== */
+
+    document
+        .querySelectorAll(
+            'input[name="exam_type"]'
+        )
+        .forEach(function (radio) {
+
+            radio.addEventListener(
+                "change",
+                function () {
+
+                    updatePreview();
+
+                    generateExamCode();
+
+                }
+            );
+
+        });
+
+
+    /* ========================================================
+       EVENT: STATUS
+       ======================================================== */
+
+    document
+        .querySelectorAll(
+            'input[name="status"]'
+        )
+        .forEach(function (radio) {
+
+            radio.addEventListener(
+                "change",
+                updatePreview
+            );
+
+        });
+
+
+    /* ========================================================
+       EVENT: DATES
+       ======================================================== */
+
+    document
+        .getElementById("start_date")
+        .addEventListener(
+            "change",
+            updatePreview
+        );
+
+
+    document
+        .getElementById("end_date")
+        .addEventListener(
+            "change",
+            updatePreview
+        );
+
+
+    /* ========================================================
+       FORM SUBMIT
+       ======================================================== */
+
+    form.addEventListener(
+        "submit",
+        function (event) {
+
+            if (!validateDates()) {
+
+                event.preventDefault();
+
+                return;
+
+            }
+
+
+            /*
+             * Program is required.
+             */
+
+            if (!programSelect.value) {
+
+                event.preventDefault();
+
+                alert(
+                    "Please select a program."
+                );
+
+                programSelect.focus();
+
+                return;
+
+            }
+
+
+            /*
+             * Assessment plan is intentionally
+             * NOT required.
+             */
+
+            saveExamBtn.disabled = true;
+
+            saveExamBtn.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> ' +
+                'Creating Exam...';
+
+        }
+    );
+
+
+    /* ========================================================
+       INITIALIZATION
+       ======================================================== */
+
+    filterBranches();
+
+    filterPrograms();
+
+    filterAssessmentPlans();
+
+    filterTerms();
+
+    updatePreview();
+
+
+    /*
+     * Generate code on initial load only when
+     * the required values already exist.
+     */
+
+    if (
+        institutionSelect.value &&
+        branchSelect.value &&
+        programSelect.value &&
+        academicYearSelect.value
+    ) {
+
+        generateExamCode();
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

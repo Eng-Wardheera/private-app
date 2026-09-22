@@ -2121,6 +2121,16 @@ class Class(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    # ========================================================
+    # EXAM SUBJECTS
+    # ========================================================
+
+    exam_subjects = db.relationship(
+        "ExamSubject",
+        back_populates="class_",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # TABLE CONSTRAINTS
@@ -2353,6 +2363,16 @@ class Section(db.Model):
     )
     student_enrollments = db.relationship(
         "StudentEnrollment",
+        back_populates="section",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    # ========================================================
+    # EXAM SUBJECTS
+    # ========================================================
+
+    exam_subjects = db.relationship(
+        "ExamSubject",
         back_populates="section",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -2632,6 +2652,16 @@ class Subject(db.Model):
     )
     teacher_subjects = db.relationship(
         "TeacherSubject",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    # ========================================================
+    # EXAM SUBJECTS
+    # ========================================================
+
+    exam_subjects = db.relationship(
+        "ExamSubject",
         back_populates="subject",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -2993,7 +3023,15 @@ class Teacher(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    # ========================================================
+    # EXAM SUBJECTS
+    # ========================================================
 
+    exam_subjects = db.relationship(
+        "ExamSubject",
+        back_populates="teacher",
+        passive_deletes=True
+    )
     # ========================================================
     # TABLE CONSTRAINTS
     # ========================================================
@@ -4756,7 +4794,12 @@ class Exam(db.Model):
         "Term",
         back_populates="exams"
     )
-
+    exam_subjects = db.relationship(
+        "ExamSubject",
+        back_populates="exam",
+        cascade="all, delete-orphan",
+        lazy=True
+    )
    
     # ========================================================
     # TABLE CONSTRAINTS
@@ -4842,6 +4885,261 @@ class Exam(db.Model):
             f"assessment_plan_id={self.assessment_plan_id} "
             f"status='{self.status}'>"
         )
+
+
+# ============================================================
+# EXAM SUBJECT MODEL
+# ============================================================
+
+class ExamSubject(db.Model):
+
+    __tablename__ = "exam_subjects"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # EXAM
+    # ========================================================
+
+    exam_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "exams.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # SUBJECT
+    # ========================================================
+
+    subject_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "subjects.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # CLASS
+    # ========================================================
+
+    # Optional.
+    # Program-yada qaar Class ma laha.
+
+    class_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "classes.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # SECTION
+    # ========================================================
+
+    # Optional.
+    # Class-yada qaar Section ma laha.
+
+    section_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "sections.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # TEACHER
+    # ========================================================
+
+    # Optional.
+    # Teacher ayaa dambe loo assign-gareyn karaa.
+
+    teacher_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "teachers.id",
+            ondelete="SET NULL"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # MARK SETTINGS
+    # ========================================================
+
+    max_marks = db.Column(
+        db.Numeric(6, 2),
+        nullable=False,
+        default=100,
+        server_default="100"
+    )
+
+    pass_marks = db.Column(
+        db.Numeric(6, 2),
+        nullable=False,
+        default=50,
+        server_default="50"
+    )
+
+    weight = db.Column(
+        db.Numeric(6, 2),
+        nullable=False,
+        default=100,
+        server_default="100"
+    )
+
+    # ========================================================
+    # DISPLAY ORDER
+    # ========================================================
+
+    display_order = db.Column(
+        db.Integer,
+        nullable=False,
+        default=1,
+        server_default="1"
+    )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="active",
+        server_default="active",
+        index=True
+    )
+
+    # ========================================================
+    # CREATED / UPDATED
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now()
+    )
+
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now()
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    exam = db.relationship(
+        "Exam",
+        back_populates="exam_subjects"
+    )
+
+    subject = db.relationship(
+        "Subject",
+        back_populates="exam_subjects"
+    )
+
+    class_ = db.relationship(
+        "Class",
+        back_populates="exam_subjects"
+    )
+
+    section = db.relationship(
+        "Section",
+        back_populates="exam_subjects"
+    )
+
+    teacher = db.relationship(
+        "Teacher",
+        back_populates="exam_subjects"
+    )
+
+    # ========================================================
+    # TABLE CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        db.CheckConstraint(
+            "max_marks > 0",
+            name="ck_exam_subject_max_marks"
+        ),
+
+        db.CheckConstraint(
+            "pass_marks >= 0",
+            name="ck_exam_subject_pass_marks"
+        ),
+
+        db.CheckConstraint(
+            "pass_marks <= max_marks",
+            name="ck_exam_subject_pass_marks_limit"
+        ),
+
+        db.CheckConstraint(
+            "weight > 0",
+            name="ck_exam_subject_weight"
+        ),
+
+        db.CheckConstraint(
+            "display_order > 0",
+            name="ck_exam_subject_display_order"
+        ),
+
+        db.Index(
+            "ix_exam_subjects_exam_subject",
+            "exam_id",
+            "subject_id"
+        ),
+
+        db.Index(
+            "ix_exam_subjects_class_section",
+            "class_id",
+            "section_id"
+        ),
+    )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<ExamSubject "
+            f"id={self.id} "
+            f"exam_id={self.exam_id} "
+            f"subject_id={self.subject_id} "
+            f"class_id={self.class_id} "
+            f"section_id={self.section_id}>"
+        )
+
+
 
 
 
