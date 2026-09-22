@@ -99,5 +99,7 @@ pytz
 cloudinary
 xhtml2pdf
 dnspython
+openpyxl>=3.1.0
+
 
 
