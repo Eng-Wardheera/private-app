@@ -284,10 +284,12 @@ def index():
      
     )
 
-
-
 # ================= LOGIN =================
-@bp.route("/login", methods=["GET", "POST"])
+
+@bp.route(
+    "/login",
+    methods=["GET", "POST"]
+)
 def login():
 
     # ========================================================
@@ -421,41 +423,22 @@ def login():
     ).strip().lower()
 
     # ========================================================
-    # CHECK DATABASE AUTH STATUS
+    # IMPORTANT
     #
-    # Superadmin is allowed to login again.
-    # Other users are restricted to one active login.
+    # DO NOT BLOCK USER IF auth_status == "login"
+    #
+    # User can login from another browser/device/session.
+    # Old session will remain valid unless you implement
+    # global session invalidation.
     # ========================================================
 
-    if (
-        user.auth_status == "login"
-        and role != "superadmin"
-    ):
-
-        flash(
-            "This account is already logged in "
-            "on another session.",
-            "warning"
-        )
-
-        return redirect(
-            url_for("main.login")
-        )
-
-    # ========================================================
-    # IF SUPERADMIN WAS ALREADY LOGGED IN
-    # RESET OLD SESSION DATA
-    # ========================================================
-
-    if role == "superadmin":
-
-        user.auth_status = "logout"
-
-        user.session_token = None
-
-        user.logout_time = datetime.utcnow()
-
-        db.session.commit()
+    # NO CHECK LIKE:
+    #
+    # if user.auth_status == "login":
+    #     ...
+    #
+    # This has intentionally been removed.
+    #
 
     # ========================================================
     # LOGIN USER
@@ -467,7 +450,7 @@ def login():
     )
 
     # ========================================================
-    # CREATE NEW SESSION
+    # CREATE NEW LOGIN SESSION
     # ========================================================
 
     now = datetime.utcnow()
@@ -482,6 +465,8 @@ def login():
 
     # ========================================================
     # GENERATE NEW SESSION TOKEN
+    #
+    # This token represents the latest login.
     # ========================================================
 
     user.session_token = secrets.token_hex(32)
@@ -490,12 +475,15 @@ def login():
     # CLEAR OLD LOGOUT TIME
     # ========================================================
 
-    if hasattr(user, "logout_time"):
+    if hasattr(
+        user,
+        "logout_time"
+    ):
 
         user.logout_time = None
 
     # ========================================================
-    # SAVE
+    # SAVE LOGIN INFORMATION
     # ========================================================
 
     try:
@@ -533,19 +521,43 @@ def login():
     )
 
     # ========================================================
-    # REDIRECT DASHBOARD
+    # REDIRECT BASED ON ROLE
+    # ========================================================
+
+    if role == "superadmin":
+        return redirect(
+            url_for("main.dashboard")
+        )
+
+    elif role == "school_admin":
+        return redirect(
+            url_for("main.dashboard")
+        )
+
+    elif role == "branch_admin":
+        return redirect(
+            url_for("main.dashboard")
+        )
+
+    # ========================================================
+    # FALLBACK
     # ========================================================
 
     return redirect(
         url_for("main.dashboard")
     )
 
-
+# ============================================================
+# TEACHER LOGIN
+# ============================================================
 # ============================================================
 # TEACHER LOGIN
 # ============================================================
 
-@bp.route("/teacher/login", methods=["GET", "POST"])
+@bp.route(
+    "/teacher/login",
+    methods=["GET", "POST"]
+)
 def teacher_login():
 
     # ========================================================
@@ -721,23 +733,29 @@ def teacher_login():
         )
 
     # ========================================================
-    # CHECK DATABASE LOGIN STATUS
-    #
-    # We use last_active as the current session indicator.
-    # If you want strict one-device login, add a dedicated
-    # session_token/auth_status column to Teacher.
-    # ========================================================
-
-    # ========================================================
     # CREATE TEACHER SESSION
+    #
+    # IMPORTANT:
+    # No database auth_status/session_token check here.
+    #
+    # The same teacher can login from:
+    # - another browser
+    # - another computer
+    # - another device
+    #
     # ========================================================
-
-    session.clear()
 
     session["teacher_id"] = teacher.id
+
     session["teacher_role"] = "teacher"
-    session["teacher_institution_id"] = teacher.institution_id
-    session["teacher_branch_id"] = teacher.branch_id
+
+    session["teacher_institution_id"] = (
+        teacher.institution_id
+    )
+
+    session["teacher_branch_id"] = (
+        teacher.branch_id
+    )
 
     # ========================================================
     # UPDATE LOGIN INFORMATION
@@ -746,11 +764,13 @@ def teacher_login():
     now = datetime.utcnow()
 
     teacher.login_time = now
+
     teacher.last_login = now
+
     teacher.last_active = now
 
     # ========================================================
-    # SAVE
+    # SAVE LOGIN INFORMATION
     # ========================================================
 
     try:
@@ -761,7 +781,26 @@ def teacher_login():
 
         db.session.rollback()
 
-        session.clear()
+        # Remove only teacher session values
+        session.pop(
+            "teacher_id",
+            None
+        )
+
+        session.pop(
+            "teacher_role",
+            None
+        )
+
+        session.pop(
+            "teacher_institution_id",
+            None
+        )
+
+        session.pop(
+            "teacher_branch_id",
+            None
+        )
 
         current_app.logger.exception(
             "Teacher login update error"
