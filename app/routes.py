@@ -20632,10 +20632,64 @@ def _get_user_institution_id():
 def all_classes():
 
     # ========================================================
-    # USER INSTITUTION
+    # ROLE SECURITY
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+        "teacher",
+    }
+
+    if role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # USER SCOPE
     # ========================================================
 
     user_institution_id = _get_user_institution_id()
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # BRANCH ADMIN SECURITY
+    #
+    # Branch admin MUST have:
+    #   institution_id
+    #   branch_id
+    # ========================================================
+
+    if role == "branch_admin":
+
+        if (
+            user_institution_id is None
+            or user_branch_id is None
+        ):
+            abort(403)
+
+    # ========================================================
+    # TEACHER SECURITY
+    # ========================================================
+
+    if role == "teacher":
+
+        if (
+            user_institution_id is None
+            or user_branch_id is None
+        ):
+            abort(403)
 
     # ========================================================
     # REQUEST FILTERS
@@ -20689,10 +20743,6 @@ def all_classes():
         type=int
     )
 
-    # --------------------------------------------------------
-    # Prevent invalid values
-    # --------------------------------------------------------
-
     if per_page not in [10, 20, 50, 100]:
         per_page = 20
 
@@ -20717,7 +20767,34 @@ def all_classes():
         )
 
     # ========================================================
+    # BRANCH SECURITY
+    #
+    # IMPORTANT:
+    #
+    # branch_admin / teacher:
+    #   ONLY their own branch
+    #
+    # school_admin:
+    #   all branches inside institution
+    #
+    # superadmin:
+    #   all branches
+    # ========================================================
+
+    if role in {
+        "branch_admin",
+        "teacher",
+    }:
+
+        base_query = base_query.filter(
+            Class.branch_id
+            == user_branch_id
+        )
+
+    # ========================================================
     # STATISTICS
+    #
+    # Statistics must use the same security scope.
     # ========================================================
 
     total_classes = (
@@ -20785,7 +20862,6 @@ def all_classes():
 
         query = query.filter(
             or_(
-
                 Class.name.ilike(
                     search_term
                 ),
@@ -20831,31 +20907,70 @@ def all_classes():
                         search_term
                     )
                 )
-
             )
         )
 
     # ========================================================
     # INSTITUTION FILTER
+    #
+    # SECURITY:
+    # Non-superadmin cannot switch institution.
     # ========================================================
 
-    if selected_institution_id:
+    if role == "superadmin":
 
-        query = query.filter(
-            Class.institution_id
-            == selected_institution_id
-        )
+        if selected_institution_id:
+
+            query = query.filter(
+                Class.institution_id
+                == selected_institution_id
+            )
+
+    else:
+
+        # Force user's institution
+
+        if user_institution_id is not None:
+
+            query = query.filter(
+                Class.institution_id
+                == user_institution_id
+            )
+
+            selected_institution_id = (
+                user_institution_id
+            )
 
     # ========================================================
     # BRANCH FILTER
     # ========================================================
 
-    if selected_branch_id:
+    if role in {
+        "branch_admin",
+        "teacher",
+    }:
+
+        # NEVER allow them to select another branch.
 
         query = query.filter(
             Class.branch_id
-            == selected_branch_id
+            == user_branch_id
         )
+
+        selected_branch_id = (
+            user_branch_id
+        )
+
+    else:
+
+        # superadmin / school_admin
+
+        if selected_branch_id:
+
+            query = query.filter(
+                Class.branch_id
+                == selected_branch_id
+            )
 
     # ========================================================
     # PROGRAM FILTER
@@ -20929,15 +21044,20 @@ def all_classes():
         Institution.query
     )
 
-    if user_institution_id is not None:
+    # superadmin can see all institutions
+    # everyone else sees only own institution
 
-        institution_query = (
-            institution_query
-            .filter(
-                Institution.id
-                == user_institution_id
+    if role != "superadmin":
+
+        if user_institution_id is not None:
+
+            institution_query = (
+                institution_query
+                .filter(
+                    Institution.id
+                    == user_institution_id
+                )
             )
-        )
 
     institutions = (
         institution_query
@@ -20955,13 +21075,37 @@ def all_classes():
         Branch.query
     )
 
-    if user_institution_id is not None:
+    # --------------------------------------------------------
+    # Institution scope
+    # --------------------------------------------------------
+
+    if role != "superadmin":
+
+        if user_institution_id is not None:
+
+            branch_query = (
+                branch_query
+                .filter(
+                    Branch.institution_id
+                    == user_institution_id
+                )
+            )
+
+    # --------------------------------------------------------
+    # Branch admin / teacher:
+    # ONLY OWN BRANCH
+    # --------------------------------------------------------
+
+    if role in {
+        "branch_admin",
+        "teacher",
+    }:
 
         branch_query = (
             branch_query
             .filter(
-                Branch.institution_id
-                == user_institution_id
+                Branch.id
+                == user_branch_id
             )
         )
 
@@ -20981,13 +21125,45 @@ def all_classes():
         Program.query
     )
 
-    if user_institution_id is not None:
+    # Institution security
+
+    if role != "superadmin":
+
+        if user_institution_id is not None:
+
+            program_query = (
+                program_query
+                .filter(
+                    Program.institution_id
+                    == user_institution_id
+                )
+            )
+
+    # --------------------------------------------------------
+    # Branch admin / teacher:
+    #
+    # Program.branch_id may be NULL because your system
+    # supports programs shared across branches.
+    #
+    # Therefore:
+    #   own branch program
+    #   OR institution-level/shared program
+    # --------------------------------------------------------
+
+    if role in {
+        "branch_admin",
+        "teacher",
+    }:
 
         program_query = (
             program_query
             .filter(
-                Program.institution_id
-                == user_institution_id
+                or_(
+                    Program.branch_id
+                    == user_branch_id,
+
+                    Program.branch_id.is_(None)
+                )
             )
         )
 
@@ -21008,12 +21184,12 @@ def all_classes():
     )
 
     # --------------------------------------------------------
-    # If AcademicYear has institution_id,
-    # apply institution security.
+    # Institution security
     # --------------------------------------------------------
 
     if (
-        user_institution_id is not None
+        role != "superadmin"
+        and user_institution_id is not None
         and hasattr(
             AcademicYear,
             "institution_id"
@@ -21089,14 +21265,17 @@ def all_classes():
         classes_with_capacity=classes_with_capacity,
         classes_without_capacity=classes_without_capacity,
 
-        user=current_user
+        user=current_user,
+
+        current_role=role
     )
+
+
 
 
 # ============================================================
 # ADD CLASS
 # ============================================================
-
 @bp.route(
     "/classes/add",
     methods=["GET", "POST"]
@@ -21105,22 +21284,70 @@ def all_classes():
 def add_class():
 
     # ========================================================
-    # USER INSTITUTION
+    # ROLE SECURITY
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+        # "teacher",   # Ku dar haddii teacher loo oggol yahay
+    }
+
+    if role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # CURRENT USER SCOPE
     # ========================================================
 
     user_institution_id = (
         _get_user_institution_id()
     )
 
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # BRANCH ADMIN SECURITY
+    # ========================================================
+
+    if role == "branch_admin":
+
+        if (
+            user_institution_id is None
+            or user_branch_id is None
+        ):
+            abort(403)
+
+    # ========================================================
+    # SCHOOL ADMIN SECURITY
+    # ========================================================
+
+    if role == "school_admin":
+
+        if user_institution_id is None:
+            abort(403)
+
     # ========================================================
     # INSTITUTIONS
     # ========================================================
 
-    institution_query = (
-        Institution.query
-    )
+    institution_query = Institution.query
 
-    if user_institution_id is not None:
+    if (
+        role != "superadmin"
+        and user_institution_id is not None
+    ):
 
         institution_query = (
             institution_query
@@ -21144,9 +21371,9 @@ def add_class():
 
     if request.method == "POST":
 
-        # ----------------------------------------------------
+        # ====================================================
         # FORM VALUES
-        # ----------------------------------------------------
+        # ====================================================
 
         institution_id = request.form.get(
             "institution_id",
@@ -21204,9 +21431,9 @@ def add_class():
             type=str
         ).strip().lower()
 
-        # ----------------------------------------------------
+        # ====================================================
         # NORMALIZE
-        # ----------------------------------------------------
+        # ====================================================
 
         code = code.upper()
 
@@ -21217,7 +21444,7 @@ def add_class():
             description = None
 
         # ====================================================
-        # VALIDATION
+        # REQUIRED FIELDS
         # ====================================================
 
         if not institution_id:
@@ -21366,7 +21593,8 @@ def add_class():
         # ====================================================
 
         if (
-            user_institution_id is not None
+            role != "superadmin"
+            and user_institution_id is not None
             and institution_id
             != user_institution_id
         ):
@@ -21381,6 +21609,48 @@ def add_class():
                     "main.all_classes"
                 )
             )
+
+        # ====================================================
+        # BRANCH SECURITY
+        # ====================================================
+
+        # branch_admin MUST use own branch.
+        if role == "branch_admin":
+
+            if branch_id != user_branch_id:
+
+                flash(
+                    "You are not authorized to create a class for this branch.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.all_classes"
+                    )
+                )
+
+        # ====================================================
+        # TEACHER SECURITY
+        # ====================================================
+
+        if role == "teacher":
+
+            if (
+                user_branch_id is None
+                or branch_id != user_branch_id
+            ):
+
+                flash(
+                    "You are not authorized to create a class for this branch.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.all_classes"
+                    )
+                )
 
         # ====================================================
         # VERIFY INSTITUTION
@@ -21410,19 +21680,33 @@ def add_class():
 
         # ====================================================
         # VERIFY BRANCH
-        # ========================================================
+        # ====================================================
 
         branch = (
             Branch.query
             .filter(
-                Branch.id == branch_id
+                Branch.id
+                == branch_id
             )
             .first()
         )
 
+        if branch is None:
+
+            flash(
+                "Selected branch was not found.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_class"
+                )
+            )
+
+        # Branch MUST belong to institution.
         if (
-            branch is None
-            or branch.institution_id
+            branch.institution_id
             != institution_id
         ):
 
@@ -21439,7 +21723,7 @@ def add_class():
 
         # ====================================================
         # VERIFY PROGRAM
-        # ========================================================
+        # ====================================================
 
         program = (
             Program.query
@@ -21450,9 +21734,22 @@ def add_class():
             .first()
         )
 
+        if program is None:
+
+            flash(
+                "Selected program was not found.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_class"
+                )
+            )
+
+        # Program MUST belong to institution.
         if (
-            program is None
-            or program.institution_id
+            program.institution_id
             != institution_id
         ):
 
@@ -21468,8 +21765,74 @@ def add_class():
             )
 
         # ====================================================
+        # PROGRAM BRANCH SECURITY
+        # ====================================================
+
+        # Program can be:
+        #
+        # 1. Branch-specific
+        # 2. Shared across branches (branch_id = NULL)
+        #
+        # branch_admin can use only:
+        # own branch program OR shared program.
+
+        if role == "branch_admin":
+
+            program_branch_id = getattr(
+                program,
+                "branch_id",
+                None
+            )
+
+            if (
+                program_branch_id is not None
+                and program_branch_id
+                != user_branch_id
+            ):
+
+                flash(
+                    "This program is not available for your branch.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_class"
+                    )
+                )
+
+        # ====================================================
+        # TEACHER PROGRAM SECURITY
+        # ====================================================
+
+        if role == "teacher":
+
+            program_branch_id = getattr(
+                program,
+                "branch_id",
+                None
+            )
+
+            if (
+                program_branch_id is not None
+                and program_branch_id
+                != user_branch_id
+            ):
+
+                flash(
+                    "This program is not available for your branch.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.add_class"
+                    )
+                )
+
+        # ====================================================
         # VERIFY ACADEMIC YEAR
-        # ========================================================
+        # ====================================================
 
         academic_year = (
             AcademicYear.query
@@ -21493,38 +21856,41 @@ def add_class():
                 )
             )
 
-        # ----------------------------------------------------
-        # If AcademicYear has institution_id,
-        # verify ownership.
-        # ----------------------------------------------------
+        # ====================================================
+        # ACADEMIC YEAR INSTITUTION SECURITY
+        # ====================================================
 
-        if (
-            hasattr(
-                AcademicYear,
-                "institution_id"
-            )
-            and getattr(
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            academic_year_institution_id = getattr(
                 academic_year,
                 "institution_id",
                 None
-            ) is not None
-            and academic_year.institution_id
-            != institution_id
-        ):
-
-            flash(
-                "Selected academic year does not belong to the selected institution.",
-                "danger"
             )
 
-            return redirect(
-                url_for(
-                    "main.add_class"
+            if (
+                academic_year_institution_id
+                is not None
+                and academic_year_institution_id
+                != institution_id
+            ):
+
+                flash(
+                    "Selected academic year does not belong to the selected institution.",
+                    "danger"
                 )
-            )
+
+                return redirect(
+                    url_for(
+                        "main.add_class"
+                    )
+                )
 
         # ====================================================
-        # DUPLICATE CODE CHECK
+        # DUPLICATE CODE
         # ====================================================
 
         existing_code = (
@@ -21556,7 +21922,7 @@ def add_class():
             )
 
         # ====================================================
-        # DUPLICATE NAME CHECK
+        # DUPLICATE NAME
         # ====================================================
 
         existing_name = (
@@ -21614,6 +21980,10 @@ def add_class():
             status=status
         )
 
+        # ====================================================
+        # SAVE
+        # ====================================================
+
         try:
 
             db.session.add(
@@ -21669,18 +22039,43 @@ def add_class():
             )
 
     # ========================================================
-    # GET DATA
+    # GET DATA — BRANCHES
     # ========================================================
 
     branch_query = Branch.query
 
-    if user_institution_id is not None:
+    if (
+        role != "superadmin"
+        and user_institution_id is not None
+    ):
 
         branch_query = (
             branch_query
             .filter(
                 Branch.institution_id
                 == user_institution_id
+            )
+        )
+
+    # branch_admin sees ONLY own branch.
+    if role == "branch_admin":
+
+        branch_query = (
+            branch_query
+            .filter(
+                Branch.id
+                == user_branch_id
+            )
+        )
+
+    # teacher, if enabled, also sees own branch.
+    if role == "teacher":
+
+        branch_query = (
+            branch_query
+            .filter(
+                Branch.id
+                == user_branch_id
             )
         )
 
@@ -21692,15 +22087,44 @@ def add_class():
         .all()
     )
 
+    # ========================================================
+    # GET DATA — PROGRAMS
+    # ========================================================
+
     program_query = Program.query
 
-    if user_institution_id is not None:
+    if (
+        role != "superadmin"
+        and user_institution_id is not None
+    ):
 
         program_query = (
             program_query
             .filter(
                 Program.institution_id
                 == user_institution_id
+            )
+        )
+
+    # branch_admin / teacher:
+    #
+    # own branch programs
+    # OR shared programs (branch_id IS NULL)
+
+    if role in {
+        "branch_admin",
+        "teacher"
+    }:
+
+        program_query = (
+            program_query
+            .filter(
+                or_(
+                    Program.branch_id
+                    == user_branch_id,
+
+                    Program.branch_id.is_(None)
+                )
             )
         )
 
@@ -21712,12 +22136,17 @@ def add_class():
         .all()
     )
 
+    # ========================================================
+    # GET DATA — ACADEMIC YEARS
+    # ========================================================
+
     academic_year_query = (
         AcademicYear.query
     )
 
     if (
-        user_institution_id is not None
+        role != "superadmin"
+        and user_institution_id is not None
         and hasattr(
             AcademicYear,
             "institution_id"
@@ -21755,9 +22184,14 @@ def add_class():
 
         academic_years=academic_years,
 
-        user=current_user
-    )
+        user=current_user,
 
+        current_role=role,
+
+        user_institution_id=user_institution_id,
+
+        user_branch_id=user_branch_id
+    )
 
 # ============================================================
 # VIEW CLASS
@@ -21915,13 +22349,63 @@ def view_class(class_id):
 # ============================================================
 # EDIT CLASS
 # ============================================================
-
 @bp.route(
     "/classes/<int:class_id>/edit",
     methods=["GET", "POST"]
 )
 @login_required
 def edit_class(class_id):
+
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+        # "teacher",  # Ku dar haddii teacher loo oggol yahay edit
+    }
+
+    if role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    user_institution_id = (
+        _get_user_institution_id()
+    )
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # ROLE REQUIREMENTS
+    # ========================================================
+
+    if role == "school_admin":
+
+        if user_institution_id is None:
+            abort(403)
+
+    if role == "branch_admin":
+
+        if (
+            user_institution_id is None
+            or user_branch_id is None
+        ):
+            abort(403)
 
     # ========================================================
     # FIND CLASS
@@ -21936,27 +22420,48 @@ def edit_class(class_id):
     )
 
     # ========================================================
-    # USER INSTITUTION
-    # ========================================================
-
-    user_institution_id = _get_user_institution_id()
-
-    # ========================================================
-    # INSTITUTION SECURITY
+    # EXISTING CLASS INSTITUTION SECURITY
     # ========================================================
 
     if (
-        user_institution_id is not None
-        and class_obj.institution_id != user_institution_id
+        role != "superadmin"
+        and user_institution_id is not None
+        and class_obj.institution_id
+        != user_institution_id
     ):
+
         flash(
             "You are not authorized to edit this class.",
             "danger"
         )
 
         return redirect(
-            url_for("main.all_classes")
+            url_for(
+                "main.all_classes"
+            )
         )
+
+    # ========================================================
+    # EXISTING CLASS BRANCH SECURITY
+    # ========================================================
+
+    if role == "branch_admin":
+
+        if (
+            class_obj.branch_id
+            != user_branch_id
+        ):
+
+            flash(
+                "You are not authorized to edit a class from another branch.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.all_classes"
+                )
+            )
 
     # ========================================================
     # POST
@@ -22033,6 +22538,7 @@ def edit_class(class_id):
         # ====================================================
 
         if not institution_id:
+
             flash(
                 "Institution is required.",
                 "danger"
@@ -22046,6 +22552,7 @@ def edit_class(class_id):
             )
 
         if not branch_id:
+
             flash(
                 "Branch is required.",
                 "danger"
@@ -22059,6 +22566,7 @@ def edit_class(class_id):
             )
 
         if not program_id:
+
             flash(
                 "Program is required.",
                 "danger"
@@ -22072,6 +22580,7 @@ def edit_class(class_id):
             )
 
         if not academic_year_id:
+
             flash(
                 "Academic year is required.",
                 "danger"
@@ -22085,6 +22594,7 @@ def edit_class(class_id):
             )
 
         if not name:
+
             flash(
                 "Class name is required.",
                 "danger"
@@ -22098,7 +22608,7 @@ def edit_class(class_id):
             )
 
         # ====================================================
-        # AUTO GENERATE CLASS CODE
+        # GENERATE CLASS CODE
         # ====================================================
 
         import re
@@ -22112,7 +22622,9 @@ def edit_class(class_id):
             ).encode(
                 "ascii",
                 "ignore"
-            ).decode("ascii")
+            ).decode(
+                "ascii"
+            )
 
             value = value.upper()
 
@@ -22148,13 +22660,16 @@ def edit_class(class_id):
 
             return value[:50]
 
-        code = generate_class_code(name)
+        code = generate_class_code(
+            name
+        )
 
         # ====================================================
         # CODE VALIDATION
         # ====================================================
 
         if not code:
+
             flash(
                 "Unable to generate a valid class code from the class name.",
                 "danger"
@@ -22168,7 +22683,7 @@ def edit_class(class_id):
             )
 
         # ====================================================
-        # STATUS
+        # STATUS VALIDATION
         # ====================================================
 
         allowed_statuses = {
@@ -22200,11 +22715,15 @@ def edit_class(class_id):
         if capacity_raw:
 
             try:
+
                 capacity = int(
                     capacity_raw
                 )
 
-            except (ValueError, TypeError):
+            except (
+                ValueError,
+                TypeError
+            ):
 
                 flash(
                     "Capacity must be a valid whole number.",
@@ -22237,8 +22756,10 @@ def edit_class(class_id):
         # ====================================================
 
         if (
-            user_institution_id is not None
-            and institution_id != user_institution_id
+            role != "superadmin"
+            and user_institution_id is not None
+            and institution_id
+            != user_institution_id
         ):
 
             flash(
@@ -22253,13 +22774,36 @@ def edit_class(class_id):
             )
 
         # ====================================================
+        # BRANCH SECURITY
+        # ====================================================
+
+        # Branch admin cannot move class
+        # to another branch.
+
+        if role == "branch_admin":
+
+            if branch_id != user_branch_id:
+
+                flash(
+                    "You are not authorized to move this class to another branch.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.all_classes"
+                    )
+                )
+
+        # ====================================================
         # VERIFY INSTITUTION
         # ====================================================
 
         institution = (
             Institution.query
             .filter(
-                Institution.id == institution_id
+                Institution.id
+                == institution_id
             )
             .first()
         )
@@ -22285,14 +22829,30 @@ def edit_class(class_id):
         branch = (
             Branch.query
             .filter(
-                Branch.id == branch_id
+                Branch.id
+                == branch_id
             )
             .first()
         )
 
+        if branch is None:
+
+            flash(
+                "Selected branch was not found.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_class",
+                    class_id=class_id
+                )
+            )
+
+        # Branch must belong to selected institution.
         if (
-            branch is None
-            or branch.institution_id != institution_id
+            branch.institution_id
+            != institution_id
         ):
 
             flash(
@@ -22314,14 +22874,30 @@ def edit_class(class_id):
         program = (
             Program.query
             .filter(
-                Program.id == program_id
+                Program.id
+                == program_id
             )
             .first()
         )
 
+        if program is None:
+
+            flash(
+                "Selected program was not found.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "main.edit_class",
+                    class_id=class_id
+                )
+            )
+
+        # Program must belong to institution.
         if (
-            program is None
-            or program.institution_id != institution_id
+            program.institution_id
+            != institution_id
         ):
 
             flash(
@@ -22337,13 +22913,49 @@ def edit_class(class_id):
             )
 
         # ====================================================
+        # PROGRAM BRANCH SECURITY
+        # ====================================================
+
+        program_branch_id = getattr(
+            program,
+            "branch_id",
+            None
+        )
+
+        # branch_admin:
+        #
+        # own branch program
+        # OR shared program
+
+        if role == "branch_admin":
+
+            if (
+                program_branch_id is not None
+                and program_branch_id
+                != user_branch_id
+            ):
+
+                flash(
+                    "This program is not available for your branch.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.edit_class",
+                        class_id=class_id
+                    )
+                )
+
+        # ====================================================
         # VERIFY ACADEMIC YEAR
         # ====================================================
 
         academic_year = (
             AcademicYear.query
             .filter(
-                AcademicYear.id == academic_year_id
+                AcademicYear.id
+                == academic_year_id
             )
             .first()
         )
@@ -22366,30 +22978,35 @@ def edit_class(class_id):
         # ACADEMIC YEAR INSTITUTION SECURITY
         # ====================================================
 
-        if (
-            hasattr(
-                AcademicYear,
-                "institution_id"
-            )
-            and getattr(
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            academic_year_institution_id = getattr(
                 academic_year,
                 "institution_id",
                 None
-            ) is not None
-            and academic_year.institution_id != institution_id
-        ):
-
-            flash(
-                "Selected academic year does not belong to the selected institution.",
-                "danger"
             )
 
-            return redirect(
-                url_for(
-                    "main.edit_class",
-                    class_id=class_id
+            if (
+                academic_year_institution_id
+                is not None
+                and academic_year_institution_id
+                != institution_id
+            ):
+
+                flash(
+                    "Selected academic year does not belong to the selected institution.",
+                    "danger"
                 )
-            )
+
+                return redirect(
+                    url_for(
+                        "main.edit_class",
+                        class_id=class_id
+                    )
+                )
 
         # ====================================================
         # DUPLICATE CODE
@@ -22398,10 +23015,17 @@ def edit_class(class_id):
         duplicate_code = (
             Class.query
             .filter(
-                Class.branch_id == branch_id,
-                Class.academic_year_id == academic_year_id,
-                Class.code == code,
-                Class.id != class_obj.id
+                Class.branch_id
+                == branch_id,
+
+                Class.academic_year_id
+                == academic_year_id,
+
+                Class.code
+                == code,
+
+                Class.id
+                != class_obj.id
             )
             .first()
         )
@@ -22427,10 +23051,17 @@ def edit_class(class_id):
         duplicate_name = (
             Class.query
             .filter(
-                Class.branch_id == branch_id,
-                Class.academic_year_id == academic_year_id,
-                Class.name == name,
-                Class.id != class_obj.id
+                Class.branch_id
+                == branch_id,
+
+                Class.academic_year_id
+                == academic_year_id,
+
+                Class.name
+                == name,
+
+                Class.id
+                != class_obj.id
             )
             .first()
         )
@@ -22453,29 +23084,45 @@ def edit_class(class_id):
         # UPDATE CLASS
         # ====================================================
 
-        class_obj.institution_id = institution_id
+        class_obj.institution_id = (
+            institution_id
+        )
 
-        class_obj.branch_id = branch_id
+        class_obj.branch_id = (
+            branch_id
+        )
 
-        class_obj.program_id = program_id
+        class_obj.program_id = (
+            program_id
+        )
 
-        class_obj.academic_year_id = academic_year_id
+        class_obj.academic_year_id = (
+            academic_year_id
+        )
 
-        class_obj.name = name
+        class_obj.name = (
+            name
+        )
 
-        class_obj.code = code
+        class_obj.code = (
+            code
+        )
 
-        class_obj.level = level
+        class_obj.level = (
+            level
+        )
 
-        # ====================================================
-        # CAPACITY
-        # ====================================================
+        class_obj.capacity = (
+            capacity
+        )
 
-        class_obj.capacity = capacity
+        class_obj.description = (
+            description
+        )
 
-        class_obj.description = description
-
-        class_obj.status = status
+        class_obj.status = (
+            status
+        )
 
         # ====================================================
         # COMMIT
@@ -22541,14 +23188,20 @@ def edit_class(class_id):
     # INSTITUTIONS
     # ========================================================
 
-    institution_query = Institution.query
+    institution_query = (
+        Institution.query
+    )
 
-    if user_institution_id is not None:
+    if (
+        role != "superadmin"
+        and user_institution_id is not None
+    ):
 
         institution_query = (
             institution_query
             .filter(
-                Institution.id == user_institution_id
+                Institution.id
+                == user_institution_id
             )
         )
 
@@ -22566,13 +23219,27 @@ def edit_class(class_id):
 
     branch_query = Branch.query
 
-    if user_institution_id is not None:
+    if (
+        role != "superadmin"
+        and user_institution_id is not None
+    ):
 
         branch_query = (
             branch_query
             .filter(
                 Branch.institution_id
                 == user_institution_id
+            )
+        )
+
+    # Branch admin sees own branch only.
+    if role == "branch_admin":
+
+        branch_query = (
+            branch_query
+            .filter(
+                Branch.id
+                == user_branch_id
             )
         )
 
@@ -22590,13 +23257,35 @@ def edit_class(class_id):
 
     program_query = Program.query
 
-    if user_institution_id is not None:
+    if (
+        role != "superadmin"
+        and user_institution_id is not None
+    ):
 
         program_query = (
             program_query
             .filter(
                 Program.institution_id
                 == user_institution_id
+            )
+        )
+
+    # Branch admin:
+    #
+    # own branch programs
+    # OR shared programs.
+
+    if role == "branch_admin":
+
+        program_query = (
+            program_query
+            .filter(
+                or_(
+                    Program.branch_id
+                    == user_branch_id,
+
+                    Program.branch_id.is_(None)
+                )
             )
         )
 
@@ -22612,10 +23301,13 @@ def edit_class(class_id):
     # ACADEMIC YEARS
     # ========================================================
 
-    academic_year_query = AcademicYear.query
+    academic_year_query = (
+        AcademicYear.query
+    )
 
     if (
-        user_institution_id is not None
+        role != "superadmin"
+        and user_institution_id is not None
         and hasattr(
             AcademicYear,
             "institution_id"
@@ -22655,7 +23347,13 @@ def edit_class(class_id):
 
         academic_years=academic_years,
 
-        user=current_user
+        user=current_user,
+
+        current_role=role,
+
+        user_institution_id=user_institution_id,
+
+        user_branch_id=user_branch_id
     )
 
 
@@ -23047,7 +23745,6 @@ def _get_section_form_data():
 # ============================================================
 # ALL SECTIONS
 # ============================================================
-
 @bp.route(
     "/sections",
     methods=["GET"]
@@ -23055,9 +23752,64 @@ def _get_section_form_data():
 @login_required
 def all_sections():
 
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+        "teacher",
+    }
+
+    if role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # USER SCOPE
+    # ========================================================
+
     user_institution_id = (
         _section_user_institution_id()
     )
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # ROLE REQUIREMENTS
+    # ========================================================
+
+    if role == "school_admin":
+
+        if user_institution_id is None:
+            abort(403)
+
+    if role == "branch_admin":
+
+        if (
+            user_institution_id is None
+            or user_branch_id is None
+        ):
+            abort(403)
+
+    if role == "teacher":
+
+        if (
+            user_institution_id is None
+            or user_branch_id is None
+        ):
+            abort(403)
 
     # ========================================================
     # FILTERS
@@ -23100,7 +23852,7 @@ def all_sections():
     ).strip()
 
     # ========================================================
-    # QUERY
+    # BASE QUERY
     # ========================================================
 
     query = Section.query
@@ -23109,21 +23861,22 @@ def all_sections():
     # INSTITUTION SECURITY
     # ========================================================
 
-    if user_institution_id is not None:
+    if (
+        role != "superadmin"
+        and user_institution_id is not None
+    ):
 
         query = query.filter(
             Section.institution_id
             == user_institution_id
         )
 
-        # Prevent institution user from manipulating
-        # institution filter through URL.
-
+        # Prevent URL manipulation.
         institution_id = str(
             user_institution_id
         )
 
-    elif institution_id:
+    elif role == "superadmin" and institution_id:
 
         try:
 
@@ -23144,46 +23897,45 @@ def all_sections():
             institution_id = ""
 
     # ========================================================
-    # SEARCH
+    # BRANCH SECURITY
     # ========================================================
 
-    if search:
+    # branch_admin and teacher:
+    # OWN BRANCH ONLY.
+    #
+    # This is the important security layer.
+    # Even if the URL contains another branch_id,
+    # the query still cannot return another branch.
 
-        pattern = f"%{search}%"
-
-        query = query.filter(
-            db.or_(
-                Section.name.ilike(pattern),
-                Section.code.ilike(pattern),
-                Section.description.ilike(pattern),
-            )
-        )
-
-    # ========================================================
-    # STATUS
-    # ========================================================
-
-    if status in {
-        "active",
-        "inactive",
-        "suspended",
+    if role in {
+        "branch_admin",
+        "teacher",
     }:
 
         query = query.filter(
-            Section.status == status
+            Section.branch_id
+            == user_branch_id
         )
 
-    # ========================================================
-    # BRANCH
-    # ========================================================
+        branch_id = str(
+            user_branch_id
+        )
 
-    if branch_id:
+    elif branch_id:
+
+        # superadmin / school_admin
+        # may use branch filter,
+        # but only within the institution scope.
 
         try:
 
+            branch_id_int = int(
+                branch_id
+            )
+
             query = query.filter(
                 Section.branch_id
-                == int(branch_id)
+                == branch_id_int
             )
 
         except (
@@ -23194,16 +23946,65 @@ def all_sections():
             branch_id = ""
 
     # ========================================================
-    # CLASS
+    # SEARCH
+    # ========================================================
+
+    if search:
+
+        pattern = f"%{search}%"
+
+        query = query.filter(
+            db.or_(
+                Section.name.ilike(
+                    pattern
+                ),
+
+                Section.code.ilike(
+                    pattern
+                ),
+
+                Section.description.ilike(
+                    pattern
+                ),
+            )
+        )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    allowed_statuses = {
+        "active",
+        "inactive",
+        "suspended",
+    }
+
+    if status in allowed_statuses:
+
+        query = query.filter(
+            Section.status
+            == status
+        )
+
+    else:
+
+        status = ""
+
+    # ========================================================
+    # CLASS FILTER
     # ========================================================
 
     if class_id:
 
         try:
 
+            class_id_int = int(
+                class_id
+            )
+
             query = query.filter(
                 Section.class_id
-                == int(class_id)
+                == class_id_int
             )
 
         except (
@@ -23221,9 +24022,13 @@ def all_sections():
 
         try:
 
+            academic_year_id_int = int(
+                academic_year_id
+            )
+
             query = query.filter(
                 Section.academic_year_id
-                == int(academic_year_id)
+                == academic_year_id_int
             )
 
         except (
@@ -23261,12 +24066,12 @@ def all_sections():
         type=int
     )
 
-    if per_page not in [
+    if per_page not in {
         10,
         20,
         50,
         100,
-    ]:
+    }:
 
         per_page = 20
 
@@ -23288,6 +24093,55 @@ def all_sections():
         classes,
         academic_years,
     ) = _get_section_form_data()
+
+    # ========================================================
+    # ADDITIONAL FILTER DATA SECURITY
+    # ========================================================
+    #
+    # Haddii helper-ka _get_section_form_data()
+    # uu soo celiyo branches/classes badan,
+    # waxaan halkan ku xaddideynaa kuwa muuqda.
+    #
+    # Database query-ga kore ayaa ah security-ga dhabta ah.
+    #
+
+    if role in {
+        "branch_admin",
+        "teacher",
+    }:
+
+        branches = [
+            branch
+            for branch in branches
+            if branch.id
+            == user_branch_id
+        ]
+
+        classes = [
+            class_obj
+            for class_obj in classes
+            if class_obj.branch_id
+            == user_branch_id
+        ]
+
+    elif (
+        role != "superadmin"
+        and user_institution_id is not None
+    ):
+
+        branches = [
+            branch
+            for branch in branches
+            if branch.institution_id
+            == user_institution_id
+        ]
+
+        classes = [
+            class_obj
+            for class_obj in classes
+            if class_obj.institution_id
+            == user_institution_id
+        ]
 
     # ========================================================
     # RENDER
@@ -23312,20 +24166,44 @@ def all_sections():
 
         status=status,
 
-        institution_filter=institution_id,
+        institution_filter=(
+            institution_id
+            if institution_id
+            else ""
+        ),
 
-        branch_filter=branch_id,
+        branch_filter=(
+            branch_id
+            if branch_id
+            else ""
+        ),
 
-        class_filter=class_id,
+        class_filter=(
+            class_id
+            if class_id
+            else ""
+        ),
 
-        academic_year_filter=academic_year_id,
+        academic_year_filter=(
+            academic_year_id
+            if academic_year_id
+            else ""
+        ),
 
         per_page=per_page,
 
-        # IMPORTANT
         user=current_user,
-    )
 
+        current_role=role,
+
+        user_institution_id=(
+            user_institution_id
+        ),
+
+        user_branch_id=(
+            user_branch_id
+        ),
+    )
 
 # ============================================================
 # ADD SECTION
@@ -23371,29 +24249,6 @@ def _get_user_institution_id():
         "institution_id",
         None
     )
-
-
-# ============================================================
-# ALLOWED INSTITUTIONS
-# ============================================================
-
-def _get_allowed_institutions():
-    """
-    Return institutions visible to current user.
-    """
-
-    institution_id = _get_user_institution_id()
-
-    query = Institution.query
-
-    if institution_id:
-        query = query.filter(
-            Institution.id == institution_id
-        )
-
-    return query.order_by(
-        Institution.name.asc()
-    ).all()
 
 
 # ============================================================
@@ -23507,6 +24362,9 @@ def _section_template_context(**kwargs):
 # ============================================================
 # ADD SECTION
 # ============================================================
+# ============================================================
+# ADD SECTION
+# ============================================================
 
 @bp.route(
     "/sections/add",
@@ -23514,6 +24372,54 @@ def _section_template_context(**kwargs):
 )
 @login_required
 def add_section():
+
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # USER SCOPE
+    # ========================================================
+
+    user_institution_id = _get_user_institution_id()
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # ROLE REQUIREMENTS
+    # ========================================================
+
+    if role == "school_admin":
+
+        if user_institution_id is None:
+            abort(403)
+
+    if role == "branch_admin":
+
+        if (
+            user_institution_id is None
+            or user_branch_id is None
+        ):
+            abort(403)
 
     # ========================================================
     # GET FORM DATA
@@ -23525,6 +24431,84 @@ def add_section():
         classes,
         academic_years,
     ) = _get_section_form_data()
+
+    # ========================================================
+    # FORM DATA SECURITY
+    # ========================================================
+
+    if role == "branch_admin":
+
+        institutions = [
+            institution
+            for institution in institutions
+            if institution.id
+            == user_institution_id
+        ]
+
+        branches = [
+            branch
+            for branch in branches
+            if branch.id
+            == user_branch_id
+        ]
+
+        classes = [
+            class_obj
+            for class_obj in classes
+            if (
+                class_obj.institution_id
+                == user_institution_id
+                and class_obj.branch_id
+                == user_branch_id
+            )
+        ]
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            academic_years = [
+                academic_year
+                for academic_year in academic_years
+                if academic_year.institution_id
+                == user_institution_id
+            ]
+
+    elif role == "school_admin":
+
+        institutions = [
+            institution
+            for institution in institutions
+            if institution.id
+            == user_institution_id
+        ]
+
+        branches = [
+            branch
+            for branch in branches
+            if branch.institution_id
+            == user_institution_id
+        ]
+
+        classes = [
+            class_obj
+            for class_obj in classes
+            if class_obj.institution_id
+            == user_institution_id
+        ]
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            academic_years = [
+                academic_year
+                for academic_year in academic_years
+                if academic_year.institution_id
+                == user_institution_id
+            ]
 
     # ========================================================
     # POST
@@ -23557,58 +24541,41 @@ def add_section():
         )
 
         name = (
-            request.form.get("name", "")
+            request.form.get(
+                "name",
+                ""
+            )
             .strip()
         )
 
         capacity_raw = (
-            request.form.get("capacity", "")
+            request.form.get(
+                "capacity",
+                ""
+            )
             .strip()
         )
 
         description = (
-            request.form.get("description", "")
+            request.form.get(
+                "description",
+                ""
+            )
             .strip()
         )
 
         status = (
-            request.form.get("status", "active")
+            request.form.get(
+                "status",
+                "active"
+            )
             .strip()
             .lower()
         )
 
-        # ----------------------------------------------------
-        # USER INSTITUTION SECURITY
-        # ----------------------------------------------------
-
-        user_institution_id = _get_user_institution_id()
-
-        if user_institution_id:
-
-            if institution_id != user_institution_id:
-
-                flash(
-                    "You are not allowed to use another institution.",
-                    "danger"
-                )
-
-                return render_template(
-                    "backend/pages/sections/add_section.html",
-                    **_section_template_context(
-                        institution_id=user_institution_id,
-                        branch_id=branch_id,
-                        class_id=class_id,
-                        academic_year_id=academic_year_id,
-                        name=name,
-                        capacity=capacity_raw,
-                        description=description,
-                        status=status,
-                    )
-                )
-
-        # ----------------------------------------------------
+        # ====================================================
         # REQUIRED FIELDS
-        # ----------------------------------------------------
+        # ====================================================
 
         if not institution_id:
 
@@ -23715,9 +24682,70 @@ def add_section():
                 )
             )
 
-        # ----------------------------------------------------
+        # ====================================================
+        # INSTITUTION SECURITY
+        # ====================================================
+
+        if role != "superadmin":
+
+            if user_institution_id is None:
+
+                abort(403)
+
+            if institution_id != user_institution_id:
+
+                flash(
+                    "You are not allowed to use another institution.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/add_section.html",
+                    **_section_template_context(
+                        institution_id=user_institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    )
+                )
+
+        # ====================================================
+        # BRANCH SECURITY
+        # ====================================================
+
+        if role == "branch_admin":
+
+            if user_branch_id is None:
+                abort(403)
+
+            if branch_id != user_branch_id:
+
+                flash(
+                    "You are not allowed to use another branch.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/add_section.html",
+                    **_section_template_context(
+                        institution_id=user_institution_id,
+                        branch_id=user_branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    )
+                )
+
+        # ====================================================
         # NAME LENGTH
-        # ----------------------------------------------------
+        # ====================================================
 
         if len(name) > 150:
 
@@ -23740,9 +24768,34 @@ def add_section():
                 )
             )
 
-        # ----------------------------------------------------
+        # ====================================================
+        # DESCRIPTION LENGTH
+        # ====================================================
+
+        if len(description) > 1000:
+
+            flash(
+                "Description cannot exceed 1000 characters.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/add_section.html",
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                )
+            )
+
+        # ====================================================
         # STATUS VALIDATION
-        # ----------------------------------------------------
+        # ====================================================
 
         allowed_statuses = {
             "active",
@@ -23771,9 +24824,9 @@ def add_section():
                 )
             )
 
-        # ----------------------------------------------------
+        # ====================================================
         # CAPACITY
-        # ----------------------------------------------------
+        # ====================================================
 
         capacity = None
 
@@ -23781,9 +24834,14 @@ def add_section():
 
             try:
 
-                capacity = int(capacity_raw)
+                capacity = int(
+                    capacity_raw
+                )
 
-            except (TypeError, ValueError):
+            except (
+                TypeError,
+                ValueError
+            ):
 
                 flash(
                     "Capacity must be a valid whole number.",
@@ -23808,6 +24866,28 @@ def add_section():
 
                 flash(
                     "Capacity cannot be negative.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/add_section.html",
+                    **_section_template_context(
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    )
+                )
+
+            # Optional reasonable upper limit
+            if capacity > 10000:
+
+                flash(
+                    "Capacity cannot exceed 10,000 students.",
                     "danger"
                 )
 
@@ -23883,6 +24963,8 @@ def add_section():
                 )
             )
 
+        # Branch must belong to institution
+
         if branch.institution_id != institution_id:
 
             flash(
@@ -23933,7 +25015,10 @@ def add_section():
                 )
             )
 
+        # ----------------------------------------------------
         # Class institution
+        # ----------------------------------------------------
+
         if class_obj.institution_id != institution_id:
 
             flash(
@@ -23955,7 +25040,10 @@ def add_section():
                 )
             )
 
+        # ----------------------------------------------------
         # Class branch
+        # ----------------------------------------------------
+
         if class_obj.branch_id != branch_id:
 
             flash(
@@ -23976,6 +25064,16 @@ def add_section():
                     status=status,
                 )
             )
+
+        # ====================================================
+        # EXTRA BRANCH SECURITY
+        # ====================================================
+
+        if role == "branch_admin":
+
+            if class_obj.branch_id != user_branch_id:
+
+                abort(403)
 
         # ====================================================
         # ACADEMIC YEAR VALIDATION
@@ -24006,16 +25104,19 @@ def add_section():
                 )
             )
 
-        # ----------------------------------------------------
-        # Academic year institution
-        # ----------------------------------------------------
+        # ====================================================
+        # ACADEMIC YEAR INSTITUTION
+        # ====================================================
 
         if hasattr(
             AcademicYear,
             "institution_id"
         ):
 
-            if academic_year.institution_id != institution_id:
+            if (
+                academic_year.institution_id
+                != institution_id
+            ):
 
                 flash(
                     "Selected academic year does not belong to the selected institution.",
@@ -24045,7 +25146,10 @@ def add_section():
             "academic_year_id"
         ):
 
-            if class_obj.academic_year_id != academic_year_id:
+            if (
+                class_obj.academic_year_id
+                != academic_year_id
+            ):
 
                 flash(
                     "Selected class does not belong to the selected academic year.",
@@ -24070,7 +25174,9 @@ def add_section():
         # AUTO GENERATE CODE
         # ====================================================
 
-        code = generate_section_code(name)
+        code = generate_section_code(
+            name
+        )
 
         if not code:
 
@@ -24094,16 +25200,18 @@ def add_section():
             )
 
         # ====================================================
-        # DUPLICATE CHECK
+        # DUPLICATE NAME CHECK
         # ====================================================
 
-        duplicate_query = Section.query.filter(
+        existing_section = Section.query.filter(
+            Section.institution_id == institution_id,
+            Section.branch_id == branch_id,
             Section.class_id == class_id,
             Section.academic_year_id == academic_year_id,
-            func.lower(Section.name) == name.lower()
-        )
-
-        existing_section = duplicate_query.first()
+            func.lower(
+                Section.name
+            ) == name.lower()
+        ).first()
 
         if existing_section:
 
@@ -24131,9 +25239,13 @@ def add_section():
         # ====================================================
 
         existing_code = Section.query.filter(
+            Section.institution_id == institution_id,
+            Section.branch_id == branch_id,
             Section.class_id == class_id,
             Section.academic_year_id == academic_year_id,
-            func.upper(Section.code) == code.upper()
+            func.upper(
+                Section.code
+            ) == code.upper()
         ).first()
 
         if existing_code:
@@ -24179,7 +25291,9 @@ def add_section():
 
         try:
 
-            db.session.add(section)
+            db.session.add(
+                section
+            )
 
             db.session.commit()
 
@@ -24228,33 +25342,72 @@ def add_section():
         )
 
     # ========================================================
-    # GET
+    # GET DEFAULT VALUES
     # ========================================================
 
-    default_institution_id = _get_user_institution_id()
+    default_institution_id = (
+        user_institution_id
+    )
 
-    # If user is scoped to one institution, preselect it.
+    # --------------------------------------------------------
+    # Superadmin with only one institution
+    # --------------------------------------------------------
+
     if (
-        not default_institution_id
+        default_institution_id is None
         and len(institutions) == 1
     ):
-        default_institution_id = institutions[0].id
+
+        default_institution_id = (
+            institutions[0].id
+        )
+
+    # --------------------------------------------------------
+    # Branch admin default branch
+    # --------------------------------------------------------
+
+    default_branch_id = None
+
+    if role == "branch_admin":
+
+        default_branch_id = (
+            user_branch_id
+        )
+
+    # ========================================================
+    # RENDER GET
+    # ========================================================
 
     return render_template(
         "backend/pages/sections/add_section.html",
+
         **_section_template_context(
             institution_id=default_institution_id,
-            branch_id=None,
+            branch_id=default_branch_id,
             class_id=None,
             academic_year_id=None,
             name="",
             capacity="",
             description="",
             status="active",
-        )
+        ),
+
+        # ----------------------------------------------------
+        # Extra security/template information
+        # ----------------------------------------------------
+
+        current_role=role,
+
+        user=current_user,
+
+        user_institution_id=(
+            user_institution_id
+        ),
+
+        user_branch_id=(
+            user_branch_id
+        ),
     )
-
-
 
 
 # ============================================================
@@ -24285,6 +25438,9 @@ def view_section(section_id):
 # ============================================================
 # EDIT SECTION
 # ============================================================
+# ============================================================
+# EDIT SECTION
+# ============================================================
 
 @bp.route(
     "/sections/<int:section_id>/edit",
@@ -24293,13 +25449,94 @@ def view_section(section_id):
 @login_required
 def edit_section(section_id):
 
-    section = _get_section_or_404(
-        section_id
+    # ========================================================
+    # ROLE SECURITY
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
     )
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # USER SCOPE
+    # ========================================================
 
     user_institution_id = (
         _section_user_institution_id()
     )
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # ROLE REQUIREMENTS
+    # ========================================================
+
+    if role == "school_admin":
+
+        if user_institution_id is None:
+            abort(403)
+
+    if role == "branch_admin":
+
+        if (
+            user_institution_id is None
+            or user_branch_id is None
+        ):
+            abort(403)
+
+    # ========================================================
+    # GET SECTION
+    # ========================================================
+
+    section = _get_section_or_404(
+        section_id
+    )
+
+    # ========================================================
+    # EXISTING SECTION SECURITY
+    # ========================================================
+
+    # --------------------------------------------------------
+    # Institution security
+    # --------------------------------------------------------
+
+    if role != "superadmin":
+
+        if (
+            user_institution_id is None
+            or section.institution_id
+            != user_institution_id
+        ):
+
+            abort(403)
+
+    # --------------------------------------------------------
+    # Branch security
+    # --------------------------------------------------------
+
+    if role == "branch_admin":
+
+        if (
+            section.branch_id
+            != user_branch_id
+        ):
+
+            abort(403)
 
     # ========================================================
     # FORM DATA
@@ -24313,10 +25550,92 @@ def edit_section(section_id):
     ) = _get_section_form_data()
 
     # ========================================================
+    # FORM DATA SECURITY
+    # ========================================================
+
+    if role == "branch_admin":
+
+        institutions = [
+            institution
+            for institution in institutions
+            if institution.id
+            == user_institution_id
+        ]
+
+        branches = [
+            branch
+            for branch in branches
+            if branch.id
+            == user_branch_id
+        ]
+
+        classes = [
+            class_obj
+            for class_obj in classes
+            if (
+                class_obj.institution_id
+                == user_institution_id
+                and class_obj.branch_id
+                == user_branch_id
+            )
+        ]
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            academic_years = [
+                academic_year
+                for academic_year in academic_years
+                if academic_year.institution_id
+                == user_institution_id
+            ]
+
+    elif role == "school_admin":
+
+        institutions = [
+            institution
+            for institution in institutions
+            if institution.id
+            == user_institution_id
+        ]
+
+        branches = [
+            branch
+            for branch in branches
+            if branch.institution_id
+            == user_institution_id
+        ]
+
+        classes = [
+            class_obj
+            for class_obj in classes
+            if class_obj.institution_id
+            == user_institution_id
+        ]
+
+        if hasattr(
+            AcademicYear,
+            "institution_id"
+        ):
+
+            academic_years = [
+                academic_year
+                for academic_year in academic_years
+                if academic_year.institution_id
+                == user_institution_id
+            ]
+
+    # ========================================================
     # POST
     # ========================================================
 
     if request.method == "POST":
+
+        # ====================================================
+        # FORM VALUES
+        # ====================================================
 
         institution_id = request.form.get(
             "institution_id",
@@ -24338,54 +25657,45 @@ def edit_section(section_id):
             type=int
         )
 
-        name = request.form.get(
-            "name",
-            "",
-            type=str
-        ).strip()
-
-        capacity_raw = request.form.get(
-            "capacity",
-            "",
-            type=str
-        ).strip()
-
-        description = request.form.get(
-            "description",
-            "",
-            type=str
-        ).strip()
-
-        status = request.form.get(
-            "status",
-            "active",
-            type=str
-        ).strip().lower()
-
-        # ====================================================
-        # INSTITUTION SECURITY
-        # ====================================================
-
-        if (
-            user_institution_id is not None
-            and institution_id
-            != user_institution_id
-        ):
-
-            flash(
-                "You are not allowed to move this section to another institution.",
-                "danger"
+        name = (
+            request.form.get(
+                "name",
+                "",
+                type=str
             )
+            .strip()
+        )
 
-            return redirect(
-                url_for(
-                    "main.view_section",
-                    section_id=section.id
-                )
+        capacity_raw = (
+            request.form.get(
+                "capacity",
+                "",
+                type=str
             )
+            .strip()
+        )
+
+        description = (
+            request.form.get(
+                "description",
+                "",
+                type=str
+            )
+            .strip()
+        )
+
+        status = (
+            request.form.get(
+                "status",
+                "active",
+                type=str
+            )
+            .strip()
+            .lower()
+        )
 
         # ====================================================
-        # REQUIRED
+        # REQUIRED FIELDS
         # ====================================================
 
         if not institution_id:
@@ -24401,22 +25711,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         if not branch_id:
@@ -24432,22 +25740,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         if not class_id:
@@ -24463,22 +25769,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         if not academic_year_id:
@@ -24494,22 +25798,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         if not name:
@@ -24525,33 +25827,169 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
+                user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
+            )
+
+        # ====================================================
+        # NAME LENGTH
+        # ====================================================
+
+        if len(name) > 150:
+
+            flash(
+                "Section name cannot exceed 150 characters.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                ),
 
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
+
+        # ====================================================
+        # DESCRIPTION LENGTH
+        # ====================================================
+
+        if len(description) > 1000:
+
+            flash(
+                "Description cannot exceed 1000 characters.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                ),
+
+                user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
+            )
+
+        # ====================================================
+        # INSTITUTION SECURITY
+        # ====================================================
+
+        if role != "superadmin":
+
+            if institution_id != user_institution_id:
+
+                flash(
+                    "You are not allowed to move this section to another institution.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/edit_section.html",
+
+                    section=section,
+
+                    **_section_template_context(
+                        institution_id=user_institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    ),
+
+                    user=current_user,
+                    current_role=role,
+                    user_institution_id=user_institution_id,
+                    user_branch_id=user_branch_id,
+                )
+
+        # ====================================================
+        # BRANCH ADMIN CANNOT MOVE SECTION
+        # ====================================================
+
+        if role == "branch_admin":
+
+            if branch_id != user_branch_id:
+
+                flash(
+                    "You are not allowed to move this section to another branch.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/edit_section.html",
+
+                    section=section,
+
+                    **_section_template_context(
+                        institution_id=user_institution_id,
+                        branch_id=user_branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    ),
+
+                    user=current_user,
+                    current_role=role,
+                    user_institution_id=user_institution_id,
+                    user_branch_id=user_branch_id,
+                )
 
         # ====================================================
         # STATUS
         # ====================================================
 
-        if status not in {
+        allowed_statuses = {
             "active",
             "inactive",
             "suspended",
-        }:
+        }
+
+        if status not in allowed_statuses:
 
             flash(
                 "Invalid section status.",
@@ -24564,22 +26002,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status="active",
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
@@ -24602,7 +26038,7 @@ def edit_section(section_id):
             ):
 
                 flash(
-                    "Capacity must be a valid number.",
+                    "Capacity must be a valid whole number.",
                     "danger"
                 )
 
@@ -24612,22 +26048,20 @@ def edit_section(section_id):
                     section=section,
 
                     **_section_template_context(
-                        institutions,
-                        branches,
-                        classes,
-                        academic_years,
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
                     ),
 
-                    institution_id=institution_id,
-                    branch_id=branch_id,
-                    class_id=class_id,
-                    academic_year_id=academic_year_id,
-                    name=name,
-                    capacity=capacity_raw,
-                    description=description,
-                    status=status,
-
                     user=current_user,
+                    current_role=role,
+                    user_institution_id=user_institution_id,
+                    user_branch_id=user_branch_id,
                 )
 
             if capacity < 0:
@@ -24643,26 +26077,53 @@ def edit_section(section_id):
                     section=section,
 
                     **_section_template_context(
-                        institutions,
-                        branches,
-                        classes,
-                        academic_years,
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
                     ),
 
-                    institution_id=institution_id,
-                    branch_id=branch_id,
-                    class_id=class_id,
-                    academic_year_id=academic_year_id,
-                    name=name,
-                    capacity=capacity_raw,
-                    description=description,
-                    status=status,
+                    user=current_user,
+                    current_role=role,
+                    user_institution_id=user_institution_id,
+                    user_branch_id=user_branch_id,
+                )
+
+            if capacity > 10000:
+
+                flash(
+                    "Capacity cannot exceed 10,000 students.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/sections/edit_section.html",
+
+                    section=section,
+
+                    **_section_template_context(
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    ),
 
                     user=current_user,
+                    current_role=role,
+                    user_institution_id=user_institution_id,
+                    user_branch_id=user_branch_id,
                 )
 
         # ====================================================
-        # INSTITUTION
+        # INSTITUTION VALIDATION
         # ====================================================
 
         institution = (
@@ -24677,7 +26138,7 @@ def edit_section(section_id):
         if not institution:
 
             flash(
-                "Institution not found.",
+                "Selected institution was not found.",
                 "danger"
             )
 
@@ -24687,26 +26148,24 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
-        # BRANCH
+        # BRANCH VALIDATION
         # ====================================================
 
         branch = (
@@ -24720,7 +26179,7 @@ def edit_section(section_id):
         if not branch:
 
             flash(
-                "Branch not found.",
+                "Selected branch was not found.",
                 "danger"
             )
 
@@ -24730,22 +26189,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
@@ -24765,26 +26222,24 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
-        # CLASS
+        # CLASS VALIDATION
         # ====================================================
 
         class_obj = (
@@ -24798,7 +26253,7 @@ def edit_section(section_id):
         if not class_obj:
 
             flash(
-                "Class not found.",
+                "Selected class was not found.",
                 "danger"
             )
 
@@ -24808,22 +26263,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
@@ -24843,22 +26296,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
@@ -24878,23 +26329,31 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
+
+        # ====================================================
+        # BRANCH ADMIN CLASS SECURITY
+        # ====================================================
+
+        if role == "branch_admin":
+
+            if class_obj.branch_id != user_branch_id:
+
+                abort(403)
 
         # ====================================================
         # ACADEMIC YEAR
@@ -24912,7 +26371,7 @@ def edit_section(section_id):
         if not academic_year:
 
             flash(
-                "Academic year not found.",
+                "Selected academic year was not found.",
                 "danger"
             )
 
@@ -24922,22 +26381,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
@@ -24965,64 +26422,65 @@ def edit_section(section_id):
                     section=section,
 
                     **_section_template_context(
-                        institutions,
-                        branches,
-                        classes,
-                        academic_years,
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
                     ),
 
-                    institution_id=institution_id,
-                    branch_id=branch_id,
-                    class_id=class_id,
-                    academic_year_id=academic_year_id,
-                    name=name,
-                    capacity=capacity_raw,
-                    description=description,
-                    status=status,
-
                     user=current_user,
+                    current_role=role,
+                    user_institution_id=user_institution_id,
+                    user_branch_id=user_branch_id,
                 )
 
         # ====================================================
         # CLASS → ACADEMIC YEAR
         # ====================================================
 
-        if (
-            class_obj.academic_year_id
-            != academic_year_id
+        if hasattr(
+            Class,
+            "academic_year_id"
         ):
 
-            flash(
-                "Selected class belongs to a different academic year.",
-                "danger"
-            )
+            if (
+                class_obj.academic_year_id
+                != academic_year_id
+            ):
 
-            return render_template(
-                "backend/pages/sections/edit_section.html",
+                flash(
+                    "Selected class belongs to a different academic year.",
+                    "danger"
+                )
 
-                section=section,
+                return render_template(
+                    "backend/pages/sections/edit_section.html",
 
-                **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
-                ),
+                    section=section,
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
+                    **_section_template_context(
+                        institution_id=institution_id,
+                        branch_id=branch_id,
+                        class_id=class_id,
+                        academic_year_id=academic_year_id,
+                        name=name,
+                        capacity=capacity_raw,
+                        description=description,
+                        status=status,
+                    ),
 
-                user=current_user,
-            )
+                    user=current_user,
+                    current_role=role,
+                    user_institution_id=user_institution_id,
+                    user_branch_id=user_branch_id,
+                )
 
         # ====================================================
-        # AUTO CODE
+        # AUTO GENERATE CODE
         # ====================================================
 
         code = generate_section_code(
@@ -25042,22 +26500,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
@@ -25067,18 +26523,25 @@ def edit_section(section_id):
         existing_name = (
             Section.query
             .filter(
+                Section.institution_id
+                == institution_id,
+
+                Section.branch_id
+                == branch_id,
+
                 Section.class_id
                 == class_id,
 
                 Section.academic_year_id
                 == academic_year_id,
 
-                db.func.lower(
+                func.lower(
                     Section.name
                 )
                 == name.lower(),
 
-                Section.id != section.id,
+                Section.id
+                != section.id,
             )
             .first()
         )
@@ -25096,22 +26559,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
@@ -25121,18 +26582,25 @@ def edit_section(section_id):
         existing_code = (
             Section.query
             .filter(
+                Section.institution_id
+                == institution_id,
+
+                Section.branch_id
+                == branch_id,
+
                 Section.class_id
                 == class_id,
 
                 Section.academic_year_id
                 == academic_year_id,
 
-                db.func.lower(
+                func.upper(
                     Section.code
                 )
-                == code.lower(),
+                == code.upper(),
 
-                Section.id != section.id,
+                Section.id
+                != section.id,
             )
             .first()
         )
@@ -25140,7 +26608,7 @@ def edit_section(section_id):
         if existing_code:
 
             flash(
-                "Another section with this code already exists in this class and academic year.",
+                f"Another section with code '{code}' already exists in this class and academic year.",
                 "danger"
             )
 
@@ -25150,22 +26618,20 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
-
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
@@ -25212,8 +26678,13 @@ def edit_section(section_id):
 
             db.session.rollback()
 
+            current_app.logger.exception(
+                "Integrity error updating section %s",
+                section.id
+            )
+
             flash(
-                "Unable to update section because of a duplicate or database constraint.",
+                "Unable to update section because of a database constraint or duplicate value.",
                 "danger"
             )
 
@@ -25223,22 +26694,57 @@ def edit_section(section_id):
                 section=section,
 
                 **_section_template_context(
-                    institutions,
-                    branches,
-                    classes,
-                    academic_years,
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
                 ),
 
-                institution_id=institution_id,
-                branch_id=branch_id,
-                class_id=class_id,
-                academic_year_id=academic_year_id,
-                name=name,
-                capacity=capacity_raw,
-                description=description,
-                status=status,
+                user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
+            )
+
+        except Exception as exc:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Error updating section %s: %s",
+                section.id,
+                exc
+            )
+
+            flash(
+                "An error occurred while updating the section. Please try again.",
+                "danger"
+            )
+
+            return render_template(
+                "backend/pages/sections/edit_section.html",
+
+                section=section,
+
+                **_section_template_context(
+                    institution_id=institution_id,
+                    branch_id=branch_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    name=name,
+                    capacity=capacity_raw,
+                    description=description,
+                    status=status,
+                ),
 
                 user=current_user,
+                current_role=role,
+                user_institution_id=user_institution_id,
+                user_branch_id=user_branch_id,
             )
 
         # ====================================================
@@ -25246,7 +26752,7 @@ def edit_section(section_id):
         # ====================================================
 
         flash(
-            f'Section "{section.name}" was updated successfully.',
+            f'Section "{section.name}" ({section.code}) was updated successfully.',
             "success"
         )
 
@@ -25258,7 +26764,7 @@ def edit_section(section_id):
         )
 
     # ========================================================
-    # GET
+    # GET DEFAULT VALUES
     # ========================================================
 
     return render_template(
@@ -25267,16 +26773,38 @@ def edit_section(section_id):
         section=section,
 
         **_section_template_context(
-            institutions,
-            branches,
-            classes,
-            academic_years,
+            institution_id=section.institution_id,
+            branch_id=section.branch_id,
+            class_id=section.class_id,
+            academic_year_id=section.academic_year_id,
+            name=section.name,
+            capacity=(
+                section.capacity
+                if section.capacity is not None
+                else ""
+            ),
+            description=(
+                section.description
+                or ""
+            ),
+            status=(
+                section.status
+                or "active"
+            ),
         ),
 
-        # IMPORTANT
         user=current_user,
-    )
 
+        current_role=role,
+
+        user_institution_id=(
+            user_institution_id
+        ),
+
+        user_branch_id=(
+            user_branch_id
+        ),
+    )
 
 # ============================================================
 # DELETE SECTION
