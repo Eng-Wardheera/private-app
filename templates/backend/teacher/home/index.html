@@ -99,6 +99,91 @@
 <!-- Kaiadmin JS -->
 <script src="{{ url_for('static', filename='backend/assets/js/teacher.js') }}"></script>
 
+<!-- SweetAlert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    
+<script>
+
+    
+    // Flash message handling with SweetAlert2
+    const flashMessages = {{ get_flashed_messages(with_categories=True) | tojson | safe }};
+    
+    if (flashMessages.length > 0) {
+        flashMessages.forEach(([category, message]) => {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: '#fff',
+                color: '#333',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            // Display SweetAlert based on message category
+            Toast.fire({
+                icon: category === "success" ? "success" : "error", 
+                title: message
+            });
+        });
+    }
+
+     // Inactivity timer: User will be logged out after 5 minutes of inactivity
+   let timeout;
+   
+   function resetTimer() {
+     clearTimeout(timeout);
+     timeout = setTimeout(() => {
+       alert("You were inactive for 24 hours. You will now be logged out.");
+       window.location.href = "/logout";  // Redirect to logout route
+    }, 24 * 60 * 60 * 1000);  // 24 hours in milliseconds
+   }
+   
+   // Reset timer on any activity
+   ['click', 'mousemove', 'keypress', 'scroll'].forEach(evt =>
+     document.addEventListener(evt, resetTimer)
+   );
+   
+   resetTimer(); // Start timer initially
+
+   // Check if "Remember me" is checked and set the form fields from localStorage
+   document.addEventListener("DOMContentLoaded", function() {
+     const rememberMe = document.getElementById("rememberMe").checked;
+
+     if (rememberMe) {
+       const storedUsername = localStorage.getItem("username");
+       const storedPassword = localStorage.getItem("password");
+
+       if (storedUsername && storedPassword) {
+         document.getElementById("username").value = storedUsername;
+         document.getElementById("password").value = storedPassword;
+       }
+     }
+   });
+
+   // When form is submitted, store username and password in localStorage if "Remember me" is checked
+   document.getElementById("login-form").addEventListener("submit", function(event) {
+     const rememberMe = document.getElementById("rememberMe").checked;
+
+     if (rememberMe) {
+       const username = document.getElementById("username").value;
+       const password = document.getElementById("password").value;
+       localStorage.setItem("username", username);
+       localStorage.setItem("password", password);
+     } else {
+       localStorage.removeItem("username");
+       localStorage.removeItem("password");
+     }
+   });
+   
+</script>
+
+
 
 </body>
 </html>
