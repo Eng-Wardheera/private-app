@@ -707,6 +707,12 @@ class Institution(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    attendance_sessions = db.relationship(
+        "AttendanceSession",
+        back_populates="institution",
+        lazy="dynamic",
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
 
@@ -960,6 +966,12 @@ class Branch(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    attendance_sessions = db.relationship(
+        "AttendanceSession",
+        back_populates="branch",
+        lazy="dynamic",
+        cascade="all, delete-orphan"
+    )
 
     # ========================================================
     # REPRESENTATION
@@ -1175,6 +1187,12 @@ class AcademicYear(db.Model):
         back_populates="academic_year",
         cascade="all, delete-orphan",
         passive_deletes=True
+    )
+    attendance_sessions = db.relationship(
+        "AttendanceSession",
+        back_populates="academic_year",
+        lazy="dynamic",
+        cascade="all, delete-orphan"
     )
 
     # ========================================================
@@ -2169,6 +2187,12 @@ class Class(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    attendance_sessions = db.relationship(
+        "AttendanceSession",
+        back_populates="class_",
+        lazy="dynamic",
+        cascade="all, delete-orphan"
+    )
 
     # ========================================================
     # TABLE CONSTRAINTS
@@ -2405,6 +2429,12 @@ class Section(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    attendance_sessions = db.relationship(
+        "AttendanceSession",
+        back_populates="section",
+        lazy="dynamic"
+    )
+
     # ========================================================
     # EXAM SUBJECTS
     # ========================================================
@@ -2709,6 +2739,12 @@ class Subject(db.Model):
         back_populates="subject",
         cascade="all, delete-orphan",
         passive_deletes=True
+    )
+    # Subject
+    attendance_sessions = db.relationship(
+        "AttendanceSession",
+        back_populates="subject",
+        lazy="dynamic"
     )
 
     # ========================================================
@@ -3089,6 +3125,20 @@ class Teacher(db.Model):
         back_populates="teacher",
         passive_deletes=True
     )
+    attendance_sessions = db.relationship(
+    "AttendanceSession",
+        back_populates="teacher",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    marked_attendance = db.relationship(
+        "AttendanceRecord",
+        foreign_keys="AttendanceRecord.marked_by_teacher_id",
+        back_populates="marked_by_teacher",
+        passive_deletes=True
+    )
+
     # ========================================================
     # TABLE CONSTRAINTS
     # ========================================================
@@ -3433,6 +3483,12 @@ class TeacherSubject(db.Model):
     academic_year = db.relationship(
         "AcademicYear",
         back_populates="teacher_subjects"
+    )
+    attendance_sessions = db.relationship(
+        "AttendanceSession",
+        back_populates="teacher_subject",
+        cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
     __table_args__ = (
@@ -3791,6 +3847,13 @@ class Student(UserMixin, db.Model):
         passive_deletes=True
     )
 
+    attendance_records = db.relationship(
+        "AttendanceRecord",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
     # ========================================================
     # CONSTRAINTS
     # ========================================================
@@ -4135,6 +4198,11 @@ class StudentEnrollment(db.Model):
     student_results = db.relationship(
         "StudentResult",
         back_populates="student_enrollment",
+        passive_deletes=True
+    )
+    attendance_records = db.relationship(
+        "AttendanceRecord",
+        back_populates="enrollment",
         passive_deletes=True
     )
 
@@ -6124,6 +6192,538 @@ class StudentResult(db.Model):
 
 
 
+# ============================================================
+# ATTENDANCE SESSION MODEL
+# PostgreSQL / Neon
+# ============================================================
+
+class AttendanceSession(db.Model):
+
+    __tablename__ = "attendance_sessions"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # TEACHER
+    # ========================================================
+
+    teacher_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "teachers.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # TEACHER ASSIGNMENT
+    # ========================================================
+
+    teacher_subject_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "teacher_subjects.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # ACADEMIC YEAR
+    # ========================================================
+
+    academic_year_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "academic_years.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # CLASS
+    # ========================================================
+
+    class_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "classes.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # SECTION
+    # ========================================================
+
+    section_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "sections.id",
+            ondelete="CASCADE"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # SUBJECT
+    # ========================================================
+
+    subject_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "subjects.id",
+            ondelete="CASCADE"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # ATTENDANCE DATE
+    # ========================================================
+
+    attendance_date = db.Column(
+        db.Date,
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # SESSION TYPE
+    # ========================================================
+
+    session_type = db.Column(
+        db.String(30),
+        nullable=False,
+        default="class",
+        server_default="class",
+        index=True
+    )
+
+    # class
+    # subject
+    # morning
+    # afternoon
+    # exam
+    # other
+
+    # ========================================================
+    # PERIOD / LESSON
+    # ========================================================
+
+    period = db.Column(
+        db.String(50),
+        nullable=True
+    )
+
+    # Example:
+    # Period 1
+    # Period 2
+    # Morning
+    # Afternoon
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="open",
+        server_default="open",
+        index=True
+    )
+
+    # open
+    # completed
+    # locked
+    # cancelled
+
+    # ========================================================
+    # NOTES
+    # ========================================================
+
+    notes = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # TIMESTAMPS
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="attendance_sessions"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="attendance_sessions"
+    )
+
+    teacher = db.relationship(
+        "Teacher",
+        back_populates="attendance_sessions"
+    )
+
+    teacher_subject = db.relationship(
+        "TeacherSubject",
+        back_populates="attendance_sessions"
+    )
+
+    academic_year = db.relationship(
+        "AcademicYear",
+        back_populates="attendance_sessions"
+    )
+
+    class_ = db.relationship(
+        "Class",
+        back_populates="attendance_sessions"
+    )
+
+    section = db.relationship(
+        "Section",
+        back_populates="attendance_sessions"
+    )
+
+    subject = db.relationship(
+        "Subject",
+        back_populates="attendance_sessions"
+    )
+
+    records = db.relationship(
+        "AttendanceRecord",
+        back_populates="session",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    # ========================================================
+    # CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        db.CheckConstraint(
+            "status IN ("
+            "'open', "
+            "'completed', "
+            "'locked', "
+            "'cancelled'"
+            ")",
+            name="ck_attendance_session_status"
+        ),
+
+        db.CheckConstraint(
+            "session_type IN ("
+            "'class', "
+            "'subject', "
+            "'morning', "
+            "'afternoon', "
+            "'exam', "
+            "'other'"
+            ")",
+            name="ck_attendance_session_type"
+        ),
+
+    )
+
+    def __repr__(self):
+
+        return (
+            f"<AttendanceSession "
+            f"id={self.id} "
+            f"teacher_id={self.teacher_id} "
+            f"class_id={self.class_id} "
+            f"section_id={self.section_id} "
+            f"subject_id={self.subject_id} "
+            f"date={self.attendance_date}>"
+        )
+
+
+# ============================================================
+# ATTENDANCE RECORD MODEL
+# PostgreSQL / Neon
+# ============================================================
+
+class AttendanceRecord(db.Model):
+
+    __tablename__ = "attendance_records"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # SESSION
+    # ========================================================
+
+    attendance_session_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "attendance_sessions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # STUDENT
+    # ========================================================
+
+    student_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "students.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # ENROLLMENT
+    # ========================================================
+
+    enrollment_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "student_enrollments.id",
+            ondelete="CASCADE"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # ATTENDANCE STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="present",
+        server_default="present",
+        index=True
+    )
+
+    # present
+    # absent
+    # late
+    # excused
+    # sick
+    # leave
+
+    # ========================================================
+    # CHECK IN
+    # ========================================================
+
+    check_in = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    # ========================================================
+    # CHECK OUT
+    # ========================================================
+
+    check_out = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    # ========================================================
+    # MINUTES LATE
+    # ========================================================
+
+    minutes_late = db.Column(
+        db.Integer,
+        nullable=True
+    )
+
+    # ========================================================
+    # NOTES
+    # ========================================================
+
+    notes = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # MARKED BY
+    # ========================================================
+
+    marked_by_teacher_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "teachers.id",
+            ondelete="SET NULL"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # TIMESTAMPS
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    session = db.relationship(
+        "AttendanceSession",
+        back_populates="records"
+    )
+
+    student = db.relationship(
+        "Student",
+        back_populates="attendance_records"
+    )
+
+    enrollment = db.relationship(
+        "StudentEnrollment",
+        back_populates="attendance_records"
+    )
+
+    marked_by_teacher = db.relationship(
+        "Teacher",
+        foreign_keys=[marked_by_teacher_id],
+        back_populates="marked_attendance"
+    )
+
+    # ========================================================
+    # CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        db.UniqueConstraint(
+            "attendance_session_id",
+            "student_id",
+            name="uq_attendance_session_student"
+        ),
+
+        db.CheckConstraint(
+            "status IN ("
+            "'present', "
+            "'absent', "
+            "'late', "
+            "'excused', "
+            "'sick', "
+            "'leave'"
+            ")",
+            name="ck_attendance_record_status"
+        ),
+
+        db.CheckConstraint(
+            "minutes_late IS NULL OR minutes_late >= 0",
+            name="ck_attendance_minutes_late"
+        ),
+
+    )
+
+    def __repr__(self):
+
+        return (
+            f"<AttendanceRecord "
+            f"id={self.id} "
+            f"session_id={self.attendance_session_id} "
+            f"student_id={self.student_id} "
+            f"status={self.status!r}>"
+        )
 
 
 
