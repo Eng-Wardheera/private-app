@@ -701,6 +701,13 @@ class Institution(db.Model):
         passive_deletes=True
     )
 
+    student_results = db.relationship(
+        "StudentResult",
+        back_populates="institution",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
     def __repr__(self):
 
         return (
@@ -947,6 +954,12 @@ class Branch(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    student_results = db.relationship(
+        "StudentResult",
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # REPRESENTATION
@@ -1157,6 +1170,13 @@ class AcademicYear(db.Model):
         passive_deletes=True
     )
 
+    student_results = db.relationship(
+        "StudentResult",
+        back_populates="academic_year",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
     # ========================================================
     # REPRESENTATION
     # ========================================================
@@ -1344,6 +1364,12 @@ class Term(db.Model):
 
     exams = db.relationship(
         "Exam",
+        back_populates="term",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    student_results = db.relationship(
+        "StudentResult",
         back_populates="term",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -1607,6 +1633,12 @@ class Program(db.Model):
 
     exams = db.relationship(
         "Exam",
+        back_populates="program",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    student_results = db.relationship(
+        "StudentResult",
         back_populates="program",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -2131,6 +2163,12 @@ class Class(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    student_results = db.relationship(
+        "StudentResult",
+        back_populates="class_",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # TABLE CONSTRAINTS
@@ -2373,6 +2411,12 @@ class Section(db.Model):
 
     exam_subjects = db.relationship(
         "ExamSubject",
+        back_populates="section",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    student_results = db.relationship(
+        "StudentResult",
         back_populates="section",
         cascade="all, delete-orphan",
         passive_deletes=True
@@ -2740,6 +2784,7 @@ class Subject(db.Model):
         )
 
 
+
 # ============================================================
 # TEACHER MODEL
 # PostgreSQL / Neon
@@ -3023,6 +3068,18 @@ class Teacher(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+
+    # ========================================================
+    # MARKS ENTERED
+    # ========================================================
+
+    entered_marks = db.relationship(
+        "Mark",
+        foreign_keys="Mark.entered_by",
+        back_populates="entered_by_teacher",
+        passive_deletes=True
+    )
+
     # ========================================================
     # EXAM SUBJECTS
     # ========================================================
@@ -3715,6 +3772,24 @@ class Student(UserMixin, db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    student_results = db.relationship(
+        "StudentResult",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+
+    # ========================================================
+    # MARKS
+    # ========================================================
+
+    marks = db.relationship(
+        "Mark",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     # ========================================================
     # CONSTRAINTS
@@ -4055,6 +4130,11 @@ class StudentEnrollment(db.Model):
         "StudentCharge",
         back_populates="enrollment",
         cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    student_results = db.relationship(
+        "StudentResult",
+        back_populates="student_enrollment",
         passive_deletes=True
     )
 
@@ -4800,7 +4880,13 @@ class Exam(db.Model):
         cascade="all, delete-orphan",
         lazy=True
     )
-   
+    student_results = db.relationship(
+        "StudentResult",
+        back_populates="exam",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    
     # ========================================================
     # TABLE CONSTRAINTS
     # ========================================================
@@ -5079,6 +5165,17 @@ class ExamSubject(db.Model):
         "Teacher",
         back_populates="exam_subjects"
     )
+    # ========================================================
+    # MARKS
+    # ========================================================
+
+    marks = db.relationship(
+        "Mark",
+        back_populates="exam_subject",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
 
     # ========================================================
     # TABLE CONSTRAINTS
@@ -5140,10 +5237,890 @@ class ExamSubject(db.Model):
         )
 
 
+# ============================================================
+# MARK MODEL
+# PostgreSQL / Neon
+# ============================================================
+
+class Mark(db.Model):
+
+    __tablename__ = "marks"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # EXAM SUBJECT
+    # ========================================================
+
+    exam_subject_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "exam_subjects.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # STUDENT
+    # ========================================================
+
+    student_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "students.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # MARKS OBTAINED
+    # ========================================================
+
+    marks_obtained = db.Column(
+        db.Numeric(6, 2),
+        nullable=True
+    )
+
+    # ========================================================
+    # ABSENT
+    # ========================================================
+
+    is_absent = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+        server_default=db.text("FALSE"),
+        index=True
+    )
+
+    # ========================================================
+    # EXEMPTED
+    # ========================================================
+
+    is_exempted = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+        server_default=db.text("FALSE"),
+        index=True
+    )
+
+    # ========================================================
+    # REMARKS
+    # ========================================================
+
+    remarks = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="draft",
+        server_default="draft",
+        index=True
+    )
+
+    # ========================================================
+    # ENTERED BY TEACHER
+    # ========================================================
+
+    entered_by = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "teachers.id",
+            ondelete="SET NULL"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # SUBMITTED AT
+    # ========================================================
+
+    submitted_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=True
+    )
+
+    # ========================================================
+    # APPROVED AT
+    # ========================================================
+
+    approved_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=True
+    )
+
+    # ========================================================
+    # CREATED AT
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # UPDATED AT
+    # ========================================================
+
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    exam_subject = db.relationship(
+        "ExamSubject",
+        back_populates="marks"
+    )
+
+    student = db.relationship(
+        "Student",
+        back_populates="marks"
+    )
+
+    entered_by_teacher = db.relationship(
+        "Teacher",
+        foreign_keys=[entered_by],
+        back_populates="entered_marks"
+    )
+
+    # ========================================================
+    # TABLE CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        # ----------------------------------------------------
+        # ONE MARK PER STUDENT PER EXAM SUBJECT
+        # ----------------------------------------------------
+
+        db.UniqueConstraint(
+            "exam_subject_id",
+            "student_id",
+            name="uq_mark_exam_subject_student"
+        ),
+
+        # ----------------------------------------------------
+        # MARK CANNOT BE NEGATIVE
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "marks_obtained IS NULL OR marks_obtained >= 0",
+            name="ck_mark_non_negative"
+        ),
+
+        # ----------------------------------------------------
+        # INDEX
+        # ----------------------------------------------------
+
+        db.Index(
+            "ix_marks_exam_subject_student",
+            "exam_subject_id",
+            "student_id"
+        ),
+
+    )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<Mark "
+            f"id={self.id} "
+            f"exam_subject_id={self.exam_subject_id} "
+            f"student_id={self.student_id} "
+            f"marks_obtained={self.marks_obtained} "
+            f"status='{self.status}'>"
+        )
 
 
+# ============================================================
+# STUDENT RESULT MODEL
+# PostgreSQL / Neon
+# ============================================================
 
+class StudentResult(db.Model):
 
+    __tablename__ = "student_results"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # EXAM
+    # ========================================================
+
+    exam_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "exams.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # STUDENT
+    # ========================================================
+
+    student_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "students.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # STUDENT ENROLLMENT
+    # ========================================================
+
+    student_enrollment_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "student_enrollments.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # PROGRAM
+    # ========================================================
+
+    program_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "programs.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # ACADEMIC YEAR
+    # ========================================================
+
+    academic_year_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "academic_years.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # TERM
+    # ========================================================
+
+    term_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "terms.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ========================================================
+    # CLASS
+    # ========================================================
+
+    class_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "classes.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # SECTION
+    # ========================================================
+
+    section_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "sections.id",
+            ondelete="RESTRICT"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # TOTAL MARKS
+    # ========================================================
+
+    total_marks = db.Column(
+        db.Numeric(10, 2),
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    # ========================================================
+    # TOTAL POSSIBLE MARKS
+    # ========================================================
+
+    total_possible_marks = db.Column(
+        db.Numeric(10, 2),
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    # ========================================================
+    # PERCENTAGE
+    # ========================================================
+
+    percentage = db.Column(
+        db.Numeric(6, 2),
+        nullable=False,
+        default=0,
+        server_default="0",
+        index=True
+    )
+
+    # ========================================================
+    # AVERAGE
+    # ========================================================
+
+    average = db.Column(
+        db.Numeric(6, 2),
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    # ========================================================
+    # SUBJECTS TOTAL
+    # ========================================================
+
+    subjects_total = db.Column(
+        db.Integer,
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    # ========================================================
+    # SUBJECTS COMPLETED
+    # ========================================================
+
+    subjects_completed = db.Column(
+        db.Integer,
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    # ========================================================
+    # SUBJECTS FAILED
+    # ========================================================
+
+    subjects_failed = db.Column(
+        db.Integer,
+        nullable=False,
+        default=0,
+        server_default="0"
+    )
+
+    # ========================================================
+    # GRADE
+    # ========================================================
+
+    grade = db.Column(
+        db.String(10),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # GPA
+    # ========================================================
+
+    gpa = db.Column(
+        db.Numeric(4, 2),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # RESULT STATUS
+    # ========================================================
+
+    result_status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="incomplete",
+        server_default="incomplete",
+        index=True
+    )
+
+    # Possible:
+    #
+    # PASS
+    # FAIL
+    # INCOMPLETE
+    #
+
+    # ========================================================
+    # REMARKS
+    # ========================================================
+
+    remarks = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # INSTITUTION POSITION
+    # ========================================================
+
+    institution_position = db.Column(
+        db.Integer,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # BRANCH POSITION
+    # ========================================================
+
+    branch_position = db.Column(
+        db.Integer,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # PROGRAM POSITION
+    # ========================================================
+
+    program_position = db.Column(
+        db.Integer,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # CLASS POSITION
+    # ========================================================
+
+    class_position = db.Column(
+        db.Integer,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # SECTION POSITION
+    # ========================================================
+
+    section_position = db.Column(
+        db.Integer,
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # RESULT STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="draft",
+        server_default="draft",
+        index=True
+    )
+
+    # Possible:
+    #
+    # draft
+    # submitted
+    # approved
+    # published
+    #
+
+    # ========================================================
+    # CALCULATED AT
+    # ========================================================
+
+    calculated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=True
+    )
+
+    # ========================================================
+    # APPROVED AT
+    # ========================================================
+
+    approved_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=True
+    )
+
+    # ========================================================
+    # PUBLISHED AT
+    # ========================================================
+
+    published_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=True
+    )
+
+    # ========================================================
+    # CREATED AT
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # UPDATED AT
+    # ========================================================
+
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now(),
+        index=True
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    exam = db.relationship(
+        "Exam",
+        back_populates="student_results"
+    )
+
+    student = db.relationship(
+        "Student",
+        back_populates="student_results"
+    )
+
+    student_enrollment = db.relationship(
+        "StudentEnrollment",
+        back_populates="student_results"
+    )
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="student_results"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="student_results"
+    )
+
+    program = db.relationship(
+        "Program",
+        back_populates="student_results"
+    )
+
+    academic_year = db.relationship(
+        "AcademicYear",
+        back_populates="student_results"
+    )
+
+    term = db.relationship(
+        "Term",
+        back_populates="student_results"
+    )
+
+    class_ = db.relationship(
+        "Class",
+        back_populates="student_results"
+    )
+
+    section = db.relationship(
+        "Section",
+        back_populates="student_results"
+    )
+
+    # ========================================================
+    # TABLE CONSTRAINTS
+    # ========================================================
+
+    __table_args__ = (
+
+        # ----------------------------------------------------
+        # ONE RESULT PER STUDENT PER EXAM
+        # ----------------------------------------------------
+
+        db.UniqueConstraint(
+            "exam_id",
+            "student_id",
+            name="uq_student_result_exam_student"
+        ),
+
+        # ----------------------------------------------------
+        # TOTAL MARKS CANNOT BE NEGATIVE
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "total_marks >= 0",
+            name="ck_student_result_total_marks"
+        ),
+
+        # ----------------------------------------------------
+        # TOTAL POSSIBLE MARKS CANNOT BE NEGATIVE
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "total_possible_marks >= 0",
+            name="ck_student_result_total_possible_marks"
+        ),
+
+        # ----------------------------------------------------
+        # TOTAL MARKS CANNOT EXCEED POSSIBLE MARKS
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "total_marks <= total_possible_marks",
+            name="ck_student_result_total_marks_limit"
+        ),
+
+        # ----------------------------------------------------
+        # PERCENTAGE
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "percentage >= 0 AND percentage <= 100",
+            name="ck_student_result_percentage"
+        ),
+
+        # ----------------------------------------------------
+        # AVERAGE
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "average >= 0 AND average <= 100",
+            name="ck_student_result_average"
+        ),
+
+        # ----------------------------------------------------
+        # SUBJECT COUNTS
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "subjects_total >= 0",
+            name="ck_student_result_subjects_total"
+        ),
+
+        db.CheckConstraint(
+            "subjects_completed >= 0",
+            name="ck_student_result_subjects_completed"
+        ),
+
+        db.CheckConstraint(
+            "subjects_failed >= 0",
+            name="ck_student_result_subjects_failed"
+        ),
+
+        # ----------------------------------------------------
+        # GPA
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "gpa IS NULL OR gpa >= 0",
+            name="ck_student_result_gpa"
+        ),
+
+        # ----------------------------------------------------
+        # POSITIONS
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "institution_position IS NULL OR institution_position > 0",
+            name="ck_student_result_institution_position"
+        ),
+
+        db.CheckConstraint(
+            "branch_position IS NULL OR branch_position > 0",
+            name="ck_student_result_branch_position"
+        ),
+
+        db.CheckConstraint(
+            "program_position IS NULL OR program_position > 0",
+            name="ck_student_result_program_position"
+        ),
+
+        db.CheckConstraint(
+            "class_position IS NULL OR class_position > 0",
+            name="ck_student_result_class_position"
+        ),
+
+        db.CheckConstraint(
+            "section_position IS NULL OR section_position > 0",
+            name="ck_student_result_section_position"
+        ),
+
+        # ----------------------------------------------------
+        # PERFORMANCE INDEXES
+        # ----------------------------------------------------
+
+        db.Index(
+            "ix_student_results_exam_student",
+            "exam_id",
+            "student_id"
+        ),
+
+        db.Index(
+            "ix_student_results_exam_branch",
+            "exam_id",
+            "branch_id"
+        ),
+
+        db.Index(
+            "ix_student_results_exam_program",
+            "exam_id",
+            "program_id"
+        ),
+
+        db.Index(
+            "ix_student_results_exam_class",
+            "exam_id",
+            "class_id"
+        ),
+
+        db.Index(
+            "ix_student_results_exam_section",
+            "exam_id",
+            "section_id"
+        ),
+
+        db.Index(
+            "ix_student_results_exam_percentage",
+            "exam_id",
+            "percentage"
+        ),
+
+        db.Index(
+            "ix_student_results_exam_positions",
+            "exam_id",
+            "institution_position",
+            "branch_position",
+            "program_position",
+            "class_position",
+            "section_position"
+        ),
+
+        db.Index(
+            "ix_student_results_academic_term",
+            "academic_year_id",
+            "term_id"
+        ),
+    )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<StudentResult "
+            f"id={self.id} "
+            f"exam_id={self.exam_id} "
+            f"student_id={self.student_id} "
+            f"total_marks={self.total_marks} "
+            f"percentage={self.percentage} "
+            f"grade='{self.grade}' "
+            f"result_status='{self.result_status}' "
+            f"status='{self.status}'>"
+        )
 
 
 

@@ -1,3 +1,4 @@
+
 {% extends "backend/home/base.html" %}
 
 {% block content %}
@@ -226,7 +227,7 @@
 .section-form-control:disabled,
 .section-form-select:disabled {
     background: #f5f7fa;
-    color: #9aa2af;
+    color: #737d8d;
     cursor: not-allowed;
 }
 
@@ -601,6 +602,33 @@
 }
 
 /* ============================================================
+   ROLE LOCK
+   ============================================================ */
+
+.section-role-locked {
+    background: #f5f7fa !important;
+    color: #4f5968 !important;
+    cursor: not-allowed !important;
+}
+
+.section-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(6, 36, 95, .06);
+    color: #06245f;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.section-role-badge i {
+    font-size: 9px;
+}
+
+/* ============================================================
    ERROR / VALIDATION
    ============================================================ */
 
@@ -804,51 +832,123 @@
                                         <span class="section-required">*</span>
                                     </label>
 
-                                    <select
-                                        id="institution_id"
-                                        name="institution_id"
-                                        class="section-form-select"
-                                        required
-                                    >
 
-                                        <option value="">
-                                            Select Institution
-                                        </option>
+                                    {% if current_role == "branch_admin" %}
 
+                                        <!-- ==========================================
+                                             BRANCH ADMIN - LOCKED INSTITUTION
+                                        =========================================== -->
 
-                                        {% set selected_institution_id =
-                                            institution_id|default('', true)|string
-                                        %}
+                                        <select
+                                            id="institution_id"
+                                            class="section-form-select section-role-locked"
+                                            disabled
+                                            required
+                                        >
 
+                                            {% for institution in institutions %}
 
-                                        {% for institution in institutions %}
-
-                                            {% set current_institution_id =
-                                                institution.id|string
-                                            %}
-
-                                            <option
-                                                value="{{ institution.id }}"
-                                                {% if selected_institution_id == current_institution_id %}
+                                                <option
+                                                    value="{{ institution.id }}"
                                                     selected
-                                                {% endif %}
-                                            >
+                                                >
 
-                                                {{ institution.name }}
+                                                    {{ institution.name }}
 
-                                                {% if institution.short_name %}
-                                                    — {{ institution.short_name }}
-                                                {% endif %}
+                                                    {% if institution.short_name %}
+                                                        — {{ institution.short_name }}
+                                                    {% endif %}
 
+                                                </option>
+
+                                            {% endfor %}
+
+                                        </select>
+
+
+                                        <!--
+                                            Disabled fields are NOT submitted.
+                                            Therefore send institution_id separately.
+                                        -->
+
+                                        <input
+                                            type="hidden"
+                                            name="institution_id"
+                                            value="{{ user_institution_id }}"
+                                        >
+
+
+                                        <div class="section-role-badge">
+                                            <i class="fas fa-lock"></i>
+                                            Your institution
+                                        </div>
+
+                                    {% else %}
+
+                                        <!-- ==========================================
+                                             SUPERADMIN / SCHOOL ADMIN
+                                        =========================================== -->
+
+                                        <select
+                                            id="institution_id"
+                                            name="institution_id"
+                                            class="section-form-select"
+                                            required
+                                        >
+
+                                            <option value="">
+                                                Select Institution
                                             </option>
 
-                                        {% endfor %}
 
-                                    </select>
+                                            {% set selected_institution_id =
+                                                institution_id|default('', true)|string
+                                            %}
 
+
+                                            {% for institution in institutions %}
+
+                                                {% set current_institution_id =
+                                                    institution.id|string
+                                                %}
+
+                                                <option
+                                                    value="{{ institution.id }}"
+                                                    {% if selected_institution_id == current_institution_id %}
+                                                        selected
+                                                    {% endif %}
+                                                >
+
+                                                    {{ institution.name }}
+
+                                                    {% if institution.short_name %}
+                                                        — {{ institution.short_name }}
+                                                    {% endif %}
+
+                                                </option>
+
+                                            {% endfor %}
+
+                                        </select>
+
+                                    {% endif %}
 
                                     <div class="section-form-help">
-                                        Select the institution that owns this section.
+
+                                        {% if current_role == "branch_admin" %}
+
+                                            You can only create sections inside your assigned institution.
+
+                                        {% elif current_role == "school_admin" %}
+
+                                            You can only use your institution.
+
+                                        {% else %}
+
+                                            You can select any institution.
+
+                                        {% endif %}
+
                                     </div>
 
                                 </div>
@@ -868,52 +968,125 @@
                                         <span class="section-required">*</span>
                                     </label>
 
-                                    <select
-                                        id="branch_id"
-                                        name="branch_id"
-                                        class="section-form-select"
-                                        required
-                                    >
 
-                                        <option value="">
-                                            Select Branch
-                                        </option>
+                                    {% if current_role == "branch_admin" %}
 
+                                        <!-- ==========================================
+                                             BRANCH ADMIN - LOCKED BRANCH
+                                        =========================================== -->
 
-                                        {% set selected_branch_id =
-                                            branch_id|default('', true)|string
-                                        %}
+                                        <select
+                                            id="branch_id"
+                                            class="section-form-select section-role-locked"
+                                            disabled
+                                            required
+                                        >
 
+                                            {% for branch in branches %}
 
-                                        {% for branch in branches %}
+                                                {% if branch.id == user_branch_id %}
 
-                                            {% set current_branch_id =
-                                                branch.id|string
-                                            %}
+                                                    <option
+                                                        value="{{ branch.id }}"
+                                                        selected
+                                                    >
 
-                                            <option
-                                                value="{{ branch.id }}"
-                                                data-institution-id="{{ branch.institution_id }}"
-                                                {% if selected_branch_id == current_branch_id %}
-                                                    selected
-                                                {% endif %}
-                                            >
+                                                        {{ branch.name }}
 
-                                                {{ branch.name }}
+                                                        {% if branch.code %}
+                                                            — {{ branch.code }}
+                                                        {% endif %}
 
-                                                {% if branch.code %}
-                                                    — {{ branch.code }}
+                                                    </option>
+
                                                 {% endif %}
 
+                                            {% endfor %}
+
+                                        </select>
+
+
+                                        <!--
+                                            Disabled select is not submitted.
+                                            Send the authorized branch separately.
+                                        -->
+
+                                        <input
+                                            type="hidden"
+                                            name="branch_id"
+                                            value="{{ user_branch_id }}"
+                                        >
+
+
+                                        <div class="section-role-badge">
+                                            <i class="fas fa-lock"></i>
+                                            Your branch
+                                        </div>
+
+                                    {% else %}
+
+                                        <select
+                                            id="branch_id"
+                                            name="branch_id"
+                                            class="section-form-select"
+                                            required
+                                        >
+
+                                            <option value="">
+                                                Select Branch
                                             </option>
 
-                                        {% endfor %}
 
-                                    </select>
+                                            {% set selected_branch_id =
+                                                branch_id|default('', true)|string
+                                            %}
+
+
+                                            {% for branch in branches %}
+
+                                                {% set current_branch_id =
+                                                    branch.id|string
+                                                %}
+
+                                                <option
+                                                    value="{{ branch.id }}"
+                                                    data-institution-id="{{ branch.institution_id }}"
+                                                    {% if selected_branch_id == current_branch_id %}
+                                                        selected
+                                                    {% endif %}
+                                                >
+
+                                                    {{ branch.name }}
+
+                                                    {% if branch.code %}
+                                                        — {{ branch.code }}
+                                                    {% endif %}
+
+                                                </option>
+
+                                            {% endfor %}
+
+                                        </select>
+
+                                    {% endif %}
 
 
                                     <div class="section-form-help">
-                                        Branches are filtered according to the institution.
+
+                                        {% if current_role == "branch_admin" %}
+
+                                            Only your assigned branch can be used.
+
+                                        {% elif current_role == "school_admin" %}
+
+                                            All branches belonging to your institution are available.
+
+                                        {% else %}
+
+                                            Branches are filtered according to the institution.
+
+                                        {% endif %}
+
                                     </div>
 
                                 </div>
@@ -980,7 +1153,17 @@
 
 
                                     <div class="section-form-help">
-                                        Only classes belonging to the selected branch are available.
+
+                                        {% if current_role == "branch_admin" %}
+
+                                            Only classes belonging to your branch are available.
+
+                                        {% else %}
+
+                                            Only classes belonging to the selected branch are available.
+
+                                        {% endif %}
+
                                     </div>
 
                                 </div>
@@ -1054,9 +1237,11 @@
                                 <i class="fas fa-info-circle"></i>
 
                                 <span>
+
                                     Institution, branch, class and academic year are validated
                                     on the server to prevent assigning a section to an unrelated
                                     academic structure.
+
                                 </span>
 
                             </div>
@@ -1100,9 +1285,7 @@
                         <div class="section-fields-grid">
 
 
-                            <!-- ==================================================
-                                 NAME
-                            =================================================== -->
+                            <!-- NAME -->
 
                             <div class="section-form-group">
 
@@ -1132,9 +1315,7 @@
                             </div>
 
 
-                            <!-- ==================================================
-                                 AUTO CODE
-                            =================================================== -->
+                            <!-- AUTO CODE -->
 
                             <div class="section-form-group">
 
@@ -1164,15 +1345,13 @@
                                 </div>
 
                                 <div class="section-form-help">
-                                    Automatically generated from the section name. You do not need to enter it manually.
+                                    Automatically generated from the section name.
                                 </div>
 
                             </div>
 
 
-                            <!-- ==================================================
-                                 CAPACITY
-                            =================================================== -->
+                            <!-- CAPACITY -->
 
                             <div class="section-form-group">
 
@@ -1193,6 +1372,7 @@
                                         placeholder="e.g. 40"
                                         value="{{ capacity|default('', true) }}"
                                         min="0"
+                                        max="10000"
                                         step="1"
                                         inputmode="numeric"
                                     >
@@ -1210,9 +1390,7 @@
                             </div>
 
 
-                            <!-- ==================================================
-                                 STATUS
-                            =================================================== -->
+                            <!-- STATUS -->
 
                             <div class="section-form-group">
 
@@ -1228,7 +1406,6 @@
 
 
                                 <div class="section-option-group">
-
 
                                     <div class="section-option-item">
 
@@ -1303,9 +1480,7 @@
                             </div>
 
 
-                            <!-- ==================================================
-                                 DESCRIPTION
-                            =================================================== -->
+                            <!-- DESCRIPTION -->
 
                             <div class="section-form-group section-field-full">
 
@@ -1321,7 +1496,7 @@
                                     name="description"
                                     class="section-form-textarea"
                                     placeholder="Write a short description about this section..."
-                                    maxlength="2000"
+                                    maxlength="1000"
                                 >{{ description|default('', true) }}</textarea>
 
                                 <div class="section-form-help">
@@ -1346,9 +1521,7 @@
             <div class="add-section-sidebar">
 
 
-                <!-- ==================================================
-                     SECTION PREVIEW
-                =================================================== -->
+                <!-- SECTION PREVIEW -->
 
                 <div class="section-sidebar-card">
 
@@ -1396,9 +1569,7 @@
                 </div>
 
 
-                <!-- ==================================================
-                     SECTION INFORMATION
-                =================================================== -->
+                <!-- INFORMATION -->
 
                 <div class="section-sidebar-card">
 
@@ -1412,9 +1583,6 @@
 
 
                     <div class="section-sidebar-card-body">
-
-
-                        <!-- NAME -->
 
                         <div class="section-info-row">
 
@@ -1437,8 +1605,6 @@
                         </div>
 
 
-                        <!-- CODE -->
-
                         <div class="section-info-row">
 
                             <div class="section-info-icon">
@@ -1459,8 +1625,6 @@
 
                         </div>
 
-
-                        <!-- CLASS -->
 
                         <div class="section-info-row">
 
@@ -1483,8 +1647,6 @@
                         </div>
 
 
-                        <!-- ACADEMIC YEAR -->
-
                         <div class="section-info-row">
 
                             <div class="section-info-icon">
@@ -1498,15 +1660,13 @@
                                 </strong>
 
                                 <span>
-                                    The selected class and section must belong to the same academic year.
+                                    The selected class and section must use the same academic year.
                                 </span>
 
                             </div>
 
                         </div>
 
-
-                        <!-- CAPACITY -->
 
                         <div class="section-info-row">
 
@@ -1533,9 +1693,7 @@
                 </div>
 
 
-                <!-- ==================================================
-                     SECURITY / VALIDATION
-                =================================================== -->
+                <!-- VALIDATION -->
 
                 <div class="section-sidebar-card">
 
@@ -1547,9 +1705,7 @@
 
                     </div>
 
-
                     <div class="section-sidebar-card-body">
-
 
                         <div class="section-info-row">
 
@@ -1560,11 +1716,29 @@
                             <div class="section-info-content">
 
                                 <strong>
-                                    Institution Security
+                                    Role Security
                                 </strong>
 
                                 <span>
-                                    Users are restricted to institutions they are authorized to manage.
+
+                                    {% if current_role == "superadmin" %}
+
+                                        Superadmin can manage all institutions, branches and classes.
+
+                                    {% elif current_role == "school_admin" %}
+
+                                        School admin is restricted to the assigned institution and its branches.
+
+                                    {% elif current_role == "branch_admin" %}
+
+                                        Branch admin is restricted to the assigned institution, branch and its classes.
+
+                                    {% else %}
+
+                                        Access is restricted.
+
+                                    {% endif %}
+
                                 </span>
 
                             </div>
@@ -1618,9 +1792,7 @@
                 </div>
 
 
-                <!-- ==================================================
-                     ACTIONS
-                =================================================== -->
+                <!-- ACTIONS -->
 
                 <div class="section-sidebar-card">
 
@@ -1659,12 +1831,12 @@
 <script>
 /* ============================================================
    ADD SECTION JAVASCRIPT
+   ROLE-SAFE VERSION
    ============================================================ */
 
 document.addEventListener(
     "DOMContentLoaded",
     function () {
-
 
         /* ========================================================
            ELEMENTS
@@ -1732,20 +1904,42 @@ document.addEventListener(
 
 
         /* ========================================================
+           ROLE / SCOPE
+        ======================================================== */
+
+        const currentRole =
+            "{{ current_role|default('', true)|e }}";
+
+        const userInstitutionId =
+            "{{ user_institution_id|default('', true)|string|e }}";
+
+        const userBranchId =
+            "{{ user_branch_id|default('', true)|string|e }}";
+
+
+        /* ========================================================
            INITIAL VALUES
         ======================================================== */
 
         const initialInstitution =
-            "{{ institution_id|default('', true)|string }}";
+            "{{ institution_id|default('', true)|string|e }}";
 
         const initialBranch =
-            "{{ branch_id|default('', true)|string }}";
+            "{{ branch_id|default('', true)|string|e }}";
 
         const initialClass =
-            "{{ class_id|default('', true)|string }}";
+            "{{ class_id|default('', true)|string|e }}";
 
         const initialAcademicYear =
-            "{{ academic_year_id|default('', true)|string }}";
+            "{{ academic_year_id|default('', true)|string|e }}";
+
+
+        /* ========================================================
+           BRANCH ADMIN HARD LOCK
+        ======================================================== */
+
+        const isBranchAdmin =
+            currentRole === "branch_admin";
 
 
         /* ========================================================
@@ -1758,14 +1952,8 @@ document.addEventListener(
                 return "";
             }
 
-
             let result =
                 String(value).trim();
-
-
-            /*
-             * Normalize unicode.
-             */
 
             try {
 
@@ -1782,18 +1970,8 @@ document.addEventListener(
                 /* Ignore unsupported normalization */
             }
 
-
-            /*
-             * Uppercase.
-             */
-
             result =
                 result.toUpperCase();
-
-
-            /*
-             * Special replacements.
-             */
 
             result =
                 result.replace(
@@ -1807,25 +1985,11 @@ document.addEventListener(
                     " PLUS "
                 );
 
-
-            /*
-             * Keep only:
-             * A-Z
-             * 0-9
-             * spaces
-             * hyphens
-             */
-
             result =
                 result.replace(
                     /[^A-Z0-9\s-]/g,
                     ""
                 );
-
-
-            /*
-             * Spaces -> hyphens.
-             */
 
             result =
                 result.replace(
@@ -1833,21 +1997,11 @@ document.addEventListener(
                     "-"
                 );
 
-
-            /*
-             * Multiple hyphens.
-             */
-
             result =
                 result.replace(
                     /-+/g,
                     "-"
                 );
-
-
-            /*
-             * Trim hyphens.
-             */
 
             result =
                 result.replace(
@@ -1855,17 +2009,11 @@ document.addEventListener(
                     ""
                 );
 
-
-            /*
-             * Maximum 50 characters.
-             */
-
             result =
                 result.substring(
                     0,
                     50
                 );
-
 
             return result;
         }
@@ -1877,40 +2025,46 @@ document.addEventListener(
 
         function updateCodePreview() {
 
+            if (!nameInput) {
+                return;
+            }
+
             const name =
                 nameInput.value.trim();
-
 
             const code =
                 generateSectionCode(name);
 
+            if (codePreview) {
+                codePreview.value =
+                    code || "AUTO";
+            }
 
-            codePreview.value =
-                code || "AUTO";
+            if (previewCode) {
+                previewCode.textContent =
+                    code || "SEC";
 
+                if (code.length > 8) {
 
-            previewCode.textContent =
-                code || "SEC";
+                    previewCode.style.fontSize =
+                        "10px";
 
+                } else if (code.length > 5) {
 
-            /*
-             * Keep preview code visually readable.
-             */
+                    previewCode.style.fontSize =
+                        "12px";
 
-            if (code.length > 8) {
+                } else {
 
-                previewCode.style.fontSize =
-                    "10px";
+                    previewCode.style.fontSize =
+                        "15px";
+                }
+            }
 
-            } else if (code.length > 5) {
+            if (previewName) {
 
-                previewCode.style.fontSize =
-                    "12px";
-
-            } else {
-
-                previewCode.style.fontSize =
-                    "15px";
+                previewName.textContent =
+                    name || "New Section";
             }
         }
 
@@ -1931,9 +2085,71 @@ document.addEventListener(
             }
 
 
+            /* ====================================================
+               BRANCH ADMIN
+               ==================================================== */
+
+            if (isBranchAdmin) {
+
+                /*
+                 * Never allow branch_admin to see/select
+                 * another branch.
+                 */
+
+                Array.from(
+                    branchSelect.options
+                ).forEach(
+                    function (option, index) {
+
+                        if (index === 0) {
+                            option.hidden = true;
+                            option.disabled = true;
+                            return;
+                        }
+
+                        if (
+                            String(option.value) ===
+                            String(userBranchId)
+                        ) {
+
+                            option.hidden = false;
+                            option.disabled = false;
+
+                        } else {
+
+                            option.hidden = true;
+                            option.disabled = true;
+                        }
+
+                    }
+                );
+
+
+                branchSelect.value =
+                    userBranchId;
+
+
+                branchSelect.disabled =
+                    true;
+
+
+                /*
+                 * Continue with the authorized branch
+                 * and filter classes.
+                 */
+
+                filterClasses(true);
+
+                return;
+            }
+
+
+            /* ====================================================
+               SUPERADMIN / SCHOOL ADMIN
+               ==================================================== */
+
             const institutionId =
                 institutionSelect.value;
-
 
             const selectedBranch =
                 preserveSelected
@@ -1953,11 +2169,9 @@ document.addEventListener(
                         return;
                     }
 
-
                     const optionInstitution =
                         option.dataset
                             .institutionId;
-
 
                     if (
                         !institutionId ||
@@ -1978,13 +2192,9 @@ document.addEventListener(
             );
 
 
-            /*
-             * Restore selected branch if valid.
-             */
-
             if (
                 selectedBranch &&
-                !Array.from(
+                Array.from(
                     branchSelect.options
                 ).some(
                     function (option) {
@@ -1999,23 +2209,18 @@ document.addEventListener(
                 )
             ) {
 
-                branchSelect.value = "";
+                branchSelect.value =
+                    selectedBranch;
 
             } else {
 
-                branchSelect.value =
-                    selectedBranch;
+                branchSelect.value = "";
             }
 
 
             branchSelect.disabled =
                 !institutionId;
 
-
-            /*
-             * Classes depend on branch,
-             * therefore refresh them.
-             */
 
             filterClasses(
                 preserveSelected
@@ -2041,11 +2246,15 @@ document.addEventListener(
 
 
             const institutionId =
-                institutionSelect.value;
+                isBranchAdmin
+                    ? userInstitutionId
+                    : institutionSelect.value;
 
 
             const branchId =
-                branchSelect.value;
+                isBranchAdmin
+                    ? userBranchId
+                    : branchSelect.value;
 
 
             const selectedClass =
@@ -2071,7 +2280,6 @@ document.addEventListener(
                         option.dataset
                             .institutionId;
 
-
                     const optionBranch =
                         option.dataset
                             .branchId;
@@ -2088,6 +2296,11 @@ document.addEventListener(
                         String(optionBranch) ===
                         String(branchId);
 
+
+                    /*
+                     * Both institution and branch
+                     * must match.
+                     */
 
                     if (
                         institutionMatch &&
@@ -2130,7 +2343,6 @@ document.addEventListener(
             } else {
 
                 classSelect.value = "";
-
             }
 
 
@@ -2138,10 +2350,6 @@ document.addEventListener(
                 !institutionId ||
                 !branchId;
 
-
-            /*
-             * Refresh academic year.
-             */
 
             filterAcademicYears(
                 preserveSelected
@@ -2158,15 +2366,20 @@ document.addEventListener(
         ) {
 
             if (
-                !academicYearSelect ||
-                !institutionSelect
+                !academicYearSelect
             ) {
                 return;
             }
 
 
             const institutionId =
-                institutionSelect.value;
+                isBranchAdmin
+                    ? userInstitutionId
+                    : (
+                        institutionSelect
+                            ? institutionSelect.value
+                            : ""
+                    );
 
 
             const selectedYear =
@@ -2194,8 +2407,7 @@ document.addEventListener(
 
 
                     /*
-                     * If academic year has no
-                     * institution ID in the model,
+                     * If AcademicYear has no institution_id,
                      * keep it available.
                      */
 
@@ -2252,7 +2464,6 @@ document.addEventListener(
             } else {
 
                 academicYearSelect.value = "";
-
             }
 
 
@@ -2266,6 +2477,17 @@ document.addEventListener(
         ======================================================== */
 
         function updatePreviewMeta() {
+
+            if (
+                !institutionSelect ||
+                !branchSelect ||
+                !classSelect ||
+                !academicYearSelect ||
+                !previewMeta
+            ) {
+                return;
+            }
+
 
             const institution =
                 institutionSelect.options[
@@ -2374,6 +2596,7 @@ document.addEventListener(
                 updateAllPreviews
             );
 
+
             nameInput.addEventListener(
                 "blur",
                 function () {
@@ -2398,12 +2621,22 @@ document.addEventListener(
                 function () {
 
                     /*
-                     * Changing institution invalidates
-                     * branch and class selections.
+                     * Branch admin cannot change institution.
                      */
 
+                    if (isBranchAdmin) {
+
+                        institutionSelect.value =
+                            userInstitutionId;
+
+                        return;
+                    }
+
+
                     branchSelect.value = "";
+
                     classSelect.value = "";
+
                     academicYearSelect.value = "";
 
 
@@ -2424,6 +2657,23 @@ document.addEventListener(
             branchSelect.addEventListener(
                 "change",
                 function () {
+
+                    /*
+                     * Branch admin cannot change branch.
+                     */
+
+                    if (isBranchAdmin) {
+
+                        branchSelect.value =
+                            userBranchId;
+
+                        filterClasses(true);
+
+                        updatePreviewMeta();
+
+                        return;
+                    }
+
 
                     classSelect.value = "";
 
@@ -2450,11 +2700,6 @@ document.addEventListener(
                             classSelect.selectedIndex
                         ];
 
-
-                    /*
-                     * If class has an academic year,
-                     * automatically select it.
-                     */
 
                     if (
                         selected &&
@@ -2532,6 +2777,15 @@ document.addEventListener(
 
                         this.value = "0";
                     }
+
+
+                    if (
+                        this.value !== "" &&
+                        Number(this.value) > 10000
+                    ) {
+
+                        this.value = "10000";
+                    }
                 }
             );
         }
@@ -2548,19 +2802,135 @@ document.addEventListener(
                 function (event) {
 
                     /*
-                     * Trim section name.
+                     * ==============================================
+                     * BRANCH ADMIN SCOPE ENFORCEMENT
+                     * ==============================================
                      */
+
+                    if (isBranchAdmin) {
+
+                        /*
+                         * Institution must be user's institution.
+                         */
+
+                        const hiddenInstitution =
+                            form.querySelector(
+                                'input[name="institution_id"]'
+                            );
+
+                        if (
+                            !hiddenInstitution ||
+                            String(hiddenInstitution.value) !==
+                            String(userInstitutionId)
+                        ) {
+
+                            event.preventDefault();
+
+                            alert(
+                                "You are not allowed to use another institution."
+                            );
+
+                            return;
+                        }
+
+
+                        /*
+                         * Branch must be user's branch.
+                         */
+
+                        const hiddenBranch =
+                            form.querySelector(
+                                'input[name="branch_id"]'
+                            );
+
+                        if (
+                            !hiddenBranch ||
+                            String(hiddenBranch.value) !==
+                            String(userBranchId)
+                        ) {
+
+                            event.preventDefault();
+
+                            alert(
+                                "You are not allowed to use another branch."
+                            );
+
+                            return;
+                        }
+
+
+                        /*
+                         * Ensure the visible branch is also
+                         * the user's branch.
+                         */
+
+                        if (
+                            branchSelect &&
+                            String(branchSelect.value) !==
+                            String(userBranchId)
+                        ) {
+
+                            event.preventDefault();
+
+                            alert(
+                                "You are not allowed to use another branch."
+                            );
+
+                            return;
+                        }
+
+
+                        /*
+                         * Ensure selected class belongs to
+                         * the user's branch.
+                         */
+
+                        const selectedClass =
+                            classSelect.options[
+                                classSelect.selectedIndex
+                            ];
+
+
+                        if (
+                            !selectedClass ||
+                            String(
+                                selectedClass.dataset.branchId
+                            ) !==
+                            String(userBranchId)
+                        ) {
+
+                            event.preventDefault();
+
+                            alert(
+                                "You are not allowed to use a class from another branch."
+                            );
+
+                            classSelect.focus();
+
+                            return;
+                        }
+
+                    }
+
+
+                    /* ==============================================
+                       TRIM NAME
+                       ============================================== */
 
                     nameInput.value =
                         nameInput.value.trim();
 
 
-                    /*
-                     * Required fields.
-                     */
+                    /* ==============================================
+                       REQUIRED FIELDS
+                       ============================================== */
 
                     if (
-                        !institutionSelect.value
+                        !(
+                            isBranchAdmin
+                            ? userInstitutionId
+                            : institutionSelect.value
+                        )
                     ) {
 
                         event.preventDefault();
@@ -2576,7 +2946,11 @@ document.addEventListener(
 
 
                     if (
-                        !branchSelect.value
+                        !(
+                            isBranchAdmin
+                            ? userBranchId
+                            : branchSelect.value
+                        )
                     ) {
 
                         event.preventDefault();
@@ -2639,9 +3013,9 @@ document.addEventListener(
                     }
 
 
-                    /*
-                     * Generate code before submission.
-                     */
+                    /* ==============================================
+                       GENERATE CODE
+                       ============================================== */
 
                     const generatedCode =
                         generateSectionCode(
@@ -2663,30 +3037,70 @@ document.addEventListener(
                     }
 
 
-                    /*
-                     * Capacity.
-                     */
+                    /* ==============================================
+                       CAPACITY
+                       ============================================== */
 
                     if (
-                        capacityInput.value !== "" &&
-                        Number(capacityInput.value) < 0
+                        capacityInput.value !== ""
                     ) {
 
-                        event.preventDefault();
+                        const capacity =
+                            Number(
+                                capacityInput.value
+                            );
 
-                        alert(
-                            "Capacity cannot be negative."
-                        );
 
-                        capacityInput.focus();
+                        if (
+                            !Number.isInteger(
+                                capacity
+                            )
+                        ) {
 
-                        return;
+                            event.preventDefault();
+
+                            alert(
+                                "Capacity must be a whole number."
+                            );
+
+                            capacityInput.focus();
+
+                            return;
+                        }
+
+
+                        if (capacity < 0) {
+
+                            event.preventDefault();
+
+                            alert(
+                                "Capacity cannot be negative."
+                            );
+
+                            capacityInput.focus();
+
+                            return;
+                        }
+
+
+                        if (capacity > 10000) {
+
+                            event.preventDefault();
+
+                            alert(
+                                "Capacity cannot exceed 10,000 students."
+                            );
+
+                            capacityInput.focus();
+
+                            return;
+                        }
                     }
 
 
-                    /*
-                     * Prevent duplicate clicks.
-                     */
+                    /* ==============================================
+                       PREVENT DUPLICATE SUBMIT
+                       ============================================== */
 
                     createButton.disabled =
                         true;
@@ -2705,34 +3119,53 @@ document.addEventListener(
         ======================================================== */
 
         /*
-         * First filter using server-side
-         * selected values.
+         * Branch admin:
+         *
+         * institution = user's institution
+         * branch      = user's branch
+         *
+         * Other roles:
+         *
+         * normal filtering.
          */
 
-        filterBranches(true);
+        if (isBranchAdmin) {
 
-        /*
-         * If branch was restored,
-         * make sure classes are filtered.
-         */
+            if (institutionSelect) {
 
-        filterClasses(true);
+                institutionSelect.value =
+                    userInstitutionId;
+            }
 
-        /*
-         * Academic year filtering.
-         */
 
-        filterAcademicYears(true);
+            if (branchSelect) {
 
-        /*
-         * Update code.
-         */
+                branchSelect.value =
+                    userBranchId;
+            }
+
+
+            filterBranches(true);
+
+            filterClasses(true);
+
+            filterAcademicYears(true);
+
+        } else {
+
+            filterBranches(true);
+
+            filterClasses(true);
+
+            filterAcademicYears(true);
+        }
+
+
+        /* ========================================================
+           INITIAL PREVIEWS
+        ======================================================== */
 
         updateCodePreview();
-
-        /*
-         * Update sidebar preview.
-         */
 
         updatePreviewMeta();
 
@@ -2753,3 +3186,4 @@ document.addEventListener(
 </script>
 
 {% endblock %}
+

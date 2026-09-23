@@ -2700,14 +2700,16 @@ textarea.form-control {
 
 </div>
 
-
 <script>
 
 /* ============================================================
-   EDIT TEACHER ASSIGNMENT JAVASCRIPT
+   EDIT TEACHER ASSIGNMENT
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", function () {
+
+    "use strict";
+
 
     /* ========================================================
        ELEMENTS
@@ -2717,6 +2719,11 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById(
             "teacherAssignmentForm"
         );
+
+    if (!form) {
+        return;
+    }
+
 
     const institutionSelect =
         document.getElementById(
@@ -2793,103 +2800,257 @@ document.addEventListener("DOMContentLoaded", function () {
             "assignmentTypeHelp"
         );
 
+    const startDate =
+        document.getElementById(
+            "start_date"
+        );
+
+    const endDate =
+        document.getElementById(
+            "end_date"
+        );
+
+    const submitBtn =
+        document.getElementById(
+            "submitBtn"
+        );
+
+    const submitText =
+        document.getElementById(
+            "submitText"
+        );
+
+    const submitSpinner =
+        document.getElementById(
+            "submitSpinner"
+        );
+
 
     /* ========================================================
-       RULES
+       SUMMARY ELEMENTS
+       ======================================================== */
+
+    const summaryInstitution =
+        document.getElementById(
+            "summaryInstitution"
+        );
+
+    const summaryBranch =
+        document.getElementById(
+            "summaryBranch"
+        );
+
+    const summaryAcademicYear =
+        document.getElementById(
+            "summaryAcademicYear"
+        );
+
+    const summaryTeacher =
+        document.getElementById(
+            "summaryTeacher"
+        );
+
+    const summaryType =
+        document.getElementById(
+            "summaryType"
+        );
+
+    const summaryPath =
+        document.getElementById(
+            "summaryPath"
+        );
+
+
+    /* ========================================================
+       REQUIRED ELEMENT CHECK
+       ======================================================== */
+
+    const requiredElements = [
+        institutionSelect,
+        branchSelect,
+        academicYearSelect,
+        teacherSelect,
+        assignmentTypeSelect,
+        programSelect,
+        classSelect,
+        subjectSelect,
+        sectionSelect
+    ];
+
+    if (
+        requiredElements.some(
+            function (element) {
+                return !element;
+            }
+        )
+    ) {
+
+        console.error(
+            "Edit Teacher Assignment: required form element is missing."
+        );
+
+        return;
+    }
+
+
+    /* ========================================================
+       ASSIGNMENT RULES
        ======================================================== */
 
     const assignmentRules = {
 
         program: {
+
             label: "Program",
-            fields: ["program"],
-            required: ["program"],
+
+            fields: [
+                "program"
+            ],
+
+            required: [
+                "program"
+            ],
+
             text: "Program"
+
         },
 
         class: {
+
             label: "Class",
+
             fields: [
                 "program",
                 "class"
             ],
+
             required: [
                 "program",
                 "class"
             ],
-            text: "Program + Class"
+
+            text:
+                "Program + Class"
+
         },
 
         subject: {
+
             label: "Subject",
+
             fields: [
                 "program",
                 "class",
                 "subject"
             ],
+
             required: [
                 "program",
                 "class",
                 "subject"
             ],
-            text: "Program + Class + Subject"
+
+            text:
+                "Program + Class + Subject"
+
         },
 
         section: {
+
             label: "Section",
+
             fields: [
                 "program",
                 "class",
                 "subject",
                 "section"
             ],
+
             required: [
                 "program",
                 "class",
                 "subject",
                 "section"
             ],
+
             text:
                 "Program + Class + Subject + Section"
+
         }
 
     };
 
 
     /* ========================================================
-       FILTER OPTIONS
+       ORIGINAL / CURRENT VALUES
        ======================================================== */
 
-    function filterOptions(select, predicate) {
+    const initialValues = {
 
-        if (!select) {
-            return;
-        }
+        institution_id:
+            institutionSelect.value || "",
 
-        Array.from(
-            select.options
-        ).forEach(
-            function (option, index) {
+        branch_id:
+            branchSelect.value || "",
 
-                if (index === 0) {
+        academic_year_id:
+            academicYearSelect.value || "",
 
-                    option.hidden = false;
+        teacher_id:
+            teacherSelect.value || "",
 
-                    return;
-                }
+        assignment_type:
+            assignmentTypeSelect.value || "",
 
-                option.hidden =
-                    !predicate(option);
+        program_id:
+            programSelect.value || "",
 
-            }
+        class_id:
+            classSelect.value || "",
+
+        subject_id:
+            subjectSelect.value || "",
+
+        section_id:
+            sectionSelect.value || ""
+
+    };
+
+
+    /* ========================================================
+       REQUEST SEQUENCE
+       ======================================================== */
+
+    let requestSequence = 0;
+
+
+    function nextRequestId() {
+
+        requestSequence += 1;
+
+        return String(
+            requestSequence
         );
 
     }
 
 
     /* ========================================================
-       GET SELECTED TEXT
+       UTILITY
        ======================================================== */
+
+    function getValue(select) {
+
+        if (!select) {
+            return "";
+        }
+
+        return (
+            select.value || ""
+        ).trim();
+
+    }
+
 
     function getSelectedText(select) {
 
@@ -2908,6 +3069,114 @@ document.addEventListener("DOMContentLoaded", function () {
         return option
             ? option.textContent.trim()
             : "";
+    }
+
+
+    function setFieldError(element) {
+
+        if (!element) {
+            return;
+        }
+
+        element.classList.add(
+            "field-error"
+        );
+
+        element.setAttribute(
+            "aria-invalid",
+            "true"
+        );
+    }
+
+
+    function clearFieldError(element) {
+
+        if (!element) {
+            return;
+        }
+
+        element.classList.remove(
+            "field-error"
+        );
+
+        element.removeAttribute(
+            "aria-invalid"
+        );
+
+        if (
+            typeof element.setCustomValidity ===
+            "function"
+        ) {
+
+            element.setCustomValidity(
+                ""
+            );
+
+        }
+    }
+
+
+    function clearAllErrors() {
+
+        form.querySelectorAll(
+            ".field-error"
+        ).forEach(
+            function (element) {
+
+                element.classList.remove(
+                    "field-error"
+                );
+
+                element.removeAttribute(
+                    "aria-invalid"
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FILTER OPTIONS
+       ======================================================== */
+
+    function filterOptions(
+        select,
+        predicate
+    ) {
+
+        if (!select) {
+            return;
+        }
+
+        Array.from(
+            select.options
+        ).forEach(
+            function (option, index) {
+
+                if (index === 0) {
+
+                    option.hidden =
+                        false;
+
+                    option.disabled =
+                        false;
+
+                    return;
+                }
+
+                const matches =
+                    predicate(option);
+
+                option.hidden =
+                    !matches;
+
+                option.disabled =
+                    !matches;
+
+            }
+        );
 
     }
 
@@ -2919,7 +3188,9 @@ document.addEventListener("DOMContentLoaded", function () {
     function filterBranches() {
 
         const institutionId =
-            institutionSelect.value;
+            getValue(
+                institutionSelect
+            );
 
         filterOptions(
             branchSelect,
@@ -2929,14 +3200,39 @@ document.addEventListener("DOMContentLoaded", function () {
                     return true;
                 }
 
+                const optionInstitution =
+                    option.dataset.institutionId ||
+                    "";
+
                 return (
                     !institutionId ||
-                    option.dataset.institutionId ===
-                        institutionId
+                    optionInstitution ===
+                    institutionId
                 );
 
             }
         );
+
+
+        /* ----------------------------------------------------
+           Make sure selected branch is still valid
+           ---------------------------------------------------- */
+
+        const selected =
+            branchSelect.options[
+                branchSelect.selectedIndex
+            ];
+
+        if (
+            selected &&
+            selected.value &&
+            selected.disabled
+        ) {
+
+            branchSelect.value =
+                "";
+
+        }
 
     }
 
@@ -2948,7 +3244,9 @@ document.addEventListener("DOMContentLoaded", function () {
     function filterAcademicYears() {
 
         const institutionId =
-            institutionSelect.value;
+            getValue(
+                institutionSelect
+            );
 
         filterOptions(
             academicYearSelect,
@@ -2958,29 +3256,54 @@ document.addEventListener("DOMContentLoaded", function () {
                     return true;
                 }
 
+                const optionInstitution =
+                    option.dataset.institutionId ||
+                    "";
+
                 return (
                     !institutionId ||
-                    option.dataset.institutionId ===
-                        institutionId
+                    optionInstitution ===
+                    institutionId
                 );
 
             }
         );
 
+
+        const selected =
+            academicYearSelect.options[
+                academicYearSelect.selectedIndex
+            ];
+
+        if (
+            selected &&
+            selected.value &&
+            selected.disabled
+        ) {
+
+            academicYearSelect.value =
+                "";
+
+        }
+
     }
 
 
     /* ========================================================
-       FILTER TEACHER
+       FILTER TEACHERS
        ======================================================== */
 
     function filterTeachers() {
 
         const institutionId =
-            institutionSelect.value;
+            getValue(
+                institutionSelect
+            );
 
         const branchId =
-            branchSelect.value;
+            getValue(
+                branchSelect
+            );
 
 
         filterOptions(
@@ -2991,26 +3314,68 @@ document.addEventListener("DOMContentLoaded", function () {
                     return true;
                 }
 
+                const teacherInstitution =
+                    option.dataset.institutionId ||
+                    "";
+
+                const teacherBranch =
+                    option.dataset.branchId ||
+                    "";
+
+
+                /* --------------------------------------------
+                   Institution
+                   -------------------------------------------- */
+
                 if (
                     institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
+                    teacherInstitution !==
+                    institutionId
                 ) {
+
                     return false;
+
                 }
+
+
+                /* --------------------------------------------
+                   Branch
+                   
+                   Empty branch = global teacher
+                   -------------------------------------------- */
 
                 if (
                     branchId &&
-                    option.dataset.branchId !==
-                        branchId
+                    teacherBranch &&
+                    teacherBranch !== branchId
                 ) {
+
                     return false;
+
                 }
+
 
                 return true;
 
             }
         );
+
+
+        const selected =
+            teacherSelect.options[
+                teacherSelect.selectedIndex
+            ];
+
+        if (
+            selected &&
+            selected.value &&
+            selected.disabled
+        ) {
+
+            teacherSelect.value =
+                "";
+
+        }
 
     }
 
@@ -3022,10 +3387,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function filterPrograms() {
 
         const institutionId =
-            institutionSelect.value;
+            getValue(
+                institutionSelect
+            );
 
         const branchId =
-            branchSelect.value;
+            getValue(
+                branchSelect
+            );
 
 
         filterOptions(
@@ -3036,16 +3405,24 @@ document.addEventListener("DOMContentLoaded", function () {
                     return true;
                 }
 
+                const optionInstitution =
+                    option.dataset.institutionId ||
+                    "";
+
+                const optionBranch =
+                    option.dataset.branchId ||
+                    "";
+
+
                 if (
                     institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
+                    optionInstitution !==
+                    institutionId
                 ) {
-                    return false;
-                }
 
-                const programBranch =
-                    option.dataset.branchId;
+                    return false;
+
+                }
 
 
                 /*
@@ -3055,16 +3432,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (
                     branchId &&
-                    programBranch &&
-                    programBranch !== branchId
+                    optionBranch &&
+                    optionBranch !== branchId
                 ) {
+
                     return false;
+
                 }
+
 
                 return true;
 
             }
         );
+
+
+        const selected =
+            programSelect.options[
+                programSelect.selectedIndex
+            ];
+
+        if (
+            selected &&
+            selected.value &&
+            selected.disabled
+        ) {
+
+            programSelect.value =
+                "";
+
+        }
 
     }
 
@@ -3076,16 +3473,24 @@ document.addEventListener("DOMContentLoaded", function () {
     function filterClasses() {
 
         const institutionId =
-            institutionSelect.value;
+            getValue(
+                institutionSelect
+            );
 
         const branchId =
-            branchSelect.value;
+            getValue(
+                branchSelect
+            );
 
         const academicYearId =
-            academicYearSelect.value;
+            getValue(
+                academicYearSelect
+            );
 
         const programId =
-            programSelect.value;
+            getValue(
+                programSelect
+            );
 
 
         filterOptions(
@@ -3096,42 +3501,91 @@ document.addEventListener("DOMContentLoaded", function () {
                     return true;
                 }
 
+
+                const optionInstitution =
+                    option.dataset.institutionId ||
+                    "";
+
+                const optionBranch =
+                    option.dataset.branchId ||
+                    "";
+
+                const optionAcademicYear =
+                    option.dataset.academicYearId ||
+                    "";
+
+                const optionProgram =
+                    option.dataset.programId ||
+                    "";
+
+
                 if (
                     institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
+                    optionInstitution &&
+                    optionInstitution !==
+                    institutionId
                 ) {
+
                     return false;
+
                 }
+
 
                 if (
                     branchId &&
-                    option.dataset.branchId !==
-                        branchId
+                    optionBranch &&
+                    optionBranch !== branchId
                 ) {
+
                     return false;
+
                 }
+
 
                 if (
                     academicYearId &&
-                    option.dataset.academicYearId !==
-                        academicYearId
+                    optionAcademicYear &&
+                    optionAcademicYear !==
+                    academicYearId
                 ) {
+
                     return false;
+
                 }
+
 
                 if (
                     programId &&
-                    option.dataset.programId !==
-                        programId
+                    optionProgram &&
+                    optionProgram !== programId
                 ) {
+
                     return false;
+
                 }
+
 
                 return true;
 
             }
         );
+
+
+        const selected =
+            classSelect.options[
+                classSelect.selectedIndex
+            ];
+
+        if (
+            selected &&
+            selected.value &&
+            selected.disabled
+        ) {
+
+            classSelect.value =
+                "";
+
+        }
 
     }
 
@@ -3143,13 +3597,19 @@ document.addEventListener("DOMContentLoaded", function () {
     function filterSubjects() {
 
         const institutionId =
-            institutionSelect.value;
+            getValue(
+                institutionSelect
+            );
 
         const branchId =
-            branchSelect.value;
+            getValue(
+                branchSelect
+            );
 
         const programId =
-            programSelect.value;
+            getValue(
+                programSelect
+            );
 
 
         filterOptions(
@@ -3160,16 +3620,30 @@ document.addEventListener("DOMContentLoaded", function () {
                     return true;
                 }
 
+
+                const optionInstitution =
+                    option.dataset.institutionId ||
+                    "";
+
+                const optionBranch =
+                    option.dataset.branchId ||
+                    "";
+
+                const optionProgram =
+                    option.dataset.programId ||
+                    "";
+
+
                 if (
                     institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
+                    optionInstitution &&
+                    optionInstitution !==
+                    institutionId
                 ) {
-                    return false;
-                }
 
-                const subjectBranch =
-                    option.dataset.branchId;
+                    return false;
+
+                }
 
 
                 /*
@@ -3179,15 +3653,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (
                     branchId &&
-                    subjectBranch &&
-                    subjectBranch !== branchId
+                    optionBranch &&
+                    optionBranch !== branchId
                 ) {
+
                     return false;
+
                 }
-
-
-                const subjectProgram =
-                    option.dataset.programId;
 
 
                 /*
@@ -3197,16 +3669,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (
                     programId &&
-                    subjectProgram &&
-                    subjectProgram !== programId
+                    optionProgram &&
+                    optionProgram !== programId
                 ) {
+
                     return false;
+
                 }
+
 
                 return true;
 
             }
         );
+
+
+        const selected =
+            subjectSelect.options[
+                subjectSelect.selectedIndex
+            ];
+
+        if (
+            selected &&
+            selected.value &&
+            selected.disabled
+        ) {
+
+            subjectSelect.value =
+                "";
+
+        }
 
     }
 
@@ -3218,16 +3710,24 @@ document.addEventListener("DOMContentLoaded", function () {
     function filterSections() {
 
         const institutionId =
-            institutionSelect.value;
+            getValue(
+                institutionSelect
+            );
 
         const branchId =
-            branchSelect.value;
+            getValue(
+                branchSelect
+            );
 
         const academicYearId =
-            academicYearSelect.value;
+            getValue(
+                academicYearSelect
+            );
 
         const classId =
-            classSelect.value;
+            getValue(
+                classSelect
+            );
 
 
         filterOptions(
@@ -3238,42 +3738,332 @@ document.addEventListener("DOMContentLoaded", function () {
                     return true;
                 }
 
+
+                const optionInstitution =
+                    option.dataset.institutionId ||
+                    "";
+
+                const optionBranch =
+                    option.dataset.branchId ||
+                    "";
+
+                const optionAcademicYear =
+                    option.dataset.academicYearId ||
+                    "";
+
+                const optionClass =
+                    option.dataset.classId ||
+                    "";
+
+
                 if (
                     institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
+                    optionInstitution &&
+                    optionInstitution !==
+                    institutionId
                 ) {
+
                     return false;
+
                 }
+
 
                 if (
                     branchId &&
-                    option.dataset.branchId !==
-                        branchId
+                    optionBranch &&
+                    optionBranch !== branchId
                 ) {
+
                     return false;
+
                 }
+
 
                 if (
                     academicYearId &&
-                    option.dataset.academicYearId !==
-                        academicYearId
+                    optionAcademicYear &&
+                    optionAcademicYear !==
+                    academicYearId
                 ) {
+
                     return false;
+
                 }
+
 
                 if (
                     classId &&
-                    option.dataset.classId !==
-                        classId
+                    optionClass &&
+                    optionClass !== classId
                 ) {
+
                     return false;
+
                 }
+
 
                 return true;
 
             }
         );
+
+
+        const selected =
+            sectionSelect.options[
+                sectionSelect.selectedIndex
+            ];
+
+        if (
+            selected &&
+            selected.value &&
+            selected.disabled
+        ) {
+
+            sectionSelect.value =
+                "";
+
+        }
+
+    }
+
+
+    /* ========================================================
+       RESET SELECT
+       ======================================================== */
+
+    function resetSelect(
+        select,
+        placeholder
+    ) {
+
+        if (!select) {
+            return;
+        }
+
+        select.value =
+            "";
+
+        if (
+            select.options.length > 0
+        ) {
+
+            select.options[0].textContent =
+                placeholder || "Select";
+
+        }
+
+    }
+
+
+    /* ========================================================
+       RESET LOWER LEVELS
+       ======================================================== */
+
+    function resetClass() {
+
+        resetSelect(
+            classSelect,
+            "Select Class"
+        );
+
+        classSelect.disabled =
+            true;
+
+    }
+
+
+    function resetSubject() {
+
+        resetSelect(
+            subjectSelect,
+            "Select Subject"
+        );
+
+        subjectSelect.disabled =
+            true;
+
+    }
+
+
+    function resetSection() {
+
+        resetSelect(
+            sectionSelect,
+            "Select Section"
+        );
+
+        sectionSelect.disabled =
+            true;
+
+    }
+
+
+    function resetDependentFields() {
+
+        resetSelect(
+            programSelect,
+            "Select Program"
+        );
+
+        resetClass();
+
+        resetSubject();
+
+        resetSection();
+
+    }
+
+
+    /* ========================================================
+       CLEAR LOWER LEVELS ACCORDING TO TYPE
+       ======================================================== */
+
+    function clearFieldsBelow(
+        level
+    ) {
+
+        if (level === "program") {
+
+            resetClass();
+            resetSubject();
+            resetSection();
+
+        }
+
+        else if (level === "class") {
+
+            resetSubject();
+            resetSection();
+
+        }
+
+        else if (level === "subject") {
+
+            resetSection();
+
+        }
+
+    }
+
+
+    /* ========================================================
+       ENABLE / DISABLE DEPENDENCIES
+       ======================================================== */
+
+    function updateDependencyState() {
+
+        const teacherId =
+            getValue(
+                teacherSelect
+            );
+
+        const programId =
+            getValue(
+                programSelect
+            );
+
+        const classId =
+            getValue(
+                classSelect
+            );
+
+        const type =
+            getValue(
+                assignmentTypeSelect
+            );
+
+
+        const hasTeacher =
+            Boolean(
+                teacherId
+            );
+
+        const hasProgram =
+            Boolean(
+                programId
+            );
+
+        const hasClass =
+            Boolean(
+                classId
+            );
+
+
+        /* ----------------------------------------------------
+           PROGRAM
+           ---------------------------------------------------- */
+
+        programSelect.disabled =
+            !hasTeacher;
+
+
+        /* ----------------------------------------------------
+           CLASS
+           ---------------------------------------------------- */
+
+        classSelect.disabled =
+            !(
+                hasTeacher &&
+                hasProgram
+            );
+
+
+        /* ----------------------------------------------------
+           SUBJECT
+           ---------------------------------------------------- */
+
+        subjectSelect.disabled =
+            !(
+                hasTeacher &&
+                hasProgram
+            );
+
+
+        /* ----------------------------------------------------
+           SECTION
+           ---------------------------------------------------- */
+
+        sectionSelect.disabled =
+            !(
+                hasTeacher &&
+                hasProgram &&
+                hasClass
+            );
+
+
+        /* ----------------------------------------------------
+           Assignment type can decide visibility
+           ---------------------------------------------------- */
+
+        if (type === "program") {
+
+            classSelect.disabled =
+                true;
+
+            subjectSelect.disabled =
+                true;
+
+            sectionSelect.disabled =
+                true;
+
+        }
+
+        else if (type === "class") {
+
+            subjectSelect.disabled =
+                true;
+
+            sectionSelect.disabled =
+                true;
+
+        }
+
+        else if (type === "subject") {
+
+            sectionSelect.disabled =
+                true;
+
+        }
 
     }
 
@@ -3282,17 +4072,21 @@ document.addEventListener("DOMContentLoaded", function () {
        APPLY ASSIGNMENT TYPE
        ======================================================== */
 
-    function applyAssignmentType() {
+    function applyAssignmentType(
+        clearUnused = true
+    ) {
 
         const type =
-            assignmentTypeSelect.value;
+            getValue(
+                assignmentTypeSelect
+            );
 
         const rule =
             assignmentRules[type];
 
 
         /* ----------------------------------------------------
-           HIDE ALL
+           HIDE ALL FIELDS
            ---------------------------------------------------- */
 
         [
@@ -3302,6 +4096,10 @@ document.addEventListener("DOMContentLoaded", function () {
             sectionField
         ].forEach(
             function (field) {
+
+                if (!field) {
+                    return;
+                }
 
                 field.classList.add(
                     "is-hidden"
@@ -3323,7 +4121,12 @@ document.addEventListener("DOMContentLoaded", function () {
         ].forEach(
             function (select) {
 
-                select.required = false;
+                if (!select) {
+                    return;
+                }
+
+                select.required =
+                    false;
 
             }
         );
@@ -3335,72 +4138,93 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!rule) {
 
-            requiredText.textContent =
-                "Select Assignment Type first.";
+            if (requiredText) {
 
-            assignmentTypeHelp.textContent =
-                "Choose the level at which the teacher is assigned.";
+                requiredText.textContent =
+                    "Select Assignment Type first.";
+
+            }
+
+            if (assignmentTypeHelp) {
+
+                assignmentTypeHelp.textContent =
+                    "Choose the level at which the teacher is assigned.";
+
+            }
+
+            if (clearUnused) {
+
+                resetDependentFields();
+
+            }
+
+            updateDependencyState();
 
             return;
-
         }
 
 
         /* ----------------------------------------------------
-           SHOW REQUIRED FIELDS
+           SHOW FIELDS
            ---------------------------------------------------- */
+
+        const fieldMap = {
+
+            program:
+                programField,
+
+            class:
+                classField,
+
+            subject:
+                subjectField,
+
+            section:
+                sectionField
+
+        };
+
+
+        const selectMap = {
+
+            program:
+                programSelect,
+
+            class:
+                classSelect,
+
+            subject:
+                subjectSelect,
+
+            section:
+                sectionSelect
+
+        };
+
 
         rule.fields.forEach(
             function (fieldName) {
 
-                const fieldMap = {
+                const field =
+                    fieldMap[fieldName];
 
-                    program:
-                        programField,
-
-                    class:
-                        classField,
-
-                    subject:
-                        subjectField,
-
-                    section:
-                        sectionField
-
-                };
-
-                const selectMap = {
-
-                    program:
-                        programSelect,
-
-                    class:
-                        classSelect,
-
-                    subject:
-                        subjectSelect,
-
-                    section:
-                        sectionSelect
-
-                };
+                const select =
+                    selectMap[fieldName];
 
 
-                if (fieldMap[fieldName]) {
+                if (field) {
 
-                    fieldMap[fieldName]
-                        .classList
-                        .remove(
-                            "is-hidden"
-                        );
+                    field.classList.remove(
+                        "is-hidden"
+                    );
 
                 }
 
 
-                if (selectMap[fieldName]) {
+                if (select) {
 
-                    selectMap[fieldName]
-                        .required = true;
+                    select.required =
+                        true;
 
                 }
 
@@ -3409,39 +4233,743 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         /* ----------------------------------------------------
-           HELP
+           CLEAR FIELDS THAT ARE NO LONGER PART OF TYPE
            ---------------------------------------------------- */
 
-        requiredText.textContent =
-            rule.text;
+        if (clearUnused) {
 
-        assignmentTypeHelp.textContent =
-            "This assignment requires: " +
-            rule.text +
-            ".";
+            if (type === "program") {
+
+                resetClass();
+                resetSubject();
+                resetSection();
+
+            }
+
+            else if (type === "class") {
+
+                resetSubject();
+                resetSection();
+
+            }
+
+            else if (type === "subject") {
+
+                resetSection();
+
+            }
+
+        }
+
+
+        /* ----------------------------------------------------
+           HELP TEXT
+           ---------------------------------------------------- */
+
+        if (requiredText) {
+
+            requiredText.textContent =
+                rule.text;
+
+        }
+
+        if (assignmentTypeHelp) {
+
+            assignmentTypeHelp.textContent =
+                "This assignment requires: " +
+                rule.text +
+                ".";
+
+        }
+
+
+        updateDependencyState();
 
     }
 
 
     /* ========================================================
-       REFRESH DEPENDENCIES
+       SET SELECT OPTIONS
        ======================================================== */
 
-    function refreshAllFilters() {
+    function setSelectOptions(
+        select,
+        items,
+        placeholder,
+        formatter,
+        selectedValue
+    ) {
 
-        filterBranches();
+        if (!select) {
+            return;
+        }
 
-        filterAcademicYears();
 
-        filterTeachers();
+        select.innerHTML = "";
 
-        filterPrograms();
 
-        filterClasses();
+        const firstOption =
+            document.createElement(
+                "option"
+            );
 
-        filterSubjects();
+        firstOption.value =
+            "";
 
-        filterSections();
+        firstOption.textContent =
+            placeholder;
+
+        select.appendChild(
+            firstOption
+        );
+
+
+        (items || []).forEach(
+            function (item) {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    String(
+                        item.id
+                    );
+
+                option.textContent =
+                    formatter(item);
+
+
+                select.appendChild(
+                    option
+                );
+
+            }
+        );
+
+
+        if (
+            selectedValue &&
+            Array.from(
+                select.options
+            ).some(
+                function (option) {
+
+                    return (
+                        option.value ===
+                        String(
+                            selectedValue
+                        )
+                    );
+
+                }
+            )
+        ) {
+
+            select.value =
+                String(
+                    selectedValue
+                );
+
+        }
+
+    }
+
+
+    /* ========================================================
+       LOAD ASSIGNMENT OPTIONS
+       
+       Endpoint:
+       main.teacher_subject_options
+       ======================================================== */
+
+    async function loadAssignmentOptions(
+        options = {}
+    ) {
+
+        const preserveValues =
+            options.preserveValues !== false;
+
+        const selectedProgram =
+            preserveValues
+                ? getValue(programSelect)
+                : "";
+
+        const selectedClass =
+            preserveValues
+                ? getValue(classSelect)
+                : "";
+
+        const selectedSubject =
+            preserveValues
+                ? getValue(subjectSelect)
+                : "";
+
+        const selectedSection =
+            preserveValues
+                ? getValue(sectionSelect)
+                : "";
+
+
+        const institutionId =
+            getValue(
+                institutionSelect
+            );
+
+        const branchId =
+            getValue(
+                branchSelect
+            );
+
+        const academicYearId =
+            getValue(
+                academicYearSelect
+            );
+
+        const teacherId =
+            getValue(
+                teacherSelect
+            );
+
+
+        /* ----------------------------------------------------
+           Required endpoint parameters
+           ---------------------------------------------------- */
+
+        if (
+            !institutionId ||
+            !branchId ||
+            !academicYearId ||
+            !teacherId
+        ) {
+
+            resetDependentFields();
+
+            updateDependencyState();
+
+            return;
+
+        }
+
+
+        const requestId =
+            nextRequestId();
+
+
+        form.dataset.optionsRequest =
+            requestId;
+
+
+        /* ----------------------------------------------------
+           Loading state
+           ---------------------------------------------------- */
+
+        programSelect.disabled =
+            true;
+
+        classSelect.disabled =
+            true;
+
+        subjectSelect.disabled =
+            true;
+
+        sectionSelect.disabled =
+            true;
+
+
+        resetSelect(
+            programSelect,
+            "Loading Programs..."
+        );
+
+        resetSelect(
+            classSelect,
+            "Loading Classes..."
+        );
+
+        resetSelect(
+            subjectSelect,
+            "Loading Subjects..."
+        );
+
+        resetSelect(
+            sectionSelect,
+            "Loading Sections..."
+        );
+
+
+        try {
+
+            const params =
+                new URLSearchParams();
+
+
+            params.set(
+                "institution_id",
+                institutionId
+            );
+
+            params.set(
+                "branch_id",
+                branchId
+            );
+
+            params.set(
+                "academic_year_id",
+                academicYearId
+            );
+
+            params.set(
+                "teacher_id",
+                teacherId
+            );
+
+
+            /* ------------------------------------------------
+               Program
+               ------------------------------------------------ */
+
+            if (selectedProgram) {
+
+                params.set(
+                    "program_id",
+                    selectedProgram
+                );
+
+            }
+
+
+            /* ------------------------------------------------
+               Class
+               ------------------------------------------------ */
+
+            if (selectedClass) {
+
+                params.set(
+                    "class_id",
+                    selectedClass
+                );
+
+            }
+
+
+            const endpoint =
+                "{{ url_for('main.teacher_subject_options') }}";
+
+
+            const response =
+                await fetch(
+                    endpoint +
+                    "?" +
+                    params.toString(),
+                    {
+                        method: "GET",
+
+                        credentials:
+                            "same-origin",
+
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        }
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            /* ------------------------------------------------
+               Ignore old request
+               ------------------------------------------------ */
+
+            if (
+                form.dataset.optionsRequest !==
+                requestId
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                !response.ok ||
+                !data ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    (
+                        data &&
+                        data.message
+                    ) ||
+                    "Unable to load assignment options."
+                );
+
+            }
+
+
+            /* ------------------------------------------------
+               PROGRAMS
+               ------------------------------------------------ */
+
+            const programs =
+                Array.isArray(
+                    data.programs
+                )
+                    ? data.programs
+                    : [];
+
+
+            setSelectOptions(
+                programSelect,
+                programs,
+                programs.length
+                    ? "Select Program"
+                    : "No Programs Available",
+                function (item) {
+
+                    return item.code
+                        ? item.name +
+                          " — " +
+                          item.code
+                        : item.name;
+
+                },
+                selectedProgram
+            );
+
+
+            /* ------------------------------------------------
+               CLASSES
+               
+               Endpoint returns classes only when
+               program_id exists.
+               ------------------------------------------------ */
+
+            const classes =
+                Array.isArray(
+                    data.classes
+                )
+                    ? data.classes
+                    : [];
+
+
+            const filteredClasses =
+                selectedProgram
+                    ? classes.filter(
+                        function (item) {
+
+                            return (
+                                String(
+                                    item.program_id
+                                ) ===
+                                String(
+                                    selectedProgram
+                                )
+                            );
+
+                        }
+                    )
+                    : [];
+
+
+            setSelectOptions(
+                classSelect,
+                filteredClasses,
+                filteredClasses.length
+                    ? "Select Class"
+                    : "No Classes Available",
+                function (item) {
+
+                    return item.name;
+
+                },
+                selectedClass
+            );
+
+
+            /* ------------------------------------------------
+               SUBJECTS
+               
+               Endpoint returns subjects by program.
+               ------------------------------------------------ */
+
+            const subjects =
+                Array.isArray(
+                    data.subjects
+                )
+                    ? data.subjects
+                    : [];
+
+
+            const filteredSubjects =
+                selectedProgram
+                    ? subjects.filter(
+                        function (item) {
+
+                            const subjectProgram =
+                                item.program_id;
+
+                            /*
+                             * If subject has no program,
+                             * it is a general subject and
+                             * can still be used.
+                             */
+
+                            return (
+                                subjectProgram ===
+                                null ||
+                                subjectProgram ===
+                                undefined ||
+                                String(
+                                    subjectProgram
+                                ) ===
+                                String(
+                                    selectedProgram
+                                )
+                            );
+
+                        }
+                    )
+                    : [];
+
+
+            setSelectOptions(
+                subjectSelect,
+                filteredSubjects,
+                filteredSubjects.length
+                    ? "Select Subject"
+                    : "No Subjects Available",
+                function (item) {
+
+                    return item.code
+                        ? item.name +
+                          " — " +
+                          item.code
+                        : item.name;
+
+                },
+                selectedSubject
+            );
+
+
+            /* ------------------------------------------------
+               SECTIONS
+               
+               Endpoint returns sections by class.
+               ------------------------------------------------ */
+
+            const sections =
+                Array.isArray(
+                    data.sections
+                )
+                    ? data.sections
+                    : [];
+
+
+            const filteredSections =
+                selectedClass
+                    ? sections.filter(
+                        function (item) {
+
+                            return (
+                                String(
+                                    item.class_id
+                                ) ===
+                                String(
+                                    selectedClass
+                                )
+                            );
+
+                        }
+                    )
+                    : [];
+
+
+            setSelectOptions(
+                sectionSelect,
+                filteredSections,
+                filteredSections.length
+                    ? "Select Section"
+                    : "No Sections Available",
+                function (item) {
+
+                    return item.name;
+
+                },
+                selectedSection
+            );
+
+
+            /* ------------------------------------------------
+               Preserve selected values only if valid
+               ------------------------------------------------ */
+
+            if (
+                selectedProgram &&
+                !Array.from(
+                    programSelect.options
+                ).some(
+                    function (option) {
+
+                        return (
+                            option.value ===
+                            String(
+                                selectedProgram
+                            )
+                        );
+
+                    }
+                )
+            ) {
+
+                programSelect.value =
+                    "";
+
+            }
+
+
+            if (
+                selectedClass &&
+                !Array.from(
+                    classSelect.options
+                ).some(
+                    function (option) {
+
+                        return (
+                            option.value ===
+                            String(
+                                selectedClass
+                            )
+                        );
+
+                    }
+                )
+            ) {
+
+                classSelect.value =
+                    "";
+
+            }
+
+
+            if (
+                selectedSubject &&
+                !Array.from(
+                    subjectSelect.options
+                ).some(
+                    function (option) {
+
+                        return (
+                            option.value ===
+                            String(
+                                selectedSubject
+                            )
+                        );
+
+                    }
+                )
+            ) {
+
+                subjectSelect.value =
+                    "";
+
+            }
+
+
+            if (
+                selectedSection &&
+                !Array.from(
+                    sectionSelect.options
+                ).some(
+                    function (option) {
+
+                        return (
+                            option.value ===
+                            String(
+                                selectedSection
+                            )
+                        );
+
+                    }
+                )
+            ) {
+
+                sectionSelect.value =
+                    "";
+
+            }
+
+
+            /* ------------------------------------------------
+               Re-apply dependency state
+               ------------------------------------------------ */
+
+            updateDependencyState();
+
+
+            /* ------------------------------------------------
+               Apply normal filters too
+               ------------------------------------------------ */
+
+            filterPrograms();
+
+            filterClasses();
+
+            filterSubjects();
+
+            filterSections();
+
+
+            updateDependencyState();
+
+            updateSummary();
+
+        }
+
+        catch (error) {
+
+            if (
+                form.dataset.optionsRequest !==
+                requestId
+            ) {
+
+                return;
+
+            }
+
+
+            console.error(
+                "Teacher assignment options error:",
+                error
+            );
+
+
+            resetDependentFields();
+
+            updateDependencyState();
+
+
+            /*
+             * Keep user informed.
+             */
+
+            if (
+                error &&
+                error.message
+            ) {
+
+                alert(
+                    error.message
+                );
+
+            }
+
+        }
 
     }
 
@@ -3459,6 +4987,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+
         if (value) {
 
             element.textContent =
@@ -3468,7 +4997,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 "empty"
             );
 
-        } else {
+        }
+
+        else {
 
             element.textContent =
                 "Not selected";
@@ -3487,37 +5018,6 @@ document.addEventListener("DOMContentLoaded", function () {
        ======================================================== */
 
     function updateSummary() {
-
-        const summaryInstitution =
-            document.getElementById(
-                "summaryInstitution"
-            );
-
-        const summaryBranch =
-            document.getElementById(
-                "summaryBranch"
-            );
-
-        const summaryAcademicYear =
-            document.getElementById(
-                "summaryAcademicYear"
-            );
-
-        const summaryTeacher =
-            document.getElementById(
-                "summaryTeacher"
-            );
-
-        const summaryType =
-            document.getElementById(
-                "summaryType"
-            );
-
-        const summaryPath =
-            document.getElementById(
-                "summaryPath"
-            );
-
 
         setSummaryValue(
             summaryInstitution,
@@ -3552,23 +5052,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         const type =
-            assignmentTypeSelect.value;
+            getValue(
+                assignmentTypeSelect
+            );
 
 
-        if (type) {
+        if (
+            type &&
+            assignmentRules[type]
+        ) {
 
             setSummaryValue(
                 summaryType,
                 assignmentRules[type].label
             );
 
-        } else {
+        }
+
+        else {
 
             setSummaryValue(
                 summaryType,
                 ""
             );
 
+        }
+
+
+        if (!summaryPath) {
+            return;
         }
 
 
@@ -3586,9 +5098,28 @@ document.addEventListener("DOMContentLoaded", function () {
             item.className =
                 "path-item";
 
-            item.innerHTML =
-                '<span class="path-dot"></span>' +
-                '<span>Select assignment type</span>';
+
+            const dot =
+                document.createElement(
+                    "span"
+                );
+
+            dot.className =
+                "path-dot";
+
+
+            const text =
+                document.createElement(
+                    "span"
+                );
+
+            text.textContent =
+                "Select assignment type";
+
+
+            item.appendChild(dot);
+
+            item.appendChild(text);
 
             summaryPath.appendChild(
                 item
@@ -3603,65 +5134,48 @@ document.addEventListener("DOMContentLoaded", function () {
             assignmentRules[type];
 
 
+        const selectMap = {
+
+            program:
+                programSelect,
+
+            class:
+                classSelect,
+
+            subject:
+                subjectSelect,
+
+            section:
+                sectionSelect
+
+        };
+
+
+        const labelMap = {
+
+            program:
+                "Program",
+
+            class:
+                "Class",
+
+            subject:
+                "Subject",
+
+            section:
+                "Section"
+
+        };
+
+
         rule.fields.forEach(
             function (fieldName) {
 
-                let select = null;
+                const select =
+                    selectMap[fieldName];
 
-                let label = "";
-
-
-                if (
-                    fieldName ===
-                    "program"
-                ) {
-
-                    select =
-                        programSelect;
-
-                    label =
-                        "Program";
-
-                }
-
-                else if (
-                    fieldName ===
-                    "class"
-                ) {
-
-                    select =
-                        classSelect;
-
-                    label =
-                        "Class";
-
-                }
-
-                else if (
-                    fieldName ===
-                    "subject"
-                ) {
-
-                    select =
-                        subjectSelect;
-
-                    label =
-                        "Subject";
-
-                }
-
-                else if (
-                    fieldName ===
-                    "section"
-                ) {
-
-                    select =
-                        sectionSelect;
-
-                    label =
-                        "Section";
-
-                }
+                const label =
+                    labelMap[fieldName];
 
 
                 const value =
@@ -3703,9 +5217,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     );
 
 
-                item.appendChild(dot);
+                item.appendChild(
+                    dot
+                );
 
-                item.appendChild(text);
+                item.appendChild(
+                    text
+                );
+
 
                 summaryPath.appendChild(
                     item
@@ -3718,83 +5237,333 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ========================================================
-       CLEAR DEPENDENT FIELDS
+       VALIDATE ASSIGNMENT TARGET
        ======================================================== */
 
-    function clearFromInstitution() {
+    function validateAssignmentTarget() {
 
-        teacherSelect.value =
-            "";
-
-        programSelect.value =
-            "";
-
-        classSelect.value =
-            "";
-
-        subjectSelect.value =
-            "";
-
-        sectionSelect.value =
-            "";
-
-    }
+        let valid = true;
 
 
-    function clearFromBranch() {
+        const type =
+            getValue(
+                assignmentTypeSelect
+            );
 
-        teacherSelect.value =
-            "";
-
-        programSelect.value =
-            "";
-
-        classSelect.value =
-            "";
-
-        subjectSelect.value =
-            "";
-
-        sectionSelect.value =
-            "";
-
-    }
+        const rule =
+            assignmentRules[type];
 
 
-    function clearFromAcademicYear() {
+        if (!rule) {
 
-        classSelect.value =
-            "";
+            setFieldError(
+                assignmentTypeSelect
+            );
 
-        sectionSelect.value =
-            "";
+            return false;
+
+        }
+
+
+        const selectMap = {
+
+            program:
+                programSelect,
+
+            class:
+                classSelect,
+
+            subject:
+                subjectSelect,
+
+            section:
+                sectionSelect
+
+        };
+
+
+        rule.required.forEach(
+            function (fieldName) {
+
+                const select =
+                    selectMap[fieldName];
+
+
+                if (
+                    !select ||
+                    !getValue(select)
+                ) {
+
+                    valid =
+                        false;
+
+                    setFieldError(
+                        select
+                    );
+
+                }
+
+            }
+        );
+
+
+        return valid;
 
     }
 
 
     /* ========================================================
-       INSTITUTION CHANGE
+       NORMALIZE TARGET
+       
+       This makes sure hidden lower-level values do not
+       accidentally remain during edit.
+       ======================================================== */
+
+    function getNormalizedTarget() {
+
+        const type =
+            getValue(
+                assignmentTypeSelect
+            );
+
+
+        let programId =
+            getValue(
+                programSelect
+            ) || null;
+
+        let classId =
+            getValue(
+                classSelect
+            ) || null;
+
+        let subjectId =
+            getValue(
+                subjectSelect
+            ) || null;
+
+        let sectionId =
+            getValue(
+                sectionSelect
+            ) || null;
+
+
+        if (type === "program") {
+
+            classId =
+                null;
+
+            subjectId =
+                null;
+
+            sectionId =
+                null;
+
+        }
+
+        else if (type === "class") {
+
+            subjectId =
+                null;
+
+            sectionId =
+                null;
+
+        }
+
+        else if (type === "subject") {
+
+            sectionId =
+                null;
+
+        }
+
+
+        return {
+
+            programId,
+            classId,
+            subjectId,
+            sectionId
+
+        };
+
+    }
+
+
+    /* ========================================================
+       DUPLICATE TARGET KEY
+       ======================================================== */
+
+    function buildTargetKey() {
+
+        const type =
+            getValue(
+                assignmentTypeSelect
+            );
+
+        const target =
+            getNormalizedTarget();
+
+
+        return [
+            getValue(
+                institutionSelect
+            ),
+
+            getValue(
+                branchSelect
+            ),
+
+            getValue(
+                academicYearSelect
+            ),
+
+            type,
+
+            target.programId || "",
+
+            target.classId || "",
+
+            target.subjectId || "",
+
+            target.sectionId || ""
+
+        ].join("|");
+
+    }
+
+
+    /* ========================================================
+       DATE VALIDATION
+       ======================================================== */
+
+    function validateDates() {
+
+        if (
+            !startDate ||
+            !endDate
+        ) {
+
+            return true;
+
+        }
+
+
+        clearFieldError(
+            endDate
+        );
+
+
+        endDate.setCustomValidity(
+            ""
+        );
+
+
+        if (
+            startDate.value &&
+            endDate.value &&
+            endDate.value <
+            startDate.value
+        ) {
+
+            endDate.setCustomValidity(
+                "End Date must be greater than or equal to Start Date."
+            );
+
+
+            setFieldError(
+                endDate
+            );
+
+
+            return false;
+
+        }
+
+
+        return true;
+
+    }
+
+
+    /* ========================================================
+       VALIDATE BASIC FORM
+       ======================================================== */
+
+    function validateBasicFields() {
+
+        let valid = true;
+
+
+        const requiredFields = [
+
+            institutionSelect,
+
+            branchSelect,
+
+            academicYearSelect,
+
+            teacherSelect,
+
+            assignmentTypeSelect
+
+        ];
+
+
+        requiredFields.forEach(
+            function (element) {
+
+                if (
+                    !getValue(element)
+                ) {
+
+                    valid =
+                        false;
+
+                    setFieldError(
+                        element
+                    );
+
+                }
+
+            }
+        );
+
+
+        return valid;
+
+    }
+
+
+    /* ========================================================
+       CHANGE INSTITUTION
        ======================================================== */
 
     institutionSelect.addEventListener(
         "change",
-        function () {
+        async function () {
+
+            clearFieldError(
+                institutionSelect
+            );
+
 
             filterBranches();
 
             filterAcademicYears();
 
 
-            const selectedBranch =
+            const branchOption =
                 branchSelect.options[
                     branchSelect.selectedIndex
                 ];
 
 
             if (
-                selectedBranch &&
-                selectedBranch.value &&
-                selectedBranch.hidden
+                branchOption &&
+                branchOption.value &&
+                branchOption.disabled
             ) {
 
                 branchSelect.value =
@@ -3803,9 +5572,22 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            clearFromInstitution();
+            /*
+             * Institution changed:
+             * teacher + target must be reloaded.
+             */
 
-            refreshAllFilters();
+            teacherSelect.value =
+                "";
+
+
+            resetDependentFields();
+
+
+            filterTeachers();
+
+
+            updateDependencyState();
 
             updateSummary();
 
@@ -3814,16 +5596,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ========================================================
-       BRANCH CHANGE
+       CHANGE BRANCH
        ======================================================== */
 
     branchSelect.addEventListener(
         "change",
-        function () {
+        async function () {
 
-            clearFromBranch();
+            clearFieldError(
+                branchSelect
+            );
 
-            refreshAllFilters();
+
+            /*
+             * Branch changes invalidate teacher and targets.
+             */
+
+            teacherSelect.value =
+                "";
+
+
+            resetDependentFields();
+
+
+            filterTeachers();
+
+            filterPrograms();
+
+            filterClasses();
+
+            filterSubjects();
+
+            filterSections();
+
+
+            updateDependencyState();
 
             updateSummary();
 
@@ -3832,18 +5639,109 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ========================================================
-       ACADEMIC YEAR CHANGE
+       CHANGE ACADEMIC YEAR
        ======================================================== */
 
     academicYearSelect.addEventListener(
         "change",
+        async function () {
+
+            clearFieldError(
+                academicYearSelect
+            );
+
+
+            /*
+             * Academic year affects:
+             * Class
+             * Section
+             *
+             * Keep teacher, but reload target options.
+             */
+
+            resetClass();
+
+            resetSection();
+
+
+            updateDependencyState();
+
+
+            if (
+                getValue(teacherSelect)
+            ) {
+
+                await loadAssignmentOptions({
+                    preserveValues: true
+                });
+
+            }
+
+
+            updateSummary();
+
+        }
+    );
+
+
+    /* ========================================================
+       CHANGE TEACHER
+       ======================================================== */
+
+    teacherSelect.addEventListener(
+        "change",
+        async function () {
+
+            clearFieldError(
+                teacherSelect
+            );
+
+
+            /*
+             * Teacher changed:
+             * reload all valid assignment options.
+             */
+
+            resetDependentFields();
+
+
+            updateDependencyState();
+
+
+            if (
+                getValue(teacherSelect)
+            ) {
+
+                await loadAssignmentOptions({
+                    preserveValues: false
+                });
+
+            }
+
+
+            updateSummary();
+
+        }
+    );
+
+
+    /* ========================================================
+       CHANGE ASSIGNMENT TYPE
+       ======================================================== */
+
+    assignmentTypeSelect.addEventListener(
+        "change",
         function () {
 
-            clearFromAcademicYear();
+            clearFieldError(
+                assignmentTypeSelect
+            );
 
-            filterClasses();
 
-            filterSections();
+            applyAssignmentType(
+                true
+            );
+
 
             updateSummary();
 
@@ -3857,22 +5755,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
     programSelect.addEventListener(
         "change",
-        function () {
+        async function () {
 
-            classSelect.value =
-                "";
+            clearFieldError(
+                programSelect
+            );
 
-            subjectSelect.value =
-                "";
 
-            sectionSelect.value =
-                "";
+            /*
+             * Program changes invalidate:
+             * Class
+             * Subject
+             * Section
+             */
 
-            filterClasses();
+            resetClass();
 
-            filterSubjects();
+            resetSubject();
 
-            filterSections();
+            resetSection();
+
+
+            filterPrograms();
+
+
+            updateDependencyState();
+
+
+            if (
+                getValue(programSelect) &&
+                getValue(teacherSelect)
+            ) {
+
+                await loadAssignmentOptions({
+                    preserveValues: true
+                });
+
+            }
+
 
             updateSummary();
 
@@ -3886,42 +5806,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
     classSelect.addEventListener(
         "change",
-        function () {
+        async function () {
 
-            sectionSelect.value =
-                "";
-
-            filterSections();
-
-            updateSummary();
-
-        }
-    );
+            clearFieldError(
+                classSelect
+            );
 
 
-    /* ========================================================
-       TYPE CHANGE
-       ======================================================== */
-
-    assignmentTypeSelect.addEventListener(
-        "change",
-        function () {
-
-            applyAssignmentType();
-
-            updateSummary();
-
-        }
-    );
+            resetSection();
 
 
-    /* ========================================================
-       TEACHER CHANGE
-       ======================================================== */
+            filterClasses();
 
-    teacherSelect.addEventListener(
-        "change",
-        function () {
+
+            updateDependencyState();
+
+
+            if (
+                getValue(classSelect) &&
+                getValue(programSelect) &&
+                getValue(teacherSelect)
+            ) {
+
+                await loadAssignmentOptions({
+                    preserveValues: true
+                });
+
+            }
+
 
             updateSummary();
 
@@ -3937,6 +5849,11 @@ document.addEventListener("DOMContentLoaded", function () {
         "change",
         function () {
 
+            clearFieldError(
+                subjectSelect
+            );
+
+
             updateSummary();
 
         }
@@ -3951,6 +5868,11 @@ document.addEventListener("DOMContentLoaded", function () {
         "change",
         function () {
 
+            clearFieldError(
+                sectionSelect
+            );
+
+
             updateSummary();
 
         }
@@ -3958,219 +5880,228 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ========================================================
-       DATE VALIDATION
+       DATE EVENTS
        ======================================================== */
 
-    const startDate =
-        document.getElementById(
-            "start_date"
+    if (startDate) {
+
+        startDate.addEventListener(
+            "change",
+            function () {
+
+                clearFieldError(
+                    startDate
+                );
+
+                validateDates();
+
+            }
         );
-
-    const endDate =
-        document.getElementById(
-            "end_date"
-        );
-
-
-    function validateDates() {
-
-        if (
-            startDate.value &&
-            endDate.value &&
-            endDate.value <
-                startDate.value
-        ) {
-
-            endDate.setCustomValidity(
-                "End Date must be greater than or equal to Start Date."
-            );
-
-            endDate.classList.add(
-                "field-error"
-            );
-
-        } else {
-
-            endDate.setCustomValidity("");
-
-            endDate.classList.remove(
-                "field-error"
-            );
-
-        }
 
     }
 
 
-    startDate.addEventListener(
-        "change",
-        validateDates
-    );
+    if (endDate) {
 
-    endDate.addEventListener(
+        endDate.addEventListener(
+            "change",
+            function () {
+
+                clearFieldError(
+                    endDate
+                );
+
+                validateDates();
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       REMOVE ERROR ON CHANGE
+       ======================================================== */
+
+    form.addEventListener(
         "change",
-        validateDates
+        function (event) {
+
+            const target =
+                event.target;
+
+
+            if (
+                target &&
+                target.classList &&
+                target.classList.contains(
+                    "field-error"
+                )
+            ) {
+
+                if (
+                    target.value
+                ) {
+
+                    clearFieldError(
+                        target
+                    );
+
+                }
+
+            }
+
+        }
     );
 
 
     /* ========================================================
-       FORM VALIDATION
+       FORM SUBMIT
        ======================================================== */
 
     form.addEventListener(
         "submit",
         function (event) {
 
+            clearAllErrors();
+
+
             let valid = true;
 
 
             /* ------------------------------------------------
-               DATE
+               BASIC
                ------------------------------------------------ */
 
-            validateDates();
+            if (
+                !validateBasicFields()
+            ) {
 
-
-            /* ------------------------------------------------
-               REMOVE OLD ERRORS
-               ------------------------------------------------ */
-
-            form.querySelectorAll(
-                ".field-error"
-            ).forEach(
-                function (element) {
-
-                    element.classList.remove(
-                        "field-error"
-                    );
-
-                }
-            );
-
-
-            /* ------------------------------------------------
-               REQUIRED BASIC FIELDS
-               ------------------------------------------------ */
-
-            [
-                institutionSelect,
-                branchSelect,
-                academicYearSelect,
-                teacherSelect,
-                assignmentTypeSelect
-            ].forEach(
-                function (select) {
-
-                    if (
-                        select &&
-                        !select.value
-                    ) {
-
-                        valid = false;
-
-                        select.classList.add(
-                            "field-error"
-                        );
-
-                    }
-
-                }
-            );
-
-
-            /* ------------------------------------------------
-               ASSIGNMENT TYPE FIELDS
-               ------------------------------------------------ */
-
-            const type =
-                assignmentTypeSelect.value;
-
-
-            const rule =
-                assignmentRules[type];
-
-
-            if (!rule) {
-
-                valid = false;
-
-            } else {
-
-                rule.required.forEach(
-                    function (fieldName) {
-
-                        let select = null;
-
-
-                        if (
-                            fieldName ===
-                            "program"
-                        ) {
-
-                            select =
-                                programSelect;
-
-                        }
-
-                        else if (
-                            fieldName ===
-                            "class"
-                        ) {
-
-                            select =
-                                classSelect;
-
-                        }
-
-                        else if (
-                            fieldName ===
-                            "subject"
-                        ) {
-
-                            select =
-                                subjectSelect;
-
-                        }
-
-                        else if (
-                            fieldName ===
-                            "section"
-                        ) {
-
-                            select =
-                                sectionSelect;
-
-                        }
-
-
-                        if (
-                            select &&
-                            !select.value
-                        ) {
-
-                            valid = false;
-
-                            select.classList.add(
-                                "field-error"
-                            );
-
-                        }
-
-                    }
-                );
+                valid =
+                    false;
 
             }
 
 
             /* ------------------------------------------------
-               NATIVE VALIDATION
+               TARGET
+               ------------------------------------------------ */
+
+            if (
+                !validateAssignmentTarget()
+            ) {
+
+                valid =
+                    false;
+
+            }
+
+
+            /* ------------------------------------------------
+               DATES
+               ------------------------------------------------ */
+
+            if (
+                !validateDates()
+            ) {
+
+                valid =
+                    false;
+
+            }
+
+
+            /* ------------------------------------------------
+               TARGET VALIDITY
+               ------------------------------------------------ */
+
+            const target =
+                getNormalizedTarget();
+
+
+            const type =
+                getValue(
+                    assignmentTypeSelect
+                );
+
+
+            if (
+                type &&
+                !target.programId
+            ) {
+
+                setFieldError(
+                    programSelect
+                );
+
+                valid =
+                    false;
+
+            }
+
+
+            if (
+                (
+                    type === "class" ||
+                    type === "subject" ||
+                    type === "section"
+                ) &&
+                !target.classId
+            ) {
+
+                setFieldError(
+                    classSelect
+                );
+
+                valid =
+                    false;
+
+            }
+
+
+            if (
+                (
+                    type === "subject" ||
+                    type === "section"
+                ) &&
+                !target.subjectId
+            ) {
+
+                setFieldError(
+                    subjectSelect
+                );
+
+                valid =
+                    false;
+
+            }
+
+
+            if (
+                type === "section" &&
+                !target.sectionId
+            ) {
+
+                setFieldError(
+                    sectionSelect
+                );
+
+                valid =
+                    false;
+
+            }
+
+
+            /* ------------------------------------------------
+               NATIVE HTML VALIDATION
                ------------------------------------------------ */
 
             if (
                 !form.checkValidity()
             ) {
 
-                valid = false;
+                valid =
+                    false;
 
             }
 
@@ -4195,11 +6126,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     firstError.focus();
 
                     firstError.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center"
+                        behavior:
+                            "smooth",
+
+                        block:
+                            "center"
                     });
 
                 }
+
 
                 return;
 
@@ -4207,56 +6142,68 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             /* ------------------------------------------------
-               LOADING
+               NORMALIZE HIDDEN VALUES
+               
+               Important:
+               Backend receives only the values that belong
+               to the selected assignment type.
                ------------------------------------------------ */
 
-            const submitBtn =
-                document.getElementById(
-                    "submitBtn"
-                );
+            if (type === "program") {
 
-            const submitText =
-                document.getElementById(
-                    "submitText"
-                );
+                classSelect.value =
+                    "";
 
-            const submitSpinner =
-                document.getElementById(
-                    "submitSpinner"
-                );
+                subjectSelect.value =
+                    "";
+
+                sectionSelect.value =
+                    "";
+
+            }
+
+            else if (type === "class") {
+
+                subjectSelect.value =
+                    "";
+
+                sectionSelect.value =
+                    "";
+
+            }
+
+            else if (type === "subject") {
+
+                sectionSelect.value =
+                    "";
+
+            }
 
 
-            submitBtn.disabled =
-                true;
+            /* ------------------------------------------------
+               PREVENT DOUBLE SUBMIT
+               ------------------------------------------------ */
 
-            submitText.style.display =
-                "none";
+            if (submitBtn) {
 
-            submitSpinner.style.display =
-                "inline";
+                submitBtn.disabled =
+                    true;
 
-        }
-    );
+            }
 
 
-    /* ========================================================
-       REMOVE ERROR ON CHANGE
-       ======================================================== */
+            if (submitText) {
 
-    form.addEventListener(
-        "change",
-        function (event) {
+                submitText.style.display =
+                    "none";
 
-            if (
-                event.target.classList.contains(
-                    "field-error"
-                ) &&
-                event.target.value
-            ) {
+            }
 
-                event.target.classList.remove(
-                    "field-error"
-                );
+
+            if (submitSpinner) {
+
+                submitSpinner.style.display =
+                    "inline";
 
             }
 
@@ -4265,16 +6212,75 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ========================================================
-       INITIALIZATION
+       INITIAL FILTERS
        ======================================================== */
 
-    refreshAllFilters();
+    filterBranches();
 
-    applyAssignmentType();
+    filterAcademicYears();
+
+    filterTeachers();
+
+    filterPrograms();
+
+    filterClasses();
+
+    filterSubjects();
+
+    filterSections();
+
+
+    /* ========================================================
+       INITIAL TYPE
+       ======================================================== */
+
+    applyAssignmentType(
+        false
+    );
+
+
+    /* ========================================================
+       INITIAL DEPENDENCY STATE
+       ======================================================== */
+
+    updateDependencyState();
+
+
+    /* ========================================================
+       INITIAL SUMMARY
+       ======================================================== */
 
     updateSummary();
 
+
+    /* ========================================================
+       INITIAL DATE VALIDATION
+       ======================================================== */
+
     validateDates();
+
+
+    /* ========================================================
+       INITIAL OPTION LOAD
+       
+       Important for edit:
+       If teacher is already selected, call the new endpoint
+       and restore the current program/class/subject/section.
+       ======================================================== */
+
+    if (
+        getValue(teacherSelect) &&
+        getValue(institutionSelect) &&
+        getValue(branchSelect) &&
+        getValue(academicYearSelect)
+    ) {
+
+        loadAssignmentOptions({
+            preserveValues: true
+        });
+
+    }
+
 
 });
 

@@ -100,13 +100,30 @@
     background: #27952e;
 }
 
+/* ============================================================
+   DELETE ENTIRE EXAM BUTTON
+   ============================================================ */
+
 .exam-subject-btn-danger {
     background: #fee2e2;
     color: #b91c1c;
+    border: 1px solid #fecaca;
 }
 
 .exam-subject-btn-danger:hover {
     background: #fecaca;
+    color: #991b1b;
+}
+
+.exam-subject-btn-danger:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.exam-subject-btn-danger.exam-delete-loading {
+    pointer-events: none;
+    opacity: .70;
 }
 
 /* ============================================================
@@ -489,22 +506,6 @@
 }
 
 /* ============================================================
-   CODE
-   ============================================================ */
-
-.exam-subject-code {
-    display: inline-flex;
-    align-items: center;
-    padding: 5px 8px;
-    border-radius: 7px;
-    background: #f1f5f9;
-    color: #334155;
-    font-family: monospace;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-/* ============================================================
    RELATION TEXT
    ============================================================ */
 
@@ -675,6 +676,11 @@
 
 .exam-subject-action-delete:hover {
     background: #fee2e2;
+}
+
+.exam-subject-action-delete:disabled {
+    opacity: .55;
+    cursor: not-allowed;
 }
 
 /* ============================================================
@@ -932,12 +938,41 @@
 
         <div class="exam-subjects-header-actions">
 
+            <!-- =================================================
+                 DELETE ENTIRE SELECTED EXAM
+                 ================================================= -->
+
+            <button
+                type="button"
+                id="deleteSelectedExamBtn"
+                class="exam-subject-btn exam-subject-btn-danger"
+                style="display:none;"
+                disabled
+                onclick="deleteSelectedExam()"
+                title="Delete the selected exam and all its subjects"
+            >
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Delete Entire Exam</span>
+            </button>
+
+
+            <!-- =================================================
+                 ADD EXAM SUBJECT
+                 ================================================= -->
+
             <a
                 href="{{ url_for('main.add_exam_subject') }}"
                 class="exam-subject-btn exam-subject-btn-primary"
             >
                 <i class="fa-solid fa-plus"></i>
                 Add Exam Subject
+            </a>
+            <a
+                href="{{ url_for('main.bulk_add_exam_subjects') }}"
+                class="exam-subject-btn exam-subject-btn-primary"
+            >
+                <i class="fa-solid fa-plus"></i>
+                Add Exam Subject Bulk
             </a>
 
         </div>
@@ -1151,7 +1186,9 @@
                 </div>
 
 
-                <!-- EXAM -->
+                <!-- =================================================
+                     EXAM
+                     ================================================= -->
 
                 <div class="exam-subject-field">
 
@@ -1172,6 +1209,7 @@
 
                             <option
                                 value="{{ exam.id }}"
+                                data-exam-name="{{ exam.name|e }}"
                                 {% if selected_exam_id|string == exam.id|string %}
                                     selected
                                 {% endif %}
@@ -1191,7 +1229,9 @@
                 </div>
 
 
-                <!-- SUBJECT -->
+                <!-- =================================================
+                     SUBJECT
+                     ================================================= -->
 
                 <div class="exam-subject-field">
 
@@ -1533,6 +1573,7 @@
 
                             <tr
                                 id="exam-subject-row-{{ exam_subject.id }}"
+                                data-exam-id="{{ exam_subject.exam_id }}"
                             >
 
                                 <!-- =================================
@@ -1894,10 +1935,9 @@
                                             class="exam-subject-action-btn
                                                    exam-subject-action-view"
                                             title="View Exam Subject"
+                                            aria-label="View Exam Subject"
                                         >
-
                                             <i class="fa-solid fa-eye"></i>
-
                                         </a>
 
 
@@ -1911,10 +1951,9 @@
                                             class="exam-subject-action-btn
                                                    exam-subject-action-edit"
                                             title="Edit Exam Subject"
+                                            aria-label="Edit Exam Subject"
                                         >
-
                                             <i class="fa-solid fa-pen"></i>
-
                                         </a>
 
 
@@ -1925,18 +1964,19 @@
                                             class="exam-subject-action-btn
                                                    exam-subject-action-delete"
                                             title="Delete Exam Subject"
-                                            onclick="deleteExamSubject(
-                                                {{ exam_subject.id }},
-                                                {{ (
+                                            aria-label="Delete Exam Subject"
+                                            data-exam-subject-id="{{ exam_subject.id }}"
+                                            data-subject-name="{{
+                                                (
                                                     exam_subject.subject.name
                                                     if exam_subject.subject
                                                     else 'Exam Subject #' ~ exam_subject.id
-                                                )|tojson }}
-                                            )"
+                                                )
+                                                |e
+                                            }}"
+                                            onclick="deleteExamSubject(this)"
                                         >
-
                                             <i class="fa-solid fa-trash"></i>
-
                                         </button>
 
                                     </div>
@@ -2063,13 +2103,11 @@
                     {% set start_page = pagination.page - 2 %}
                     {% set end_page = pagination.page + 2 %}
 
-
                     {% if start_page < 1 %}
 
                         {% set start_page = 1 %}
 
                     {% endif %}
-
 
                     {% if end_page > pagination.pages %}
 
@@ -2274,10 +2312,630 @@
 
 <script>
 
-async function deleteExamSubject(
-    examSubjectId,
-    subjectName
-) {
+"use strict";
+
+
+/* ============================================================
+   GLOBAL STATE
+   ============================================================ */
+
+let deletingExam = false;
+
+
+/* ============================================================
+   DOM READY
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const examFilter =
+            document.getElementById(
+                "examFilter"
+            );
+
+        const subjectFilter =
+            document.getElementById(
+                "subjectFilter"
+            );
+
+        const deleteSelectedExamBtn =
+            document.getElementById(
+                "deleteSelectedExamBtn"
+            );
+
+
+        /*
+         * ----------------------------------------------------
+         * EXAM FILTER
+         * ----------------------------------------------------
+         */
+
+        if (examFilter) {
+
+            examFilter.addEventListener(
+                "change",
+                function () {
+
+                    updateDeleteExamButton();
+
+                    filterExamSubjects();
+
+                }
+            );
+
+        }
+
+
+        /*
+         * ----------------------------------------------------
+         * INITIAL STATE
+         * ----------------------------------------------------
+         */
+
+        updateDeleteExamButton();
+
+        filterExamSubjects();
+
+
+        /*
+         * ----------------------------------------------------
+         * DELETE BUTTON FUNCTION
+         * ----------------------------------------------------
+         */
+
+        function updateDeleteExamButton() {
+
+            if (!deleteSelectedExamBtn) {
+                return;
+            }
+
+            const examId =
+                examFilter
+                    ? examFilter.value
+                    : "";
+
+
+            if (examId) {
+
+                deleteSelectedExamBtn.style.display =
+                    "inline-flex";
+
+                deleteSelectedExamBtn.disabled =
+                    false;
+
+            } else {
+
+                deleteSelectedExamBtn.style.display =
+                    "none";
+
+                deleteSelectedExamBtn.disabled =
+                    true;
+
+            }
+
+        }
+
+
+        /*
+         * ----------------------------------------------------
+         * EXAM → SUBJECT FILTER
+         *
+         * NOTE:
+         * This only works if subject options contain
+         * data-exam-id.
+         *
+         * If your backend sends all subjects without
+         * exam information, all subjects remain visible.
+         * ----------------------------------------------------
+         */
+
+        function filterExamSubjects() {
+
+            if (!examFilter || !subjectFilter) {
+                return;
+            }
+
+
+            const examId =
+                examFilter.value;
+
+
+            Array.from(
+                subjectFilter.options
+            ).forEach(
+                function (option, index) {
+
+                    /*
+                     * Keep All Subjects visible.
+                     */
+
+                    if (index === 0) {
+
+                        option.hidden =
+                            false;
+
+                        return;
+                    }
+
+
+                    /*
+                     * Read exam relationship.
+                     */
+
+                    const optionExamId =
+                        option.dataset.examId
+                        ||
+                        option.dataset.exam
+                        ||
+                        "";
+
+
+                    /*
+                     * If subject has no exam
+                     * information, keep visible.
+                     */
+
+                    if (!optionExamId) {
+
+                        option.hidden =
+                            false;
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * No exam selected.
+                     */
+
+                    if (!examId) {
+
+                        option.hidden =
+                            false;
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Match exam.
+                     */
+
+                    if (
+                        String(optionExamId)
+                        ===
+                        String(examId)
+                    ) {
+
+                        option.hidden =
+                            false;
+
+                    } else {
+
+                        option.hidden =
+                            true;
+
+
+                        /*
+                         * Clear invalid selection.
+                         */
+
+                        if (
+                            option.selected
+                        ) {
+
+                            subjectFilter.value =
+                                "";
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+);
+
+
+/* ============================================================
+   DELETE ENTIRE EXAM
+   ============================================================ */
+
+async function deleteSelectedExam() {
+
+    /*
+     * --------------------------------------------------------
+     * PREVENT DOUBLE REQUEST
+     * --------------------------------------------------------
+     */
+
+    if (deletingExam) {
+        return;
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * GET EXAM SELECT
+     * --------------------------------------------------------
+     */
+
+    const examFilter =
+        document.getElementById(
+            "examFilter"
+        );
+
+
+    const deleteButton =
+        document.getElementById(
+            "deleteSelectedExamBtn"
+        );
+
+
+    if (!examFilter) {
+
+        showExamSubjectError(
+            "Exam filter was not found."
+        );
+
+        return;
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * GET SELECTED EXAM ID
+     * --------------------------------------------------------
+     */
+
+    const examId =
+        examFilter.value;
+
+
+    /*
+     * --------------------------------------------------------
+     * VALIDATE EXAM
+     * --------------------------------------------------------
+     */
+
+    if (!examId) {
+
+        showExamSubjectError(
+            "Please select an exam first."
+        );
+
+        return;
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * GET EXAM NAME
+     * --------------------------------------------------------
+     */
+
+    const selectedOption =
+        examFilter.options[
+            examFilter.selectedIndex
+        ];
+
+
+    let examName =
+        "";
+
+
+    if (selectedOption) {
+
+        examName =
+            selectedOption.dataset.examName
+            ||
+            selectedOption.textContent.trim();
+
+    }
+
+
+    if (!examName) {
+
+        examName =
+            `Exam #${examId}`;
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * CONFIRM
+     * --------------------------------------------------------
+     */
+
+    const confirmed =
+        await showEntireExamDeleteConfirmation(
+            examName
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * LOCK
+     * --------------------------------------------------------
+     */
+
+    deletingExam =
+        true;
+
+
+    let originalHtml =
+        "";
+
+
+    if (deleteButton) {
+
+        originalHtml =
+            deleteButton.innerHTML;
+
+        deleteButton.disabled =
+            true;
+
+        deleteButton.classList.add(
+            "exam-delete-loading"
+        );
+
+        deleteButton.innerHTML =
+            `
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Deleting...</span>
+            `;
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * DELETE REQUEST
+     * --------------------------------------------------------
+     */
+
+    try {
+
+        const response =
+            await fetch(
+                `/exam/${encodeURIComponent(examId)}/delete`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    credentials:
+                        "same-origin"
+                }
+            );
+
+
+        /*
+         * ----------------------------------------------------
+         * READ RESPONSE
+         * ----------------------------------------------------
+         */
+
+        let data = {};
+
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            );
+
+
+        if (
+            contentType
+            &&
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            data =
+                await response.json();
+
+        } else {
+
+            /*
+             * Backend returned HTML.
+             */
+
+            const responseText =
+                await response.text();
+
+            data = {
+                success: false,
+                message:
+                    responseText
+                    ||
+                    "The server returned an invalid response."
+            };
+
+        }
+
+
+        /*
+         * ----------------------------------------------------
+         * CHECK RESPONSE
+         * ----------------------------------------------------
+         */
+
+        if (
+            !response.ok
+            ||
+            data.success !== true
+        ) {
+
+            throw new Error(
+                data.message
+                ||
+                "Unable to delete the entire exam."
+            );
+
+        }
+
+
+        /*
+         * ----------------------------------------------------
+         * SUCCESS
+         * ----------------------------------------------------
+         */
+
+        showExamSubjectSuccess(
+            data.message
+            ||
+            `${examName} and all its exam subjects were deleted successfully.`
+        );
+
+
+        /*
+         * ----------------------------------------------------
+         * RELOAD PAGE
+         * ----------------------------------------------------
+         */
+
+        setTimeout(
+            function () {
+
+                window.location.href =
+                    "{{ url_for('main.all_exam_subjects') }}";
+
+            },
+            900
+        );
+
+
+    } catch (error) {
+
+        /*
+         * ----------------------------------------------------
+         * UNLOCK
+         * ----------------------------------------------------
+         */
+
+        deletingExam =
+            false;
+
+
+        if (deleteButton) {
+
+            deleteButton.disabled =
+                false;
+
+            deleteButton.classList.remove(
+                "exam-delete-loading"
+            );
+
+            deleteButton.innerHTML =
+                originalHtml;
+
+        }
+
+
+        /*
+         * ----------------------------------------------------
+         * ERROR
+         * ----------------------------------------------------
+         */
+
+        showExamSubjectError(
+            error.message
+            ||
+            "Unable to delete the entire exam."
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   DELETE EXAM SUBJECT
+   ============================================================ */
+
+async function deleteExamSubject(button) {
+
+    /*
+     * --------------------------------------------------------
+     * VALIDATE BUTTON
+     * --------------------------------------------------------
+     */
+
+    if (!button) {
+        return;
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * GET DATA
+     * --------------------------------------------------------
+     */
+
+    const examSubjectId =
+        button.dataset.examSubjectId;
+
+
+    const subjectName =
+        button.dataset.subjectName
+        ||
+        `Exam Subject #${examSubjectId}`;
+
+
+    /*
+     * --------------------------------------------------------
+     * VALIDATE ID
+     * --------------------------------------------------------
+     */
+
+    if (!examSubjectId) {
+
+        showExamSubjectError(
+            "Exam subject ID is missing."
+        );
+
+        return;
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * PREVENT DOUBLE CLICK
+     * --------------------------------------------------------
+
+    */
+
+    if (button.disabled) {
+        return;
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * CONFIRM DELETE
+     * --------------------------------------------------------
+     */
 
     const confirmed =
         await showExamSubjectDeleteConfirmation(
@@ -2290,11 +2948,43 @@ async function deleteExamSubject(
     }
 
 
+    /*
+     * --------------------------------------------------------
+     * SAVE ORIGINAL BUTTON
+     * --------------------------------------------------------
+     */
+
+    const originalHtml =
+        button.innerHTML;
+
+
+    /*
+     * --------------------------------------------------------
+     * LOCK BUTTON
+     * --------------------------------------------------------
+     */
+
+    button.disabled =
+        true;
+
+    button.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    button.style.pointerEvents =
+        "none";
+
+
+    /*
+     * --------------------------------------------------------
+     * REQUEST
+     * --------------------------------------------------------
+     */
+
     try {
 
         const response =
             await fetch(
-                `/exam-subjects/${examSubjectId}/delete`,
+                `/exam-subjects/${encodeURIComponent(examSubjectId)}/delete`,
                 {
                     method: "POST",
 
@@ -2304,29 +2994,66 @@ async function deleteExamSubject(
 
                         "Accept":
                             "application/json"
-                    }
+                    },
+
+                    credentials:
+                        "same-origin"
                 }
             );
 
 
+        /*
+         * ----------------------------------------------------
+         * READ RESPONSE
+         * ----------------------------------------------------
+         */
+
         let data = {};
 
 
-        try {
+        const contentType =
+            response.headers.get(
+                "content-type"
+            );
+
+
+        if (
+            contentType
+            &&
+            contentType.includes(
+                "application/json"
+            )
+        ) {
 
             data =
                 await response.json();
 
-        } catch (jsonError) {
+        } else {
 
-            data = {};
+            const responseText =
+                await response.text();
+
+            data = {
+                success: false,
+                message:
+                    responseText
+                    ||
+                    "The server returned an invalid response."
+            };
 
         }
 
 
+        /*
+         * ----------------------------------------------------
+         * CHECK
+         * ----------------------------------------------------
+         */
+
         if (
             !response.ok
-            || !data.success
+            ||
+            data.success !== true
         ) {
 
             throw new Error(
@@ -2338,11 +3065,23 @@ async function deleteExamSubject(
         }
 
 
+        /*
+         * ----------------------------------------------------
+         * FIND ROW
+         * ----------------------------------------------------
+         */
+
         const row =
             document.getElementById(
                 `exam-subject-row-${examSubjectId}`
             );
 
+
+        /*
+         * ----------------------------------------------------
+         * ANIMATE ROW
+         * ----------------------------------------------------
+         */
 
         if (row) {
 
@@ -2357,21 +3096,36 @@ async function deleteExamSubject(
 
 
             setTimeout(
-                () => {
+                function () {
 
                     row.remove();
 
 
                     /*
-                     * Refresh the page when the last
-                     * visible row has been removed.
+                     * Check remaining rows.
                      */
 
-                    const remainingRows =
-                        document.querySelectorAll(
-                            ".exam-subject-table tbody tr"
+                    const tableBody =
+                        document.querySelector(
+                            ".exam-subject-table tbody"
                         );
 
+
+                    if (!tableBody) {
+                        return;
+                    }
+
+
+                    const remainingRows =
+                        tableBody.querySelectorAll(
+                            "tr"
+                        );
+
+
+                    /*
+                     * If empty,
+                     * reload page.
+                     */
 
                     if (
                         remainingRows.length === 0
@@ -2385,8 +3139,18 @@ async function deleteExamSubject(
                 250
             );
 
+        } else {
+
+            window.location.reload();
+
         }
 
+
+        /*
+         * ----------------------------------------------------
+         * SUCCESS
+         * ----------------------------------------------------
+         */
 
         showExamSubjectSuccess(
             data.message
@@ -2396,6 +3160,28 @@ async function deleteExamSubject(
 
 
     } catch (error) {
+
+        /*
+         * ----------------------------------------------------
+         * RESTORE BUTTON
+         * ----------------------------------------------------
+         */
+
+        button.disabled =
+            false;
+
+        button.innerHTML =
+            originalHtml;
+
+        button.style.pointerEvents =
+            "";
+
+
+        /*
+         * ----------------------------------------------------
+         * ERROR
+         * ----------------------------------------------------
+         */
 
         showExamSubjectError(
             error.message
@@ -2409,7 +3195,146 @@ async function deleteExamSubject(
 
 
 /* ============================================================
-   DELETE CONFIRMATION
+   DELETE ENTIRE EXAM CONFIRMATION
+   ============================================================ */
+
+function showEntireExamDeleteConfirmation(
+    examName
+) {
+
+    return new Promise(
+        function (resolve) {
+
+            /*
+             * ------------------------------------------------
+             * SWEETALERT
+             * ------------------------------------------------
+             */
+
+            if (
+                typeof Swal !== "undefined"
+            ) {
+
+                Swal.fire({
+
+                    title:
+                        "Delete Entire Exam?",
+
+                    html:
+                        `
+                        <div style="
+                            text-align:left;
+                            line-height:1.7;
+                        ">
+
+                            <p style="
+                                margin:0 0 10px;
+                                color:#334155;
+                            ">
+                                You are about to delete:
+                            </p>
+
+                            <div style="
+                                padding:12px 14px;
+                                background:#f8fafc;
+                                border-radius:10px;
+                                border:1px solid #e2e8f0;
+                                margin-bottom:12px;
+                                font-weight:800;
+                                color:#06245f;
+                            ">
+                                ${escapeExamSubjectHtml(examName)}
+                            </div>
+
+                            <p style="
+                                margin:0;
+                                color:#dc2626;
+                                font-weight:700;
+                            ">
+                                This will delete the exam and
+                                all Exam Subject records belonging
+                                to this exam.
+                            </p>
+
+                            <p style="
+                                margin:8px 0 0;
+                                color:#64748b;
+                                font-size:12px;
+                            ">
+                                This action cannot be undone.
+                            </p>
+
+                        </div>
+                        `,
+
+                    icon:
+                        "warning",
+
+                    showCancelButton:
+                        true,
+
+                    confirmButtonColor:
+                        "#dc2626",
+
+                    cancelButtonColor:
+                        "#64748b",
+
+                    confirmButtonText:
+                        '<i class="fa-solid fa-trash-can"></i> Yes, Delete Entire Exam',
+
+                    cancelButtonText:
+                        "Cancel",
+
+                    reverseButtons:
+                        true,
+
+                    focusCancel:
+                        true
+
+                }).then(
+                    function (result) {
+
+                        resolve(
+                            result.isConfirmed
+                        );
+
+                    }
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+             * ------------------------------------------------
+             * NATIVE CONFIRM
+             * ------------------------------------------------
+             */
+
+            const confirmed =
+                window.confirm(
+                    `WARNING!\n\n` +
+                    `You are about to delete "${examName}".\n\n` +
+                    `The exam and all its exam subjects will be deleted.\n\n` +
+                    `This action cannot be undone.\n\n` +
+                    `Continue?`
+                );
+
+
+            resolve(
+                confirmed
+            );
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   DELETE EXAM SUBJECT CONFIRMATION
    ============================================================ */
 
 function showExamSubjectDeleteConfirmation(
@@ -2417,10 +3342,12 @@ function showExamSubjectDeleteConfirmation(
 ) {
 
     return new Promise(
-        (resolve) => {
+        function (resolve) {
 
             /*
-             * SweetAlert2
+             * ------------------------------------------------
+             * SWEETALERT
+             * ------------------------------------------------
              */
 
             if (
@@ -2459,10 +3386,13 @@ function showExamSubjectDeleteConfirmation(
                         "Cancel",
 
                     reverseButtons:
+                        true,
+
+                    focusCancel:
                         true
 
                 }).then(
-                    (result) => {
+                    function (result) {
 
                         resolve(
                             result.isConfirmed
@@ -2478,13 +3408,19 @@ function showExamSubjectDeleteConfirmation(
 
 
             /*
-             * Native fallback
+             * ------------------------------------------------
+             * NATIVE CONFIRM
+             * ------------------------------------------------
              */
 
-            resolve(
+            const confirmed =
                 window.confirm(
                     `Are you sure you want to delete "${subjectName}" from this exam?`
-                )
+                );
+
+
+            resolve(
+                confirmed
             );
 
         }
@@ -2525,11 +3461,12 @@ function showExamSubjectSuccess(
         });
 
         return;
-
     }
 
 
-    alert(message);
+    alert(
+        message
+    );
 
 }
 
@@ -2555,16 +3492,20 @@ function showExamSubjectError(
                 "Error",
 
             text:
-                message
+                message,
+
+            confirmButtonText:
+                "OK"
 
         });
 
         return;
-
     }
 
 
-    alert(message);
+    alert(
+        message
+    );
 
 }
 
@@ -2590,133 +3531,6 @@ function escapeExamSubjectHtml(
     return div.innerHTML;
 
 }
-
-
-/* ============================================================
-   OPTIONAL:
-   EXAM → SUBJECT FILTER
-   ============================================================ */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        const examFilter =
-            document.getElementById(
-                "examFilter"
-            );
-
-
-        const subjectFilter =
-            document.getElementById(
-                "subjectFilter"
-            );
-
-
-        if (
-            !examFilter
-            || !subjectFilter
-        ) {
-
-            return;
-
-        }
-
-
-        /*
-         * Only perform client-side filtering when
-         * subject options contain data-exam attributes.
-         *
-         * This keeps the template compatible with routes
-         * that return all subjects.
-         */
-
-        function filterExamSubjects() {
-
-            const examId =
-                examFilter.value;
-
-
-            Array.from(
-                subjectFilter.options
-            ).forEach(
-                function (
-                    option,
-                    index
-                ) {
-
-                    if (
-                        index === 0
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    const optionExam =
-                        option.dataset.exam;
-
-
-                    /*
-                     * If the option does not have an
-                     * exam relation, leave it visible.
-                     */
-
-                    if (
-                        !optionExam
-                    ) {
-
-                        option.hidden =
-                            false;
-
-                        return;
-
-                    }
-
-
-                    if (
-                        !examId
-                        ||
-                        optionExam === examId
-                    ) {
-
-                        option.hidden =
-                            false;
-
-                    } else {
-
-                        option.hidden =
-                            true;
-
-
-                        if (
-                            option.selected
-                        ) {
-
-                            subjectFilter.value =
-                                "";
-
-                        }
-
-                    }
-
-                }
-            );
-
-        }
-
-
-        examFilter.addEventListener(
-            "change",
-            filterExamSubjects
-        );
-
-
-        filterExamSubjects();
-
-    }
-);
 
 </script>
 

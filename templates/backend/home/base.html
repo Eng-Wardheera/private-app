@@ -389,61 +389,482 @@
   })();
 </script>
 
-<!-- Online Status Checker for All Users -->
+<!-- ============================================================
+     ONLINE STATUS CHECKER
+============================================================ -->
 <script>
-  (function () {
-    async function fetchAllUsersStatus() {
-      try {
-        const response = await fetch("/api/online-status");
-        const users = await response.json();
+(function () {
 
-        users.forEach(user => {
-          const el = document.getElementById(`user-status-${current_user.id}`);
-          if (el) {
-            el.innerHTML = user.is_online
-              ? `<span class="badge bg-success text-white">Online</span>`
-              : `<small class="text-muted">Last seen: ${user.last_seen_ago}</small>`;
-          }
-        });
-      } catch (err) {
-        console.error("Error updating all users' status:", err);
-      }
+    "use strict";
+
+
+    /* =========================================================
+       UPDATE SINGLE USER / TEACHER STATUS
+    ========================================================= */
+    async function updateSingleUserStatus(userId, entityType = "user") {
+
+        try {
+
+            const response = await fetch(
+                "/api/online-status",
+                {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    },
+                    credentials: "same-origin"
+                }
+            );
+
+
+            /* -------------------------------------------------
+               Request failed
+            ------------------------------------------------- */
+            if (!response.ok) {
+
+                console.error(
+                    "Online status request failed:",
+                    response.status,
+                    response.statusText
+                );
+
+                return;
+            }
+
+
+            const users = await response.json();
+
+
+            /* -------------------------------------------------
+               API must return array
+            ------------------------------------------------- */
+            if (!Array.isArray(users)) {
+
+                console.error(
+                    "Invalid online-status response:",
+                    users
+                );
+
+                return;
+            }
+
+
+            /* -------------------------------------------------
+               Find requested user / teacher
+            ------------------------------------------------- */
+            const person = users.find(function (item) {
+
+                return (
+                    String(item.id) === String(userId) &&
+                    (
+                        item.entity_type === entityType ||
+                        !entityType
+                    )
+                );
+
+            });
+
+
+            if (!person) {
+                return;
+            }
+
+
+            /* -------------------------------------------------
+               Find status element
+            ------------------------------------------------- */
+            let el = document.getElementById(
+                `user-status-${entityType}-${userId}`
+            );
+
+
+            /* -------------------------------------------------
+               Backward compatibility with old ID
+            ------------------------------------------------- */
+            if (!el) {
+
+                el = document.getElementById(
+                    `user-last-active-${userId}`
+                );
+
+            }
+
+
+            if (!el) {
+                return;
+            }
+
+
+            /* -------------------------------------------------
+               ONLINE
+            ------------------------------------------------- */
+            if (person.is_online) {
+
+                el.innerHTML = `
+                    <span class="badge bg-success text-white">
+                        Online
+                    </span>
+                `;
+
+            }
+
+
+            /* -------------------------------------------------
+               OFFLINE
+            ------------------------------------------------- */
+            else {
+
+                el.innerHTML = `
+                    <small class="text-muted">
+                        Last seen:
+                        ${person.last_seen_ago || "Never"}
+                    </small>
+                `;
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Error updating single user status:",
+                error
+            );
+
+        }
+
     }
 
-    setInterval(fetchAllUsersStatus, 1000); // every second
-    window.addEventListener("DOMContentLoaded", fetchAllUsersStatus);
-  })();
+
+    /* =========================================================
+       UPDATE ALL USERS / TEACHERS
+    ========================================================= */
+    async function fetchAllUsersStatus() {
+
+        try {
+
+            const response = await fetch(
+                "/api/online-status",
+                {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    },
+                    credentials: "same-origin"
+                }
+            );
+
+
+            if (!response.ok) {
+
+                console.error(
+                    "Online status request failed:",
+                    response.status,
+                    response.statusText
+                );
+
+                return;
+            }
+
+
+            const users = await response.json();
+
+
+            if (!Array.isArray(users)) {
+
+                console.error(
+                    "Invalid online-status response:",
+                    users
+                );
+
+                return;
+            }
+
+
+            users.forEach(function (user) {
+
+                const entityType =
+                    user.entity_type || "user";
+
+
+                /* -------------------------------------------------
+                   New status ID
+                ------------------------------------------------- */
+                let el = document.getElementById(
+                    `user-status-${entityType}-${user.id}`
+                );
+
+
+                /* -------------------------------------------------
+                   Old status ID
+                ------------------------------------------------- */
+                if (!el) {
+
+                    el = document.getElementById(
+                        `user-last-active-${user.id}`
+                    );
+
+                }
+
+
+                if (!el) {
+                    return;
+                }
+
+
+                /* -------------------------------------------------
+                   ONLINE
+                ------------------------------------------------- */
+                if (user.is_online) {
+
+                    el.innerHTML = `
+                        <span class="badge bg-success text-white">
+                            Online
+                        </span>
+                    `;
+
+                }
+
+
+                /* -------------------------------------------------
+                   OFFLINE
+                ------------------------------------------------- */
+                else {
+
+                    el.innerHTML = `
+                        <small class="text-muted">
+                            Last seen:
+                            ${user.last_seen_ago || "Never"}
+                        </small>
+                    `;
+
+                }
+
+            });
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Error updating users/teachers status:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       MAKE FUNCTION AVAILABLE GLOBALLY
+       
+       This prevents:
+       updateSingleUserStatus is not defined
+    ========================================================= */
+    window.updateSingleUserStatus =
+        updateSingleUserStatus;
+
+
+    window.fetchAllUsersStatus =
+        fetchAllUsersStatus;
+
+
+    /* =========================================================
+       FIRST LOAD
+    ========================================================= */
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            fetchAllUsersStatus();
+
+        }
+    );
+
+
+    /* =========================================================
+       AUTO REFRESH
+    ========================================================= */
+    setInterval(
+        fetchAllUsersStatus,
+        5000
+    );
+
+
+})();
 </script>
 
 <!-- Single User Status Updater (for detailed page) -->
 <script>
-  (function () {
-    async function updateSingleUserStatus(userId) {
-      try {
-        const response = await fetch(`/api/user-last-active/${userId}`);
-        if (!response.ok) throw new Error("Failed to get last active");
+(function () {
 
-        const data = await response.json();
-        const el = document.getElementById(`user-last-active-${data.id}`);
+    "use strict";
 
-        if (el) {
-          if (data.is_online) {
-            el.innerHTML = `<span class="badge bg-success text-white">Online</span>`;
-          } else {
-            el.innerHTML = `Last Active: ${data.formatted_time} (${data.last_seen_ago})`;
-          }
+
+    /* =========================================================
+       UPDATE ALL USER + TEACHER STATUS
+    ========================================================= */
+
+    async function updateAllOnlineStatus() {
+
+        try {
+
+            const response = await fetch(
+                "/api/online-status",
+                {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    },
+                    credentials: "same-origin"
+                }
+            );
+
+
+            if (!response.ok) {
+
+                console.error(
+                    "Failed to get online status:",
+                    response.status
+                );
+
+                return;
+            }
+
+
+            const data = await response.json();
+
+
+            /*
+             * API-ga waa inuu soo celiyaa ARRAY
+             */
+
+            if (!Array.isArray(data)) {
+
+                console.error(
+                    "Invalid online status response:",
+                    data
+                );
+
+                return;
+            }
+
+
+            data.forEach(function (user) {
+
+                const entityType =
+                    user.entity_type || "user";
+
+
+                /*
+                 * New ID format:
+                 *
+                 * user-status-user-3
+                 * user-status-teacher-3
+                 */
+
+                const statusElement =
+                    document.getElementById(
+                        `user-status-${entityType}-${user.id}`
+                    );
+
+
+                /*
+                 * Old ID support:
+                 *
+                 * user-last-active-3
+                 *
+                 * Haddii HTML-gaaga weli isticmaalo
+                 * ID-gan, sidoo kale wuu shaqaynayaa.
+                 */
+
+                const oldElement =
+                    document.getElementById(
+                        `user-last-active-${user.id}`
+                    );
+
+
+                const element =
+                    statusElement || oldElement;
+
+
+                if (!element) {
+                    return;
+                }
+
+
+                /* =================================================
+                   ONLINE
+                ================================================= */
+
+                if (user.is_online) {
+
+                    element.innerHTML = `
+                        <span class="badge bg-success text-white">
+                            Online
+                        </span>
+                    `;
+
+                }
+
+
+                /* =================================================
+                   OFFLINE
+                ================================================= */
+
+                else {
+
+                    element.innerHTML = `
+                        <small class="text-muted">
+                            Last Active:
+                            ${user.last_seen_ago || "Never"}
+                        </small>
+                    `;
+
+                }
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error updating online status:",
+                error
+            );
+
         }
-      } catch (err) {
-        console.error(err);
-      }
+
     }
 
-    setInterval(() => {
-      updateSingleUserStatus({{ current_user.id }});
-    }, 5000); // every 5s
-  })();
 
-  
+    /* =========================================================
+       FIRST LOAD
+    ========================================================= */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            updateAllOnlineStatus();
+
+        }
+    );
+
+
+    /* =========================================================
+       REFRESH EVERY 10 SECONDS
+    ========================================================= */
+
+    setInterval(
+        updateAllOnlineStatus,
+        10000
+    );
+
+
+})();
 </script>
 
 <link rel="stylesheet"

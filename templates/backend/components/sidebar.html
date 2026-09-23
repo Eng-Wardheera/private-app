@@ -362,7 +362,7 @@
                             {% endif %}
 
 
-                            <li>
+                            <!-- <li>
 
                                 <a href="#">
 
@@ -372,7 +372,7 @@
 
                                 </a>
 
-                            </li>
+                            </li> -->
 
                         </ul>
 
@@ -406,7 +406,7 @@
 
                         <ul class="nav nav-collapse">
 
-                            <li>
+                            <!-- <li>
 
                                 <a href="">
 
@@ -416,7 +416,7 @@
 
                                 </a>
 
-                            </li>
+                            </li> -->
 
 
                             {% if current_user.is_superadmin() or current_user.is_school_admin() or current_user.is_branch_admin() %}
@@ -467,27 +467,31 @@
 
                         <ul class="nav nav-collapse">
 
-                            <li>
-
-                                <a href="{{url_for('main.all_classes')}}">
-
-                                    <span class="sub-item">
-                                        All Classes
-                                    </span>
-
-                                </a>
-
-                            </li>
+                           
 
 
                             {% if current_user.is_superadmin() or current_user.is_school_admin() or current_user.is_branch_admin() %}
 
-                            <li>
+                            <!-- <li>
+                                
 
                                 <a href="#">
 
                                     <span class="sub-item">
                                         Add Class
+                                    </span>
+
+                                </a>
+
+                            </li> -->
+
+
+                             <li>
+
+                                <a href="{{url_for('main.all_classes')}}">
+
+                                    <span class="sub-item">
+                                        All Classes
                                     </span>
 
                                 </a>

@@ -394,6 +394,88 @@
 }
 
 /* ============================================================
+   DATATABLE TOOLBAR
+   ============================================================ */
+
+.classes-datatable-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 13px 20px;
+    background: #fbfcfe;
+    border-bottom: 1px solid #edf0f3;
+}
+
+.classes-datatable-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.classes-datatable-info i {
+    color: #06245f;
+}
+
+.classes-datatable-search {
+    position: relative;
+    width: min(320px, 100%);
+}
+
+.classes-datatable-search i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.classes-datatable-search input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px 0 36px;
+    border: 1px solid #dbe1e8;
+    border-radius: 9px;
+    outline: none;
+    background: #fff;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 12px;
+    box-sizing: border-box;
+    transition: .2s ease;
+}
+
+.classes-datatable-search input:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.classes-datatable-clear {
+    height: 38px;
+    padding: 0 12px;
+    margin-left: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #fff;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.classes-datatable-clear:hover {
+    border-color: #06245f;
+    color: #06245f;
+    background: #f8fbff;
+}
+
+/* ============================================================
    TABLE
    ============================================================ */
 
@@ -421,6 +503,44 @@
     white-space: nowrap;
 }
 
+/* ============================================================
+   DATATABLE SORTABLE HEADER
+   ============================================================ */
+
+.classes-table thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background .18s ease, color .18s ease;
+}
+
+.classes-table thead th.sortable:hover {
+    background: #eef3fa;
+    color: #06245f;
+}
+
+.classes-table thead th .sort-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.classes-table thead th .sort-icon {
+    width: 13px;
+    color: #cbd5e1;
+    font-size: 10px;
+    transition: .18s ease;
+}
+
+.classes-table thead th.sort-asc,
+.classes-table thead th.sort-desc {
+    color: #06245f;
+}
+
+.classes-table thead th.sort-asc .sort-icon,
+.classes-table thead th.sort-desc .sort-icon {
+    color: #06245f;
+}
+
 .classes-table tbody td {
     padding: 14px 15px;
     border-bottom: 1px solid #eef2f6;
@@ -430,7 +550,10 @@
 }
 
 .classes-table tbody tr {
-    transition: background .15s ease;
+    transition:
+        background .15s ease,
+        opacity .25s ease,
+        transform .25s ease;
 }
 
 .classes-table tbody tr:hover {
@@ -637,6 +760,42 @@
 }
 
 /* ============================================================
+   DATATABLE NO RESULTS
+   ============================================================ */
+
+.classes-datatable-no-results {
+    display: none;
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.classes-datatable-no-results .dt-no-results-icon {
+    width: 55px;
+    height: 55px;
+    margin: 0 auto 12px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    color: #06245f;
+    font-size: 21px;
+}
+
+.classes-datatable-no-results h4 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.classes-datatable-no-results p {
+    margin: 6px 0 0;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+/* ============================================================
    EMPTY STATE
    ============================================================ */
 
@@ -830,6 +989,15 @@
     .classes-table-header {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .classes-datatable-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .classes-datatable-search {
+        width: 100%;
     }
 
     .classes-pagination {
@@ -1356,7 +1524,10 @@
 
             </div>
 
-            <div class="classes-table-meta">
+            <div
+                class="classes-table-meta"
+                id="classesTableServerCount"
+            >
 
                 {% if pagination.total %}
 
@@ -1377,54 +1548,243 @@
         {% if classes %}
 
             <!-- =================================================
+                 DATATABLE TOOLBAR
+                 ================================================= -->
+
+            <div class="classes-datatable-toolbar">
+
+                <div
+                    class="classes-datatable-info"
+                    id="classesDataTableInfo"
+                >
+
+                    <i class="fa-solid fa-table-list"></i>
+
+                    <span>
+                        Showing current page records
+                    </span>
+
+                </div>
+
+
+                <div class="classes-datatable-search">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input
+                        type="text"
+                        id="classesDataTableSearch"
+                        autocomplete="off"
+                        placeholder="Search current table..."
+                        aria-label="Search current table"
+                    >
+
+                    <button
+                        type="button"
+                        id="classesDataTableClear"
+                        class="classes-datatable-clear"
+                        title="Clear table search"
+                    >
+                        Clear
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
                  TABLE
                  ================================================= -->
 
             <div class="classes-table-wrapper">
 
-                <table class="classes-table">
+                <table
+                    class="classes-table"
+                    id="classesDataTable"
+                >
 
                     <thead>
 
                         <tr>
 
-                            <th>
-                                Class
+                            <!-- CLASS -->
+
+                            <th
+                                class="sortable"
+                                data-column="0"
+                                scope="col"
+                            >
+                                <span class="sort-header">
+
+                                    Class
+
+                                    <span class="sort-icon">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </span>
+
+                                </span>
                             </th>
 
-                            <th>
-                                Code
+
+                            <!-- CODE -->
+
+                            <th
+                                class="sortable"
+                                data-column="1"
+                                scope="col"
+                            >
+                                <span class="sort-header">
+
+                                    Code
+
+                                    <span class="sort-icon">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </span>
+
+                                </span>
                             </th>
 
-                            <th>
-                                Institution
+
+                            <!-- INSTITUTION -->
+
+                            <th
+                                class="sortable"
+                                data-column="2"
+                                scope="col"
+                            >
+                                <span class="sort-header">
+
+                                    Institution
+
+                                    <span class="sort-icon">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </span>
+
+                                </span>
                             </th>
 
-                            <th>
-                                Branch
+
+                            <!-- BRANCH -->
+
+                            <th
+                                class="sortable"
+                                data-column="3"
+                                scope="col"
+                            >
+                                <span class="sort-header">
+
+                                    Branch
+
+                                    <span class="sort-icon">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </span>
+
+                                </span>
                             </th>
 
-                            <th>
-                                Program
+
+                            <!-- PROGRAM -->
+
+                            <th
+                                class="sortable"
+                                data-column="4"
+                                scope="col"
+                            >
+                                <span class="sort-header">
+
+                                    Program
+
+                                    <span class="sort-icon">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </span>
+
+                                </span>
                             </th>
 
-                            <th>
-                                Academic Year
+
+                            <!-- ACADEMIC YEAR -->
+
+                            <th
+                                class="sortable"
+                                data-column="5"
+                                scope="col"
+                            >
+                                <span class="sort-header">
+
+                                    Academic Year
+
+                                    <span class="sort-icon">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </span>
+
+                                </span>
                             </th>
 
-                            <th>
-                                Level
+
+                            <!-- LEVEL -->
+
+                            <th
+                                class="sortable"
+                                data-column="6"
+                                scope="col"
+                            >
+                                <span class="sort-header">
+
+                                    Level
+
+                                    <span class="sort-icon">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </span>
+
+                                </span>
                             </th>
 
-                            <th>
-                                Capacity
+
+                            <!-- CAPACITY -->
+
+                            <th
+                                class="sortable"
+                                data-column="7"
+                                scope="col"
+                            >
+                                <span class="sort-header">
+
+                                    Capacity
+
+                                    <span class="sort-icon">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </span>
+
+                                </span>
                             </th>
 
-                            <th>
-                                Status
+
+                            <!-- STATUS -->
+
+                            <th
+                                class="sortable"
+                                data-column="8"
+                                scope="col"
+                            >
+                                <span class="sort-header">
+
+                                    Status
+
+                                    <span class="sort-icon">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </span>
+
+                                </span>
                             </th>
 
-                            <th style="text-align:right;">
+
+                            <!-- ACTIONS -->
+
+                            <th
+                                scope="col"
+                                style="text-align:right;"
+                            >
                                 Actions
                             </th>
 
@@ -1437,7 +1797,11 @@
 
                         {% for class in classes %}
 
-                            <tr id="class-row-{{ class.id }}">
+                            <tr
+                                id="class-row-{{ class.id }}"
+                                data-class-row="true"
+                                data-class-id="{{ class.id }}"
+                            >
 
                                 <!-- CLASS -->
 
@@ -1463,7 +1827,7 @@
                                         <div class="class-main-name">
 
                                             <strong>
-                                                {{ class.name }}
+                                                {{ class.name or '—' }}
                                             </strong>
 
                                             <span>
@@ -1481,9 +1845,19 @@
 
                                 <td>
 
-                                    <span class="class-code">
-                                        {{ class.code }}
-                                    </span>
+                                    {% if class.code %}
+
+                                        <span class="class-code">
+                                            {{ class.code }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span style="color:#94a3b8;">
+                                            —
+                                        </span>
+
+                                    {% endif %}
 
                                 </td>
 
@@ -1663,10 +2037,10 @@
                                 <td>
 
                                     <span
-                                        class="class-status {{ class.status }}"
+                                        class="class-status {{ (class.status or 'inactive')|lower }}"
                                     >
 
-                                        {{ class.status }}
+                                        {{ class.status or 'inactive' }}
 
                                     </span>
 
@@ -1682,9 +2056,13 @@
                                         <!-- VIEW -->
 
                                         <a
-                                            href="{{ url_for('main.view_class', class_id=class.id) }}"
+                                            href="{{ url_for(
+                                                'main.view_class',
+                                                class_id=class.id
+                                            ) }}"
                                             class="class-action-btn class-action-view"
                                             title="View Class"
+                                            aria-label="View Class"
                                         >
 
                                             <i class="fa-solid fa-eye"></i>
@@ -1695,9 +2073,13 @@
                                         <!-- EDIT -->
 
                                         <a
-                                            href="{{ url_for('main.edit_class', class_id=class.id) }}"
+                                            href="{{ url_for(
+                                                'main.edit_class',
+                                                class_id=class.id
+                                            ) }}"
                                             class="class-action-btn class-action-edit"
                                             title="Edit Class"
+                                            aria-label="Edit Class"
                                         >
 
                                             <i class="fa-solid fa-pen"></i>
@@ -1711,7 +2093,11 @@
                                             type="button"
                                             class="class-action-btn class-action-delete"
                                             title="Delete Class"
-                                            onclick="deleteClass({{ class.id }}, {{ class.name|tojson }})"
+                                            aria-label="Delete Class"
+                                            onclick="deleteClass(
+                                                {{ class.id }},
+                                                {{ class.name|default('Class')|tojson }}
+                                            )"
                                         >
 
                                             <i class="fa-solid fa-trash"></i>
@@ -1729,6 +2115,32 @@
                     </tbody>
 
                 </table>
+
+            </div>
+
+
+            <!-- =================================================
+                 DATATABLE NO RESULTS
+                 ================================================= -->
+
+            <div
+                class="classes-datatable-no-results"
+                id="classesDataTableNoResults"
+            >
+
+                <div class="dt-no-results-icon">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                </div>
+
+                <h4>
+                    No Matching Classes
+                </h4>
+
+                <p>
+                    No classes on this page match your table search.
+                </p>
 
             </div>
 
@@ -1785,6 +2197,7 @@
                             ) }}"
                             class="pagination-btn"
                             title="First page"
+                            aria-label="First page"
                         >
 
                             <i class="fa-solid fa-angles-left"></i>
@@ -1793,8 +2206,13 @@
 
                     {% else %}
 
-                        <span class="pagination-btn disabled">
+                        <span
+                            class="pagination-btn disabled"
+                            aria-disabled="true"
+                        >
+
                             <i class="fa-solid fa-angles-left"></i>
+
                         </span>
 
                     {% endif %}
@@ -1817,11 +2235,24 @@
                                 status=selected_status
                             ) }}"
                             class="pagination-btn"
+                            title="Previous page"
+                            aria-label="Previous page"
                         >
 
                             <i class="fa-solid fa-angle-left"></i>
 
                         </a>
+
+                    {% else %}
+
+                        <span
+                            class="pagination-btn disabled"
+                            aria-disabled="true"
+                        >
+
+                            <i class="fa-solid fa-angle-left"></i>
+
+                        </span>
 
                     {% endif %}
 
@@ -1840,26 +2271,36 @@
                     {% endif %}
 
 
-                    {% for page_num in range(start_page, end_page + 1) %}
+                    {% if pagination.pages > 0 %}
 
-                        <a
-                            href="{{ url_for(
-                                'main.all_classes',
-                                page=page_num,
-                                per_page=per_page,
-                                search=search,
-                                institution_id=selected_institution_id,
-                                branch_id=selected_branch_id,
-                                program_id=selected_program_id,
-                                academic_year_id=selected_academic_year_id,
-                                status=selected_status
-                            ) }}"
-                            class="pagination-btn {% if page_num == pagination.page %}active{% endif %}"
-                        >
-                            {{ page_num }}
-                        </a>
+                        {% for page_num in range(
+                            start_page,
+                            end_page + 1
+                        ) %}
 
-                    {% endfor %}
+                            <a
+                                href="{{ url_for(
+                                    'main.all_classes',
+                                    page=page_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id,
+                                    program_id=selected_program_id,
+                                    academic_year_id=selected_academic_year_id,
+                                    status=selected_status
+                                ) }}"
+                                class="pagination-btn {% if page_num == pagination.page %}active{% endif %}"
+                                {% if page_num == pagination.page %}
+                                    aria-current="page"
+                                {% endif %}
+                            >
+                                {{ page_num }}
+                            </a>
+
+                        {% endfor %}
+
+                    {% endif %}
 
 
                     <!-- NEXT -->
@@ -1879,11 +2320,24 @@
                                 status=selected_status
                             ) }}"
                             class="pagination-btn"
+                            title="Next page"
+                            aria-label="Next page"
                         >
 
                             <i class="fa-solid fa-angle-right"></i>
 
                         </a>
+
+                    {% else %}
+
+                        <span
+                            class="pagination-btn disabled"
+                            aria-disabled="true"
+                        >
+
+                            <i class="fa-solid fa-angle-right"></i>
+
+                        </span>
 
                     {% endif %}
 
@@ -1906,6 +2360,7 @@
                             ) }}"
                             class="pagination-btn"
                             title="Last page"
+                            aria-label="Last page"
                         >
 
                             <i class="fa-solid fa-angles-right"></i>
@@ -1914,8 +2369,13 @@
 
                     {% else %}
 
-                        <span class="pagination-btn disabled">
+                        <span
+                            class="pagination-btn disabled"
+                            aria-disabled="true"
+                        >
+
                             <i class="fa-solid fa-angles-right"></i>
+
                         </span>
 
                     {% endif %}
@@ -1943,6 +2403,7 @@
                 </h3>
 
                 <p>
+
                     {% if search or selected_institution_id
                         or selected_branch_id
                         or selected_program_id
@@ -1958,6 +2419,7 @@
                         Create your first class to get started.
 
                     {% endif %}
+
                 </p>
 
 
@@ -2006,6 +2468,10 @@
 
 <script>
 
+/* ============================================================
+   DELETE CLASS
+   ============================================================ */
+
 async function deleteClass(classId, className) {
 
     const confirmed = await showClassDeleteConfirmation(
@@ -2029,20 +2495,30 @@ async function deleteClass(classId, className) {
             }
         );
 
+
         let data = {};
 
         try {
+
             data = await response.json();
+
         } catch (jsonError) {
+
             data = {};
+
         }
 
-        if (!response.ok || !data.success) {
+
+        if (
+            !response.ok
+            || !data.success
+        ) {
 
             throw new Error(
                 data.message ||
                 "Unable to delete the class."
             );
+
         }
 
 
@@ -2050,39 +2526,68 @@ async function deleteClass(classId, className) {
             `class-row-${classId}`
         );
 
+
         if (row) {
 
             row.style.transition =
                 "opacity .25s ease, transform .25s ease";
 
             row.style.opacity = "0";
-            row.style.transform = "translateX(20px)";
+
+            row.style.transform =
+                "translateX(20px)";
+
 
             setTimeout(() => {
 
                 row.remove();
 
+
                 /*
-                 * If no rows remain, refresh the page
-                 * so empty state + statistics are correct.
+                 * Refresh DataTable state
+                 */
+
+                if (
+                    typeof window.refreshClassesDataTable
+                    === "function"
+                ) {
+
+                    window.refreshClassesDataTable();
+
+                }
+
+
+                /*
+                 * If no rows remain,
+                 * reload the page so that
+                 * statistics + pagination
+                 * remain correct.
                  */
 
                 const remainingRows =
                     document.querySelectorAll(
-                        ".classes-table tbody tr"
+                        "#classesDataTable tbody tr[data-class-row='true']"
                     );
 
-                if (remainingRows.length === 0) {
+
+                if (
+                    remainingRows.length === 0
+                ) {
+
                     window.location.reload();
+
                 }
 
             }, 250);
+
         }
+
 
         showClassSuccess(
             data.message ||
             "Class deleted successfully."
         );
+
 
     } catch (error) {
 
@@ -2090,7 +2595,9 @@ async function deleteClass(classId, className) {
             error.message ||
             "Unable to delete the class."
         );
+
     }
+
 }
 
 
@@ -2101,6 +2608,7 @@ async function deleteClass(classId, className) {
 function showClassDeleteConfirmation(className) {
 
     return new Promise((resolve) => {
+
 
         /*
          * SweetAlert2 if available
@@ -2145,6 +2653,7 @@ function showClassDeleteConfirmation(className) {
             });
 
             return;
+
         }
 
 
@@ -2159,6 +2668,7 @@ function showClassDeleteConfirmation(className) {
         );
 
     });
+
 }
 
 
@@ -2187,9 +2697,11 @@ function showClassSuccess(message) {
         });
 
         return;
+
     }
 
     alert(message);
+
 }
 
 
@@ -2214,9 +2726,11 @@ function showClassError(message) {
         });
 
         return;
+
     }
 
     alert(message);
+
 }
 
 
@@ -2233,6 +2747,7 @@ function escapeHtml(value) {
         value ?? "";
 
     return div.innerHTML;
+
 }
 
 
@@ -2249,10 +2764,12 @@ document.addEventListener(
                 "institutionFilter"
             );
 
+
         const branchFilter =
             document.getElementById(
                 "branchFilter"
             );
+
 
         const programFilter =
             document.getElementById(
@@ -2265,7 +2782,9 @@ document.addEventListener(
             || !branchFilter
             || !programFilter
         ) {
+
             return;
+
         }
 
 
@@ -2281,14 +2800,21 @@ document.addEventListener(
 
             Array.from(
                 branchFilter.options
-            ).forEach(function (option, index) {
+            ).forEach(function (
+                option,
+                index
+            ) {
 
                 if (index === 0) {
+
                     return;
+
                 }
+
 
                 const optionInstitution =
                     option.dataset.institution;
+
 
                 if (
                     !institutionId
@@ -2302,10 +2828,13 @@ document.addEventListener(
 
                     option.hidden = true;
 
+
                     if (
                         option.selected
                     ) {
+
                         branchFilter.value = "";
+
                     }
 
                 }
@@ -2319,14 +2848,21 @@ document.addEventListener(
 
             Array.from(
                 programFilter.options
-            ).forEach(function (option, index) {
+            ).forEach(function (
+                option,
+                index
+            ) {
 
                 if (index === 0) {
+
                     return;
+
                 }
+
 
                 const optionInstitution =
                     option.dataset.institution;
+
 
                 if (
                     !institutionId
@@ -2340,10 +2876,13 @@ document.addEventListener(
 
                     option.hidden = true;
 
+
                     if (
                         option.selected
                     ) {
+
                         programFilter.value = "";
+
                     }
 
                 }
@@ -2360,6 +2899,613 @@ document.addEventListener(
 
 
         filterRelatedOptions();
+
+    }
+);
+
+
+/* ============================================================
+   CLASSES DATA TABLE
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const table =
+            document.getElementById(
+                "classesDataTable"
+            );
+
+
+        const searchInput =
+            document.getElementById(
+                "classesDataTableSearch"
+            );
+
+
+        const clearButton =
+            document.getElementById(
+                "classesDataTableClear"
+            );
+
+
+        const info =
+            document.getElementById(
+                "classesDataTableInfo"
+            );
+
+
+        const noResults =
+            document.getElementById(
+                "classesDataTableNoResults"
+            );
+
+
+        if (
+            !table
+            || !searchInput
+            || !clearButton
+            || !info
+        ) {
+
+            return;
+
+        }
+
+
+        const tbody =
+            table.querySelector("tbody");
+
+
+        if (!tbody) {
+
+            return;
+
+        }
+
+
+        let rows =
+            Array.from(
+                tbody.querySelectorAll(
+                    "tr[data-class-row='true']"
+                )
+            );
+
+
+        let currentSortColumn = null;
+
+        let currentSortDirection = "asc";
+
+
+        /* ====================================================
+           NORMALIZE VALUE
+           ==================================================== */
+
+        function normalizeValue(value) {
+
+            return String(
+                value ?? ""
+            )
+                .replace(/\s+/g, " ")
+                .trim()
+                .toLowerCase();
+
+        }
+
+
+        /* ====================================================
+           GET CELL VALUE
+           ==================================================== */
+
+        function getCellValue(row, columnIndex) {
+
+            const cell =
+                row.cells[columnIndex];
+
+
+            if (!cell) {
+
+                return "";
+
+            }
+
+
+            /*
+             * Use data-sort-value when available.
+             */
+
+            if (
+                cell.dataset
+                && cell.dataset.sortValue
+            ) {
+
+                return normalizeValue(
+                    cell.dataset.sortValue
+                );
+
+            }
+
+
+            return normalizeValue(
+                cell.innerText
+            );
+
+        }
+
+
+        /* ====================================================
+           NUMERIC CHECK
+           ==================================================== */
+
+        function isNumeric(value) {
+
+            if (
+                value === ""
+                || value === "—"
+                || value === "unlimited"
+            ) {
+
+                return false;
+
+            }
+
+
+            return !isNaN(
+                Number(
+                    value.replace(/,/g, "")
+                )
+            );
+
+        }
+
+
+        /* ====================================================
+           SORT ROWS
+           ==================================================== */
+
+        function sortRows(columnIndex) {
+
+            if (
+                currentSortColumn
+                === columnIndex
+            ) {
+
+                currentSortDirection =
+                    currentSortDirection === "asc"
+                        ? "desc"
+                        : "asc";
+
+            } else {
+
+                currentSortColumn =
+                    columnIndex;
+
+                currentSortDirection =
+                    "asc";
+
+            }
+
+
+            rows.sort(function (
+                rowA,
+                rowB
+            ) {
+
+                const valueA =
+                    getCellValue(
+                        rowA,
+                        columnIndex
+                    );
+
+
+                const valueB =
+                    getCellValue(
+                        rowB,
+                        columnIndex
+                    );
+
+
+                let comparison = 0;
+
+
+                if (
+                    isNumeric(valueA)
+                    && isNumeric(valueB)
+                ) {
+
+                    comparison =
+                        Number(
+                            valueA.replace(/,/g, "")
+                        )
+                        -
+                        Number(
+                            valueB.replace(/,/g, "")
+                        );
+
+                } else {
+
+                    comparison =
+                        valueA.localeCompare(
+                            valueB,
+                            undefined,
+                            {
+                                numeric: true,
+                                sensitivity: "base"
+                            }
+                        );
+
+                }
+
+
+                return (
+                    currentSortDirection === "asc"
+                        ? comparison
+                        : -comparison
+                );
+
+            });
+
+
+            rows.forEach(function (row) {
+
+                tbody.appendChild(row);
+
+            });
+
+
+            updateSortIndicators();
+
+            applySearch();
+
+        }
+
+
+        /* ====================================================
+           SORT INDICATORS
+           ==================================================== */
+
+        function updateSortIndicators() {
+
+            const headers =
+                table.querySelectorAll(
+                    "thead th.sortable"
+                );
+
+
+            headers.forEach(function (header) {
+
+                const icon =
+                    header.querySelector(
+                        ".sort-icon i"
+                    );
+
+
+                if (!icon) {
+
+                    return;
+
+                }
+
+
+                header.classList.remove(
+                    "sort-asc",
+                    "sort-desc"
+                );
+
+
+                icon.className =
+                    "fa-solid fa-sort";
+
+
+                const column =
+                    Number(
+                        header.dataset.column
+                    );
+
+
+                if (
+                    column
+                    === currentSortColumn
+                ) {
+
+                    if (
+                        currentSortDirection
+                        === "asc"
+                    ) {
+
+                        header.classList.add(
+                            "sort-asc"
+                        );
+
+                        icon.className =
+                            "fa-solid fa-sort-up";
+
+                    } else {
+
+                        header.classList.add(
+                            "sort-desc"
+                        );
+
+                        icon.className =
+                            "fa-solid fa-sort-down";
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+        /* ====================================================
+           APPLY SEARCH
+           ==================================================== */
+
+        function applySearch() {
+
+            const query =
+                normalizeValue(
+                    searchInput.value
+                );
+
+
+            let visibleCount = 0;
+
+
+            rows.forEach(function (row) {
+
+                const text =
+                    normalizeValue(
+                        row.innerText
+                    );
+
+
+                const matches =
+                    !query
+                    || text.includes(query);
+
+
+                if (matches) {
+
+                    row.style.display = "";
+
+                    visibleCount++;
+
+                } else {
+
+                    row.style.display = "none";
+
+                }
+
+            });
+
+
+            if (
+                noResults
+            ) {
+
+                if (
+                    rows.length > 0
+                    && visibleCount === 0
+                ) {
+
+                    noResults.style.display =
+                        "block";
+
+                } else {
+
+                    noResults.style.display =
+                        "none";
+
+                }
+
+            }
+
+
+            info.innerHTML =
+                `
+                <i class="fa-solid fa-table-list"></i>
+                <span>
+                    Showing
+                    <strong>${visibleCount}</strong>
+                    of
+                    <strong>${rows.length}</strong>
+                    records on this page
+                </span>
+                `;
+
+        }
+
+
+        /* ====================================================
+           SEARCH INPUT
+           ==================================================== */
+
+        searchInput.addEventListener(
+            "input",
+            function () {
+
+                applySearch();
+
+            }
+        );
+
+
+        /* ====================================================
+           CLEAR SEARCH
+           ==================================================== */
+
+        clearButton.addEventListener(
+            "click",
+            function () {
+
+                searchInput.value = "";
+
+                applySearch();
+
+                searchInput.focus();
+
+            }
+        );
+
+
+        /* ====================================================
+           HEADER SORTING
+           ==================================================== */
+
+        const sortableHeaders =
+            table.querySelectorAll(
+                "thead th.sortable"
+            );
+
+
+        sortableHeaders.forEach(
+            function (header) {
+
+                header.addEventListener(
+                    "click",
+                    function () {
+
+                        const column =
+                            Number(
+                                header.dataset.column
+                            );
+
+
+                        sortRows(column);
+
+                    }
+                );
+
+            }
+        );
+
+
+        /* ====================================================
+           KEYBOARD ESCAPE
+           ==================================================== */
+
+        searchInput.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    searchInput.value = "";
+
+                    applySearch();
+
+                }
+
+            }
+        );
+
+
+        /* ====================================================
+           PUBLIC REFRESH FUNCTION
+           ==================================================== */
+
+        window.refreshClassesDataTable =
+            function () {
+
+                rows =
+                    Array.from(
+                        tbody.querySelectorAll(
+                            "tr[data-class-row='true']"
+                        )
+                    );
+
+
+                if (
+                    currentSortColumn !== null
+                ) {
+
+                    rows.sort(function (
+                        rowA,
+                        rowB
+                    ) {
+
+                        const valueA =
+                            getCellValue(
+                                rowA,
+                                currentSortColumn
+                            );
+
+
+                        const valueB =
+                            getCellValue(
+                                rowB,
+                                currentSortColumn
+                            );
+
+
+                        let comparison = 0;
+
+
+                        if (
+                            isNumeric(valueA)
+                            && isNumeric(valueB)
+                        ) {
+
+                            comparison =
+                                Number(
+                                    valueA.replace(/,/g, "")
+                                )
+                                -
+                                Number(
+                                    valueB.replace(/,/g, "")
+                                );
+
+                        } else {
+
+                            comparison =
+                                valueA.localeCompare(
+                                    valueB,
+                                    undefined,
+                                    {
+                                        numeric: true,
+                                        sensitivity: "base"
+                                    }
+                                );
+
+                        }
+
+
+                        return (
+                            currentSortDirection
+                            === "asc"
+                                ? comparison
+                                : -comparison
+                        );
+
+                    });
+
+
+                    rows.forEach(function (row) {
+
+                        tbody.appendChild(row);
+
+                    });
+
+                }
+
+
+                applySearch();
+
+            };
+
+
+        /* ====================================================
+           INITIALIZE
+           ==================================================== */
+
+        updateSortIndicators();
+
+        applySearch();
 
     }
 );

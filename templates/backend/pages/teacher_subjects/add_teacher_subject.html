@@ -6,7 +6,7 @@
 
 /* ============================================================
    TEACHER ASSIGNMENT PAGE
-   ============================================================ */
+============================================================ */
 
 .teacher-assignment-page {
     width: 100%;
@@ -18,7 +18,7 @@
 
 /* ============================================================
    PAGE HEADER
-   ============================================================ */
+============================================================ */
 
 .page-header {
     width: 100%;
@@ -84,7 +84,7 @@
 
 /* ============================================================
    BUTTONS
-   ============================================================ */
+============================================================ */
 
 .btn {
     border: 0;
@@ -162,7 +162,7 @@
 
 /* ============================================================
    MAIN LAYOUT
-   ============================================================ */
+============================================================ */
 
 .assignment-layout {
     width: 100%;
@@ -173,17 +173,14 @@
     box-sizing: border-box;
 }
 
-.main-column {
-    min-width: 0;
-}
-
+.main-column,
 .side-column {
     min-width: 0;
 }
 
 /* ============================================================
    CARD
-   ============================================================ */
+============================================================ */
 
 .card {
     width: 100%;
@@ -268,7 +265,7 @@
 
 /* ============================================================
    FORM GRID
-   ============================================================ */
+============================================================ */
 
 .form-grid {
     width: 100%;
@@ -298,8 +295,8 @@
 }
 
 /* ============================================================
-   FORM LABEL
-   ============================================================ */
+   LABEL
+============================================================ */
 
 .form-label {
     display: flex;
@@ -326,10 +323,8 @@
 }
 
 /* ============================================================
-   INPUT / SELECT / TEXTAREA
-   IMPORTANT:
-   ALL FORM CONTROLS SAME SIZE
-   ============================================================ */
+   FORM CONTROLS
+============================================================ */
 
 .form-control {
     display: block;
@@ -364,7 +359,6 @@
 
 .form-control::placeholder {
     color: #a4acb8;
-    opacity: 1;
 }
 
 .form-control:focus {
@@ -377,14 +371,6 @@
     color: #9ca4b1;
     cursor: not-allowed;
 }
-
-.form-control:read-only {
-    background: #f8fafc;
-}
-
-/* ============================================================
-   SELECT SIZE
-   ============================================================ */
 
 select.form-control {
     width: 100%;
@@ -425,37 +411,17 @@ select.form-control:disabled {
         linear-gradient(135deg, #aeb5c0 50%, transparent 50%);
 }
 
-/* ============================================================
-   DATE INPUT
-   ============================================================ */
-
-input[type="date"].form-control {
-    height: 44px;
-    min-height: 44px;
-}
-
-/* ============================================================
-   TEXTAREA
-   ============================================================ */
-
 textarea.form-control {
     width: 100%;
     min-height: 105px;
     height: auto;
-
     padding: 12px 13px;
-
     line-height: 1.5;
     resize: vertical;
 }
 
-/* ============================================================
-   FORM HELP
-   ============================================================ */
-
 .form-help {
     margin-top: 6px;
-
     color: #8a93a2;
     font-size: 11px;
     line-height: 1.5;
@@ -463,7 +429,7 @@ textarea.form-control {
 
 /* ============================================================
    ASSIGNMENT LIST
-   ============================================================ */
+============================================================ */
 
 .assignment-list {
     width: 100%;
@@ -475,7 +441,7 @@ textarea.form-control {
 
 /* ============================================================
    ASSIGNMENT ROW
-   ============================================================ */
+============================================================ */
 
 .assignment-row {
     position: relative;
@@ -501,13 +467,9 @@ textarea.form-control {
     box-shadow: 0 5px 18px rgba(6, 36, 95, .05);
 }
 
-.assignment-row.first-row {
-    border-color: #d7dfec;
-}
-
 /* ============================================================
    ROW HEADER
-   ============================================================ */
+============================================================ */
 
 .assignment-row-top {
     width: 100%;
@@ -554,17 +516,15 @@ textarea.form-control {
 
 .assignment-number-text small {
     display: block;
-
     color: #8a93a2;
     font-size: 11px;
     font-weight: 600;
-
     margin-top: 2px;
 }
 
 /* ============================================================
-   REMOVE BUTTON
-   ============================================================ */
+   REMOVE
+============================================================ */
 
 .remove-assignment {
     width: 38px;
@@ -580,8 +540,8 @@ textarea.form-control {
 }
 
 /* ============================================================
-   ASSIGNMENT TYPE BOX
-   ============================================================ */
+   TYPE
+============================================================ */
 
 .assignment-type-box {
     width: 100%;
@@ -630,12 +590,12 @@ textarea.form-control {
 }
 
 /* ============================================================
-   FIELD VISIBILITY
-   ============================================================ */
+   DEPENDENT FIELDS
+============================================================ */
 
 .assignment-field {
     width: 100%;
-    transition: opacity .2s ease;
+    margin-bottom: 16px;
     box-sizing: border-box;
 }
 
@@ -643,9 +603,30 @@ textarea.form-control {
     display: none !important;
 }
 
+.assignment-field:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================================
+   LOADING
+============================================================ */
+
+.select-loading {
+    color: #7b8494;
+    font-style: italic;
+}
+
+.select-success {
+    border-color: #b8dfbc !important;
+}
+
+.select-error {
+    border-color: #e53935 !important;
+}
+
 /* ============================================================
    ADD MORE
-   ============================================================ */
+============================================================ */
 
 .add-more-wrapper {
     width: 100%;
@@ -686,7 +667,7 @@ textarea.form-control {
 
 /* ============================================================
    SETTINGS
-   ============================================================ */
+============================================================ */
 
 .switch-row {
     width: 100%;
@@ -714,17 +695,14 @@ textarea.form-control {
 
 .switch-info strong {
     display: block;
-
     color: #30394b;
     font-size: 12px;
 }
 
 .switch-info span {
     display: block;
-
     color: #8a93a2;
     font-size: 10px;
-
     margin-top: 2px;
 }
 
@@ -786,7 +764,7 @@ textarea.form-control {
 
 /* ============================================================
    SIDEBAR
-   ============================================================ */
+============================================================ */
 
 .summary-card {
     position: sticky;
@@ -868,7 +846,7 @@ textarea.form-control {
 
 /* ============================================================
    RULES
-   ============================================================ */
+============================================================ */
 
 .rules-list {
     margin: 0;
@@ -917,8 +895,8 @@ textarea.form-control {
 }
 
 /* ============================================================
-   FORM FOOTER
-   ============================================================ */
+   FOOTER
+============================================================ */
 
 .form-footer {
     width: 100%;
@@ -936,7 +914,7 @@ textarea.form-control {
 
 /* ============================================================
    ERROR
-   ============================================================ */
+============================================================ */
 
 .field-error {
     border-color: #e53935 !important;
@@ -946,27 +924,8 @@ textarea.form-control {
 }
 
 /* ============================================================
-   NO OPTIONS
-   ============================================================ */
-
-.no-options {
-    display: none;
-}
-
-.no-options.show {
-    display: block;
-
-    margin-top: 5px;
-
-    color: #c62828;
-
-    font-size: 10px;
-    font-weight: 700;
-}
-
-/* ============================================================
    RESPONSIVE
-   ============================================================ */
+============================================================ */
 
 @media (max-width: 1200px) {
 
@@ -1075,34 +1034,6 @@ textarea.form-control {
 
 }
 
-/* ============================================================
-   VERY SMALL DEVICES
-   ============================================================ */
-
-@media (max-width: 380px) {
-
-    .card-header {
-        gap: 9px;
-    }
-
-    .card-title {
-        font-size: 14px;
-    }
-
-    .card-description {
-        font-size: 11px;
-    }
-
-    .assignment-row {
-        padding: 12px;
-    }
-
-    .form-control {
-        font-size: 12px;
-    }
-
-}
-
 </style>
 
 
@@ -1110,7 +1041,7 @@ textarea.form-control {
 
     <!-- ========================================================
          PAGE HEADER
-         ======================================================== -->
+    ========================================================= -->
 
     <div class="page-header">
 
@@ -1145,7 +1076,6 @@ textarea.form-control {
 
         </div>
 
-
         <div class="header-actions">
 
             <a
@@ -1162,13 +1092,9 @@ textarea.form-control {
 
     <!-- ========================================================
          MAIN LAYOUT
-         ======================================================== -->
+    ========================================================= -->
 
     <div class="assignment-layout">
-
-        <!-- ====================================================
-             MAIN COLUMN
-             ==================================================== -->
 
         <div class="main-column">
 
@@ -1181,7 +1107,7 @@ textarea.form-control {
 
                 <!-- ====================================================
                      BASIC INFORMATION
-                     ==================================================== -->
+                ==================================================== -->
 
                 <div class="card">
 
@@ -1209,7 +1135,6 @@ textarea.form-control {
 
                     </div>
 
-
                     <div class="card-body">
 
                         <div class="form-grid">
@@ -1223,13 +1148,8 @@ textarea.form-control {
                                     for="institution_id"
                                 >
                                     Institution
-
-                                    <span class="required">
-                                        *
-                                    </span>
-
+                                    <span class="required">*</span>
                                 </label>
-
 
                                 <select
                                     class="form-control"
@@ -1269,23 +1189,19 @@ textarea.form-control {
                                     for="branch_id"
                                 >
                                     Branch
-
-                                    <span class="required">
-                                        *
-                                    </span>
-
+                                    <span class="required">*</span>
                                 </label>
-
 
                                 <select
                                     class="form-control"
                                     id="branch_id"
                                     name="branch_id"
                                     required
+                                    disabled
                                 >
 
                                     <option value="">
-                                        Select Branch
+                                        Select Institution First
                                     </option>
 
                                     {% for branch in branches %}
@@ -1322,23 +1238,19 @@ textarea.form-control {
                                     for="academic_year_id"
                                 >
                                     Academic Year
-
-                                    <span class="required">
-                                        *
-                                    </span>
-
+                                    <span class="required">*</span>
                                 </label>
-
 
                                 <select
                                     class="form-control"
                                     id="academic_year_id"
                                     name="academic_year_id"
                                     required
+                                    disabled
                                 >
 
                                     <option value="">
-                                        Select Academic Year
+                                        Select Institution First
                                     </option>
 
                                     {% for year in academic_years %}
@@ -1368,7 +1280,7 @@ textarea.form-control {
 
                 <!-- ====================================================
                      TEACHER ASSIGNMENTS
-                     ==================================================== -->
+                ==================================================== -->
 
                 <div class="card">
 
@@ -1387,36 +1299,32 @@ textarea.form-control {
                                 </h2>
 
                                 <p class="card-description">
-                                    Each row represents one teacher assignment.
+                                    Select teacher first, then choose Program,
+                                    Class, Subject and Section.
                                 </p>
 
                             </div>
 
                         </div>
 
-
-                        <div>
-
-                            <span
-                                id="assignmentCount"
-                                style="
-                                    display:inline-flex;
-                                    align-items:center;
-                                    justify-content:center;
-                                    min-width:30px;
-                                    height:28px;
-                                    padding:0 8px;
-                                    border-radius:8px;
-                                    background:#eef3ff;
-                                    color:#06245f;
-                                    font-size:11px;
-                                    font-weight:900;
-                                "
-                            >
-                                1
-                            </span>
-
-                        </div>
+                        <span
+                            id="assignmentCount"
+                            style="
+                                display:inline-flex;
+                                align-items:center;
+                                justify-content:center;
+                                min-width:30px;
+                                height:28px;
+                                padding:0 8px;
+                                border-radius:8px;
+                                background:#eef3ff;
+                                color:#06245f;
+                                font-size:11px;
+                                font-weight:900;
+                            "
+                        >
+                            1
+                        </span>
 
                     </div>
 
@@ -1429,8 +1337,8 @@ textarea.form-control {
                         >
 
                             <!-- ==================================================
-                                 FIRST ASSIGNMENT ROW
-                                 ================================================== -->
+                                 FIRST ROW
+                            ================================================== -->
 
                             <div
                                 class="assignment-row first-row"
@@ -1474,7 +1382,7 @@ textarea.form-control {
 
                                 <!-- ==================================================
                                      TEACHER
-                                     ================================================== -->
+                                ================================================== -->
 
                                 <div
                                     class="form-group"
@@ -1485,12 +1393,9 @@ textarea.form-control {
 
                                         Teacher
 
-                                        <span class="required">
-                                            *
-                                        </span>
+                                        <span class="required">*</span>
 
                                     </label>
-
 
                                     <select
                                         class="form-control teacher-select"
@@ -1522,7 +1427,6 @@ textarea.form-control {
 
                                     </select>
 
-
                                     <div class="form-help">
                                         Select the teacher responsible for this assignment.
                                     </div>
@@ -1532,7 +1436,7 @@ textarea.form-control {
 
                                 <!-- ==================================================
                                      ASSIGNMENT TYPE
-                                     ================================================== -->
+                                ================================================== -->
 
                                 <div class="assignment-type-box">
 
@@ -1540,12 +1444,9 @@ textarea.form-control {
 
                                         Assignment Type
 
-                                        <span class="required">
-                                            *
-                                        </span>
+                                        <span class="required">*</span>
 
                                     </label>
-
 
                                     <select
                                         class="form-control assignment-type-select"
@@ -1575,7 +1476,6 @@ textarea.form-control {
 
                                     </select>
 
-
                                     <div
                                         class="assignment-type-help"
                                         data-type-help
@@ -1589,7 +1489,7 @@ textarea.form-control {
 
                                 <!-- ==================================================
                                      PROGRAM
-                                     ================================================== -->
+                                ================================================== -->
 
                                 <div
                                     class="assignment-field program-field is-hidden"
@@ -1611,36 +1511,17 @@ textarea.form-control {
 
                                         </label>
 
-
                                         <select
                                             class="form-control program-select"
                                             name="program_ids"
+                                            disabled
                                         >
 
                                             <option value="">
-                                                Select Program
+                                                Select Teacher First
                                             </option>
 
-                                            {% for program in programs %}
-
-                                                <option
-                                                    value="{{ program.id }}"
-                                                    data-institution-id="{{ program.institution_id }}"
-                                                    data-branch-id="{{ program.branch_id or '' }}"
-                                                >
-
-                                                    {{ program.name }}
-
-                                                    {% if program.code %}
-                                                        — {{ program.code }}
-                                                    {% endif %}
-
-                                                </option>
-
-                                            {% endfor %}
-
                                         </select>
-
 
                                         <div class="form-help">
                                             Select the program for this assignment.
@@ -1653,7 +1534,7 @@ textarea.form-control {
 
                                 <!-- ==================================================
                                      CLASS
-                                     ================================================== -->
+                                ================================================== -->
 
                                 <div
                                     class="assignment-field class-field is-hidden"
@@ -1675,41 +1556,20 @@ textarea.form-control {
 
                                         </label>
 
-
                                         <select
                                             class="form-control class-select"
                                             name="class_ids"
+                                            disabled
                                         >
 
                                             <option value="">
-                                                Select Class
+                                                Select Program First
                                             </option>
-
-                                            {% for cls in classes %}
-
-                                                <option
-                                                    value="{{ cls.id }}"
-                                                    data-institution-id="{{ cls.institution_id }}"
-                                                    data-branch-id="{{ cls.branch_id }}"
-                                                    data-program-id="{{ cls.program_id }}"
-                                                    data-academic-year-id="{{ cls.academic_year_id }}"
-                                                >
-
-                                                    {{ cls.name }}
-
-                                                    {% if cls.code %}
-                                                        — {{ cls.code }}
-                                                    {% endif %}
-
-                                                </option>
-
-                                            {% endfor %}
 
                                         </select>
 
-
                                         <div class="form-help">
-                                            Select the class under the selected program.
+                                            Select a class under the selected program.
                                         </div>
 
                                     </div>
@@ -1719,7 +1579,7 @@ textarea.form-control {
 
                                 <!-- ==================================================
                                      SUBJECT
-                                     ================================================== -->
+                                ================================================== -->
 
                                 <div
                                     class="assignment-field subject-field is-hidden"
@@ -1741,37 +1601,17 @@ textarea.form-control {
 
                                         </label>
 
-
                                         <select
                                             class="form-control subject-select"
                                             name="subject_ids"
+                                            disabled
                                         >
 
                                             <option value="">
-                                                Select Subject
+                                                Select Program First
                                             </option>
 
-                                            {% for subject in subjects %}
-
-                                                <option
-                                                    value="{{ subject.id }}"
-                                                    data-institution-id="{{ subject.institution_id }}"
-                                                    data-branch-id="{{ subject.branch_id or '' }}"
-                                                    data-program-id="{{ subject.program_id or '' }}"
-                                                >
-
-                                                    {{ subject.name }}
-
-                                                    {% if subject.code %}
-                                                        — {{ subject.code }}
-                                                    {% endif %}
-
-                                                </option>
-
-                                            {% endfor %}
-
                                         </select>
-
 
                                         <div class="form-help">
                                             Select the subject taught by this teacher.
@@ -1784,7 +1624,7 @@ textarea.form-control {
 
                                 <!-- ==================================================
                                      SECTION
-                                     ================================================== -->
+                                ================================================== -->
 
                                 <div
                                     class="assignment-field section-field is-hidden"
@@ -1806,41 +1646,20 @@ textarea.form-control {
 
                                         </label>
 
-
                                         <select
                                             class="form-control section-select"
                                             name="section_ids"
+                                            disabled
                                         >
 
                                             <option value="">
-                                                Select Section
+                                                Select Class First
                                             </option>
-
-                                            {% for section in sections %}
-
-                                                <option
-                                                    value="{{ section.id }}"
-                                                    data-institution-id="{{ section.institution_id }}"
-                                                    data-branch-id="{{ section.branch_id }}"
-                                                    data-class-id="{{ section.class_id }}"
-                                                    data-academic-year-id="{{ section.academic_year_id }}"
-                                                >
-
-                                                    {{ section.name }}
-
-                                                    {% if section.code %}
-                                                        — {{ section.code }}
-                                                    {% endif %}
-
-                                                </option>
-
-                                            {% endfor %}
 
                                         </select>
 
-
                                         <div class="form-help">
-                                            Select the section under the selected class.
+                                            Select a section under the selected class.
                                         </div>
 
                                     </div>
@@ -1849,8 +1668,8 @@ textarea.form-control {
 
 
                                 <!-- ==================================================
-                                     RULE DISPLAY
-                                     ================================================== -->
+                                     REQUIRED FIELDS
+                                ================================================== -->
 
                                 <div
                                     class="assignment-rule-display"
@@ -1881,9 +1700,7 @@ textarea.form-control {
                         </div>
 
 
-                        <!-- ==================================================
-                             ADD MORE
-                             ================================================== -->
+                        <!-- ADD MORE -->
 
                         <div class="add-more-wrapper">
 
@@ -1904,7 +1721,7 @@ textarea.form-control {
 
                 <!-- ====================================================
                      ASSIGNMENT SETTINGS
-                     ==================================================== -->
+                ==================================================== -->
 
                 <div class="card">
 
@@ -1948,7 +1765,6 @@ textarea.form-control {
                                     Teaching Type
                                 </label>
 
-
                                 <select
                                     class="form-control"
                                     id="teaching_type"
@@ -1987,7 +1803,6 @@ textarea.form-control {
                                     Status
                                 </label>
 
-
                                 <select
                                     class="form-control"
                                     id="status"
@@ -2015,15 +1830,12 @@ textarea.form-control {
                                     class="form-label"
                                     for="start_date"
                                 >
-
                                     Start Date
 
                                     <span class="optional">
                                         Optional
                                     </span>
-
                                 </label>
-
 
                                 <input
                                     type="date"
@@ -2043,15 +1855,12 @@ textarea.form-control {
                                     class="form-label"
                                     for="end_date"
                                 >
-
                                     End Date
 
                                     <span class="optional">
                                         Optional
                                     </span>
-
                                 </label>
-
 
                                 <input
                                     type="date"
@@ -2063,7 +1872,7 @@ textarea.form-control {
                             </div>
 
 
-                            <!-- Primary Assignment -->
+                            <!-- Primary -->
 
                             <div class="form-group full">
 
@@ -2080,7 +1889,6 @@ textarea.form-control {
                                         </span>
 
                                     </div>
-
 
                                     <label class="switch">
 
@@ -2117,7 +1925,6 @@ textarea.form-control {
 
                                 </label>
 
-
                                 <textarea
                                     class="form-control"
                                     id="notes"
@@ -2136,7 +1943,7 @@ textarea.form-control {
 
                 <!-- ====================================================
                      SCOPE
-                     ==================================================== -->
+                ==================================================== -->
 
                 <input
                     type="hidden"
@@ -2146,8 +1953,8 @@ textarea.form-control {
 
 
                 <!-- ====================================================
-                     FORM FOOTER
-                     ==================================================== -->
+                     FOOTER
+                ==================================================== -->
 
                 <div class="form-footer">
 
@@ -2157,7 +1964,6 @@ textarea.form-control {
                     >
                         Cancel
                     </a>
-
 
                     <button
                         type="submit"
@@ -2187,13 +1993,11 @@ textarea.form-control {
 
         <!-- ====================================================
              SIDE COLUMN
-             ==================================================== -->
+        ==================================================== -->
 
         <div class="side-column">
 
-            <!-- ==================================================
-                 LIVE SUMMARY
-                 ================================================== -->
+            <!-- LIVE SUMMARY -->
 
             <div class="card summary-card">
 
@@ -2294,7 +2098,6 @@ textarea.form-control {
                             Assignment List
                         </div>
 
-
                         <div
                             class="assignment-summary-list"
                             id="assignmentSummaryList"
@@ -2319,9 +2122,7 @@ textarea.form-control {
             </div>
 
 
-            <!-- ==================================================
-                 RULES
-                 ================================================== -->
+            <!-- RULES -->
 
             <div class="card">
 
@@ -2432,1291 +2233,2578 @@ textarea.form-control {
 </div>
 
 
-<script>
+<!-- ============================================================
+     JAVASCRIPT
+     IMPORTANT:
+     Uses teacher_subject_options route
+============================================================ -->
 
-/* ============================================================
-   TEACHER ASSIGNMENT JAVASCRIPT
-   ============================================================ */
+<script>
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    /* ========================================================
-       MAIN ELEMENTS
-       ======================================================== */
-
-    const form =
-        document.getElementById("teacherAssignmentForm");
-
-    const assignmentList =
-        document.getElementById("assignmentList");
-
-    const addMoreButton =
-        document.getElementById("addMoreAssignment");
-
-    const institutionSelect =
-        document.getElementById("institution_id");
-
-    const branchSelect =
-        document.getElementById("branch_id");
-
-    const academicYearSelect =
-        document.getElementById("academic_year_id");
-
-    const assignmentCount =
-        document.getElementById("assignmentCount");
-
-    const summaryAssignmentCount =
-        document.getElementById("summaryAssignmentCount");
-
-    const summaryInstitution =
-        document.getElementById("summaryInstitution");
-
-    const summaryBranch =
-        document.getElementById("summaryBranch");
-
-    const summaryAcademicYear =
-        document.getElementById("summaryAcademicYear");
-
-    const assignmentSummaryList =
-        document.getElementById("assignmentSummaryList");
+    "use strict";
 
 
-    /* ========================================================
-       ASSIGNMENT RULES
-       ======================================================== */
+    /* =========================================================
+       URL
+    ========================================================= */
 
-    const assignmentRules = {
+    const optionsUrl = "{{ url_for('main.teacher_subject_options') }}";
 
-        program: {
-            label: "Program",
-            fields: ["program"],
-            required: ["program"],
-            text: "Program"
-        },
 
-        class: {
-            label: "Class",
-            fields: ["program", "class"],
-            required: ["program", "class"],
-            text: "Program + Class"
-        },
+    /* =========================================================
+       GLOBAL ELEMENTS
+    ========================================================= */
 
-        subject: {
-            label: "Subject",
-            fields: ["program", "class", "subject"],
-            required: ["program", "class", "subject"],
-            text: "Program + Class + Subject"
-        },
+    const form = document.getElementById(
+        "teacherAssignmentForm"
+    );
 
-        section: {
-            label: "Section",
-            fields: [
-                "program",
-                "class",
-                "subject",
-                "section"
-            ],
-            required: [
-                "program",
-                "class",
-                "subject",
-                "section"
-            ],
-            text: "Program + Class + Subject + Section"
+    const institutionSelect = document.getElementById(
+        "institution_id"
+    );
+
+    const branchSelect = document.getElementById(
+        "branch_id"
+    );
+
+    const academicYearSelect = document.getElementById(
+        "academic_year_id"
+    );
+
+    const assignmentList = document.getElementById(
+        "assignmentList"
+    );
+
+    const addMoreButton = document.getElementById(
+        "addMoreAssignment"
+    );
+
+    const assignmentCount = document.getElementById(
+        "assignmentCount"
+    );
+
+    const summaryInstitution = document.getElementById(
+        "summaryInstitution"
+    );
+
+    const summaryBranch = document.getElementById(
+        "summaryBranch"
+    );
+
+    const summaryAcademicYear = document.getElementById(
+        "summaryAcademicYear"
+    );
+
+    const summaryAssignmentCount = document.getElementById(
+        "summaryAssignmentCount"
+    );
+
+    const summaryAssignmentList = document.getElementById(
+        "assignmentSummaryList"
+    );
+
+    const submitButton = document.getElementById(
+        "submitBtn"
+    );
+
+    const submitText = document.getElementById(
+        "submitText"
+    );
+
+    const submitSpinner = document.getElementById(
+        "submitSpinner"
+    );
+
+
+    /* =========================================================
+       REQUEST SEQUENCE
+       Prevent old AJAX responses overwriting new selections.
+    ========================================================= */
+
+    let requestSequence = 0;
+
+
+    function nextRequestId(row) {
+
+        requestSequence += 1;
+
+        const id = String(requestSequence);
+
+        row.dataset.optionsRequest = id;
+
+        return id;
+    }
+
+
+    /* =========================================================
+       HELPERS
+    ========================================================= */
+
+    function valueOf(element) {
+
+        return element
+            ? String(element.value || "").trim()
+            : "";
+    }
+
+
+    function escapeHtml(value) {
+
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+
+    function selectedText(select) {
+
+        if (!select || !select.value) {
+            return "";
         }
 
-    };
+        const option = select.options[
+            select.selectedIndex
+        ];
 
-
-    /* ========================================================
-       GET ROWS
-       ======================================================== */
-
-    function getRows() {
-
-        return Array.from(
-            assignmentList.querySelectorAll(
-                ".assignment-row"
-            )
-        );
-
+        return option
+            ? option.textContent.trim()
+            : "";
     }
 
 
-    /* ========================================================
-       GET ROW FIELDS
-       ======================================================== */
-
-    function getRowFields(row) {
-
-        return {
-
-            teacher:
-                row.querySelector(".teacher-select"),
-
-            type:
-                row.querySelector(".assignment-type-select"),
-
-            program:
-                row.querySelector(".program-select"),
-
-            class:
-                row.querySelector(".class-select"),
-
-            subject:
-                row.querySelector(".subject-select"),
-
-            section:
-                row.querySelector(".section-select"),
-
-            programField:
-                row.querySelector(".program-field"),
-
-            classField:
-                row.querySelector(".class-field"),
-
-            subjectField:
-                row.querySelector(".subject-field"),
-
-            sectionField:
-                row.querySelector(".section-field"),
-
-            programRequired:
-                row.querySelector(".program-required"),
-
-            classRequired:
-                row.querySelector(".class-required"),
-
-            subjectRequired:
-                row.querySelector(".subject-required"),
-
-            sectionRequired:
-                row.querySelector(".section-required"),
-
-            requiredText:
-                row.querySelector(
-                    "[data-required-text]"
-                )
-
-        };
-
-    }
-
-
-    /* ========================================================
-       FILTER OPTIONS
-       ======================================================== */
-
-    function filterOptions(select, predicate) {
+    function resetSelect(
+        select,
+        placeholder,
+        disabled = true
+    ) {
 
         if (!select) {
             return;
         }
 
-        Array.from(select.options).forEach(
-            function (option, index) {
+        select.innerHTML = "";
 
-                if (index === 0) {
-                    option.hidden = false;
-                    return;
-                }
-
-                option.hidden =
-                    !predicate(option);
-
-            }
+        const option = document.createElement(
+            "option"
         );
 
+        option.value = "";
+        option.textContent = placeholder;
+
+        select.appendChild(option);
+
+        select.value = "";
+
+        select.disabled = disabled;
+
+        select.classList.remove(
+            "field-error",
+            "select-error",
+            "select-success"
+        );
     }
 
 
-    /* ========================================================
-       APPLY ASSIGNMENT TYPE
-       ======================================================== */
+    function setSelectLoading(
+        select,
+        text = "Loading..."
+    ) {
 
-    function applyAssignmentType(row) {
+        if (!select) {
+            return;
+        }
 
-        const fields =
-            getRowFields(row);
+        select.innerHTML = "";
+
+        const option = document.createElement(
+            "option"
+        );
+
+        option.value = "";
+        option.textContent = text;
+
+        select.appendChild(option);
+
+        select.value = "";
+
+        select.disabled = true;
+
+        select.classList.remove(
+            "field-error",
+            "select-error"
+        );
+
+        select.classList.add(
+            "select-loading"
+        );
+    }
+
+
+    function clearLoading(select) {
+
+        if (!select) {
+            return;
+        }
+
+        select.classList.remove(
+            "select-loading"
+        );
+    }
+
+
+    function clearRowOptions(row) {
+
+        const program = row.querySelector(
+            ".program-select"
+        );
+
+        const classSelect = row.querySelector(
+            ".class-select"
+        );
+
+        const subject = row.querySelector(
+            ".subject-select"
+        );
+
+        const section = row.querySelector(
+            ".section-select"
+        );
+
+
+        resetSelect(
+            program,
+            "Select Teacher First",
+            true
+        );
+
+        resetSelect(
+            classSelect,
+            "Select Program First",
+            true
+        );
+
+        resetSelect(
+            subject,
+            "Select Program First",
+            true
+        );
+
+        resetSelect(
+            section,
+            "Select Class First",
+            true
+        );
+    }
+
+
+    /* =========================================================
+       GLOBAL SELECT FILTERING
+    ========================================================= */
+
+    function filterBranches() {
+
+        const institutionId = valueOf(
+            institutionSelect
+        );
+
+        const currentBranch = valueOf(
+            branchSelect
+        );
+
+        branchSelect.disabled = true;
+
+        let validCurrentBranch = "";
+
+        Array.from(
+            branchSelect.options
+        ).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+            const matches =
+                institutionId &&
+                String(optionInstitution) ===
+                String(institutionId);
+
+            option.hidden = !matches;
+            option.disabled = !matches;
+
+            if (
+                matches &&
+                String(option.value) ===
+                String(currentBranch)
+            ) {
+                validCurrentBranch = option.value;
+            }
+
+        });
+
+
+        if (!institutionId) {
+
+            branchSelect.value = "";
+
+            branchSelect.options[0].textContent =
+                "Select Institution First";
+
+            return;
+        }
+
+
+        branchSelect.disabled = false;
+
+        branchSelect.options[0].textContent =
+            "Select Branch";
+
+        if (validCurrentBranch) {
+            branchSelect.value =
+                validCurrentBranch;
+        } else {
+            branchSelect.value = "";
+        }
+    }
+
+
+    function filterAcademicYears() {
+
+        const institutionId = valueOf(
+            institutionSelect
+        );
+
+        const currentYear = valueOf(
+            academicYearSelect
+        );
+
+        academicYearSelect.disabled = true;
+
+        let validCurrentYear = "";
+
+        Array.from(
+            academicYearSelect.options
+        ).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+            const matches =
+                institutionId &&
+                String(optionInstitution) ===
+                String(institutionId);
+
+            option.hidden = !matches;
+            option.disabled = !matches;
+
+            if (
+                matches &&
+                String(option.value) ===
+                String(currentYear)
+            ) {
+                validCurrentYear =
+                    option.value;
+            }
+
+        });
+
+
+        if (!institutionId) {
+
+            academicYearSelect.value = "";
+
+            academicYearSelect.options[0].textContent =
+                "Select Institution First";
+
+            return;
+        }
+
+
+        academicYearSelect.disabled = false;
+
+        academicYearSelect.options[0].textContent =
+            "Select Academic Year";
+
+        if (validCurrentYear) {
+            academicYearSelect.value =
+                validCurrentYear;
+        } else {
+            academicYearSelect.value = "";
+        }
+    }
+
+
+    function filterTeachers(row) {
+
+        const teacherSelect = row.querySelector(
+            ".teacher-select"
+        );
+
+        if (!teacherSelect) {
+            return;
+        }
+
+        const institutionId = valueOf(
+            institutionSelect
+        );
+
+        const branchId = valueOf(
+            branchSelect
+        );
+
+        const currentTeacher = valueOf(
+            teacherSelect
+        );
+
+        let validCurrentTeacher = "";
+
+        Array.from(
+            teacherSelect.options
+        ).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            const teacherInstitution =
+                option.dataset.institutionId || "";
+
+            const teacherBranch =
+                option.dataset.branchId || "";
+
+            const institutionMatches =
+                institutionId &&
+                String(teacherInstitution) ===
+                String(institutionId);
+
+            const branchMatches =
+                branchId &&
+                String(teacherBranch) ===
+                String(branchId);
+
+            const matches =
+                institutionMatches &&
+                branchMatches;
+
+            option.hidden = !matches;
+            option.disabled = !matches;
+
+            if (
+                matches &&
+                String(option.value) ===
+                String(currentTeacher)
+            ) {
+                validCurrentTeacher =
+                    option.value;
+            }
+
+        });
+
+
+        if (!institutionId || !branchId) {
+
+            teacherSelect.value = "";
+
+            teacherSelect.disabled = true;
+
+            teacherSelect.options[0].textContent =
+                "Select Institution and Branch First";
+
+            return;
+        }
+
+
+        teacherSelect.disabled = false;
+
+        teacherSelect.options[0].textContent =
+            "Select Teacher";
+
+
+        if (validCurrentTeacher) {
+
+            teacherSelect.value =
+                validCurrentTeacher;
+
+        } else {
+
+            teacherSelect.value = "";
+        }
+    }
+
+
+    /* =========================================================
+       POPULATE PROGRAMS
+    ========================================================= */
+
+    function populatePrograms(
+        row,
+        programs,
+        selectedValue = ""
+    ) {
+
+        const select = row.querySelector(
+            ".program-select"
+        );
+
+        if (!select) {
+            return;
+        }
+
+        select.innerHTML = "";
+
+        const first = document.createElement(
+            "option"
+        );
+
+        first.value = "";
+
+        first.textContent =
+            programs.length
+                ? "Select Program"
+                : "No Programs Available";
+
+        select.appendChild(first);
+
+
+        programs.forEach(function (program) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = program.id;
+
+            let label =
+                program.name || "Unnamed Program";
+
+            if (program.code) {
+                label +=
+                    " — " +
+                    program.code;
+            }
+
+            option.textContent = label;
+
+            select.appendChild(option);
+
+        });
+
+
+        select.disabled =
+            programs.length === 0;
+
+        if (
+            selectedValue &&
+            programs.some(function (item) {
+                return String(item.id) ===
+                    String(selectedValue);
+            })
+        ) {
+            select.value =
+                String(selectedValue);
+        }
+
+        clearLoading(select);
+    }
+
+
+    /* =========================================================
+       POPULATE CLASSES
+    ========================================================= */
+
+    function populateClasses(
+        row,
+        classes,
+        programId,
+        selectedValue = ""
+    ) {
+
+        const select = row.querySelector(
+            ".class-select"
+        );
+
+        if (!select) {
+            return;
+        }
+
+        select.innerHTML = "";
+
+        const matchingClasses =
+            (classes || []).filter(function (item) {
+
+                return String(
+                    item.program_id
+                ) === String(programId);
+
+            });
+
+
+        const first = document.createElement(
+            "option"
+        );
+
+        first.value = "";
+
+        first.textContent =
+            matchingClasses.length
+                ? "Select Class"
+                : "No Classes Available";
+
+        select.appendChild(first);
+
+
+        matchingClasses.forEach(function (item) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = item.id;
+
+            let label =
+                item.name || "Unnamed Class";
+
+            if (item.code) {
+                label +=
+                    " — " +
+                    item.code;
+            }
+
+            if (item.level) {
+                label +=
+                    " (" +
+                    item.level +
+                    ")";
+            }
+
+            option.textContent = label;
+
+            option.dataset.programId =
+                item.program_id;
+
+            option.dataset.academicYearId =
+                item.academic_year_id;
+
+            option.dataset.branchId =
+                item.branch_id;
+
+            select.appendChild(option);
+
+        });
+
+
+        select.disabled =
+            matchingClasses.length === 0;
+
+        if (
+            selectedValue &&
+            matchingClasses.some(function (item) {
+                return String(item.id) ===
+                    String(selectedValue);
+            })
+        ) {
+
+            select.value =
+                String(selectedValue);
+        }
+
+        clearLoading(select);
+    }
+
+
+    /* =========================================================
+       POPULATE SUBJECTS
+    ========================================================= */
+
+    function populateSubjects(
+        row,
+        subjects,
+        programId,
+        selectedValue = ""
+    ) {
+
+        const select = row.querySelector(
+            ".subject-select"
+        );
+
+        if (!select) {
+            return;
+        }
+
+        select.innerHTML = "";
+
+
+        const matchingSubjects =
+            (subjects || []).filter(function (item) {
+
+                return String(
+                    item.program_id
+                ) === String(programId);
+
+            });
+
+
+        const first = document.createElement(
+            "option"
+        );
+
+        first.value = "";
+
+        first.textContent =
+            matchingSubjects.length
+                ? "Select Subject"
+                : "No Subjects Available";
+
+        select.appendChild(first);
+
+
+        matchingSubjects.forEach(function (item) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = item.id;
+
+            let label =
+                item.name || "Unnamed Subject";
+
+            if (item.code) {
+                label +=
+                    " — " +
+                    item.code;
+            }
+
+            option.textContent =
+                label;
+
+            option.dataset.programId =
+                item.program_id;
+
+            select.appendChild(option);
+
+        });
+
+
+        select.disabled =
+            matchingSubjects.length === 0;
+
+
+        if (
+            selectedValue &&
+            matchingSubjects.some(function (item) {
+
+                return String(item.id) ===
+                    String(selectedValue);
+
+            })
+        ) {
+
+            select.value =
+                String(selectedValue);
+        }
+
+        clearLoading(select);
+    }
+
+
+    /* =========================================================
+       POPULATE SECTIONS
+    ========================================================= */
+
+    function populateSections(
+        row,
+        sections,
+        classId,
+        selectedValue = ""
+    ) {
+
+        const select = row.querySelector(
+            ".section-select"
+        );
+
+        if (!select) {
+            return;
+        }
+
+        select.innerHTML = "";
+
+
+        const matchingSections =
+            (sections || []).filter(function (item) {
+
+                return String(
+                    item.class_id
+                ) === String(classId);
+
+            });
+
+
+        const first = document.createElement(
+            "option"
+        );
+
+        first.value = "";
+
+        first.textContent =
+            matchingSections.length
+                ? "Select Section"
+                : "No Sections Available";
+
+        select.appendChild(first);
+
+
+        matchingSections.forEach(function (item) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = item.id;
+
+            let label =
+                item.name || "Unnamed Section";
+
+            if (item.code) {
+                label +=
+                    " — " +
+                    item.code;
+            }
+
+            option.textContent =
+                label;
+
+            option.dataset.classId =
+                item.class_id;
+
+            select.appendChild(option);
+
+        });
+
+
+        select.disabled =
+            matchingSections.length === 0;
+
+
+        if (
+            selectedValue &&
+            matchingSections.some(function (item) {
+
+                return String(item.id) ===
+                    String(selectedValue);
+
+            })
+        ) {
+
+            select.value =
+                String(selectedValue);
+        }
+
+        clearLoading(select);
+    }
+
+
+    /* =========================================================
+       LOAD OPTIONS FROM BACKEND
+    ========================================================= */
+
+    async function loadOptions(row) {
+
+        const institutionId =
+            valueOf(institutionSelect);
+
+        const branchId =
+            valueOf(branchSelect);
+
+        const academicYearId =
+            valueOf(academicYearSelect);
+
+        const teacherSelect =
+            row.querySelector(
+                ".teacher-select"
+            );
+
+        const programSelect =
+            row.querySelector(
+                ".program-select"
+            );
+
+        const classSelect =
+            row.querySelector(
+                ".class-select"
+            );
+
+        const subjectSelect =
+            row.querySelector(
+                ".subject-select"
+            );
+
+        const sectionSelect =
+            row.querySelector(
+                ".section-select"
+            );
+
+        const teacherId =
+            valueOf(teacherSelect);
+
+        const programId =
+            valueOf(programSelect);
+
+        const classId =
+            valueOf(classSelect);
+
+
+        /* -----------------------------------------------------
+           REQUIRED GLOBAL VALUES
+        ----------------------------------------------------- */
+
+        if (
+            !institutionId ||
+            !branchId ||
+            !academicYearId ||
+            !teacherId
+        ) {
+
+            clearRowOptions(row);
+
+            return null;
+        }
+
+
+        const requestId =
+            nextRequestId(row);
+
+
+        /* -----------------------------------------------------
+           BUILD URL
+        ----------------------------------------------------- */
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "institution_id",
+            institutionId
+        );
+
+        params.set(
+            "branch_id",
+            branchId
+        );
+
+        params.set(
+            "academic_year_id",
+            academicYearId
+        );
+
+        params.set(
+            "teacher_id",
+            teacherId
+        );
+
+
+        if (programId) {
+
+            params.set(
+                "program_id",
+                programId
+            );
+        }
+
+
+        if (classId) {
+
+            params.set(
+                "class_id",
+                classId
+            );
+        }
+
+
+        /* -----------------------------------------------------
+           LOADING
+        ----------------------------------------------------- */
+
+        setSelectLoading(
+            programSelect,
+            "Loading Programs..."
+        );
+
+
+        setSelectLoading(
+            classSelect,
+            programId
+                ? "Loading Classes..."
+                : "Select Program First"
+        );
+
+
+        setSelectLoading(
+            subjectSelect,
+            programId
+                ? "Loading Subjects..."
+                : "Select Program First"
+        );
+
+
+        setSelectLoading(
+            sectionSelect,
+            classId
+                ? "Loading Sections..."
+                : "Select Class First"
+        );
+
+
+        try {
+
+            const response =
+                await fetch(
+                    optionsUrl +
+                    "?" +
+                    params.toString(),
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Accept":
+                                "application/json",
+
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+                        },
+
+                        credentials: "same-origin"
+                    }
+                );
+
+
+            let data = null;
+
+            try {
+
+                data =
+                    await response.json();
+
+            } catch (jsonError) {
+
+                throw new Error(
+                    "Server returned an invalid response."
+                );
+            }
+
+
+            /* -------------------------------------------------
+               IGNORE OLD RESPONSE
+            ------------------------------------------------- */
+
+            if (
+                row.dataset.optionsRequest !==
+                requestId
+            ) {
+
+                return null;
+            }
+
+
+            if (
+                !response.ok ||
+                !data ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data &&
+                    data.message
+                        ? data.message
+                        : "Unable to load assignment options."
+                );
+            }
+
+
+            /* -------------------------------------------------
+               SAVE CURRENT VALUES
+            ------------------------------------------------- */
+
+            const oldProgram =
+                programId;
+
+            const oldClass =
+                classId;
+
+            const oldSubject =
+                valueOf(subjectSelect);
+
+            const oldSection =
+                valueOf(sectionSelect);
+
+
+            /* -------------------------------------------------
+               PROGRAMS
+            ------------------------------------------------- */
+
+            populatePrograms(
+                row,
+                data.programs || [],
+                oldProgram
+            );
+
+
+            /* -------------------------------------------------
+               CLASSES
+               IMPORTANT:
+               Program -> ALL classes
+            ------------------------------------------------- */
+
+            populateClasses(
+                row,
+                data.classes || [],
+                valueOf(programSelect),
+                oldClass
+            );
+
+
+            /* -------------------------------------------------
+               SUBJECTS
+            ------------------------------------------------- */
+
+            populateSubjects(
+                row,
+                data.subjects || [],
+                valueOf(programSelect),
+                oldSubject
+            );
+
+
+            /* -------------------------------------------------
+               SECTIONS
+            ------------------------------------------------- */
+
+            populateSections(
+                row,
+                data.sections || [],
+                valueOf(classSelect),
+                oldSection
+            );
+
+
+            return data;
+
+        } catch (error) {
+
+            console.error(
+                "teacher_subject_options error:",
+                error
+            );
+
+
+            if (
+                row.dataset.optionsRequest !==
+                requestId
+            ) {
+
+                return null;
+            }
+
+
+            resetSelect(
+                programSelect,
+                "Unable to Load Programs",
+                true
+            );
+
+            resetSelect(
+                classSelect,
+                "Select Program First",
+                true
+            );
+
+            resetSelect(
+                subjectSelect,
+                "Select Program First",
+                true
+            );
+
+            resetSelect(
+                sectionSelect,
+                "Select Class First",
+                true
+            );
+
+
+            programSelect.classList.add(
+                "select-error"
+            );
+
+
+            return null;
+        }
+    }
+
+
+    /* =========================================================
+       ASSIGNMENT TYPE UI
+    ========================================================= */
+
+    function updateAssignmentRow(row) {
+
+        const typeSelect =
+            row.querySelector(
+                ".assignment-type-select"
+            );
 
         const type =
-            fields.type.value;
-
-        const rule =
-            assignmentRules[type];
+            valueOf(typeSelect);
 
 
-        const fieldMap = {
+        const programField =
+            row.querySelector(
+                ".program-field"
+            );
 
-            program:
-                fields.programField,
+        const classField =
+            row.querySelector(
+                ".class-field"
+            );
 
-            class:
-                fields.classField,
+        const subjectField =
+            row.querySelector(
+                ".subject-field"
+            );
 
-            subject:
-                fields.subjectField,
-
-            section:
-                fields.sectionField
-
-        };
+        const sectionField =
+            row.querySelector(
+                ".section-field"
+            );
 
 
-        /* ----------------------------------------------------
+        const programRequired =
+            row.querySelector(
+                ".program-required"
+            );
+
+        const classRequired =
+            row.querySelector(
+                ".class-required"
+            );
+
+        const subjectRequired =
+            row.querySelector(
+                ".subject-required"
+            );
+
+        const sectionRequired =
+            row.querySelector(
+                ".section-required"
+            );
+
+
+        const programSelect =
+            row.querySelector(
+                ".program-select"
+            );
+
+        const classSelect =
+            row.querySelector(
+                ".class-select"
+            );
+
+        const subjectSelect =
+            row.querySelector(
+                ".subject-select"
+            );
+
+        const sectionSelect =
+            row.querySelector(
+                ".section-select"
+            );
+
+
+        const help =
+            row.querySelector(
+                "[data-type-help]"
+            );
+
+        const requiredText =
+            row.querySelector(
+                "[data-required-text]"
+            );
+
+
+        /* -----------------------------------------------------
            HIDE ALL
-           ---------------------------------------------------- */
-
-        Object.values(fieldMap).forEach(
-            function (field) {
-
-                if (field) {
-                    field.classList.add(
-                        "is-hidden"
-                    );
-                }
-
-            }
-        );
-
-
-        /* ----------------------------------------------------
-           RESET REQUIRED
-           ---------------------------------------------------- */
+        ----------------------------------------------------- */
 
         [
-            fields.program,
-            fields.class,
-            fields.subject,
-            fields.section
-        ].forEach(
-            function (select) {
+            programField,
+            classField,
+            subjectField,
+            sectionField
+        ].forEach(function (field) {
 
-                if (select) {
-                    select.required = false;
-                }
-
+            if (field) {
+                field.classList.add(
+                    "is-hidden"
+                );
             }
-        );
 
+        });
 
-        /* ----------------------------------------------------
-           RESET REQUIRED MARKERS
-           ---------------------------------------------------- */
 
         [
-            fields.programRequired,
-            fields.classRequired,
-            fields.subjectRequired,
-            fields.sectionRequired
-        ].forEach(
-            function (marker) {
+            programRequired,
+            classRequired,
+            subjectRequired,
+            sectionRequired
+        ].forEach(function (element) {
 
-                if (marker) {
-                    marker.style.display =
-                        "none";
-                }
-
+            if (element) {
+                element.style.display =
+                    "none";
             }
-        );
+
+        });
 
 
-        /* ----------------------------------------------------
+        [
+            programSelect,
+            classSelect,
+            subjectSelect,
+            sectionSelect
+        ].forEach(function (select) {
+
+            if (select) {
+                select.required = false;
+                select.classList.remove(
+                    "field-error"
+                );
+            }
+
+        });
+
+
+        /* -----------------------------------------------------
            NO TYPE
-           ---------------------------------------------------- */
+        ----------------------------------------------------- */
 
-        if (!rule) {
+        if (!type) {
 
-            if (fields.requiredText) {
+            if (help) {
 
-                fields.requiredText.textContent =
+                help.textContent =
+                    "Choose the level at which the teacher will be assigned.";
+
+            }
+
+            if (requiredText) {
+
+                requiredText.textContent =
                     "Select Assignment Type first.";
 
             }
 
             return;
-
         }
 
 
-        /* ----------------------------------------------------
-           SHOW FIELDS
-           ---------------------------------------------------- */
+        /* -----------------------------------------------------
+           PROGRAM
+        ----------------------------------------------------- */
 
-        rule.fields.forEach(
-            function (fieldName) {
+        if (type === "program") {
 
-                const field =
-                    fieldMap[fieldName];
+            programField.classList.remove(
+                "is-hidden"
+            );
 
-                if (field) {
+            programRequired.style.display =
+                "inline";
 
-                    field.classList.remove(
-                        "is-hidden"
-                    );
-
-                }
-
-            }
-        );
+            programSelect.required = true;
 
 
-        /* ----------------------------------------------------
-           REQUIRED FIELDS
-           ---------------------------------------------------- */
+            if (help) {
 
-        rule.required.forEach(
-            function (fieldName) {
-
-                const select =
-                    fields[fieldName];
-
-                if (select) {
-                    select.required = true;
-                }
-
-
-                const marker =
-                    fields[
-                        fieldName +
-                        "Required"
-                    ];
-
-                if (marker) {
-                    marker.style.display =
-                        "inline";
-                }
+                help.textContent =
+                    "Assign the teacher to an entire program.";
 
             }
-        );
 
+            if (requiredText) {
 
-        /* ----------------------------------------------------
-           RULE TEXT
-           ---------------------------------------------------- */
-
-        if (fields.requiredText) {
-
-            fields.requiredText.textContent =
-                rule.text;
-
-        }
-
-
-        /* ----------------------------------------------------
-           CLEAR HIDDEN VALUES
-           ---------------------------------------------------- */
-
-        Object.keys(fieldMap).forEach(
-            function (fieldName) {
-
-                if (
-                    !rule.fields.includes(
-                        fieldName
-                    )
-                ) {
-
-                    const select =
-                        fields[fieldName];
-
-                    if (select) {
-                        select.value = "";
-                    }
-
-                }
+                requiredText.textContent =
+                    "Teacher + Program";
 
             }
-        );
 
-    }
-
-
-    /* ========================================================
-       FILTER BRANCHES
-       ======================================================== */
-
-    function filterBranches() {
-
-        const institutionId =
-            institutionSelect.value;
-
-        filterOptions(
-            branchSelect,
-            function (option) {
-
-                return (
-                    !institutionId ||
-                    option.dataset.institutionId ===
-                        institutionId
-                );
-
-            }
-        );
-
-    }
-
-
-    /* ========================================================
-       FILTER ACADEMIC YEARS
-       ======================================================== */
-
-    function filterAcademicYears() {
-
-        const institutionId =
-            institutionSelect.value;
-
-        filterOptions(
-            academicYearSelect,
-            function (option) {
-
-                return (
-                    !institutionId ||
-                    option.dataset.institutionId ===
-                        institutionId
-                );
-
-            }
-        );
-
-    }
-
-
-    /* ========================================================
-       FILTER TEACHERS
-       ======================================================== */
-
-    function filterTeachers(row) {
-
-        const fields =
-            getRowFields(row);
-
-        const institutionId =
-            institutionSelect.value;
-
-        const branchId =
-            branchSelect.value;
-
-
-        filterOptions(
-            fields.teacher,
-            function (option) {
-
-                if (!option.value) {
-                    return true;
-                }
-
-
-                if (
-                    institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
-                ) {
-                    return false;
-                }
-
-
-                if (
-                    branchId &&
-                    option.dataset.branchId !==
-                        branchId
-                ) {
-                    return false;
-                }
-
-
-                return true;
-
-            }
-        );
-
-    }
-
-
-    /* ========================================================
-       FILTER PROGRAMS
-       ======================================================== */
-
-    function filterPrograms(row) {
-
-        const fields =
-            getRowFields(row);
-
-        const institutionId =
-            institutionSelect.value;
-
-        const branchId =
-            branchSelect.value;
-
-
-        filterOptions(
-            fields.program,
-            function (option) {
-
-                if (!option.value) {
-                    return true;
-                }
-
-
-                if (
-                    institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
-                ) {
-                    return false;
-                }
-
-
-                const optionBranch =
-                    option.dataset.branchId;
-
-
-                /*
-                 * NULL branch means
-                 * institution-wide program.
-                 */
-
-                if (
-                    branchId &&
-                    optionBranch &&
-                    optionBranch !== branchId
-                ) {
-                    return false;
-                }
-
-
-                return true;
-
-            }
-        );
-
-    }
-
-
-    /* ========================================================
-       FILTER CLASSES
-       ======================================================== */
-
-    function filterClasses(row) {
-
-        const fields =
-            getRowFields(row);
-
-        const institutionId =
-            institutionSelect.value;
-
-        const branchId =
-            branchSelect.value;
-
-        const academicYearId =
-            academicYearSelect.value;
-
-        const programId =
-            fields.program.value;
-
-
-        filterOptions(
-            fields.class,
-            function (option) {
-
-                if (!option.value) {
-                    return true;
-                }
-
-
-                if (
-                    institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
-                ) {
-                    return false;
-                }
-
-
-                if (
-                    branchId &&
-                    option.dataset.branchId !==
-                        branchId
-                ) {
-                    return false;
-                }
-
-
-                if (
-                    academicYearId &&
-                    option.dataset.academicYearId !==
-                        academicYearId
-                ) {
-                    return false;
-                }
-
-
-                if (
-                    programId &&
-                    option.dataset.programId !==
-                        programId
-                ) {
-                    return false;
-                }
-
-
-                return true;
-
-            }
-        );
-
-    }
-
-
-    /* ========================================================
-       FILTER SUBJECTS
-       ======================================================== */
-
-    function filterSubjects(row) {
-
-        const fields =
-            getRowFields(row);
-
-        const institutionId =
-            institutionSelect.value;
-
-        const branchId =
-            branchSelect.value;
-
-        const programId =
-            fields.program.value;
-
-
-        filterOptions(
-            fields.subject,
-            function (option) {
-
-                if (!option.value) {
-                    return true;
-                }
-
-
-                if (
-                    institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
-                ) {
-                    return false;
-                }
-
-
-                const subjectBranch =
-                    option.dataset.branchId;
-
-
-                /*
-                 * NULL branch means
-                 * institution-wide subject.
-                 */
-
-                if (
-                    branchId &&
-                    subjectBranch &&
-                    subjectBranch !== branchId
-                ) {
-                    return false;
-                }
-
-
-                const subjectProgram =
-                    option.dataset.programId;
-
-
-                /*
-                 * NULL program means
-                 * institution/branch-wide subject.
-                 */
-
-                if (
-                    programId &&
-                    subjectProgram &&
-                    subjectProgram !== programId
-                ) {
-                    return false;
-                }
-
-
-                return true;
-
-            }
-        );
-
-    }
-
-
-    /* ========================================================
-       FILTER SECTIONS
-       ======================================================== */
-
-    function filterSections(row) {
-
-        const fields =
-            getRowFields(row);
-
-        const institutionId =
-            institutionSelect.value;
-
-        const branchId =
-            branchSelect.value;
-
-        const academicYearId =
-            academicYearSelect.value;
-
-        const classId =
-            fields.class.value;
-
-
-        filterOptions(
-            fields.section,
-            function (option) {
-
-                if (!option.value) {
-                    return true;
-                }
-
-
-                if (
-                    institutionId &&
-                    option.dataset.institutionId !==
-                        institutionId
-                ) {
-                    return false;
-                }
-
-
-                if (
-                    branchId &&
-                    option.dataset.branchId !==
-                        branchId
-                ) {
-                    return false;
-                }
-
-
-                if (
-                    academicYearId &&
-                    option.dataset.academicYearId !==
-                        academicYearId
-                ) {
-                    return false;
-                }
-
-
-                if (
-                    classId &&
-                    option.dataset.classId !==
-                        classId
-                ) {
-                    return false;
-                }
-
-
-                return true;
-
-            }
-        );
-
-    }
-
-
-    /* ========================================================
-       REFRESH ROW
-       ======================================================== */
-
-    function refreshRow(row) {
-
-        filterTeachers(row);
-
-        filterPrograms(row);
-
-        filterClasses(row);
-
-        filterSubjects(row);
-
-        filterSections(row);
-
-        applyAssignmentType(row);
-
-    }
-
-
-    /* ========================================================
-       UPDATE ROW NUMBERS
-       ======================================================== */
-
-    function updateRowNumbers() {
-
-        const rows =
-            getRows();
-
-
-        rows.forEach(
-            function (row, index) {
-
-                row.dataset.rowIndex =
-                    index;
-
-
-                const badge =
-                    row.querySelector(
-                        ".assignment-number-badge"
-                    );
-
-                if (badge) {
-
-                    badge.textContent =
-                        index + 1;
-
-                }
-
-
-                const title =
-                    row.querySelector(
-                        ".assignment-number-text"
-                    );
-
-                if (title) {
-
-                    const small =
-                        title.querySelector(
-                            "small"
-                        );
-
-                    title.childNodes[0].nodeValue =
-                        "Assignment " +
-                        (index + 1) +
-                        " ";
-
-                }
-
-
-                const removeButton =
-                    row.querySelector(
-                        ".remove-assignment"
-                    );
-
-                if (removeButton) {
-
-                    removeButton.style.display =
-                        rows.length > 1
-                            ? "inline-flex"
-                            : "none";
-
-                }
-
-            }
-        );
-
-
-        assignmentCount.textContent =
-            rows.length;
-
-        summaryAssignmentCount.textContent =
-            rows.length;
-
-    }
-
-
-    /* ========================================================
-       SET SUMMARY VALUE
-       ======================================================== */
-
-    function setSummaryValue(
-        element,
-        value
-    ) {
-
-        if (!element) {
             return;
         }
 
 
-        if (value) {
+        /* -----------------------------------------------------
+           CLASS
+        ----------------------------------------------------- */
 
-            element.textContent =
-                value;
+        if (type === "class") {
 
-            element.classList.remove(
-                "empty"
+            programField.classList.remove(
+                "is-hidden"
             );
 
-        } else {
-
-            element.textContent =
-                "Not selected";
-
-            element.classList.add(
-                "empty"
+            classField.classList.remove(
+                "is-hidden"
             );
 
+            programRequired.style.display =
+                "inline";
+
+            classRequired.style.display =
+                "inline";
+
+            programSelect.required = true;
+            classSelect.required = true;
+
+
+            if (help) {
+
+                help.textContent =
+                    "Assign the teacher to a specific class under a program.";
+
+            }
+
+            if (requiredText) {
+
+                requiredText.textContent =
+                    "Teacher + Program + Class";
+
+            }
+
+            return;
         }
 
+
+        /* -----------------------------------------------------
+           SUBJECT
+        ----------------------------------------------------- */
+
+        if (type === "subject") {
+
+            programField.classList.remove(
+                "is-hidden"
+            );
+
+            classField.classList.remove(
+                "is-hidden"
+            );
+
+            subjectField.classList.remove(
+                "is-hidden"
+            );
+
+            programRequired.style.display =
+                "inline";
+
+            classRequired.style.display =
+                "inline";
+
+            subjectRequired.style.display =
+                "inline";
+
+            programSelect.required = true;
+            classSelect.required = true;
+            subjectSelect.required = true;
+
+
+            if (help) {
+
+                help.textContent =
+                    "Assign the teacher to a specific subject in a class.";
+
+            }
+
+            if (requiredText) {
+
+                requiredText.textContent =
+                    "Teacher + Program + Class + Subject";
+
+            }
+
+            return;
+        }
+
+
+        /* -----------------------------------------------------
+           SECTION
+        ----------------------------------------------------- */
+
+        if (type === "section") {
+
+            programField.classList.remove(
+                "is-hidden"
+            );
+
+            classField.classList.remove(
+                "is-hidden"
+            );
+
+            subjectField.classList.remove(
+                "is-hidden"
+            );
+
+            sectionField.classList.remove(
+                "is-hidden"
+            );
+
+            programRequired.style.display =
+                "inline";
+
+            classRequired.style.display =
+                "inline";
+
+            subjectRequired.style.display =
+                "inline";
+
+            sectionRequired.style.display =
+                "inline";
+
+            programSelect.required = true;
+            classSelect.required = true;
+            subjectSelect.required = true;
+            sectionSelect.required = true;
+
+
+            if (help) {
+
+                help.textContent =
+                    "Assign the teacher to a specific section and subject.";
+
+            }
+
+            if (requiredText) {
+
+                requiredText.textContent =
+                    "Teacher + Program + Class + Subject + Section";
+
+            }
+
+        }
     }
 
 
-    /* ========================================================
-       SELECTED TEXT
-       ======================================================== */
+    /* =========================================================
+       UPDATE NUMBERS
+    ========================================================= */
 
-    function getSelectedText(select) {
+    function updateAssignmentNumbers() {
 
-        if (
-            !select ||
-            !select.value
-        ) {
-            return "";
-        }
+        const rows =
+            assignmentList.querySelectorAll(
+                ".assignment-row"
+            );
 
-
-        const option =
-            select.options[
-                select.selectedIndex
-            ];
+        const count =
+            rows.length;
 
 
-        return option
-            ? option.textContent.trim()
-            : "";
+        assignmentCount.textContent =
+            count;
 
+        summaryAssignmentCount.textContent =
+            count;
+
+
+        rows.forEach(function (row, index) {
+
+            row.dataset.rowIndex =
+                String(index);
+
+
+            const badge =
+                row.querySelector(
+                    ".assignment-number-badge"
+                );
+
+            const title =
+                row.querySelector(
+                    ".assignment-number-text"
+                );
+
+
+            if (badge) {
+
+                badge.textContent =
+                    String(index + 1);
+            }
+
+
+            if (title) {
+
+                const small =
+                    title.querySelector("small");
+
+                title.textContent =
+                    "Assignment " +
+                    String(index + 1);
+
+                if (small) {
+                    title.appendChild(
+                        small
+                    );
+                }
+
+            }
+
+        });
+
+
+        rows.forEach(function (row) {
+
+            const remove =
+                row.querySelector(
+                    ".remove-assignment"
+                );
+
+            if (!remove) {
+                return;
+            }
+
+            remove.style.display =
+                count > 1
+                    ? "inline-flex"
+                    : "none";
+        });
     }
 
 
-    /* ========================================================
-       UPDATE SUMMARY
-       ======================================================== */
+    /* =========================================================
+       SUMMARY
+    ========================================================= */
 
     function updateSummary() {
 
-        const institutionOption =
-            institutionSelect.options[
-                institutionSelect.selectedIndex
-            ];
+        const institutionText =
+            selectedText(
+                institutionSelect
+            );
 
-        const branchOption =
-            branchSelect.options[
-                branchSelect.selectedIndex
-            ];
+        const branchText =
+            selectedText(
+                branchSelect
+            );
 
-        const yearOption =
-            academicYearSelect.options[
-                academicYearSelect.selectedIndex
-            ];
+        const yearText =
+            selectedText(
+                academicYearSelect
+            );
 
 
-        setSummaryValue(
+        function setSummary(
+            element,
+            value
+        ) {
+
+            element.textContent =
+                value || "Not selected";
+
+            element.classList.toggle(
+                "empty",
+                !value
+            );
+        }
+
+
+        setSummary(
             summaryInstitution,
-            institutionOption &&
-            institutionOption.value
-                ? institutionOption.textContent.trim()
-                : ""
+            institutionText
         );
 
-
-        setSummaryValue(
+        setSummary(
             summaryBranch,
-            branchOption &&
-            branchOption.value
-                ? branchOption.textContent.trim()
-                : ""
+            branchText
         );
 
-
-        setSummaryValue(
+        setSummary(
             summaryAcademicYear,
-            yearOption &&
-            yearOption.value
-                ? yearOption.textContent.trim()
-                : ""
+            yearText
         );
-
-
-        assignmentSummaryList.innerHTML =
-            "";
 
 
         const rows =
-            getRows();
+            assignmentList.querySelectorAll(
+                ".assignment-row"
+            );
 
 
-        rows.forEach(
-            function (row, index) {
-
-                const fields =
-                    getRowFields(row);
-
-                const type =
-                    fields.type.value;
+        summaryAssignmentList.innerHTML =
+            "";
 
 
-                let text =
-                    "Assignment " +
-                    (index + 1);
+        if (!rows.length) {
+
+            summaryAssignmentList.innerHTML =
+                `
+                <div class="assignment-summary-item">
+                    <span class="assignment-summary-dot"></span>
+                    <span>No assignments.</span>
+                </div>
+                `;
+
+            return;
+        }
 
 
-                if (type) {
+        rows.forEach(function (row, index) {
 
-                    const rule =
-                        assignmentRules[type];
-
-                    text =
-                        rule.label;
-
-
-                    const values = [];
-
-
-                    if (
-                        fields.program.value &&
-                        rule.fields.includes(
-                            "program"
-                        )
-                    ) {
-
-                        values.push(
-                            getSelectedText(
-                                fields.program
-                            )
-                        );
-
-                    }
-
-
-                    if (
-                        fields.class.value &&
-                        rule.fields.includes(
-                            "class"
-                        )
-                    ) {
-
-                        values.push(
-                            getSelectedText(
-                                fields.class
-                            )
-                        );
-
-                    }
-
-
-                    if (
-                        fields.subject.value &&
-                        rule.fields.includes(
-                            "subject"
-                        )
-                    ) {
-
-                        values.push(
-                            getSelectedText(
-                                fields.subject
-                            )
-                        );
-
-                    }
-
-
-                    if (
-                        fields.section.value &&
-                        rule.fields.includes(
-                            "section"
-                        )
-                    ) {
-
-                        values.push(
-                            getSelectedText(
-                                fields.section
-                            )
-                        );
-
-                    }
-
-
-                    if (values.length) {
-
-                        text +=
-                            " — " +
-                            values.join(
-                                " / "
-                            );
-
-                    }
-
-                }
-
-
-                const item =
-                    document.createElement(
-                        "div"
-                    );
-
-                item.className =
-                    "assignment-summary-item";
-
-
-                const dot =
-                    document.createElement(
-                        "span"
-                    );
-
-                dot.className =
-                    "assignment-summary-dot";
-
-
-                const label =
-                    document.createElement(
-                        "span"
-                    );
-
-                label.textContent =
-                    text;
-
-
-                item.appendChild(dot);
-
-                item.appendChild(label);
-
-                assignmentSummaryList.appendChild(
-                    item
+            const teacher =
+                selectedText(
+                    row.querySelector(
+                        ".teacher-select"
+                    )
                 );
 
-            }
-        );
+            const type =
+                selectedText(
+                    row.querySelector(
+                        ".assignment-type-select"
+                    )
+                );
 
+            const program =
+                selectedText(
+                    row.querySelector(
+                        ".program-select"
+                    )
+                );
+
+            const classText =
+                selectedText(
+                    row.querySelector(
+                        ".class-select"
+                    )
+                );
+
+            const subject =
+                selectedText(
+                    row.querySelector(
+                        ".subject-select"
+                    )
+                );
+
+            const section =
+                selectedText(
+                    row.querySelector(
+                        ".section-select"
+                    )
+                );
+
+
+            const parts = [];
+
+
+            if (teacher) {
+
+                parts.push(
+                    teacher
+                );
+            }
+
+
+            if (type) {
+
+                parts.push(
+                    type
+                );
+            }
+
+
+            if (program) {
+
+                parts.push(
+                    program
+                );
+            }
+
+
+            if (classText) {
+
+                parts.push(
+                    classText
+                );
+            }
+
+
+            if (subject) {
+
+                parts.push(
+                    subject
+                );
+            }
+
+
+            if (section) {
+
+                parts.push(
+                    section
+                );
+            }
+
+
+            const text =
+                parts.length
+                    ? parts.join(" • ")
+                    : "Select assignment details";
+
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "assignment-summary-item";
+
+
+            item.innerHTML =
+                `
+                <span class="assignment-summary-dot"></span>
+                <span>
+                    <strong>
+                        ${escapeHtml(
+                            String(index + 1)
+                        )}.
+                    </strong>
+                    ${escapeHtml(text)}
+                </span>
+                `;
+
+
+            summaryAssignmentList.appendChild(
+                item
+            );
+
+        });
     }
 
 
-    /* ========================================================
-       ADD MORE ASSIGNMENT
-       ======================================================== */
+    /* =========================================================
+       RESET DEPENDENT ROWS
+    ========================================================= */
 
-    addMoreButton.addEventListener(
-        "click",
-        function () {
+    function resetAllRows() {
 
-            const rows =
-                getRows();
-
-            const sourceRow =
-                rows[0];
-
-
-            const newRow =
-                sourceRow.cloneNode(true);
-
-
-            /* ------------------------------------------------
-               CLEAR VALUES
-               ------------------------------------------------ */
-
-            newRow.querySelectorAll(
-                "select"
-            ).forEach(
-                function (select) {
-
-                    select.value = "";
-
-                }
+        const rows =
+            assignmentList.querySelectorAll(
+                ".assignment-row"
             );
 
 
-            /* ------------------------------------------------
-               CLEAR ERROR STATES
-               ------------------------------------------------ */
+        rows.forEach(function (row) {
 
-            newRow.querySelectorAll(
-                ".field-error"
-            ).forEach(
-                function (element) {
+            row.dataset.optionsRequest =
+                String(++requestSequence);
 
-                    element.classList.remove(
-                        "field-error"
-                    );
 
-                }
+            clearRowOptions(row);
+
+            filterTeachers(row);
+
+            updateAssignmentRow(row);
+
+        });
+
+
+        updateAssignmentNumbers();
+
+        updateSummary();
+    }
+
+
+    /* =========================================================
+       TEACHER CHANGE
+    ========================================================= */
+
+    async function handleTeacherChange(row) {
+
+        const program =
+            row.querySelector(
+                ".program-select"
+            );
+
+        const classSelect =
+            row.querySelector(
+                ".class-select"
+            );
+
+        const subject =
+            row.querySelector(
+                ".subject-select"
+            );
+
+        const section =
+            row.querySelector(
+                ".section-select"
             );
 
 
-            /* ------------------------------------------------
-               REMOVE FIRST ROW CLASS
-               ------------------------------------------------ */
+        resetSelect(
+            program,
+            "Loading Programs...",
+            true
+        );
 
-            newRow.classList.remove(
-                "first-row"
+        resetSelect(
+            classSelect,
+            "Select Program First",
+            true
+        );
+
+        resetSelect(
+            subject,
+            "Select Program First",
+            true
+        );
+
+        resetSelect(
+            section,
+            "Select Class First",
+            true
+        );
+
+
+        const teacherId =
+            valueOf(
+                row.querySelector(
+                    ".teacher-select"
+                )
             );
 
 
-            /* ------------------------------------------------
-               APPEND
-               ------------------------------------------------ */
+        if (!teacherId) {
 
-            assignmentList.appendChild(
-                newRow
-            );
-
-
-            /* ------------------------------------------------
-               REFRESH
-               ------------------------------------------------ */
-
-            refreshRow(newRow);
-
-            updateRowNumbers();
+            clearRowOptions(row);
 
             updateSummary();
 
+            return;
+        }
 
-            /* ------------------------------------------------
-               SCROLL
-               ------------------------------------------------ */
 
-            setTimeout(
-                function () {
+        await loadOptions(row);
 
-                    newRow.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center"
-                    });
+        updateSummary();
+    }
 
-                },
-                50
+
+    /* =========================================================
+       PROGRAM CHANGE
+    ========================================================= */
+
+    async function handleProgramChange(row) {
+
+        const program =
+            row.querySelector(
+                ".program-select"
             );
+
+        const classSelect =
+            row.querySelector(
+                ".class-select"
+            );
+
+        const subject =
+            row.querySelector(
+                ".subject-select"
+            );
+
+        const section =
+            row.querySelector(
+                ".section-select"
+            );
+
+
+        const programId =
+            valueOf(program);
+
+
+        resetSelect(
+            classSelect,
+            programId
+                ? "Loading Classes..."
+                : "Select Program First",
+            !programId
+        );
+
+
+        resetSelect(
+            subject,
+            programId
+                ? "Loading Subjects..."
+                : "Select Program First",
+            !programId
+        );
+
+
+        resetSelect(
+            section,
+            "Select Class First",
+            true
+        );
+
+
+        if (!programId) {
+
+            updateSummary();
+
+            return;
+        }
+
+
+        await loadOptions(row);
+
+        updateSummary();
+    }
+
+
+    /* =========================================================
+       CLASS CHANGE
+    ========================================================= */
+
+    async function handleClassChange(row) {
+
+        const classSelect =
+            row.querySelector(
+                ".class-select"
+            );
+
+        const section =
+            row.querySelector(
+                ".section-select"
+            );
+
+
+        const classId =
+            valueOf(classSelect);
+
+
+        resetSelect(
+            section,
+            classId
+                ? "Loading Sections..."
+                : "Select Class First",
+            !classId
+        );
+
+
+        if (!classId) {
+
+            updateSummary();
+
+            return;
+        }
+
+
+        await loadOptions(row);
+
+        updateSummary();
+    }
+
+
+    /* =========================================================
+       CREATE NEW ROW
+    ========================================================= */
+
+    function createAssignmentRow() {
+
+        const row =
+            document.createElement("div");
+
+        row.className =
+            "assignment-row";
+
+        row.dataset.rowIndex = "0";
+
+
+        row.innerHTML = `
+        
+            <div class="assignment-row-top">
+
+                <div class="assignment-number">
+
+                    <div class="assignment-number-badge">
+                        1
+                    </div>
+
+                    <div class="assignment-number-text">
+
+                        Assignment 1
+
+                        <small>
+                            Choose the teacher and assignment level.
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-danger remove-assignment"
+                    title="Remove Assignment"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div
+                class="form-group"
+                style="margin-bottom:16px;"
+            >
+
+                <label class="form-label">
+
+                    Teacher
+
+                    <span class="required">*</span>
+
+                </label>
+
+                <select
+                    class="form-control teacher-select"
+                    name="teacher_ids"
+                    required
+                >
+
+                    <option value="">
+                        Select Teacher
+                    </option>
+
+                    {% for teacher in teachers %}
+
+                        <option
+                            value="{{ teacher.id }}"
+                            data-institution-id="{{ teacher.institution_id }}"
+                            data-branch-id="{{ teacher.branch_id }}"
+                        >
+
+                            {{ teacher.full_name }}
+
+                            {% if teacher.username %}
+                                — {{ teacher.username }}
+                            {% endif %}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <div class="form-help">
+                    Select the teacher responsible for this assignment.
+                </div>
+
+            </div>
+
+
+            <div class="assignment-type-box">
+
+                <label class="assignment-type-label">
+
+                    Assignment Type
+
+                    <span class="required">*</span>
+
+                </label>
+
+                <select
+                    class="form-control assignment-type-select"
+                    name="assignment_type"
+                    required
+                >
+
+                    <option value="">
+                        Select Assignment Type
+                    </option>
+
+                    <option value="program">
+                        Program
+                    </option>
+
+                    <option value="class">
+                        Class
+                    </option>
+
+                    <option value="subject">
+                        Subject
+                    </option>
+
+                    <option value="section">
+                        Section
+                    </option>
+
+                </select>
+
+                <div
+                    class="assignment-type-help"
+                    data-type-help
+                >
+                    Choose the level at which the teacher
+                    will be assigned.
+                </div>
+
+            </div>
+
+
+            <div
+                class="assignment-field program-field is-hidden"
+                data-field="program"
+            >
+
+                <div class="form-group">
+
+                    <label class="form-label">
+
+                        Program
+
+                        <span
+                            class="required program-required"
+                            style="display:none;"
+                        >
+                            *
+                        </span>
+
+                    </label>
+
+                    <select
+                        class="form-control program-select"
+                        name="program_ids"
+                        disabled
+                    >
+
+                        <option value="">
+                            Select Teacher First
+                        </option>
+
+                    </select>
+
+                    <div class="form-help">
+                        Select the program for this assignment.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="assignment-field class-field is-hidden"
+                data-field="class"
+            >
+
+                <div class="form-group">
+
+                    <label class="form-label">
+
+                        Class
+
+                        <span
+                            class="required class-required"
+                            style="display:none;"
+                        >
+                            *
+                        </span>
+
+                    </label>
+
+                    <select
+                        class="form-control class-select"
+                        name="class_ids"
+                        disabled
+                    >
+
+                        <option value="">
+                            Select Program First
+                        </option>
+
+                    </select>
+
+                    <div class="form-help">
+                        Select a class under the selected program.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="assignment-field subject-field is-hidden"
+                data-field="subject"
+            >
+
+                <div class="form-group">
+
+                    <label class="form-label">
+
+                        Subject
+
+                        <span
+                            class="required subject-required"
+                            style="display:none;"
+                        >
+                            *
+                        </span>
+
+                    </label>
+
+                    <select
+                        class="form-control subject-select"
+                        name="subject_ids"
+                        disabled
+                    >
+
+                        <option value="">
+                            Select Program First
+                        </option>
+
+                    </select>
+
+                    <div class="form-help">
+                        Select the subject taught by this teacher.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="assignment-field section-field is-hidden"
+                data-field="section"
+            >
+
+                <div class="form-group">
+
+                    <label class="form-label">
+
+                        Section
+
+                        <span
+                            class="required section-required"
+                            style="display:none;"
+                        >
+                            *
+                        </span>
+
+                    </label>
+
+                    <select
+                        class="form-control section-select"
+                        name="section_ids"
+                        disabled
+                    >
+
+                        <option value="">
+                            Select Class First
+                        </option>
+
+                    </select>
+
+                    <div class="form-help">
+                        Select a section under the selected class.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="assignment-rule-display"
+                style="
+                    margin-top:4px;
+                    padding:10px 12px;
+                    background:#f8fafc;
+                    border-radius:9px;
+                    border:1px solid #e9edf2;
+                    color:#697384;
+                    font-size:11px;
+                    line-height:1.5;
+                "
+            >
+
+                <strong style="color:#06245f;">
+                    Required fields:
+                </strong>
+
+                <span data-required-text>
+                    Select Assignment Type first.
+                </span>
+
+            </div>
+
+        `;
+
+
+        assignmentList.appendChild(
+            row
+        );
+
+
+        filterTeachers(row);
+
+        updateAssignmentRow(row);
+
+        updateAssignmentNumbers();
+
+        updateSummary();
+
+
+        return row;
+    }
+
+
+    /* =========================================================
+       EVENT DELEGATION
+    ========================================================= */
+
+    assignmentList.addEventListener(
+        "change",
+        function (event) {
+
+            const target =
+                event.target;
+
+            const row =
+                target.closest(
+                    ".assignment-row"
+                );
+
+            if (!row) {
+                return;
+            }
+
+
+            if (
+                target.classList.contains(
+                    "teacher-select"
+                )
+            ) {
+
+                handleTeacherChange(
+                    row
+                );
+
+                return;
+            }
+
+
+            if (
+                target.classList.contains(
+                    "assignment-type-select"
+                )
+            ) {
+
+                updateAssignmentRow(
+                    row
+                );
+
+                updateSummary();
+
+                return;
+            }
+
+
+            if (
+                target.classList.contains(
+                    "program-select"
+                )
+            ) {
+
+                handleProgramChange(
+                    row
+                );
+
+                return;
+            }
+
+
+            if (
+                target.classList.contains(
+                    "class-select"
+                )
+            ) {
+
+                handleClassChange(
+                    row
+                );
+
+                return;
+            }
+
+
+            if (
+                target.classList.contains(
+                    "subject-select"
+                ) ||
+                target.classList.contains(
+                    "section-select"
+                )
+            ) {
+
+                updateSummary();
+
+            }
 
         }
     );
 
 
-    /* ========================================================
-       REMOVE ASSIGNMENT
-       ======================================================== */
+    /* =========================================================
+       REMOVE ROW
+    ========================================================= */
 
     assignmentList.addEventListener(
         "click",
         function (event) {
 
-            const removeButton =
+            const button =
                 event.target.closest(
                     ".remove-assignment"
                 );
 
-
-            if (!removeButton) {
+            if (!button) {
                 return;
             }
 
 
             const rows =
-                getRows();
+                assignmentList.querySelectorAll(
+                    ".assignment-row"
+                );
 
 
             if (rows.length <= 1) {
+
                 return;
             }
 
 
             const row =
-                removeButton.closest(
+                button.closest(
                     ".assignment-row"
                 );
 
@@ -3725,7 +4813,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 row.remove();
 
-                updateRowNumbers();
+                updateAssignmentNumbers();
 
                 updateSummary();
 
@@ -3735,117 +4823,23 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
-    /* ========================================================
-       ASSIGNMENT LIST CHANGE
-       ======================================================== */
+    /* =========================================================
+       ADD MORE
+    ========================================================= */
 
-    assignmentList.addEventListener(
-        "change",
-        function (event) {
+    addMoreButton.addEventListener(
+        "click",
+        function () {
 
-            const row =
-                event.target.closest(
-                    ".assignment-row"
-                );
-
-
-            if (!row) {
-                return;
-            }
-
-
-            const fields =
-                getRowFields(row);
-
-
-            /* ------------------------------------------------
-               TYPE
-               ------------------------------------------------ */
-
-            if (
-                event.target.classList.contains(
-                    "assignment-type-select"
-                )
-            ) {
-
-                applyAssignmentType(row);
-
-                updateSummary();
-
-                return;
-
-            }
-
-
-            /* ------------------------------------------------
-               PROGRAM
-               ------------------------------------------------ */
-
-            if (
-                event.target.classList.contains(
-                    "program-select"
-                )
-            ) {
-
-                fields.class.value =
-                    "";
-
-                fields.subject.value =
-                    "";
-
-                fields.section.value =
-                    "";
-
-
-                filterClasses(row);
-
-                filterSubjects(row);
-
-                filterSections(row);
-
-                updateSummary();
-
-                return;
-
-            }
-
-
-            /* ------------------------------------------------
-               CLASS
-               ------------------------------------------------ */
-
-            if (
-                event.target.classList.contains(
-                    "class-select"
-                )
-            ) {
-
-                fields.section.value =
-                    "";
-
-
-                filterSections(row);
-
-                updateSummary();
-
-                return;
-
-            }
-
-
-            /* ------------------------------------------------
-               OTHER
-               ------------------------------------------------ */
-
-            updateSummary();
+            createAssignmentRow();
 
         }
     );
 
 
-    /* ========================================================
+    /* =========================================================
        INSTITUTION CHANGE
-       ======================================================== */
+    ========================================================= */
 
     institutionSelect.addEventListener(
         "change",
@@ -3855,53 +4849,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             filterAcademicYears();
 
+            branchSelect.value = "";
+            academicYearSelect.value = "";
 
-            const branchOption =
-                branchSelect.options[
-                    branchSelect.selectedIndex
-                ];
-
-
-            if (
-                branchOption &&
-                branchOption.value &&
-                branchOption.hidden
-            ) {
-
-                branchSelect.value =
-                    "";
-
-            }
-
-
-            getRows().forEach(
-                function (row) {
-
-                    const fields =
-                        getRowFields(row);
-
-
-                    fields.teacher.value =
-                        "";
-
-                    fields.program.value =
-                        "";
-
-                    fields.class.value =
-                        "";
-
-                    fields.subject.value =
-                        "";
-
-                    fields.section.value =
-                        "";
-
-
-                    refreshRow(row);
-
-                }
-            );
-
+            resetAllRows();
 
             updateSummary();
 
@@ -3909,42 +4860,15 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
-    /* ========================================================
+    /* =========================================================
        BRANCH CHANGE
-       ======================================================== */
+    ========================================================= */
 
     branchSelect.addEventListener(
         "change",
         function () {
 
-            getRows().forEach(
-                function (row) {
-
-                    const fields =
-                        getRowFields(row);
-
-
-                    fields.teacher.value =
-                        "";
-
-                    fields.program.value =
-                        "";
-
-                    fields.class.value =
-                        "";
-
-                    fields.subject.value =
-                        "";
-
-                    fields.section.value =
-                        "";
-
-
-                    refreshRow(row);
-
-                }
-            );
-
+            resetAllRows();
 
             updateSummary();
 
@@ -3952,35 +4876,15 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
-    /* ========================================================
+    /* =========================================================
        ACADEMIC YEAR CHANGE
-       ======================================================== */
+    ========================================================= */
 
     academicYearSelect.addEventListener(
         "change",
         function () {
 
-            getRows().forEach(
-                function (row) {
-
-                    const fields =
-                        getRowFields(row);
-
-
-                    fields.class.value =
-                        "";
-
-                    fields.section.value =
-                        "";
-
-
-                    filterClasses(row);
-
-                    filterSections(row);
-
-                }
-            );
-
+            resetAllRows();
 
             updateSummary();
 
@@ -3988,269 +4892,513 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
-    /* ========================================================
-       DATE VALIDATION
-       ======================================================== */
+    /* =========================================================
+       FORM VALIDATION
+    ========================================================= */
 
-    const startDate =
-        document.getElementById(
-            "start_date"
-        );
+    function validateRow(row) {
 
-    const endDate =
-        document.getElementById(
-            "end_date"
-        );
+        let valid = true;
 
-
-    function validateDates() {
-
-        if (
-            startDate.value &&
-            endDate.value &&
-            endDate.value <
-                startDate.value
-        ) {
-
-            endDate.setCustomValidity(
-                "End Date must be greater than or equal to Start Date."
+        const type =
+            valueOf(
+                row.querySelector(
+                    ".assignment-type-select"
+                )
             );
 
-        } else {
+        const teacher =
+            row.querySelector(
+                ".teacher-select"
+            );
 
-            endDate.setCustomValidity("");
+        const program =
+            row.querySelector(
+                ".program-select"
+            );
+
+        const classSelect =
+            row.querySelector(
+                ".class-select"
+            );
+
+        const subject =
+            row.querySelector(
+                ".subject-select"
+            );
+
+        const section =
+            row.querySelector(
+                ".section-select"
+            );
+
+
+        [
+            teacher,
+            row.querySelector(
+                ".assignment-type-select"
+            ),
+            program,
+            classSelect,
+            subject,
+            section
+        ].forEach(function (element) {
+
+            if (element) {
+
+                element.classList.remove(
+                    "field-error"
+                );
+
+            }
+
+        });
+
+
+        function requireField(
+            element
+        ) {
+
+            if (
+                !element ||
+                !valueOf(element)
+            ) {
+
+                if (element) {
+
+                    element.classList.add(
+                        "field-error"
+                    );
+
+                }
+
+                valid = false;
+            }
 
         }
 
+
+        requireField(
+            teacher
+        );
+
+
+        requireField(
+            row.querySelector(
+                ".assignment-type-select"
+            )
+        );
+
+
+        if (!type) {
+
+            return false;
+        }
+
+
+        if (type === "program") {
+
+            requireField(
+                program
+            );
+        }
+
+
+        if (type === "class") {
+
+            requireField(
+                program
+            );
+
+            requireField(
+                classSelect
+            );
+        }
+
+
+        if (type === "subject") {
+
+            requireField(
+                program
+            );
+
+            requireField(
+                classSelect
+            );
+
+            requireField(
+                subject
+            );
+        }
+
+
+        if (type === "section") {
+
+            requireField(
+                program
+            );
+
+            requireField(
+                classSelect
+            );
+
+            requireField(
+                subject
+            );
+
+            requireField(
+                section
+            );
+        }
+
+
+        return valid;
     }
 
 
-    startDate.addEventListener(
-        "change",
-        validateDates
-    );
+    /* =========================================================
+       DUPLICATE CHECK
+       Only checks duplicates inside CURRENT FORM.
+       No existing server assignments are checked here.
+    ========================================================= */
 
-    endDate.addEventListener(
-        "change",
-        validateDates
-    );
+    function assignmentKey(row) {
+
+        return [
+
+            valueOf(
+                row.querySelector(
+                    ".teacher-select"
+                )
+            ),
+
+            valueOf(
+                row.querySelector(
+                    ".assignment-type-select"
+                )
+            ),
+
+            valueOf(
+                row.querySelector(
+                    ".program-select"
+                )
+            ),
+
+            valueOf(
+                row.querySelector(
+                    ".class-select"
+                )
+            ),
+
+            valueOf(
+                row.querySelector(
+                    ".subject-select"
+                )
+            ),
+
+            valueOf(
+                row.querySelector(
+                    ".section-select"
+                )
+            )
+
+        ].join("|");
+    }
 
 
-    /* ========================================================
-       FORM VALIDATION
-       ======================================================== */
+    function findDuplicateRows(rows) {
+
+        const seen =
+            new Map();
+
+        const duplicates = [];
+
+
+        rows.forEach(function (row) {
+
+            const key =
+                assignmentKey(row);
+
+
+            if (
+                !key ||
+                key.replace(/\|/g, "") === ""
+            ) {
+
+                return;
+            }
+
+
+            if (
+                seen.has(key)
+            ) {
+
+                duplicates.push(
+                    row
+                );
+
+            } else {
+
+                seen.set(
+                    key,
+                    row
+                );
+
+            }
+
+        });
+
+
+        return duplicates;
+    }
+
+
+    /* =========================================================
+       SUBMIT
+    ========================================================= */
 
     form.addEventListener(
         "submit",
         function (event) {
 
+            if (
+                submitButton.disabled
+            ) {
+
+                event.preventDefault();
+
+                return;
+            }
+
+
             let valid = true;
 
 
-            /* ------------------------------------------------
-               DATE
-               ------------------------------------------------ */
+            /* -------------------------------------------------
+               GLOBAL
+            ------------------------------------------------- */
 
-            validateDates();
+            [
+                institutionSelect,
+                branchSelect,
+                academicYearSelect
+            ].forEach(function (element) {
+
+                element.classList.remove(
+                    "field-error"
+                );
 
 
-            /* ------------------------------------------------
-               REMOVE OLD ERRORS
-               ------------------------------------------------ */
+                if (
+                    !valueOf(element)
+                ) {
 
-            form.querySelectorAll(
-                ".field-error"
-            ).forEach(
-                function (element) {
-
-                    element.classList.remove(
+                    element.classList.add(
                         "field-error"
                     );
 
+                    valid = false;
                 }
-            );
+
+            });
 
 
-            /* ------------------------------------------------
-               ROW VALIDATION
-               ------------------------------------------------ */
+            /* -------------------------------------------------
+               ROWS
+            ------------------------------------------------- */
 
-            getRows().forEach(
-                function (row) {
-
-                    const fields =
-                        getRowFields(row);
-
-                    const type =
-                        fields.type.value;
+            const rows =
+                Array.from(
+                    assignmentList.querySelectorAll(
+                        ".assignment-row"
+                    )
+                );
 
 
-                    if (!type) {
+            rows.forEach(function (row) {
 
-                        valid = false;
+                if (
+                    !validateRow(row)
+                ) {
 
-                        fields.type.classList.add(
-                            "field-error"
-                        );
+                    valid = false;
+                }
 
-                        return;
-
-                    }
-
-
-                    const rule =
-                        assignmentRules[type];
+            });
 
 
-                    rule.required.forEach(
-                        function (fieldName) {
+            /* -------------------------------------------------
+               DUPLICATES
+            ------------------------------------------------- */
 
-                            const select =
-                                fields[fieldName];
+            const duplicates =
+                findDuplicateRows(
+                    rows
+                );
 
 
-                            if (
-                                !select ||
-                                !select.value
-                            ) {
+            if (
+                duplicates.length
+            ) {
 
-                                valid = false;
+                duplicates.forEach(
+                    function (row) {
 
-                                if (select) {
+                        const fields =
+                            row.querySelectorAll(
+                                "select"
+                            );
 
-                                    select.classList.add(
-                                        "field-error"
-                                    );
+                        fields.forEach(
+                            function (field) {
 
-                                }
+                                field.classList.add(
+                                    "field-error"
+                                );
 
                             }
+                        );
 
-                        }
-                    );
+                    }
+                );
 
-                }
-            );
-
-
-            /* ------------------------------------------------
-               NATIVE VALIDATION
-               ------------------------------------------------ */
-
-            if (!form.checkValidity()) {
 
                 valid = false;
 
+                alert(
+                    "Duplicate assignments were found in the form. Please remove or change the duplicate rows."
+                );
             }
 
+
+            /* -------------------------------------------------
+               INVALID
+            ------------------------------------------------- */
 
             if (!valid) {
 
                 event.preventDefault();
 
+
                 const firstError =
                     form.querySelector(
-                        ".field-error, :invalid"
+                        ".field-error"
                     );
 
 
                 if (firstError) {
-
-                    firstError.focus();
 
                     firstError.scrollIntoView({
                         behavior: "smooth",
                         block: "center"
                     });
 
+
+                    setTimeout(
+                        function () {
+
+                            try {
+                                firstError.focus();
+                            } catch (e) {}
+
+                        },
+                        300
+                    );
+
+                } else {
+
+                    alert(
+                        "Please complete all required assignment fields."
+                    );
+
                 }
 
-                return;
 
+                return;
             }
 
 
-            /* ------------------------------------------------
-               LOADING STATE
-               ------------------------------------------------ */
+            /* -------------------------------------------------
+               SUBMITTING
+            ------------------------------------------------- */
 
-            const submitBtn =
-                document.getElementById(
-                    "submitBtn"
-                );
+            submitButton.disabled =
+                true;
 
-            const submitText =
-                document.getElementById(
-                    "submitText"
-                );
-
-            const submitSpinner =
-                document.getElementById(
-                    "submitSpinner"
-                );
-
-
-            submitBtn.disabled =
+            addMoreButton.disabled =
                 true;
 
 
             submitText.style.display =
                 "none";
 
-
             submitSpinner.style.display =
                 "inline";
 
-        }
-    );
-
-
-    /* ========================================================
-       REMOVE ERROR WHEN USER CORRECTS FIELD
-       ======================================================== */
-
-    assignmentList.addEventListener(
-        "change",
-        function (event) {
-
-            if (
-                event.target.classList.contains(
-                    "field-error"
-                ) &&
-                event.target.value
-            ) {
-
-                event.target.classList.remove(
-                    "field-error"
-                );
-
-            }
 
         }
     );
 
 
-    /* ========================================================
+    /* =========================================================
        INITIALIZE
-       ======================================================== */
+    ========================================================= */
 
     filterBranches();
 
     filterAcademicYears();
 
 
-    getRows().forEach(
+    const initialRows =
+        assignmentList.querySelectorAll(
+            ".assignment-row"
+        );
+
+
+    initialRows.forEach(function (row) {
+
+        filterTeachers(row);
+
+        clearRowOptions(row);
+
+        updateAssignmentRow(row);
+
+    });
+
+
+    updateAssignmentNumbers();
+
+    updateSummary();
+
+
+    /* =========================================================
+       INITIAL AUTO LOAD
+       If teacher already selected, load its options.
+    ========================================================= */
+
+    initialRows.forEach(
         function (row) {
 
-            refreshRow(row);
+            const teacher =
+                row.querySelector(
+                    ".teacher-select"
+                );
+
+
+            if (
+                teacher &&
+                valueOf(teacher) &&
+                valueOf(institutionSelect) &&
+                valueOf(branchSelect) &&
+                valueOf(academicYearSelect)
+            ) {
+
+                loadOptions(row);
+
+            }
 
         }
     );
-
-
-    updateRowNumbers();
-
-    updateSummary();
 
 });
 

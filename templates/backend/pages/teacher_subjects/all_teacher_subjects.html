@@ -6,16 +6,17 @@
 
 /* ============================================================
    ALL TEACHER SUBJECTS
-   ============================================================ */
+============================================================ */
 
 .teacher-subjects-page {
     width: 100%;
     padding: 0;
 }
 
+
 /* ============================================================
    PAGE HEADER
-   ============================================================ */
+============================================================ */
 
 .ts-page-header {
     display: flex;
@@ -88,9 +89,10 @@
     color: #06245f;
 }
 
+
 /* ============================================================
    STATISTICS
-   ============================================================ */
+============================================================ */
 
 .ts-stat-grid {
     display: grid;
@@ -174,9 +176,10 @@
     line-height: 1;
 }
 
+
 /* ============================================================
    MAIN CARD
-   ============================================================ */
+============================================================ */
 
 .ts-main-card {
     overflow: hidden;
@@ -212,9 +215,10 @@
     font-size: 12px;
 }
 
+
 /* ============================================================
    FILTERS
-   ============================================================ */
+============================================================ */
 
 .ts-filter-form {
     display: grid;
@@ -252,16 +256,13 @@
     color: #303846;
     font-size: 12px;
     transition: .18s ease;
+    box-sizing: border-box;
 }
 
 .ts-filter-input:focus,
 .ts-filter-select:focus {
     border-color: #06245f;
     box-shadow: 0 0 0 3px rgba(6, 36, 95, .07);
-}
-
-.ts-filter-select option[hidden] {
-    display: none;
 }
 
 .ts-search-wrapper {
@@ -296,6 +297,7 @@
     cursor: pointer;
     text-decoration: none;
     transition: .18s ease;
+    box-sizing: border-box;
 }
 
 .ts-filter-btn {
@@ -319,12 +321,13 @@
     color: #06245f;
 }
 
-/* ============================================================
-   TOOLBAR
-   ============================================================ */
 
-.ts-toolbar {
-    min-height: 54px;
+/* ============================================================
+   DATATABLE TOOLBAR
+============================================================ */
+
+.ts-datatable-toolbar {
+    min-height: 58px;
     padding: 12px 20px;
     display: flex;
     align-items: center;
@@ -332,42 +335,86 @@
     gap: 15px;
     background: #fafbfc;
     border-bottom: 1px solid #edf0f5;
+    box-sizing: border-box;
+}
+
+.ts-dt-left,
+.ts-dt-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ts-dt-length {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ts-dt-length label {
+    color: #717c8e;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.ts-dt-length select {
+    height: 34px;
+    min-width: 70px;
+    padding: 0 8px;
+    border: 1px solid #dfe4ec;
+    border-radius: 7px;
+    background: #fff;
+    color: #303846;
+    font-size: 11px;
+    outline: none;
+}
+
+.ts-dt-search {
+    position: relative;
+    width: 245px;
+}
+
+.ts-dt-search i {
+    position: absolute;
+    left: 11px;
+    top: 11px;
+    color: #8b95a7;
+    font-size: 11px;
+    pointer-events: none;
+}
+
+.ts-dt-search input {
+    width: 100%;
+    height: 34px;
+    padding: 0 10px 0 31px;
+    border: 1px solid #dfe4ec;
+    border-radius: 7px;
+    outline: none;
+    background: #fff;
+    color: #303846;
+    font-size: 11px;
+    box-sizing: border-box;
+}
+
+.ts-dt-search input:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .06);
 }
 
 .ts-result-count {
     color: #717c8e;
-    font-size: 12px;
+    font-size: 11px;
+    white-space: nowrap;
 }
 
 .ts-result-count strong {
     color: #06245f;
 }
 
-.ts-per-page {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.ts-per-page label {
-    color: #717c8e;
-    font-size: 11px;
-}
-
-.ts-per-page select {
-    height: 33px;
-    min-width: 68px;
-    padding: 0 7px;
-    border: 1px solid #dfe4ec;
-    border-radius: 7px;
-    background: #fff;
-    color: #303846;
-    font-size: 11px;
-}
 
 /* ============================================================
    TABLE
-   ============================================================ */
+============================================================ */
 
 .ts-table-wrapper {
     width: 100%;
@@ -382,6 +429,7 @@
 }
 
 .ts-table thead th {
+    position: relative;
     padding: 12px 13px;
     background: #f7f9fc;
     border-bottom: 1px solid #e7ebf1;
@@ -391,6 +439,34 @@
     text-transform: uppercase;
     letter-spacing: .35px;
     white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ts-table thead th:first-child,
+.ts-table thead th:last-child {
+    cursor: default;
+}
+
+.ts-table thead th.sortable:hover {
+    background: #f1f4f9;
+    color: #06245f;
+}
+
+.ts-sort-icon {
+    margin-left: 6px;
+    color: #a1a9b6;
+    font-size: 9px;
+}
+
+.ts-table thead th.sort-asc,
+.ts-table thead th.sort-desc {
+    color: #06245f;
+}
+
+.ts-table thead th.sort-asc .ts-sort-icon,
+.ts-table thead th.sort-desc .ts-sort-icon {
+    color: #06245f;
 }
 
 .ts-table tbody td {
@@ -410,9 +486,14 @@
     border-bottom: 0;
 }
 
+.ts-table tbody tr.ts-row-hidden {
+    display: none;
+}
+
+
 /* ============================================================
    NUMBER
-   ============================================================ */
+============================================================ */
 
 .ts-number {
     color: #7c8798;
@@ -420,9 +501,10 @@
     font-weight: 700;
 }
 
+
 /* ============================================================
    TEACHER
-   ============================================================ */
+============================================================ */
 
 .ts-person {
     min-width: 220px;
@@ -468,10 +550,6 @@
     background: #eef3fb;
 }
 
-.ts-avatar-photo img {
-    opacity: 1;
-}
-
 .ts-person-name {
     color: #273247;
     font-size: 12px;
@@ -491,9 +569,10 @@
     margin-right: 4px;
 }
 
+
 /* ============================================================
    SUBJECT
-   ============================================================ */
+============================================================ */
 
 .ts-subject {
     min-width: 150px;
@@ -516,9 +595,10 @@
     font-size: 10px;
 }
 
+
 /* ============================================================
    ORGANIZATION
-   ============================================================ */
+============================================================ */
 
 .ts-org-name {
     color: #273247;
@@ -543,9 +623,10 @@
     color: #32b73a;
 }
 
+
 /* ============================================================
-   GENERAL
-   ============================================================ */
+   GENERAL CELLS
+============================================================ */
 
 .ts-cell-title {
     color: #344054;
@@ -570,9 +651,10 @@
     font-size: 10px;
 }
 
+
 /* ============================================================
    BADGES
-   ============================================================ */
+============================================================ */
 
 .ts-badge {
     display: inline-flex;
@@ -630,9 +712,10 @@
     color: #a76b00;
 }
 
+
 /* ============================================================
    DATES
-   ============================================================ */
+============================================================ */
 
 .ts-date-cell {
     min-width: 130px;
@@ -661,15 +744,22 @@
     color: #929baa;
 }
 
+
 /* ============================================================
    ACTIONS
-   ============================================================ */
+============================================================ */
 
 .ts-actions {
     display: flex;
     align-items: center;
     gap: 5px;
     white-space: nowrap;
+}
+
+.ts-action-form {
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
 }
 
 .ts-action-btn {
@@ -685,6 +775,12 @@
     cursor: pointer;
     font-size: 11px;
     transition: .18s ease;
+    box-sizing: border-box;
+}
+
+.ts-action-btn:disabled {
+    opacity: .65;
+    cursor: wait;
 }
 
 .ts-action-btn.view {
@@ -731,14 +827,10 @@
     color: #fff;
 }
 
-.ts-action-form {
-    margin: 0;
-    padding: 0;
-}
 
 /* ============================================================
    EMPTY
-   ============================================================ */
+============================================================ */
 
 .ts-empty {
     padding: 65px 20px;
@@ -770,29 +862,33 @@
     font-size: 12px;
 }
 
-/* ============================================================
-   PAGINATION
-   ============================================================ */
 
-.ts-pagination {
-    padding: 16px 20px;
+/* ============================================================
+   DATATABLE FOOTER
+============================================================ */
+
+.ts-datatable-footer {
+    min-height: 58px;
+    padding: 12px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 15px;
     border-top: 1px solid #edf0f5;
+    background: #fff;
+    box-sizing: border-box;
 }
 
-.ts-pagination-info {
+.ts-dt-info {
     color: #7b8494;
     font-size: 11px;
 }
 
-.ts-pagination-info strong {
+.ts-dt-info strong {
     color: #06245f;
 }
 
-.ts-pagination-list {
+.ts-dt-pagination {
     display: flex;
     align-items: center;
     gap: 5px;
@@ -801,8 +897,7 @@
     list-style: none;
 }
 
-.ts-pagination-list a,
-.ts-pagination-list span {
+.ts-dt-pagination button {
     min-width: 32px;
     height: 32px;
     padding: 0 8px;
@@ -815,29 +910,38 @@
     color: #5d687a;
     font-size: 11px;
     font-weight: 650;
-    text-decoration: none;
+    cursor: pointer;
+    transition: .18s ease;
 }
 
-.ts-pagination-list a:hover {
+.ts-dt-pagination button:hover:not(:disabled) {
     background: #f2f5fa;
     border-color: #cbd5e5;
     color: #06245f;
 }
 
-.ts-pagination-list .active {
+.ts-dt-pagination button.active {
     background: #06245f;
     border-color: #06245f;
     color: #fff;
 }
 
-.ts-pagination-list .disabled {
-    opacity: .45;
-    pointer-events: none;
+.ts-dt-pagination button:disabled {
+    opacity: .42;
+    cursor: not-allowed;
 }
+
+.ts-dt-ellipsis {
+    min-width: 25px;
+    text-align: center;
+    color: #929baa;
+    font-size: 11px;
+}
+
 
 /* ============================================================
    RESPONSIVE
-   ============================================================ */
+============================================================ */
 
 @media (max-width: 1500px) {
 
@@ -863,6 +967,22 @@
     .ts-search-wrapper {
         grid-column: span 3;
     }
+
+    .ts-datatable-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ts-dt-left,
+    .ts-dt-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .ts-dt-search {
+        width: 100%;
+        max-width: 300px;
+    }
 }
 
 @media (max-width: 850px) {
@@ -884,7 +1004,13 @@
         grid-column: span 2;
     }
 
-    .ts-pagination {
+    .ts-dt-left,
+    .ts-dt-right {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .ts-datatable-footer {
         flex-direction: column;
         align-items: flex-start;
     }
@@ -909,11 +1035,6 @@
         align-items: flex-start;
     }
 
-    .ts-toolbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
     .ts-page-title {
         font-size: 22px;
     }
@@ -925,317 +1046,244 @@
     .ts-header-btn {
         flex: 1;
     }
+
+    .ts-dt-left,
+    .ts-dt-right {
+        width: 100%;
+    }
+
+    .ts-dt-search {
+        max-width: none;
+    }
+
+    .ts-dt-pagination {
+        flex-wrap: wrap;
+    }
 }
 
 </style>
 
-
 <div class="teacher-subjects-page">
 
-    <!-- ========================================================
-         PAGE HEADER
-         ======================================================== -->
 
-    <div class="ts-page-header">
+<!-- ========================================================
+     PAGE HEADER
+========================================================= -->
 
-        <div>
+<div class="ts-page-header">
 
-            <h1 class="ts-page-title">
-                <i class="fas fa-chalkboard-user"></i>
-                Teacher Subject Assignments
-            </h1>
+    <div>
 
-            <p class="ts-page-subtitle">
-                Manage teacher, subject, class, section,
-                program and academic year assignments.
-            </p>
+        <h1 class="ts-page-title">
+            <i class="fas fa-chalkboard-user"></i>
+            Teacher Subject Assignments
+        </h1>
 
-        </div>
-
-        <div class="ts-header-actions">
-
-            <a
-                href="{{ url_for('main.dashboard') }}"
-                class="ts-header-btn secondary"
-            >
-                <i class="fas fa-arrow-left"></i>
-                Dashboard
-            </a>
-
-            <a
-                href="{{ url_for('main.add_teacher_subject') }}"
-                class="ts-header-btn primary"
-            >
-                <i class="fas fa-plus"></i>
-                Add Assignment
-            </a>
-
-        </div>
+        <p class="ts-page-subtitle">
+            Manage teacher, subject, class, section,
+            program and academic year assignments.
+        </p>
 
     </div>
 
 
-    <!-- ========================================================
-         SAFE VALUES
-         ======================================================== -->
+    <div class="ts-header-actions">
 
-    {% set ts_list = teacher_subjects|default([]) %}
-
-    {% set filter_data = filters|default({}) %}
-
-    {% set selected_institution_id =
-        filter_data.get(
-            'institution_id',
-            request.args.get('institution_id', '')
-        )
-    %}
-
-    {% set selected_branch_id =
-        filter_data.get(
-            'branch_id',
-            request.args.get('branch_id', '')
-        )
-    %}
-
-    {% set selected_teacher_id =
-        filter_data.get(
-            'teacher_id',
-            request.args.get('teacher_id', '')
-        )
-    %}
-
-    {% set selected_subject_id =
-        filter_data.get(
-            'subject_id',
-            request.args.get('subject_id', '')
-        )
-    %}
-
-    {% set selected_program_id =
-        filter_data.get(
-            'program_id',
-            request.args.get('program_id', '')
-        )
-    %}
-
-    {% set selected_class_id =
-        filter_data.get(
-            'class_id',
-            request.args.get('class_id', '')
-        )
-    %}
-
-    {% set selected_section_id =
-        filter_data.get(
-            'section_id',
-            request.args.get('section_id', '')
-        )
-    %}
-
-    {% set selected_academic_year_id =
-        filter_data.get(
-            'academic_year_id',
-            request.args.get('academic_year_id', '')
-        )
-    %}
-
-    {% set selected_teaching_type =
-        filter_data.get(
-            'teaching_type',
-            request.args.get('teaching_type', '')
-        )
-    %}
-
-    {% set selected_status =
-        filter_data.get(
-            'status',
-            request.args.get('status', '')
-        )
-    %}
-
-    {% set search =
-        filter_data.get(
-            'search',
-            request.args.get('search', '')
-        )
-    %}
+        <a
+            href="{{ url_for('main.dashboard') }}"
+            class="ts-header-btn secondary"
+        >
+            <i class="fas fa-arrow-left"></i>
+            Dashboard
+        </a>
 
 
-    {% set total_count =
-        total_teacher_subjects
-        if total_teacher_subjects is defined
-        else ts_list|length
-    %}
+        <a
+            href="{{ url_for('main.add_teacher_subject') }}"
+            class="ts-header-btn primary"
+        >
+            <i class="fas fa-plus"></i>
+            Add Assignment
+        </a>
 
-    {% set active_count =
-        active_teacher_subjects
-        if active_teacher_subjects is defined
-        else (
-            ts_list
-            |selectattr('status', 'equalto', 'active')
-            |list
-            |length
-        )
-    %}
+    </div>
 
-    {% set inactive_count =
-        inactive_teacher_subjects
-        if inactive_teacher_subjects is defined
-        else (
-            ts_list
-            |selectattr('status', 'equalto', 'inactive')
-            |list
-            |length
-        )
-    %}
-
-    {% set primary_count =
-        primary_teacher_subjects
-        if primary_teacher_subjects is defined
-        else (
-            ts_list
-            |selectattr('is_primary')
-            |list
-            |length
-        )
-    %}
-
-    {% set suspended_count =
-        suspended_teacher_subjects
-        if suspended_teacher_subjects is defined
-        else (
-            ts_list
-            |selectattr('status', 'equalto', 'suspended')
-            |list
-            |length
-        )
-    %}
+</div>
 
 
-    <!-- ========================================================
-         STATISTICS
-         ======================================================== -->
+<!-- ========================================================
+     SAFE VALUES
+========================================================= -->
 
-    <div class="ts-stat-grid">
+{% set ts_list = teacher_subjects|default([]) %}
+{% set filter_data = filters|default({}) %}
 
-        <div class="ts-stat-card">
 
-            <div class="ts-stat-content">
+{% set selected_institution_id =
+    filter_data.get(
+        'institution_id',
+        request.args.get('institution_id', '')
+    )
+%}
 
-                <div class="ts-stat-icon">
-                    <i class="fas fa-link"></i>
-                </div>
 
-                <div>
+{% set selected_branch_id =
+    filter_data.get(
+        'branch_id',
+        request.args.get('branch_id', '')
+    )
+%}
 
-                    <div class="ts-stat-label">
-                        Total Assignments
-                    </div>
 
-                    <div class="ts-stat-value">
-                        {{ total_count }}
-                    </div>
+{% set selected_teacher_id =
+    filter_data.get(
+        'teacher_id',
+        request.args.get('teacher_id', '')
+    )
+%}
 
-                </div>
 
+{% set selected_subject_id =
+    filter_data.get(
+        'subject_id',
+        request.args.get('subject_id', '')
+    )
+%}
+
+
+{% set selected_program_id =
+    filter_data.get(
+        'program_id',
+        request.args.get('program_id', '')
+    )
+%}
+
+
+{% set selected_class_id =
+    filter_data.get(
+        'class_id',
+        request.args.get('class_id', '')
+    )
+%}
+
+
+{% set selected_section_id =
+    filter_data.get(
+        'section_id',
+        request.args.get('section_id', '')
+    )
+%}
+
+
+{% set selected_academic_year_id =
+    filter_data.get(
+        'academic_year_id',
+        request.args.get('academic_year_id', '')
+    )
+%}
+
+
+{% set selected_teaching_type =
+    filter_data.get(
+        'teaching_type',
+        request.args.get('teaching_type', '')
+    )
+%}
+
+
+{% set selected_status =
+    filter_data.get(
+        'status',
+        request.args.get('status', '')
+    )
+%}
+
+
+{% set search =
+    filter_data.get(
+        'search',
+        request.args.get('search', '')
+    )
+%}
+
+
+{% set total_count =
+    total_teacher_subjects
+    if total_teacher_subjects is defined
+    else ts_list|length
+%}
+
+
+{% set active_count =
+    active_teacher_subjects
+    if active_teacher_subjects is defined
+    else (
+        ts_list
+        |selectattr('status', 'equalto', 'active')
+        |list
+        |length
+    )
+%}
+
+
+{% set inactive_count =
+    inactive_teacher_subjects
+    if inactive_teacher_subjects is defined
+    else (
+        ts_list
+        |selectattr('status', 'equalto', 'inactive')
+        |list
+        |length
+    )
+%}
+
+
+{% set primary_count =
+    primary_teacher_subjects
+    if primary_teacher_subjects is defined
+    else (
+        ts_list
+        |selectattr('is_primary')
+        |list
+        |length
+    )
+%}
+
+
+{% set suspended_count =
+    suspended_teacher_subjects
+    if suspended_teacher_subjects is defined
+    else (
+        ts_list
+        |selectattr('status', 'equalto', 'suspended')
+        |list
+        |length
+    )
+%}
+
+
+<!-- ========================================================
+     STATISTICS
+========================================================= -->
+
+<div class="ts-stat-grid">
+
+    <div class="ts-stat-card">
+
+        <div class="ts-stat-content">
+
+            <div class="ts-stat-icon">
+                <i class="fas fa-link"></i>
             </div>
 
-        </div>
+            <div>
 
-
-        <div class="ts-stat-card green">
-
-            <div class="ts-stat-content">
-
-                <div class="ts-stat-icon">
-                    <i class="fas fa-circle-check"></i>
+                <div class="ts-stat-label">
+                    Total Assignments
                 </div>
 
-                <div>
-
-                    <div class="ts-stat-label">
-                        Active
-                    </div>
-
-                    <div class="ts-stat-value">
-                        {{ active_count }}
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="ts-stat-card red">
-
-            <div class="ts-stat-content">
-
-                <div class="ts-stat-icon">
-                    <i class="fas fa-circle-xmark"></i>
-                </div>
-
-                <div>
-
-                    <div class="ts-stat-label">
-                        Inactive
-                    </div>
-
-                    <div class="ts-stat-value">
-                        {{ inactive_count }}
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="ts-stat-card purple">
-
-            <div class="ts-stat-content">
-
-                <div class="ts-stat-icon">
-                    <i class="fas fa-star"></i>
-                </div>
-
-                <div>
-
-                    <div class="ts-stat-label">
-                        Primary
-                    </div>
-
-                    <div class="ts-stat-value">
-                        {{ primary_count }}
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="ts-stat-card orange">
-
-            <div class="ts-stat-content">
-
-                <div class="ts-stat-icon">
-                    <i class="fas fa-ban"></i>
-                </div>
-
-                <div>
-
-                    <div class="ts-stat-label">
-                        Suspended
-                    </div>
-
-                    <div class="ts-stat-value">
-                        {{ suspended_count }}
-                    </div>
-
+                <div class="ts-stat-value">
+                    {{ total_count }}
                 </div>
 
             </div>
@@ -1245,1304 +1293,1424 @@
     </div>
 
 
-    <!-- ========================================================
-         MAIN CARD
-         ======================================================== -->
+    <div class="ts-stat-card green">
 
-    <div class="ts-main-card">
+        <div class="ts-stat-content">
 
-        <!-- ====================================================
-             FILTER HEADER
-             ==================================================== -->
+            <div class="ts-stat-icon">
+                <i class="fas fa-circle-check"></i>
+            </div>
 
-        <div class="ts-card-header">
+            <div>
 
-            <div class="ts-card-header-top">
+                <div class="ts-stat-label">
+                    Active
+                </div>
 
-                <div>
-
-                    <h2 class="ts-card-title">
-                        Assignment Management
-                    </h2>
-
-                    <p class="ts-card-description">
-                        Search and filter teacher-subject
-                        assignments by institution, branch,
-                        class, section and academic year.
-                    </p>
-
+                <div class="ts-stat-value">
+                    {{ active_count }}
                 </div>
 
             </div>
 
+        </div>
 
-            <form
-                method="GET"
-                action="{{ url_for('main.all_teacher_subjects') }}"
-                class="ts-filter-form"
+    </div>
+
+
+    <div class="ts-stat-card red">
+
+        <div class="ts-stat-content">
+
+            <div class="ts-stat-icon">
+                <i class="fas fa-circle-xmark"></i>
+            </div>
+
+            <div>
+
+                <div class="ts-stat-label">
+                    Inactive
+                </div>
+
+                <div class="ts-stat-value">
+                    {{ inactive_count }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="ts-stat-card purple">
+
+        <div class="ts-stat-content">
+
+            <div class="ts-stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+
+            <div>
+
+                <div class="ts-stat-label">
+                    Primary
+                </div>
+
+                <div class="ts-stat-value">
+                    {{ primary_count }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="ts-stat-card orange">
+
+        <div class="ts-stat-content">
+
+            <div class="ts-stat-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+
+            <div>
+
+                <div class="ts-stat-label">
+                    Suspended
+                </div>
+
+                <div class="ts-stat-value">
+                    {{ suspended_count }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     MAIN CARD
+========================================================= -->
+
+<div class="ts-main-card">
+
+
+    <!-- ====================================================
+         FILTER HEADER
+    ===================================================== -->
+
+    <div class="ts-card-header">
+
+        <div class="ts-card-header-top">
+
+            <div>
+
+                <h2 class="ts-card-title">
+                    Assignment Management
+                </h2>
+
+                <p class="ts-card-description">
+                    Search and filter teacher-subject
+                    assignments by institution, branch,
+                    class, section and academic year.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="GET"
+            action="{{ url_for('main.all_teacher_subjects') }}"
+            class="ts-filter-form"
+        >
+
+
+            <!-- SEARCH -->
+
+            <div class="ts-filter-group ts-search-wrapper">
+
+                <label class="ts-filter-label">
+                    Search
+                </label>
+
+                <i class="fas fa-search"></i>
+
+                <input
+                    type="text"
+                    name="search"
+                    class="ts-filter-input"
+                    placeholder="Teacher, subject, class, section..."
+                    value="{{ search or '' }}"
+                >
+
+            </div>
+
+
+            <!-- INSTITUTION -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_institution"
+                    class="ts-filter-label"
+                >
+                    Institution
+                </label>
+
+                <select
+                    id="filter_institution"
+                    name="institution_id"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Institutions
+                    </option>
+
+
+                    {% for institution in institutions|default([]) %}
+
+                        <option
+                            value="{{ institution.id }}"
+                            {% if selected_institution_id|string == institution.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ institution.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- BRANCH -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_branch"
+                    class="ts-filter-label"
+                >
+                    Branch
+                </label>
+
+                <select
+                    id="filter_branch"
+                    name="branch_id"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Branches
+                    </option>
+
+
+                    {% for branch_item in branches|default([]) %}
+
+                        <option
+                            value="{{ branch_item.id }}"
+                            data-institution-id="{{ branch_item.institution_id }}"
+                            {% if selected_branch_id|string == branch_item.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ branch_item.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- TEACHER -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_teacher"
+                    class="ts-filter-label"
+                >
+                    Teacher
+                </label>
+
+                <select
+                    id="filter_teacher"
+                    name="teacher_id"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Teachers
+                    </option>
+
+
+                    {% for teacher_item in teachers|default([]) %}
+
+                        <option
+                            value="{{ teacher_item.id }}"
+                            data-institution-id="{{ teacher_item.institution_id }}"
+                            data-branch-id="{{ teacher_item.branch_id|default('') }}"
+                            {% if selected_teacher_id|string == teacher_item.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{
+                                teacher_item.full_name
+                                or teacher_item.name
+                                or teacher_item.username
+                                or ("Teacher #" ~ teacher_item.id)
+                            }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- SUBJECT -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_subject"
+                    class="ts-filter-label"
+                >
+                    Subject
+                </label>
+
+                <select
+                    id="filter_subject"
+                    name="subject_id"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Subjects
+                    </option>
+
+
+                    {% for subject_item in subjects|default([]) %}
+
+                        <option
+                            value="{{ subject_item.id }}"
+                            data-institution-id="{{ subject_item.institution_id }}"
+                            data-branch-id="{{ subject_item.branch_id|default('') }}"
+                            {% if selected_subject_id|string == subject_item.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ subject_item.name }}
+
+                            {% if subject_item.code %}
+                                — {{ subject_item.code }}
+                            {% endif %}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- PROGRAM -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_program"
+                    class="ts-filter-label"
+                >
+                    Program
+                </label>
+
+                <select
+                    id="filter_program"
+                    name="program_id"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Programs
+                    </option>
+
+
+                    {% for program_item in programs|default([]) %}
+
+                        <option
+                            value="{{ program_item.id }}"
+                            data-institution-id="{{ program_item.institution_id }}"
+                            data-branch-id="{{ program_item.branch_id|default('') }}"
+                            {% if selected_program_id|string == program_item.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ program_item.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- CLASS -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_class"
+                    class="ts-filter-label"
+                >
+                    Class
+                </label>
+
+                <select
+                    id="filter_class"
+                    name="class_id"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Classes
+                    </option>
+
+
+                    {% for class_item in classes|default([]) %}
+
+                        <option
+                            value="{{ class_item.id }}"
+                            data-institution-id="{{ class_item.institution_id }}"
+                            data-branch-id="{{ class_item.branch_id|default('') }}"
+                            data-program-id="{{ class_item.program_id|default('') }}"
+                            {% if selected_class_id|string == class_item.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ class_item.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- SECTION -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_section"
+                    class="ts-filter-label"
+                >
+                    Section
+                </label>
+
+                <select
+                    id="filter_section"
+                    name="section_id"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Sections
+                    </option>
+
+
+                    {% for section_item in sections|default([]) %}
+
+                        <option
+                            value="{{ section_item.id }}"
+                            data-institution-id="{{ section_item.institution_id }}"
+                            data-branch-id="{{ section_item.branch_id|default('') }}"
+                            data-class-id="{{ section_item.class_id|default('') }}"
+                            data-program-id="{{ section_item.program_id|default('') }}"
+                            {% if selected_section_id|string == section_item.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ section_item.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- ACADEMIC YEAR -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_academic_year"
+                    class="ts-filter-label"
+                >
+                    Academic Year
+                </label>
+
+                <select
+                    id="filter_academic_year"
+                    name="academic_year_id"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Years
+                    </option>
+
+
+                    {% for year in academic_years|default([]) %}
+
+                        <option
+                            value="{{ year.id }}"
+                            {% if selected_academic_year_id|string == year.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ year.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- TEACHING TYPE -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_teaching_type"
+                    class="ts-filter-label"
+                >
+                    Teaching Type
+                </label>
+
+                <select
+                    id="filter_teaching_type"
+                    name="teaching_type"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Types
+                    </option>
+
+
+                    {% for type_name in teacher_subject_types|default([]) %}
+
+                        <option
+                            value="{{ type_name }}"
+                            {% if selected_teaching_type == type_name %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ type_name|replace('_', ' ')|title }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div class="ts-filter-group">
+
+                <label
+                    for="filter_status"
+                    class="ts-filter-label"
+                >
+                    Status
+                </label>
+
+                <select
+                    id="filter_status"
+                    name="status"
+                    class="ts-filter-select"
+                >
+
+                    <option value="">
+                        All Status
+                    </option>
+
+
+                    {% for status_name in teacher_subject_statuses|default([]) %}
+
+                        <option
+                            value="{{ status_name }}"
+                            {% if selected_status == status_name %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ status_name|replace('_', ' ')|title }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- FILTER -->
+
+            <button
+                type="submit"
+                class="ts-filter-btn"
             >
-
-                <!-- SEARCH -->
-
-                <div class="ts-filter-group ts-search-wrapper">
-
-                    <label class="ts-filter-label">
-                        Search
-                    </label>
-
-                    <i class="fas fa-search"></i>
-
-                    <input
-                        type="text"
-                        name="search"
-                        class="ts-filter-input"
-                        placeholder="Teacher, subject, class, section..."
-                        value="{{ search or '' }}"
-                    >
-
-                </div>
+                <i class="fas fa-filter"></i>
+                Filter
+            </button>
 
 
-                <!-- INSTITUTION -->
+            <!-- RESET -->
 
-                <div class="ts-filter-group">
+            <a
+                href="{{ url_for('main.all_teacher_subjects') }}"
+                class="ts-reset-btn"
+            >
+                <i class="fas fa-rotate-left"></i>
+                Reset
+            </a>
 
-                    <label
-                        for="filter_institution"
-                        class="ts-filter-label"
-                    >
-                        Institution
-                    </label>
+        </form>
 
-                    <select
-                        id="filter_institution"
-                        name="institution_id"
-                        class="ts-filter-select"
-                    >
-
-                        <option value="">
-                            All Institutions
-                        </option>
-
-                        {% for institution in institutions|default([]) %}
-
-                            <option
-                                value="{{ institution.id }}"
-                                {% if selected_institution_id|string == institution.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ institution.name }}
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
+    </div>
 
 
-                <!-- BRANCH -->
+    <!-- ====================================================
+         DATATABLE TOOLBAR
+    ===================================================== -->
 
-                <div class="ts-filter-group">
+    <div class="ts-datatable-toolbar">
 
-                    <label
-                        for="filter_branch"
-                        class="ts-filter-label"
-                    >
-                        Branch
-                    </label>
+        <div class="ts-dt-left">
 
-                    <select
-                        id="filter_branch"
-                        name="branch_id"
-                        class="ts-filter-select"
-                    >
+            <div class="ts-dt-length">
 
-                        <option value="">
-                            All Branches
-                        </option>
+                <label for="ts_per_page">
+                    Show
+                </label>
 
-                        {% for branch in branches|default([]) %}
+                <select id="ts_per_page">
 
-                            <option
-                                value="{{ branch.id }}"
-                                data-institution-id="{{ branch.institution_id }}"
-                                {% if selected_branch_id|string == branch.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ branch.name }}
-                            </option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
 
-                        {% endfor %}
+                </select>
 
-                    </select>
+                <label>
+                    entries
+                </label>
 
-                </div>
+            </div>
 
 
-                <!-- TEACHER -->
+            <div class="ts-result-count">
 
-                <div class="ts-filter-group">
+                Total:
 
-                    <label
-                        for="filter_teacher"
-                        class="ts-filter-label"
+                <strong id="tsTotalCount">
+                    {{ ts_list|length }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="ts-dt-right">
+
+            <div class="ts-dt-search">
+
+                <i class="fas fa-search"></i>
+
+                <input
+                    type="search"
+                    id="tsDataTableSearch"
+                    placeholder="Search assignments..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================================================
+         TABLE
+    ===================================================== -->
+
+    <div class="ts-table-wrapper">
+
+        <table
+            class="ts-table"
+            id="teacherSubjectsTable"
+        >
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        No.
+                    </th>
+
+                    <th
+                        class="sortable"
+                        data-column="1"
+                        aria-label="Sort Teacher"
                     >
                         Teacher
-                    </label>
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                    <select
-                        id="filter_teacher"
-                        name="teacher_id"
-                        class="ts-filter-select"
-                    >
-
-                        <option value="">
-                            All Teachers
-                        </option>
-
-                        {% for teacher in teachers|default([]) %}
-
-                            <option
-                                value="{{ teacher.id }}"
-                                data-institution-id="{{ teacher.institution_id }}"
-                                data-branch-id="{{ teacher.branch_id }}"
-                                {% if selected_teacher_id|string == teacher.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{
-                                    teacher.full_name
-                                    or teacher.name
-                                    or teacher.username
-                                    or ("Teacher #" ~ teacher.id)
-                                }}
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- SUBJECT -->
-
-                <div class="ts-filter-group">
-
-                    <label
-                        for="filter_subject"
-                        class="ts-filter-label"
+                    <th
+                        class="sortable"
+                        data-column="2"
+                        aria-label="Sort Subject"
                     >
                         Subject
-                    </label>
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                    <select
-                        id="filter_subject"
-                        name="subject_id"
-                        class="ts-filter-select"
+                    <th
+                        class="sortable"
+                        data-column="3"
+                        aria-label="Sort Institution"
                     >
+                        Institution
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                        <option value="">
-                            All Subjects
-                        </option>
+                    <th
+                        class="sortable"
+                        data-column="4"
+                        aria-label="Sort Branch"
+                    >
+                        Branch
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                        {% for subject in subjects|default([]) %}
-
-                            <option
-                                value="{{ subject.id }}"
-                                data-institution-id="{{ subject.institution_id }}"
-                                data-branch-id="{{ subject.branch_id|default('') }}"
-                                {% if selected_subject_id|string == subject.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ subject.name }}
-
-                                {% if subject.code %}
-                                    — {{ subject.code }}
-                                {% endif %}
-
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- PROGRAM -->
-
-                <div class="ts-filter-group">
-
-                    <label
-                        for="filter_program"
-                        class="ts-filter-label"
+                    <th
+                        class="sortable"
+                        data-column="5"
+                        aria-label="Sort Program"
                     >
                         Program
-                    </label>
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                    <select
-                        id="filter_program"
-                        name="program_id"
-                        class="ts-filter-select"
-                    >
-
-                        <option value="">
-                            All Programs
-                        </option>
-
-                        {% for program in programs|default([]) %}
-
-                            <option
-                                value="{{ program.id }}"
-                                data-institution-id="{{ program.institution_id }}"
-                                data-branch-id="{{ program.branch_id|default('') }}"
-                                {% if selected_program_id|string == program.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ program.name }}
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- CLASS -->
-
-                <div class="ts-filter-group">
-
-                    <label
-                        for="filter_class"
-                        class="ts-filter-label"
+                    <th
+                        class="sortable"
+                        data-column="6"
+                        aria-label="Sort Class"
                     >
                         Class
-                    </label>
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                    <select
-                        id="filter_class"
-                        name="class_id"
-                        class="ts-filter-select"
-                    >
-
-                        <option value="">
-                            All Classes
-                        </option>
-
-                        {% for class_item in classes|default([]) %}
-
-                            <option
-                                value="{{ class_item.id }}"
-                                data-institution-id="{{ class_item.institution_id }}"
-                                data-branch-id="{{ class_item.branch_id|default('') }}"
-                                data-program-id="{{ class_item.program_id|default('') }}"
-                                {% if selected_class_id|string == class_item.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ class_item.name }}
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- SECTION -->
-
-                <div class="ts-filter-group">
-
-                    <label
-                        for="filter_section"
-                        class="ts-filter-label"
+                    <th
+                        class="sortable"
+                        data-column="7"
+                        aria-label="Sort Section"
                     >
                         Section
-                    </label>
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                    <select
-                        id="filter_section"
-                        name="section_id"
-                        class="ts-filter-select"
-                    >
-
-                        <option value="">
-                            All Sections
-                        </option>
-
-                        {% for section in sections|default([]) %}
-
-                            <option
-                                value="{{ section.id }}"
-                                data-institution-id="{{ section.institution_id }}"
-                                data-branch-id="{{ section.branch_id|default('') }}"
-                                data-class-id="{{ section.class_id|default('') }}"
-                                data-program-id="{{ section.program_id|default('') }}"
-                                {% if selected_section_id|string == section.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ section.name }}
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- ACADEMIC YEAR -->
-
-                <div class="ts-filter-group">
-
-                    <label
-                        for="filter_academic_year"
-                        class="ts-filter-label"
+                    <th
+                        class="sortable"
+                        data-column="8"
+                        aria-label="Sort Academic Year"
                     >
                         Academic Year
-                    </label>
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                    <select
-                        id="filter_academic_year"
-                        name="academic_year_id"
-                        class="ts-filter-select"
-                    >
-
-                        <option value="">
-                            All Years
-                        </option>
-
-                        {% for year in academic_years|default([]) %}
-
-                            <option
-                                value="{{ year.id }}"
-                                {% if selected_academic_year_id|string == year.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ year.name }}
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- TEACHING TYPE -->
-
-                <div class="ts-filter-group">
-
-                    <label
-                        for="filter_teaching_type"
-                        class="ts-filter-label"
+                    <th
+                        class="sortable"
+                        data-column="9"
+                        aria-label="Sort Teaching Type"
                     >
                         Teaching Type
-                    </label>
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                    <select
-                        id="filter_teaching_type"
-                        name="teaching_type"
-                        class="ts-filter-select"
+                    <th
+                        class="sortable"
+                        data-column="10"
+                        aria-label="Sort Primary"
                     >
+                        Primary
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                        <option value="">
-                            All Types
-                        </option>
-
-                        {% for type_name in teacher_subject_types|default([]) %}
-
-                            <option
-                                value="{{ type_name }}"
-                                {% if selected_teaching_type == type_name %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ type_name|replace('_', ' ')|title }}
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- STATUS -->
-
-                <div class="ts-filter-group">
-
-                    <label
-                        for="filter_status"
-                        class="ts-filter-label"
+                    <th
+                        class="sortable"
+                        data-column="11"
+                        aria-label="Sort Status"
                     >
                         Status
-                    </label>
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
 
-                    <select
-                        id="filter_status"
-                        name="status"
-                        class="ts-filter-select"
+                    <th
+                        class="sortable"
+                        data-column="12"
+                        aria-label="Sort Dates"
+                    >
+                        Dates
+                        <i class="fas fa-sort ts-sort-icon"></i>
+                    </th>
+
+                    <th>
+                        Actions
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="teacherSubjectsTableBody">
+
+            {% if ts_list %}
+
+                {% for assignment in ts_list %}
+
+                    <tr
+                        id="teacher-subject-row-{{ assignment.id }}"
+                        data-assignment-id="{{ assignment.id }}"
                     >
 
-                        <option value="">
-                            All Status
-                        </option>
 
-                        {% for status_name in teacher_subject_statuses|default([]) %}
+                        <!-- NUMBER -->
 
-                            <option
-                                value="{{ status_name }}"
-                                {% if selected_status == status_name %}
-                                    selected
-                                {% endif %}
-                            >
-                                {{ status_name|replace('_', ' ')|title }}
-                            </option>
+                        <td>
 
-                        {% endfor %}
+                            <span class="ts-number">
+                                {{ loop.index }}
+                            </span>
 
-                    </select>
+                        </td>
 
-                </div>
 
+                        <!-- TEACHER -->
 
-                <button
-                    type="submit"
-                    class="ts-filter-btn"
-                >
-                    <i class="fas fa-filter"></i>
-                    Filter
-                </button>
+                        <td>
 
+                            <div class="ts-person">
 
-                <a
-                    href="{{ url_for('main.all_teacher_subjects') }}"
-                    class="ts-reset-btn"
-                >
-                    <i class="fas fa-rotate-left"></i>
-                    Reset
-                </a>
+                                {% if assignment.teacher %}
 
-            </form>
+                                    {% set teacher_photo =
+                                        assignment.teacher.photo_url
+                                        or assignment.teacher.profile_photo_url
+                                        or assignment.teacher.profile_photo
+                                        or assignment.teacher.image_url
+                                        or assignment.teacher.photo
+                                        or assignment.teacher.image
+                                        or assignment.teacher.avatar
+                                    %}
 
-        </div>
 
+                                    {% set teacher_name =
+                                        assignment.teacher.full_name
+                                        or assignment.teacher.name
+                                        or assignment.teacher.username
+                                        or ("Teacher #" ~ assignment.teacher_id)
+                                    %}
 
-        <!-- ====================================================
-             TOOLBAR
-             ==================================================== -->
 
-        {% if pagination is defined and pagination %}
+                                    {% if teacher_photo %}
 
-            <div class="ts-toolbar">
+                                        <div class="ts-avatar ts-avatar-photo">
 
-                <div class="ts-result-count">
+                                            <img
+                                                src="{{ teacher_photo }}"
+                                                alt="{{ teacher_name }}"
+                                                loading="lazy"
+                                                referrerpolicy="no-referrer"
+                                                onerror="
+                                                    this.style.display='none';
+                                                    this.parentElement.classList.remove('ts-avatar-photo');
+                                                    this.parentElement.querySelector('.ts-avatar-fallback').style.display='flex';
+                                                "
+                                            >
 
-                    Showing
-
-                    <strong>
-                        {{ pagination.first or 0 }}
-                    </strong>
-
-                    -
-
-                    <strong>
-                        {{ pagination.last or 0 }}
-                    </strong>
-
-                    of
-
-                    <strong>
-                        {{ pagination.total }}
-                    </strong>
-
-                    assignments
-
-                </div>
-
-
-                <div class="ts-per-page">
-
-                    <label for="ts_per_page">
-                        Per page
-                    </label>
-
-                    {% set current_per_page =
-                        per_page
-                        if per_page is defined
-                        else pagination.per_page
-                    %}
-
-                    <select
-                        id="ts_per_page"
-                    >
-
-                        <option
-                            value="10"
-                            {% if current_per_page|string == "10" %}
-                                selected
-                            {% endif %}
-                        >
-                            10
-                        </option>
-
-                        <option
-                            value="20"
-                            {% if current_per_page|string == "20" %}
-                                selected
-                            {% endif %}
-                        >
-                            20
-                        </option>
-
-                        <option
-                            value="50"
-                            {% if current_per_page|string == "50" %}
-                                selected
-                            {% endif %}
-                        >
-                            50
-                        </option>
-
-                        <option
-                            value="100"
-                            {% if current_per_page|string == "100" %}
-                                selected
-                            {% endif %}
-                        >
-                            100
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-        {% else %}
-
-            <div class="ts-toolbar">
-
-                <div class="ts-result-count">
-
-                    Showing
-
-                    <strong>
-                        {{ ts_list|length }}
-                    </strong>
-
-                    assignments
-
-                </div>
-
-            </div>
-
-        {% endif %}
-
-
-        <!-- ====================================================
-             TABLE
-             ==================================================== -->
-
-        <div class="ts-table-wrapper">
-
-            <table class="ts-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>No.</th>
-                        <th>Teacher</th>
-                        <th>Subject</th>
-                        <th>Institution</th>
-                        <th>Branch</th>
-                        <th>Program</th>
-                        <th>Class</th>
-                        <th>Section</th>
-                        <th>Academic Year</th>
-                        <th>Teaching Type</th>
-                        <th>Primary</th>
-                        <th>Status</th>
-                        <th>Dates</th>
-                        <th>Actions</th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                {% if ts_list %}
-
-                    {% for assignment in ts_list %}
-
-                        <tr
-                            id="teacher-subject-row-{{ assignment.id }}"
-                            data-assignment-id="{{ assignment.id }}"
-                        >
-
-                            <!-- NUMBER -->
-
-                            <td>
-
-                                {% if pagination is defined and pagination %}
-
-                                    <span class="ts-number">
-
-                                        {{
-                                            (
-                                                (pagination.page - 1)
-                                                * pagination.per_page
-                                            )
-                                            + loop.index
-                                        }}
-
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="ts-number">
-                                        {{ loop.index }}
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- ==================================================
-                                 TEACHER + CLOUDINARY PHOTO
-                                 ================================================== -->
-
-                            <td>
-
-                                <div class="ts-person">
-
-                                    {% if assignment.teacher %}
-
-                                        {# =================================================
-                                           TRY COMMON CLOUDINARY PHOTO FIELDS
-                                           ================================================= #}
-
-                                        {% set teacher_photo =
-                                            assignment.teacher.photo_url
-                                            or assignment.teacher.profile_photo_url
-                                            or assignment.teacher.profile_photo
-                                            or assignment.teacher.image_url
-                                            or assignment.teacher.photo
-                                            or assignment.teacher.image
-                                            or assignment.teacher.avatar
-                                        %}
-
-
-                                        {% set teacher_name =
-                                            assignment.teacher.full_name
-                                            or assignment.teacher.name
-                                            or assignment.teacher.username
-                                            or ("Teacher #" ~ assignment.teacher_id)
-                                        %}
-
-
-                                        <!-- AVATAR -->
-
-                                        {% if teacher_photo %}
-
-                                            <div class="ts-avatar ts-avatar-photo">
-
-                                                <img
-                                                    src="{{ teacher_photo }}"
-                                                    alt="{{ teacher_name }}"
-                                                    loading="lazy"
-                                                    referrerpolicy="no-referrer"
-                                                    onerror="this.style.display='none'; this.parentElement.classList.remove('ts-avatar-photo'); this.parentElement.querySelector('.ts-avatar-fallback').style.display='flex';"
-                                                >
-
-                                                <div
-                                                    class="ts-avatar-fallback"
-                                                    style="display:none;"
-                                                >
-
-                                                    {{
-                                                        teacher_name[0]
-                                                        |upper
-                                                    }}
-
-                                                </div>
-
+                                            <div
+                                                class="ts-avatar-fallback"
+                                                style="display:none;"
+                                            >
+                                                {{ teacher_name[0]|upper }}
                                             </div>
-
-                                        {% else %}
-
-                                            <div class="ts-avatar">
-
-                                                <div class="ts-avatar-fallback">
-
-                                                    {{
-                                                        teacher_name[0]
-                                                        |upper
-                                                    }}
-
-                                                </div>
-
-                                            </div>
-
-                                        {% endif %}
-
-
-                                        <!-- TEACHER INFORMATION -->
-
-                                        <div>
-
-                                            <div class="ts-person-name">
-
-                                                {{ teacher_name }}
-
-                                            </div>
-
-
-                                            {% if assignment.teacher.employee_id %}
-
-                                                <div class="ts-person-meta">
-
-                                                    <i class="fas fa-id-badge"></i>
-
-                                                    {{ assignment.teacher.employee_id }}
-
-                                                </div>
-
-                                            {% elif assignment.teacher.email %}
-
-                                                <div class="ts-person-meta">
-
-                                                    <i class="fas fa-envelope"></i>
-
-                                                    {{ assignment.teacher.email }}
-
-                                                </div>
-
-                                            {% endif %}
 
                                         </div>
-
 
                                     {% else %}
 
                                         <div class="ts-avatar">
 
                                             <div class="ts-avatar-fallback">
-                                                T
-                                            </div>
-
-                                        </div>
-
-                                        <div>
-
-                                            <div class="ts-person-name">
-                                                Teacher #{{ assignment.teacher_id }}
+                                                {{ teacher_name[0]|upper }}
                                             </div>
 
                                         </div>
 
                                     {% endif %}
 
-                                </div>
 
-                            </td>
+                                    <div>
 
-
-                            <!-- SUBJECT -->
-
-                            <td>
-
-                                <div class="ts-subject">
-
-                                    {% if assignment.subject %}
-
-                                        <div class="ts-subject-name">
-
-                                            <i class="fas fa-book-open"></i>
-
-                                            {{ assignment.subject.name }}
-
+                                        <div class="ts-person-name">
+                                            {{ teacher_name }}
                                         </div>
 
-                                        {% if assignment.subject.code %}
 
-                                            <div class="ts-subject-code">
-                                                {{ assignment.subject.code }}
+                                        {% if assignment.teacher.employee_id %}
+
+                                            <div class="ts-person-meta">
+
+                                                <i class="fas fa-id-badge"></i>
+
+                                                {{ assignment.teacher.employee_id }}
+
+                                            </div>
+
+                                        {% elif assignment.teacher.email %}
+
+                                            <div class="ts-person-meta">
+
+                                                <i class="fas fa-envelope"></i>
+
+                                                {{ assignment.teacher.email }}
+
                                             </div>
 
                                         {% endif %}
 
-                                    {% else %}
+                                    </div>
 
-                                        <span class="ts-cell-muted">
-                                            Subject #{{ assignment.subject_id }}
-                                        </span>
+
+                                {% else %}
+
+                                    <div class="ts-avatar">
+
+                                        <div class="ts-avatar-fallback">
+                                            T
+                                        </div>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <div class="ts-person-name">
+                                            Teacher #{{ assignment.teacher_id }}
+                                        </div>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- SUBJECT -->
+
+                        <td>
+
+                            <div class="ts-subject">
+
+                                {% if assignment.subject %}
+
+                                    <div class="ts-subject-name">
+
+                                        <i class="fas fa-book-open"></i>
+
+                                        {{ assignment.subject.name }}
+
+                                    </div>
+
+
+                                    {% if assignment.subject.code %}
+
+                                        <div class="ts-subject-code">
+                                            {{ assignment.subject.code }}
+                                        </div>
 
                                     {% endif %}
+
+                                {% else %}
+
+                                    <span class="ts-cell-muted">
+                                        Subject #{{ assignment.subject_id }}
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- INSTITUTION -->
+
+                        <td>
+
+                            {% if assignment.institution %}
+
+                                <div class="ts-org-name">
+
+                                    <i class="fas fa-building"></i>
+
+                                    {{ assignment.institution.name }}
 
                                 </div>
 
-                            </td>
+                            {% else %}
+
+                                <span class="ts-cell-muted">
+                                    Institution #{{ assignment.institution_id }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
 
 
-                            <!-- INSTITUTION -->
+                        <!-- BRANCH -->
 
-                            <td>
+                        <td>
 
-                                {% if assignment.institution %}
+                            {% if assignment.branch %}
 
-                                    <div class="ts-org-name">
+                                <div class="ts-branch-name">
 
-                                        <i class="fas fa-building"></i>
+                                    <i class="fas fa-code-branch"></i>
 
-                                        {{ assignment.institution.name }}
+                                    {{ assignment.branch.name }}
 
-                                    </div>
+                                </div>
+
+                            {% else %}
+
+                                <span class="ts-cell-muted">
+                                    Branch #{{ assignment.branch_id }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- PROGRAM -->
+
+                        <td>
+
+                            {% if assignment.program %}
+
+                                <div class="ts-cell-title">
+
+                                    <i class="fas fa-layer-group"></i>
+
+                                    {{ assignment.program.name }}
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="ts-cell-muted">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- CLASS -->
+
+                        <td>
+
+                            {% if assignment.class_ %}
+
+                                <div class="ts-cell-title">
+
+                                    <i class="fas fa-school"></i>
+
+                                    {{ assignment.class_.name }}
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="ts-cell-muted">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- SECTION -->
+
+                        <td>
+
+                            {% if assignment.section %}
+
+                                <div class="ts-cell-title">
+
+                                    <i class="fas fa-users"></i>
+
+                                    {{ assignment.section.name }}
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="ts-cell-muted">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ACADEMIC YEAR -->
+
+                        <td>
+
+                            {% if assignment.academic_year %}
+
+                                <div class="ts-cell-title">
+
+                                    <i class="fas fa-calendar-days"></i>
+
+                                    {{ assignment.academic_year.name }}
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="ts-cell-muted">
+                                    Year #{{ assignment.academic_year_id }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- TEACHING TYPE -->
+
+                        <td>
+
+                            {% set teaching_type_class =
+                                assignment.teaching_type
+                                |default('teacher')
+                                |lower
+                            %}
+
+
+                            <span
+                                class="ts-badge {{ teaching_type_class }}"
+                            >
+
+                                {% if teaching_type_class == "assistant" %}
+
+                                    <i class="fas fa-user-plus"></i>
+
+                                {% elif teaching_type_class == "coordinator" %}
+
+                                    <i class="fas fa-user-tie"></i>
+
+                                {% elif teaching_type_class == "substitute" %}
+
+                                    <i class="fas fa-user-clock"></i>
 
                                 {% else %}
 
-                                    <span class="ts-cell-muted">
-                                        Institution #{{ assignment.institution_id }}
-                                    </span>
+                                    <i class="fas fa-chalkboard-user"></i>
 
                                 {% endif %}
 
-                            </td>
 
-
-                            <!-- BRANCH -->
-
-                            <td>
-
-                                {% if assignment.branch %}
-
-                                    <div class="ts-branch-name">
-
-                                        <i class="fas fa-code-branch"></i>
-
-                                        {{ assignment.branch.name }}
-
-                                    </div>
-
-                                {% else %}
-
-                                    <span class="ts-cell-muted">
-                                        Branch #{{ assignment.branch_id }}
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- PROGRAM -->
-
-                            <td>
-
-                                {% if assignment.program %}
-
-                                    <div class="ts-cell-title">
-
-                                        <i class="fas fa-layer-group"></i>
-
-                                        {{ assignment.program.name }}
-
-                                    </div>
-
-                                {% else %}
-
-                                    <span class="ts-cell-muted">
-                                        —
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- CLASS -->
-
-                            <td>
-
-                                {% if assignment.class_ %}
-
-                                    <div class="ts-cell-title">
-
-                                        <i class="fas fa-school"></i>
-
-                                        {{ assignment.class_.name }}
-
-                                    </div>
-
-                                {% else %}
-
-                                    <span class="ts-cell-muted">
-                                        —
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- SECTION -->
-
-                            <td>
-
-                                {% if assignment.section %}
-
-                                    <div class="ts-cell-title">
-
-                                        <i class="fas fa-users"></i>
-
-                                        {{ assignment.section.name }}
-
-                                    </div>
-
-                                {% else %}
-
-                                    <span class="ts-cell-muted">
-                                        —
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- ACADEMIC YEAR -->
-
-                            <td>
-
-                                {% if assignment.academic_year %}
-
-                                    <div class="ts-cell-title">
-
-                                        <i class="fas fa-calendar-days"></i>
-
-                                        {{ assignment.academic_year.name }}
-
-                                    </div>
-
-                                {% else %}
-
-                                    <span class="ts-cell-muted">
-                                        Year #{{ assignment.academic_year_id }}
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- TEACHING TYPE -->
-
-                            <td>
-
-                                {% set teaching_type_class =
+                                {{
                                     assignment.teaching_type
                                     |default('teacher')
-                                    |lower
-                                %}
+                                    |replace('_', ' ')
+                                    |title
+                                }}
 
-                                <span
-                                    class="ts-badge {{ teaching_type_class }}"
-                                >
+                            </span>
 
-                                    {% if teaching_type_class == "assistant" %}
+                        </td>
 
-                                        <i class="fas fa-user-plus"></i>
 
-                                    {% elif teaching_type_class == "coordinator" %}
+                        <!-- PRIMARY -->
 
-                                        <i class="fas fa-user-tie"></i>
+                        <td>
 
-                                    {% elif teaching_type_class == "substitute" %}
+                            {% if assignment.is_primary %}
 
-                                        <i class="fas fa-user-clock"></i>
+                                <span class="ts-badge primary">
 
-                                    {% else %}
+                                    <i class="fas fa-star"></i>
 
-                                        <i class="fas fa-chalkboard-user"></i>
-
-                                    {% endif %}
-
-                                    {{
-                                        assignment.teaching_type
-                                        |default('teacher')
-                                        |replace('_', ' ')
-                                        |title
-                                    }}
+                                    Primary
 
                                 </span>
 
-                            </td>
+                            {% else %}
+
+                                <span class="ts-badge secondary">
+
+                                    <i class="fas fa-circle"></i>
+
+                                    Secondary
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
 
 
-                            <!-- PRIMARY -->
+                        <!-- STATUS -->
 
-                            <td>
+                        <td>
 
-                                {% if assignment.is_primary %}
+                            {% set status_value =
+                                assignment.status
+                                |default('active')
+                                |lower
+                            %}
 
-                                    <span class="ts-badge primary">
 
-                                        <i class="fas fa-star"></i>
+                            {% if status_value == "active" %}
 
-                                        Primary
+                                <span class="ts-badge active">
 
+                                    <i class="fas fa-circle-check"></i>
+
+                                    Active
+
+                                </span>
+
+
+                            {% elif status_value == "suspended" %}
+
+                                <span class="ts-badge suspended">
+
+                                    <i class="fas fa-ban"></i>
+
+                                    Suspended
+
+                                </span>
+
+
+                            {% else %}
+
+                                <span class="ts-badge inactive">
+
+                                    <i class="fas fa-circle-xmark"></i>
+
+                                    Inactive
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- DATES -->
+
+                        <td>
+
+                            <div class="ts-date-cell">
+
+                                <div class="ts-date-row">
+
+                                    <i class="fas fa-calendar-plus"></i>
+
+                                    <span class="ts-date-label">
+                                        Start:
                                     </span>
 
-                                {% else %}
+                                    {% if assignment.start_date %}
 
-                                    <span class="ts-badge secondary">
-
-                                        <i class="fas fa-circle"></i>
-
-                                        Secondary
-
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- STATUS -->
-
-                            <td>
-
-                                {% set status_value =
-                                    assignment.status
-                                    |default('active')
-                                    |lower
-                                %}
-
-                                {% if status_value == "active" %}
-
-                                    <span class="ts-badge active">
-
-                                        <i class="fas fa-circle-check"></i>
-
-                                        Active
-
-                                    </span>
-
-                                {% elif status_value == "suspended" %}
-
-                                    <span class="ts-badge suspended">
-
-                                        <i class="fas fa-ban"></i>
-
-                                        Suspended
-
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="ts-badge inactive">
-
-                                        <i class="fas fa-circle-xmark"></i>
-
-                                        Inactive
-
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- DATES -->
-
-                            <td>
-
-                                <div class="ts-date-cell">
-
-                                    <div class="ts-date-row">
-
-                                        <i class="fas fa-calendar-plus"></i>
-
-                                        <span class="ts-date-label">
-                                            Start:
+                                        <span>
+                                            {{ assignment.start_date.strftime('%Y-%m-%d') }}
                                         </span>
 
-                                        {% if assignment.start_date %}
+                                    {% else %}
 
-                                            <span>
-                                                {{ assignment.start_date.strftime('%Y-%m-%d') }}
-                                            </span>
+                                        <span>—</span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="ts-date-row">
+
+                                    <i class="fas fa-calendar-minus"></i>
+
+                                    <span class="ts-date-label">
+                                        End:
+                                    </span>
+
+                                    {% if assignment.end_date %}
+
+                                        <span>
+                                            {{ assignment.end_date.strftime('%Y-%m-%d') }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span>—</span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ACTIONS -->
+
+                        <td>
+
+                            <div class="ts-actions">
+
+
+                                <!-- VIEW -->
+
+                                <a
+                                    href="{{ url_for(
+                                        'main.view_teacher_subject',
+                                        teacher_subject_id=assignment.id
+                                    ) }}"
+                                    class="ts-action-btn view"
+                                    title="View Assignment"
+                                    aria-label="View Assignment"
+                                >
+                                    <i class="fas fa-eye"></i>
+                                </a>
+
+
+                                <!-- EDIT -->
+
+                                <a
+                                    href="{{ url_for(
+                                        'main.edit_teacher_subject',
+                                        teacher_subject_id=assignment.id
+                                    ) }}"
+                                    class="ts-action-btn edit"
+                                    title="Edit Assignment"
+                                    aria-label="Edit Assignment"
+                                >
+                                    <i class="fas fa-pen-to-square"></i>
+                                </a>
+
+
+                                <!-- STATUS -->
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'main.toggle_teacher_subject_status',
+                                        teacher_subject_id=assignment.id
+                                    ) }}"
+                                    class="ts-action-form"
+                                    onsubmit="return confirmTeacherSubjectStatus(this);"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="ts-action-btn status"
+                                        title="{% if status_value == 'active' %}Deactivate Assignment{% else %}Activate Assignment{% endif %}"
+                                        aria-label="{% if status_value == 'active' %}Deactivate Assignment{% else %}Activate Assignment{% endif %}"
+                                    >
+
+                                        {% if status_value == "active" %}
+
+                                            <i class="fas fa-toggle-on"></i>
 
                                         {% else %}
 
-                                            <span>—</span>
+                                            <i class="fas fa-toggle-off"></i>
 
                                         {% endif %}
 
-                                    </div>
+                                    </button>
+
+                                </form>
 
 
-                                    <div class="ts-date-row">
+                                <!-- DELETE -->
 
-                                        <i class="fas fa-calendar-minus"></i>
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'main.delete_teacher_subject',
+                                        teacher_subject_id=assignment.id
+                                    ) }}"
+                                    class="ts-action-form"
+                                    onsubmit="return confirmTeacherSubjectDelete(this);"
+                                >
 
-                                        <span class="ts-date-label">
-                                            End:
-                                        </span>
-
-                                        {% if assignment.end_date %}
-
-                                            <span>
-                                                {{ assignment.end_date.strftime('%Y-%m-%d') }}
-                                            </span>
-
-                                        {% else %}
-
-                                            <span>—</span>
-
-                                        {% endif %}
-
-                                    </div>
-
-                                </div>
-
-                            </td>
-
-
-                            <!-- ACTIONS -->
-
-                            <td>
-
-                                <div class="ts-actions">
-
-                                    <!-- VIEW -->
-
-                                    <a
-                                        href="{{ url_for(
-                                            'main.view_teacher_subject',
-                                            teacher_subject_id=assignment.id
-                                        ) }}"
-                                        class="ts-action-btn view"
-                                        title="View Assignment"
+                                    <button
+                                        type="submit"
+                                        class="ts-action-btn delete"
+                                        title="Delete Assignment"
+                                        aria-label="Delete Teacher Subject Assignment"
                                     >
-                                        <i class="fas fa-eye"></i>
-                                    </a>
+                                        <i class="fas fa-trash-can"></i>
+                                    </button>
 
+                                </form>
 
-                                    <!-- EDIT -->
-
-                                    <a
-                                        href="{{ url_for(
-                                            'main.edit_teacher_subject',
-                                            teacher_subject_id=assignment.id
-                                        ) }}"
-                                        class="ts-action-btn edit"
-                                        title="Edit Assignment"
-                                    >
-                                        <i class="fas fa-pen-to-square"></i>
-                                    </a>
-
-
-                                    <!-- STATUS -->
-
-                                    <form
-                                        method="POST"
-                                        action="{{ url_for(
-                                            'main.toggle_teacher_subject_status',
-                                            teacher_subject_id=assignment.id
-                                        ) }}"
-                                        class="ts-action-form"
-                                        onsubmit="return confirmTeacherSubjectStatus(this);"
-                                    >
-
-                                        <button
-                                            type="submit"
-                                            class="ts-action-btn status"
-                                            title="{% if status_value == 'active' %}Deactivate Assignment{% else %}Activate Assignment{% endif %}"
-                                        >
-
-                                            {% if status_value == "active" %}
-
-                                                <i class="fas fa-toggle-on"></i>
-
-                                            {% else %}
-
-                                                <i class="fas fa-toggle-off"></i>
-
-                                            {% endif %}
-
-                                        </button>
-
-                                    </form>
-
-
-                                    <!-- DELETE -->
-
-                                    <form
-                                        method="POST"
-                                        action="{{ url_for(
-                                            'main.delete_teacher_subject',
-                                            teacher_subject_id=assignment.id
-                                        ) }}"
-                                        class="ts-action-form"
-                                        onsubmit="return confirmTeacherSubjectDelete(this);"
-                                    >
-
-                                        <button
-                                            type="submit"
-                                            class="ts-action-btn delete"
-                                            title="Delete Assignment"
-                                        >
-
-                                            <i class="fas fa-trash-can"></i>
-
-                                        </button>
-
-                                    </form>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    {% endfor %}
-
-                {% else %}
-
-                    <tr>
-
-                        <td colspan="14">
-
-                            <div class="ts-empty">
-
-                                <div class="ts-empty-icon">
-                                    <i class="fas fa-link-slash"></i>
-                                </div>
-
-                                <h4>
-                                    No Teacher Subject Assignments Found
-                                </h4>
-
-                                <p>
-                                    No assignments match your current
-                                    search or filter criteria.
-                                </p>
 
                             </div>
 
@@ -2550,266 +2718,88 @@
 
                     </tr>
 
-                {% endif %}
+                {% endfor %}
 
-                </tbody>
 
-            </table>
+            {% else %}
 
+                <tr id="tsEmptyServerRow">
+
+                    <td colspan="14">
+
+                        <div class="ts-empty">
+
+                            <div class="ts-empty-icon">
+                                <i class="fas fa-link-slash"></i>
+                            </div>
+
+                            <h4>
+                                No Teacher Subject Assignments Found
+                            </h4>
+
+                            <p>
+                                No assignments match your current
+                                search or filter criteria.
+                            </p>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            {% endif %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ====================================================
+         DATATABLE FOOTER
+    ===================================================== -->
+
+    <div
+        class="ts-datatable-footer"
+        id="tsDataTableFooter"
+    >
+
+        <div
+            class="ts-dt-info"
+            id="tsDataTableInfo"
+        >
+            Showing 0 to 0 of 0 entries
         </div>
 
 
-        <!-- ====================================================
-             PAGINATION
-             ==================================================== -->
-
-        {% if pagination is defined and pagination and pagination.pages > 1 %}
-
-            <div class="ts-pagination">
-
-                <div class="ts-pagination-info">
-
-                    Page
-
-                    <strong>
-                        {{ pagination.page }}
-                    </strong>
-
-                    of
-
-                    <strong>
-                        {{ pagination.pages }}
-                    </strong>
-
-                </div>
-
-
-                <ul class="ts-pagination-list">
-
-                    {% if pagination.has_prev %}
-
-                        <li>
-
-                            <a
-                                href="{{ url_for(
-                                    'main.all_teacher_subjects',
-                                    page=1,
-                                    per_page=per_page|default(pagination.per_page),
-                                    search=search,
-                                    institution_id=selected_institution_id,
-                                    branch_id=selected_branch_id,
-                                    teacher_id=selected_teacher_id,
-                                    subject_id=selected_subject_id,
-                                    program_id=selected_program_id,
-                                    class_id=selected_class_id,
-                                    section_id=selected_section_id,
-                                    academic_year_id=selected_academic_year_id,
-                                    teaching_type=selected_teaching_type,
-                                    status=selected_status
-                                ) }}"
-                            >
-                                <i class="fas fa-angles-left"></i>
-                            </a>
-
-                        </li>
-
-                    {% else %}
-
-                        <li>
-                            <span class="disabled">
-                                <i class="fas fa-angles-left"></i>
-                            </span>
-                        </li>
-
-                    {% endif %}
-
-
-                    {% if pagination.has_prev %}
-
-                        <li>
-
-                            <a
-                                href="{{ url_for(
-                                    'main.all_teacher_subjects',
-                                    page=pagination.prev_num,
-                                    per_page=per_page|default(pagination.per_page),
-                                    search=search,
-                                    institution_id=selected_institution_id,
-                                    branch_id=selected_branch_id,
-                                    teacher_id=selected_teacher_id,
-                                    subject_id=selected_subject_id,
-                                    program_id=selected_program_id,
-                                    class_id=selected_class_id,
-                                    section_id=selected_section_id,
-                                    academic_year_id=selected_academic_year_id,
-                                    teaching_type=selected_teaching_type,
-                                    status=selected_status
-                                ) }}"
-                            >
-                                <i class="fas fa-angle-left"></i>
-                            </a>
-
-                        </li>
-
-                    {% else %}
-
-                        <li>
-                            <span class="disabled">
-                                <i class="fas fa-angle-left"></i>
-                            </span>
-                        </li>
-
-                    {% endif %}
-
-
-                    {% set start_page = pagination.page - 2 %}
-                    {% set end_page = pagination.page + 2 %}
-
-                    {% if start_page < 1 %}
-                        {% set start_page = 1 %}
-                    {% endif %}
-
-                    {% if end_page > pagination.pages %}
-                        {% set end_page = pagination.pages %}
-                    {% endif %}
-
-
-                    {% for page_num in range(
-                        start_page,
-                        end_page + 1
-                    ) %}
-
-                        <li>
-
-                            {% if page_num == pagination.page %}
-
-                                <span class="active">
-                                    {{ page_num }}
-                                </span>
-
-                            {% else %}
-
-                                <a
-                                    href="{{ url_for(
-                                        'main.all_teacher_subjects',
-                                        page=page_num,
-                                        per_page=per_page|default(pagination.per_page),
-                                        search=search,
-                                        institution_id=selected_institution_id,
-                                        branch_id=selected_branch_id,
-                                        teacher_id=selected_teacher_id,
-                                        subject_id=selected_subject_id,
-                                        program_id=selected_program_id,
-                                        class_id=selected_class_id,
-                                        section_id=selected_section_id,
-                                        academic_year_id=selected_academic_year_id,
-                                        teaching_type=selected_teaching_type,
-                                        status=selected_status
-                                    ) }}"
-                                >
-                                    {{ page_num }}
-                                </a>
-
-                            {% endif %}
-
-                        </li>
-
-                    {% endfor %}
-
-
-                    {% if pagination.has_next %}
-
-                        <li>
-
-                            <a
-                                href="{{ url_for(
-                                    'main.all_teacher_subjects',
-                                    page=pagination.next_num,
-                                    per_page=per_page|default(pagination.per_page),
-                                    search=search,
-                                    institution_id=selected_institution_id,
-                                    branch_id=selected_branch_id,
-                                    teacher_id=selected_teacher_id,
-                                    subject_id=selected_subject_id,
-                                    program_id=selected_program_id,
-                                    class_id=selected_class_id,
-                                    section_id=selected_section_id,
-                                    academic_year_id=selected_academic_year_id,
-                                    teaching_type=selected_teaching_type,
-                                    status=selected_status
-                                ) }}"
-                            >
-                                <i class="fas fa-angle-right"></i>
-                            </a>
-
-                        </li>
-
-                    {% else %}
-
-                        <li>
-                            <span class="disabled">
-                                <i class="fas fa-angle-right"></i>
-                            </span>
-                        </li>
-
-                    {% endif %}
-
-
-                    {% if pagination.has_next %}
-
-                        <li>
-
-                            <a
-                                href="{{ url_for(
-                                    'main.all_teacher_subjects',
-                                    page=pagination.pages,
-                                    per_page=per_page|default(pagination.per_page),
-                                    search=search,
-                                    institution_id=selected_institution_id,
-                                    branch_id=selected_branch_id,
-                                    teacher_id=selected_teacher_id,
-                                    subject_id=selected_subject_id,
-                                    program_id=selected_program_id,
-                                    class_id=selected_class_id,
-                                    section_id=selected_section_id,
-                                    academic_year_id=selected_academic_year_id,
-                                    teaching_type=selected_teaching_type,
-                                    status=selected_status
-                                ) }}"
-                            >
-                                <i class="fas fa-angles-right"></i>
-                            </a>
-
-                        </li>
-
-                    {% else %}
-
-                        <li>
-                            <span class="disabled">
-                                <i class="fas fa-angles-right"></i>
-                            </span>
-                        </li>
-
-                    {% endif %}
-
-                </ul>
-
-            </div>
-
-        {% endif %}
+        <div
+            class="ts-dt-pagination"
+            id="tsDataTablePagination"
+        ></div>
 
     </div>
 
 </div>
 
 
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+
 <script>
 
-/* ============================================================
-   DEPENDENT FILTERS
-   ============================================================ */
-
 document.addEventListener("DOMContentLoaded", function () {
+
+    "use strict";
+
+
+    /* =========================================================
+       ELEMENTS
+    ========================================================= */
 
     const institution =
         document.getElementById("filter_institution");
@@ -2832,12 +2822,39 @@ document.addEventListener("DOMContentLoaded", function () {
     const section =
         document.getElementById("filter_section");
 
+    const academicYear =
+        document.getElementById("filter_academic_year");
 
-    /*
-     * Save all original options.
-     * This prevents previously hidden options
-     * from disappearing permanently.
-     */
+    const dataTable =
+        document.getElementById("teacherSubjectsTable");
+
+    const tableBody =
+        document.getElementById("teacherSubjectsTableBody");
+
+    const dtSearch =
+        document.getElementById("tsDataTableSearch");
+
+    const perPageSelect =
+        document.getElementById("ts_per_page");
+
+    const dtInfo =
+        document.getElementById("tsDataTableInfo");
+
+    const dtPagination =
+        document.getElementById("tsDataTablePagination");
+
+    const totalCount =
+        document.getElementById("tsTotalCount");
+
+
+    if (!dataTable || !tableBody) {
+        return;
+    }
+
+
+    /* =========================================================
+       ORIGINAL FILTER OPTIONS
+    ========================================================= */
 
     const originalOptions = new Map();
 
@@ -2855,28 +2872,44 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+
         originalOptions.set(
             select,
-            Array.from(select.options).map(function (option) {
+            Array.from(select.options).map(
+                function (option) {
 
-                return {
-                    value: option.value,
-                    text: option.textContent,
-                    institutionId:
-                        option.dataset.institutionId || "",
-                    branchId:
-                        option.dataset.branchId || "",
-                    programId:
-                        option.dataset.programId || "",
-                    classId:
-                        option.dataset.classId || ""
-                };
+                    return {
 
-            })
+                        value:
+                            option.value,
+
+                        text:
+                            option.textContent.trim(),
+
+                        institutionId:
+                            option.dataset.institutionId || "",
+
+                        branchId:
+                            option.dataset.branchId || "",
+
+                        programId:
+                            option.dataset.programId || "",
+
+                        classId:
+                            option.dataset.classId || ""
+
+                    };
+
+                }
+            )
         );
 
     });
 
+
+    /* =========================================================
+       REBUILD FILTER SELECT
+    ========================================================= */
 
     function rebuildSelect(
         select,
@@ -2903,10 +2936,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const defaultOption =
             document.createElement("option");
 
-        defaultOption.value = "";
-        defaultOption.textContent = defaultText;
 
-        select.appendChild(defaultOption);
+        defaultOption.value = "";
+        defaultOption.textContent =
+            defaultText;
+
+
+        select.appendChild(
+            defaultOption
+        );
 
 
         options.forEach(function (item) {
@@ -2922,8 +2960,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (
                 conditions.institutionId &&
                 item.institutionId &&
-                item.institutionId !==
-                    conditions.institutionId
+                String(item.institutionId) !==
+                    String(conditions.institutionId)
             ) {
 
                 visible = false;
@@ -2934,8 +2972,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (
                 conditions.branchId &&
                 item.branchId &&
-                item.branchId !==
-                    conditions.branchId
+                String(item.branchId) !==
+                    String(conditions.branchId)
             ) {
 
                 visible = false;
@@ -2946,8 +2984,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (
                 conditions.programId &&
                 item.programId &&
-                item.programId !==
-                    conditions.programId
+                String(item.programId) !==
+                    String(conditions.programId)
             ) {
 
                 visible = false;
@@ -2958,8 +2996,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (
                 conditions.classId &&
                 item.classId &&
-                item.classId !==
-                    conditions.classId
+                String(item.classId) !==
+                    String(conditions.classId)
             ) {
 
                 visible = false;
@@ -2974,6 +3012,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const option =
                 document.createElement("option");
+
 
             option.value =
                 item.value;
@@ -2992,32 +3031,31 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            select.appendChild(option);
+            select.appendChild(
+                option
+            );
 
         });
 
 
-        /*
-         * If current selected value no longer exists,
-         * reset it.
-         */
-
-        const stillExists =
+        const exists =
             Array.from(
                 select.options
-            ).some(function (option) {
+            ).some(
+                function (option) {
 
-                return (
-                    option.value ===
-                    currentValue
-                );
+                    return (
+                        String(option.value) ===
+                        currentValue
+                    );
 
-            });
+                }
+            );
 
 
         if (
             currentValue &&
-            !stillExists
+            !exists
         ) {
 
             select.value = "";
@@ -3027,7 +3065,324 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    function refreshAll() {
+    /* =========================================================
+       LOAD TEACHER SUBJECT FILTER
+    ========================================================= */
+
+    let subjectRequestId = 0;
+
+
+    async function loadTeacherSubjects() {
+
+        if (!subject) {
+            return;
+        }
+
+
+        const requestId =
+            ++subjectRequestId;
+
+
+        const teacherId =
+            teacher
+                ? String(teacher.value || "")
+                : "";
+
+
+        const institutionId =
+            institution
+                ? String(institution.value || "")
+                : "";
+
+
+        const branchId =
+            branch
+                ? String(branch.value || "")
+                : "";
+
+
+        const selectedSubject =
+            String(
+                subject.value || ""
+            );
+
+
+        if (!teacherId) {
+
+            rebuildSelect(
+                subject,
+                {
+                    institutionId:
+                        institutionId,
+
+                    branchId:
+                        branchId
+                },
+                "All Subjects"
+            );
+
+            return;
+        }
+
+
+        subject.innerHTML =
+            '<option value="">Loading Subjects...</option>';
+
+        subject.disabled = true;
+
+
+        try {
+
+            const params =
+                new URLSearchParams();
+
+
+            if (institutionId) {
+
+                params.set(
+                    "institution_id",
+                    institutionId
+                );
+
+            }
+
+
+            if (branchId) {
+
+                params.set(
+                    "branch_id",
+                    branchId
+                );
+
+            }
+
+
+            if (academicYear && academicYear.value) {
+
+                params.set(
+                    "academic_year_id",
+                    academicYear.value
+                );
+
+            }
+
+
+            params.set(
+                "teacher_id",
+                teacherId
+            );
+
+
+            const response =
+                await fetch(
+                    "{{ url_for('main.teacher_subject_options') }}?" +
+                    params.toString(),
+                    {
+                        method: "GET",
+
+                        credentials:
+                            "same-origin",
+
+                        headers: {
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+
+                            "Accept":
+                                "application/json"
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "HTTP " +
+                    response.status
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                requestId !== subjectRequestId
+            ) {
+
+                return;
+
+            }
+
+
+            subject.innerHTML = "";
+
+
+            const allOption =
+                document.createElement("option");
+
+
+            allOption.value = "";
+            allOption.textContent =
+                "All Subjects";
+
+
+            subject.appendChild(
+                allOption
+            );
+
+
+            if (
+                data &&
+                data.success &&
+                Array.isArray(data.subjects)
+            ) {
+
+                data.subjects.forEach(
+                    function (item) {
+
+                        if (
+                            !item ||
+                            !item.id
+                        ) {
+                            return;
+                        }
+
+
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+
+                        option.value =
+                            item.id;
+
+
+                        option.textContent =
+                            item.code
+                                ? item.name +
+                                  " — " +
+                                  item.code
+                                : item.name;
+
+
+                        option.dataset.institutionId =
+                            item.institution_id || "";
+
+
+                        option.dataset.branchId =
+                            item.branch_id || "";
+
+
+                        option.dataset.programId =
+                            item.program_id || "";
+
+
+                        if (
+                            String(item.id) ===
+                            selectedSubject
+                        ) {
+
+                            option.selected = true;
+
+                        }
+
+
+                        subject.appendChild(
+                            option
+                        );
+
+                    }
+                );
+
+            }
+
+
+            if (
+                data &&
+                data.success &&
+                Array.isArray(data.subjects) &&
+                data.subjects.length === 0
+            ) {
+
+                const noSubjects =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                noSubjects.value = "";
+                noSubjects.disabled = true;
+                noSubjects.textContent =
+                    "No Subjects Found";
+
+
+                subject.appendChild(
+                    noSubjects
+                );
+
+            }
+
+
+        } catch (error) {
+
+            console.error(
+                "Teacher subjects error:",
+                error
+            );
+
+
+            if (
+                requestId !== subjectRequestId
+            ) {
+
+                return;
+
+            }
+
+
+            subject.innerHTML = "";
+
+
+            const errorOption =
+                document.createElement(
+                    "option"
+                );
+
+
+            errorOption.value = "";
+            errorOption.textContent =
+                "Unable to load subjects";
+
+
+            subject.appendChild(
+                errorOption
+            );
+
+
+        } finally {
+
+            if (
+                requestId === subjectRequestId
+            ) {
+
+                subject.disabled = false;
+
+            }
+
+        }
+
+    }
+
+
+    /* =========================================================
+       REFRESH SERVER FILTER SELECTS
+    ========================================================= */
+
+    function refreshFilters() {
 
         const institutionId =
             institution
@@ -3053,10 +3408,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 : "";
 
 
-        /*
-         * Branch
-         */
-
         rebuildSelect(
             branch,
             {
@@ -3067,15 +3418,12 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
-        /*
-         * Teacher
-         */
-
         rebuildSelect(
             teacher,
             {
                 institutionId:
                     institutionId,
+
                 branchId:
                     branchId
             },
@@ -3083,31 +3431,12 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
-        /*
-         * Subject
-         */
-
-        rebuildSelect(
-            subject,
-            {
-                institutionId:
-                    institutionId,
-                branchId:
-                    branchId
-            },
-            "All Subjects"
-        );
-
-
-        /*
-         * Program
-         */
-
         rebuildSelect(
             program,
             {
                 institutionId:
                     institutionId,
+
                 branchId:
                     branchId
             },
@@ -3115,17 +3444,15 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
-        /*
-         * Class
-         */
-
         rebuildSelect(
             classFilter,
             {
                 institutionId:
                     institutionId,
+
                 branchId:
                     branchId,
+
                 programId:
                     programId
             },
@@ -3133,38 +3460,33 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
-        /*
-         * Section
-         */
-
         rebuildSelect(
             section,
             {
                 institutionId:
                     institutionId,
+
                 branchId:
                     branchId,
+
                 programId:
                     programId,
+
                 classId:
                     classId
             },
             "All Sections"
         );
 
+
+        loadTeacherSubjects();
+
     }
 
 
-    /*
-     * Initial load
-     */
-
-    refreshAll();
-
-
-    /*
-     * Institution changed
-     */
+    /* =========================================================
+       FILTER EVENTS
+    ========================================================= */
 
     if (institution) {
 
@@ -3181,7 +3503,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (subject) {
-                    subject.value = "";
+                    subject.innerHTML =
+                        '<option value="">All Subjects</option>';
                 }
 
                 if (program) {
@@ -3196,17 +3519,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     section.value = "";
                 }
 
-                refreshAll();
+                refreshFilters();
 
             }
         );
 
     }
 
-
-    /*
-     * Branch changed
-     */
 
     if (branch) {
 
@@ -3219,7 +3538,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (subject) {
-                    subject.value = "";
+                    subject.innerHTML =
+                        '<option value="">All Subjects</option>';
                 }
 
                 if (program) {
@@ -3234,7 +3554,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     section.value = "";
                 }
 
-                refreshAll();
+                refreshFilters();
 
             }
         );
@@ -3242,9 +3562,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    /*
-     * Program changed
-     */
+    if (teacher) {
+
+        teacher.addEventListener(
+            "change",
+            function () {
+
+                loadTeacherSubjects();
+
+            }
+        );
+
+    }
+
 
     if (program) {
 
@@ -3260,17 +3590,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     section.value = "";
                 }
 
-                refreshAll();
+                refreshFilters();
 
             }
         );
 
     }
 
-
-    /*
-     * Class changed
-     */
 
     if (classFilter) {
 
@@ -3282,103 +3608,1091 @@ document.addEventListener("DOMContentLoaded", function () {
                     section.value = "";
                 }
 
-                refreshAll();
+                refreshFilters();
 
             }
         );
 
     }
 
-});
 
+    /* =========================================================
+       DATATABLE
+    ========================================================= */
 
-/* ============================================================
-   STATUS CONFIRMATION
-   ============================================================ */
-
-window.confirmTeacherSubjectStatus =
-function (form) {
-
-    const button =
-        form.querySelector(
-            "button[type='submit']"
+    const dataTableRows =
+        Array.from(
+            tableBody.querySelectorAll(
+                "tr[data-assignment-id]"
+            )
         );
 
 
-    const isActive =
-        button &&
-        button.title &&
-        button.title
-            .toLowerCase()
-            .includes("deactivate");
+    let filteredRows =
+        [...dataTableRows];
 
 
-    const message =
-        isActive
-            ? "Are you sure you want to deactivate this assignment?"
-            : "Are you sure you want to activate this assignment?";
+    let currentPage = 1;
 
 
-    return confirm(message);
-
-};
+    let currentPerPage = 10;
 
 
-/* ============================================================
-   DELETE CONFIRMATION
-   ============================================================ */
-
-window.confirmTeacherSubjectDelete =
-function () {
-
-    return confirm(
-        "Are you sure you want to delete this teacher subject assignment?\n\nThis action cannot be undone."
-    );
-
-};
+    let currentSortColumn = null;
 
 
-/* ============================================================
-   PER PAGE
-   ============================================================ */
+    let currentSortDirection = "asc";
 
-document.addEventListener(
-    "change",
-    function (event) {
+
+    /* =========================================================
+       INITIAL PER PAGE
+    ========================================================= */
+
+    if (perPageSelect) {
+
+        const savedPerPage =
+            new URLSearchParams(
+                window.location.search
+            ).get("dt_per_page");
+
 
         if (
-            event.target.id !==
-            "ts_per_page"
+            savedPerPage &&
+            ["10", "20", "50", "100"]
+                .includes(savedPerPage)
         ) {
+
+            currentPerPage =
+                parseInt(
+                    savedPerPage,
+                    10
+                );
+
+        }
+
+
+        perPageSelect.value =
+            String(currentPerPage);
+
+    }
+
+
+    /* =========================================================
+       CLEAN CELL TEXT
+    ========================================================= */
+
+    function getCellText(
+        row,
+        columnIndex
+    ) {
+
+        const cell =
+            row.cells[columnIndex];
+
+
+        if (!cell) {
+            return "";
+        }
+
+
+        return (
+            cell.textContent ||
+            ""
+        )
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+
+    }
+
+
+    /* =========================================================
+       SORT VALUE
+    ========================================================= */
+
+    function getSortValue(
+        row,
+        columnIndex
+    ) {
+
+        const value =
+            getCellText(
+                row,
+                columnIndex
+            );
+
+
+        return value;
+
+    }
+
+
+    /* =========================================================
+       SORT ROWS
+    ========================================================= */
+
+    function sortRows() {
+
+        if (
+            currentSortColumn === null
+        ) {
+
+            return;
+
+        }
+
+
+        filteredRows.sort(
+            function (rowA, rowB) {
+
+                const valueA =
+                    getSortValue(
+                        rowA,
+                        currentSortColumn
+                    );
+
+
+                const valueB =
+                    getSortValue(
+                        rowB,
+                        currentSortColumn
+                    );
+
+
+                const result =
+                    valueA.localeCompare(
+                        valueB,
+                        undefined,
+                        {
+                            numeric: true,
+                            sensitivity: "base"
+                        }
+                    );
+
+
+                return currentSortDirection === "asc"
+                    ? result
+                    : -result;
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       UPDATE SORT ICONS
+    ========================================================= */
+
+    function updateSortIcons() {
+
+        const headers =
+            dataTable.querySelectorAll(
+                "thead th.sortable"
+            );
+
+
+        headers.forEach(
+            function (header) {
+
+                header.classList.remove(
+                    "sort-asc",
+                    "sort-desc"
+                );
+
+
+                const icon =
+                    header.querySelector(
+                        ".ts-sort-icon"
+                    );
+
+
+                if (!icon) {
+                    return;
+                }
+
+
+                const column =
+                    parseInt(
+                        header.dataset.column,
+                        10
+                    );
+
+
+                if (
+                    column ===
+                    currentSortColumn
+                ) {
+
+                    if (
+                        currentSortDirection ===
+                        "asc"
+                    ) {
+
+                        header.classList.add(
+                            "sort-asc"
+                        );
+
+                        icon.className =
+                            "fas fa-sort-up ts-sort-icon";
+
+                    } else {
+
+                        header.classList.add(
+                            "sort-desc"
+                        );
+
+                        icon.className =
+                            "fas fa-sort-down ts-sort-icon";
+
+                    }
+
+                } else {
+
+                    icon.className =
+                        "fas fa-sort ts-sort-icon";
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       FILTER TABLE
+    ========================================================= */
+
+    function filterTable() {
+
+        const query =
+            dtSearch
+                ? String(
+                    dtSearch.value || ""
+                )
+                .trim()
+                .toLowerCase()
+                : "";
+
+
+        if (!query) {
+
+            filteredRows =
+                [...dataTableRows];
+
+        } else {
+
+            filteredRows =
+                dataTableRows.filter(
+                    function (row) {
+
+                        const rowText =
+                            (
+                                row.textContent ||
+                                ""
+                            )
+                            .replace(/\s+/g, " ")
+                            .toLowerCase();
+
+
+                        return rowText.includes(
+                            query
+                        );
+
+                    }
+                );
+
+        }
+
+
+        sortRows();
+
+
+        currentPage = 1;
+
+
+        renderDataTable();
+
+    }
+
+
+    /* =========================================================
+       RENDER DATATABLE
+    ========================================================= */
+
+    function renderDataTable() {
+
+        const total =
+            filteredRows.length;
+
+
+        const totalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    total /
+                    currentPerPage
+                )
+            );
+
+
+        if (
+            currentPage >
+            totalPages
+        ) {
+
+            currentPage =
+                totalPages;
+
+        }
+
+
+        const startIndex =
+            total === 0
+                ? 0
+                : (
+                    (currentPage - 1) *
+                    currentPerPage
+                );
+
+
+        const endIndex =
+            Math.min(
+                startIndex +
+                currentPerPage,
+                total
+            );
+
+
+        const visibleRows =
+            new Set(
+                filteredRows.slice(
+                    startIndex,
+                    endIndex
+                )
+            );
+
+
+        dataTableRows.forEach(
+            function (row, index) {
+
+                const visible =
+                    visibleRows.has(row);
+
+
+                row.classList.toggle(
+                    "ts-row-hidden",
+                    !visible
+                );
+
+
+                const numberCell =
+                    row.cells[0];
+
+
+                if (numberCell) {
+
+                    const number =
+                        filteredRows.indexOf(
+                            row
+                        ) + 1;
+
+
+                    const numberSpan =
+                        numberCell.querySelector(
+                            ".ts-number"
+                        );
+
+
+                    if (numberSpan) {
+
+                        numberSpan.textContent =
+                            number;
+
+                    }
+
+                }
+
+            }
+        );
+
+
+        updateInfo(
+            total,
+            startIndex,
+            endIndex
+        );
+
+
+        renderPagination(
+            totalPages
+        );
+
+
+        updateEmptyState(
+            total
+        );
+
+
+        if (totalCount) {
+
+            totalCount.textContent =
+                total;
+
+        }
+
+    }
+
+
+    /* =========================================================
+       UPDATE INFO
+    ========================================================= */
+
+    function updateInfo(
+        total,
+        startIndex,
+        endIndex
+    ) {
+
+        if (!dtInfo) {
             return;
         }
 
 
-        const params =
-            new URLSearchParams(
-                window.location.search
+        if (total === 0) {
+
+            dtInfo.innerHTML =
+                "Showing <strong>0</strong> to " +
+                "<strong>0</strong> of " +
+                "<strong>0</strong> entries";
+
+            return;
+
+        }
+
+
+        dtInfo.innerHTML =
+            "Showing <strong>" +
+            (startIndex + 1) +
+            "</strong> to <strong>" +
+            endIndex +
+            "</strong> of <strong>" +
+            total +
+            "</strong> entries";
+
+    }
+
+
+    /* =========================================================
+       EMPTY STATE
+    ========================================================= */
+
+    function updateEmptyState(
+        total
+    ) {
+
+        const existing =
+            document.getElementById(
+                "tsDataTableEmptyRow"
             );
 
 
-        params.set(
-            "per_page",
-            event.target.value
+        if (existing) {
+            existing.remove();
+        }
+
+
+        if (total !== 0) {
+            return;
+        }
+
+
+        const emptyRow =
+            document.createElement("tr");
+
+
+        emptyRow.id =
+            "tsDataTableEmptyRow";
+
+
+        const emptyCell =
+            document.createElement("td");
+
+
+        emptyCell.colSpan = 14;
+
+
+        emptyCell.innerHTML = `
+
+            <div class="ts-empty">
+
+                <div class="ts-empty-icon">
+
+                    <i class="fas fa-search"></i>
+
+                </div>
+
+                <h4>
+                    No Matching Assignments
+                </h4>
+
+                <p>
+                    No teacher subject assignments
+                    match your current search.
+                </p>
+
+            </div>
+
+        `;
+
+
+        emptyRow.appendChild(
+            emptyCell
         );
 
 
-        params.set(
-            "page",
-            "1"
+        tableBody.appendChild(
+            emptyRow
         );
-
-
-        window.location.href =
-            window.location.pathname +
-            "?" +
-            params.toString();
 
     }
-);
+
+
+    /* =========================================================
+       PAGINATION BUTTON
+    ========================================================= */
+
+    function createPageButton(
+        label,
+        page,
+        disabled,
+        active,
+        iconClass
+    ) {
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.type =
+            "button";
+
+
+        button.disabled =
+            disabled;
+
+
+        if (active) {
+
+            button.classList.add(
+                "active"
+            );
+
+        }
+
+
+        if (iconClass) {
+
+            button.innerHTML =
+                '<i class="' +
+                iconClass +
+                '"></i>';
+
+        } else {
+
+            button.textContent =
+                label;
+
+        }
+
+
+        if (!disabled) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    currentPage =
+                        page;
+
+                    renderDataTable();
+
+                }
+            );
+
+        }
+
+
+        return button;
+
+    }
+
+
+    /* =========================================================
+       PAGINATION
+    ========================================================= */
+
+    function renderPagination(
+        totalPages
+    ) {
+
+        if (!dtPagination) {
+            return;
+        }
+
+
+        dtPagination.innerHTML =
+            "";
+
+
+        const previousButton =
+            createPageButton(
+                "",
+                currentPage - 1,
+                currentPage <= 1,
+                false,
+                "fas fa-angle-left"
+            );
+
+
+        dtPagination.appendChild(
+            previousButton
+        );
+
+
+        if (totalPages <= 7) {
+
+            for (
+                let page = 1;
+                page <= totalPages;
+                page++
+            ) {
+
+                dtPagination.appendChild(
+                    createPageButton(
+                        String(page),
+                        page,
+                        false,
+                        page === currentPage,
+                        null
+                    )
+                );
+
+            }
+
+        } else {
+
+            dtPagination.appendChild(
+                createPageButton(
+                    "1",
+                    1,
+                    false,
+                    currentPage === 1,
+                    null
+                )
+            );
+
+
+            if (currentPage > 4) {
+
+                const ellipsis =
+                    document.createElement(
+                        "span"
+                    );
+
+                ellipsis.className =
+                    "ts-dt-ellipsis";
+
+                ellipsis.textContent =
+                    "…";
+
+                dtPagination.appendChild(
+                    ellipsis
+                );
+
+            }
+
+
+            const startPage =
+                Math.max(
+                    2,
+                    currentPage - 1
+                );
+
+
+            const endPage =
+                Math.min(
+                    totalPages - 1,
+                    currentPage + 1
+                );
+
+
+            for (
+                let page = startPage;
+                page <= endPage;
+                page++
+            ) {
+
+                dtPagination.appendChild(
+                    createPageButton(
+                        String(page),
+                        page,
+                        false,
+                        page === currentPage,
+                        null
+                    )
+                );
+
+            }
+
+
+            if (
+                currentPage <
+                totalPages - 3
+            ) {
+
+                const ellipsis =
+                    document.createElement(
+                        "span"
+                    );
+
+                ellipsis.className =
+                    "ts-dt-ellipsis";
+
+                ellipsis.textContent =
+                    "…";
+
+                dtPagination.appendChild(
+                    ellipsis
+                );
+
+            }
+
+
+            dtPagination.appendChild(
+                createPageButton(
+                    String(totalPages),
+                    totalPages,
+                    false,
+                    currentPage === totalPages,
+                    null
+                )
+            );
+
+        }
+
+
+        const nextButton =
+            createPageButton(
+                "",
+                currentPage + 1,
+                currentPage >= totalPages,
+                false,
+                "fas fa-angle-right"
+            );
+
+
+        dtPagination.appendChild(
+            nextButton
+        );
+
+    }
+
+
+    /* =========================================================
+       SEARCH EVENT
+    ========================================================= */
+
+    if (dtSearch) {
+
+        let searchTimer = null;
+
+
+        dtSearch.addEventListener(
+            "input",
+            function () {
+
+                clearTimeout(
+                    searchTimer
+                );
+
+
+                searchTimer =
+                    setTimeout(
+                        function () {
+
+                            filterTable();
+
+                        },
+                        120
+                    );
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       PER PAGE CHANGE
+    ========================================================= */
+
+    if (perPageSelect) {
+
+        perPageSelect.addEventListener(
+            "change",
+            function () {
+
+                const value =
+                    parseInt(
+                        this.value,
+                        10
+                    );
+
+
+                if (
+                    ![
+                        10,
+                        20,
+                        50,
+                        100
+                    ].includes(value)
+                ) {
+
+                    return;
+
+                }
+
+
+                currentPerPage =
+                    value;
+
+
+                currentPage =
+                    1;
+
+
+                renderDataTable();
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       COLUMN SORTING
+    ========================================================= */
+
+    dataTable
+        .querySelectorAll(
+            "thead th.sortable"
+        )
+        .forEach(
+            function (header) {
+
+                header.addEventListener(
+                    "click",
+                    function () {
+
+                        const column =
+                            parseInt(
+                                this.dataset.column,
+                                10
+                            );
+
+
+                        if (
+                            currentSortColumn ===
+                            column
+                        ) {
+
+                            currentSortDirection =
+                                currentSortDirection ===
+                                "asc"
+                                    ? "desc"
+                                    : "asc";
+
+                        } else {
+
+                            currentSortColumn =
+                                column;
+
+                            currentSortDirection =
+                                "asc";
+
+                        }
+
+
+                        sortRows();
+
+                        currentPage =
+                            1;
+
+                        updateSortIcons();
+
+                        renderDataTable();
+
+                    }
+                );
+
+            }
+        );
+
+
+    /* =========================================================
+       KEYBOARD SEARCH
+    ========================================================= */
+
+    if (dtSearch) {
+
+        dtSearch.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key ===
+                    "Escape"
+                ) {
+
+                    this.value =
+                        "";
+
+                    filterTable();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       STATUS CONFIRMATION
+    ========================================================= */
+
+    window.confirmTeacherSubjectStatus =
+    function (form) {
+
+        if (!form) {
+            return false;
+        }
+
+
+        const button =
+            form.querySelector(
+                "button[type='submit']"
+            );
+
+
+        const title =
+            button
+                ? String(
+                    button.title || ""
+                ).toLowerCase()
+                : "";
+
+
+        const isActive =
+            title.includes(
+                "deactivate"
+            );
+
+
+        const message =
+            isActive
+                ? "Are you sure you want to deactivate this assignment?"
+                : "Are you sure you want to activate this assignment?";
+
+
+        const confirmed =
+            window.confirm(
+                message
+            );
+
+
+        if (!confirmed) {
+            return false;
+        }
+
+
+        if (button) {
+
+            button.disabled =
+                true;
+
+
+            button.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i>';
+
+        }
+
+
+        return true;
+
+    };
+
+
+    /* =========================================================
+       DELETE CONFIRMATION
+    ========================================================= */
+
+    window.confirmTeacherSubjectDelete =
+    function (form) {
+
+        if (!form) {
+            return false;
+        }
+
+
+        const confirmed =
+            window.confirm(
+                "Are you sure you want to delete this teacher subject assignment?\n\n" +
+                "This action cannot be undone."
+            );
+
+
+        if (!confirmed) {
+            return false;
+        }
+
+
+        const button =
+            form.querySelector(
+                "button[type='submit']"
+            );
+
+
+        if (button) {
+
+            button.disabled =
+                true;
+
+
+            button.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i>';
+
+        }
+
+
+        return true;
+
+    };
+
+
+    /* =========================================================
+       INITIAL DATATABLE RENDER
+    ========================================================= */
+
+    updateSortIcons();
+
+    renderDataTable();
+
+});
 
 </script>
 

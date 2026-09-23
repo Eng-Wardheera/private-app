@@ -1,0 +1,1296 @@
+{% extends "backend/teacher/home/index.html" %}
+
+{% block title %}
+My Subjects | Teacher Portal
+{% endblock %}
+
+{% block content %}
+
+<style>
+    /* ============================================================
+       MY SUBJECTS PAGE
+       ============================================================ */
+
+    .subjects-page {
+        width: 100%;
+        padding: 24px;
+        box-sizing: border-box;
+    }
+
+    /* ============================================================
+       HEADER
+       ============================================================ */
+
+    .subjects-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .subjects-header-left h1 {
+        margin: 0;
+        color: #06245f;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .subjects-header-left p {
+        margin: 7px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .teacher-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 10px;
+        background: #eef4ff;
+        color: #06245f;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .teacher-badge i {
+        font-size: 15px;
+    }
+
+    /* ============================================================
+       STATISTICS
+       ============================================================ */
+
+    .subject-stats {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e7ebf2;
+        border-radius: 14px;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 4px 16px rgba(6, 36, 95, 0.04);
+    }
+
+    .stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: #eef4ff;
+        color: #06245f;
+        font-size: 18px;
+    }
+
+    .stat-content {
+        min-width: 0;
+    }
+
+    .stat-label {
+        display: block;
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .stat-value {
+        display: block;
+        color: #111827;
+        font-size: 22px;
+        line-height: 1;
+        font-weight: 800;
+    }
+
+    /* ============================================================
+       FILTER CARD
+       ============================================================ */
+
+    .filter-card {
+        background: #ffffff;
+        border: 1px solid #e7ebf2;
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 16px rgba(6, 36, 95, 0.04);
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 16px;
+    }
+
+    .filter-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #06245f;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .filter-title i {
+        color: #32b73a;
+    }
+
+    .clear-filters {
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .clear-filters:hover {
+        color: #06245f;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: 1.5fr repeat(4, 1fr) auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .filter-group {
+        min-width: 0;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 7px;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .filter-control {
+        width: 100%;
+        height: 42px;
+        padding: 0 12px;
+        border: 1px solid #dce2eb;
+        border-radius: 9px;
+        background: #ffffff;
+        color: #1f2937;
+        font-size: 13px;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .filter-control:focus {
+        border-color: #06245f;
+        box-shadow: 0 0 0 3px rgba(6, 36, 95, 0.08);
+    }
+
+    .search-wrapper {
+        position: relative;
+    }
+
+    .search-wrapper i {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        pointer-events: none;
+    }
+
+    .search-input {
+        padding-left: 36px;
+    }
+
+    .filter-button {
+        height: 42px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 9px;
+        background: #06245f;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: transform .2s, background .2s;
+    }
+
+    .filter-button:hover {
+        background: #041b49;
+        transform: translateY(-1px);
+    }
+
+    /* ============================================================
+       SUBJECT GRID
+       ============================================================ */
+
+    .subjects-section {
+        margin-top: 4px;
+    }
+
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .section-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .result-count {
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .subjects-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    /* ============================================================
+       SUBJECT CARD
+       ============================================================ */
+
+    .subject-card {
+        position: relative;
+        background: #ffffff;
+        border: 1px solid #e5e9f0;
+        border-radius: 16px;
+        padding: 20px;
+        overflow: hidden;
+        box-shadow: 0 5px 18px rgba(6, 36, 95, 0.045);
+        transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+
+    .subject-card:hover {
+        transform: translateY(-3px);
+        border-color: #cbd7eb;
+        box-shadow: 0 10px 25px rgba(6, 36, 95, 0.09);
+    }
+
+    .subject-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background: #06245f;
+    }
+
+    .subject-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .subject-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 13px;
+        background: #eef4ff;
+        color: #06245f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+        flex-shrink: 0;
+    }
+
+    .subject-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 9px;
+        border-radius: 20px;
+        background: #ecfdf3;
+        color: #16803c;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .subject-status .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #32b73a;
+    }
+
+    .subject-name {
+        margin: 0;
+        color: #111827;
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.3;
+    }
+
+    .subject-code {
+        margin-top: 5px;
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .subject-details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 9px;
+        margin-top: 18px;
+    }
+
+    .detail-item {
+        background: #f8fafc;
+        border-radius: 9px;
+        padding: 10px;
+    }
+
+    .detail-label {
+        display: block;
+        color: #9ca3af;
+        font-size: 10px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    .detail-value {
+        display: block;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 800;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ============================================================
+       ASSIGNMENT INFO
+       ============================================================ */
+
+    .assignment-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding-top: 16px;
+        margin-top: 16px;
+        border-top: 1px solid #edf0f5;
+    }
+
+    .assignment-count {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .assignment-count i {
+        color: #33206f;
+    }
+
+    .scope-badges {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 5px;
+    }
+
+    .scope-badge {
+        padding: 4px 7px;
+        border-radius: 6px;
+        background: #f3f1fa;
+        color: #33206f;
+        font-size: 9px;
+        font-weight: 800;
+    }
+
+    /* ============================================================
+       EMPTY STATE
+       ============================================================ */
+
+    .empty-state {
+        background: #ffffff;
+        border: 1px dashed #d5dbe5;
+        border-radius: 16px;
+        padding: 55px 25px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 16px;
+        background: #f2f5fa;
+        color: #06245f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 7px;
+        color: #1f2937;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .empty-state p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .empty-action {
+        display: inline-flex;
+        margin-top: 18px;
+        padding: 10px 15px;
+        border-radius: 9px;
+        background: #eef4ff;
+        color: #06245f;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+
+    @media (max-width: 1300px) {
+
+        .subject-stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .filter-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .search-group {
+            grid-column: span 2;
+        }
+
+        .filter-button-group {
+            grid-column: auto;
+        }
+
+        .subjects-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 850px) {
+
+        .subjects-page {
+            padding: 16px;
+        }
+
+        .subjects-header {
+            flex-direction: column;
+        }
+
+        .subject-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .search-group {
+            grid-column: span 2;
+        }
+
+        .filter-button-group {
+            grid-column: span 2;
+        }
+
+        .filter-button {
+            width: 100%;
+        }
+
+        .subjects-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 520px) {
+
+        .subject-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-group,
+        .filter-button-group {
+            grid-column: auto;
+        }
+
+        .subject-details {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+
+<div class="subjects-page">
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="subjects-header">
+
+        <div class="subjects-header-left">
+
+            <h1>
+                My Subjects
+            </h1>
+
+            <p>
+                View the subjects assigned to you, including their
+                classes, sections and academic years.
+            </p>
+
+        </div>
+
+        <div class="teacher-badge">
+
+            <i class="fa-solid fa-chalkboard-user"></i>
+
+            {{ teacher.full_name }}
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         STATISTICS
+         ======================================================== -->
+
+    <div class="subject-stats">
+
+        <!-- Subjects -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    My Subjects
+                </span>
+
+                <span class="stat-value">
+                    {{ stats.subject_count }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Assignments -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    Assignments
+                </span>
+
+                <span class="stat-value">
+                    {{ stats.assignment_count }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Programs -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    Programs
+                </span>
+
+                <span class="stat-value">
+                    {{ stats.program_count }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Classes -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-school"></i>
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    Classes
+                </span>
+
+                <span class="stat-value">
+                    {{ stats.class_count }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Sections -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-users"></i>
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    Sections
+                </span>
+
+                <span class="stat-value">
+                    {{ stats.section_count }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         FILTERS
+         ======================================================== -->
+
+    <div class="filter-card">
+
+        <div class="filter-header">
+
+            <div class="filter-title">
+
+                <i class="fa-solid fa-filter"></i>
+
+                Filter Subjects
+
+            </div>
+
+            <a
+                href="{{ url_for('main.teacher_my_subjects') }}"
+                class="clear-filters"
+            >
+                Clear Filters
+            </a>
+
+        </div>
+
+
+        <form
+            method="GET"
+            action="{{ url_for('main.teacher_my_subjects') }}"
+        >
+
+            <div class="filter-grid">
+
+                <!-- Search -->
+
+                <div class="filter-group search-group">
+
+                    <label>
+                        Search
+                    </label>
+
+                    <div class="search-wrapper">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="text"
+                            name="search"
+                            class="filter-control search-input"
+                            placeholder="Subject name or code..."
+                            value="{{ search or '' }}"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- Program -->
+
+                <div class="filter-group">
+
+                    <label>
+                        Program
+                    </label>
+
+                    <select
+                        name="program_id"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Programs
+                        </option>
+
+                        {% for program in programs %}
+
+                            <option
+                                value="{{ program.id }}"
+                                {% if selected_program_id == program.id %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ program.name }}
+                                {% if program.code %}
+                                    ({{ program.code }})
+                                {% endif %}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Class -->
+
+                <div class="filter-group">
+
+                    <label>
+                        Class
+                    </label>
+
+                    <select
+                        name="class_id"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Classes
+                        </option>
+
+                        {% for class in classes %}
+
+                            <option
+                                value="{{ class.id }}"
+                                {% if selected_class_id == class.id %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ class.name }}
+                                {% if class.code %}
+                                    ({{ class.code }})
+                                {% endif %}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Section -->
+
+                <div class="filter-group">
+
+                    <label>
+                        Section
+                    </label>
+
+                    <select
+                        name="section_id"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Sections
+                        </option>
+
+                        {% for section in sections %}
+
+                            <option
+                                value="{{ section.id }}"
+                                {% if selected_section_id == section.id %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ section.name }}
+                                {% if section.code %}
+                                    ({{ section.code }})
+                                {% endif %}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Academic Year -->
+
+                <div class="filter-group">
+
+                    <label>
+                        Academic Year
+                    </label>
+
+                    <select
+                        name="academic_year_id"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Years
+                        </option>
+
+                        {% for year in academic_years %}
+
+                            <option
+                                value="{{ year.id }}"
+                                {% if selected_academic_year_id == year.id %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ year.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Status -->
+
+                <div class="filter-group">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        class="filter-control"
+                    >
+
+                        <option
+                            value="active"
+                            {% if selected_status == "active" %}
+                                selected
+                            {% endif %}
+                        >
+                            Active
+                        </option>
+
+                        <option
+                            value="inactive"
+                            {% if selected_status == "inactive" %}
+                                selected
+                            {% endif %}
+                        >
+                            Inactive
+                        </option>
+
+                        <option
+                            value="all"
+                            {% if selected_status == "all" %}
+                                selected
+                            {% endif %}
+                        >
+                            All
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Submit -->
+
+                <div class="filter-group filter-button-group">
+
+                    <label>&nbsp;</label>
+
+                    <button
+                        type="submit"
+                        class="filter-button"
+                    >
+                        <i class="fa-solid fa-filter"></i>
+                        Apply
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ========================================================
+         SUBJECTS
+         ======================================================== -->
+
+    <div class="subjects-section">
+
+        <div class="section-heading">
+
+            <h2>
+                Assigned Subjects
+            </h2>
+
+            <span class="result-count">
+
+                {{ subject_cards|length }}
+
+                {% if subject_cards|length == 1 %}
+                    subject
+                {% else %}
+                    subjects
+                {% endif %}
+
+            </span>
+
+        </div>
+
+
+        {% if subject_cards %}
+
+            <div class="subjects-grid">
+
+                {% for item in subject_cards %}
+
+                    {% set subject = item.subject %}
+
+                    <div class="subject-card">
+
+                        <!-- Subject Header -->
+
+                        <div class="subject-top">
+
+                            <div class="subject-icon">
+
+                                <i class="fa-solid fa-book"></i>
+
+                            </div>
+
+                            <div class="subject-status">
+
+                                <span class="dot"></span>
+
+                                Assigned
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Subject Name -->
+
+                        <h3 class="subject-name">
+
+                            {{ item.name }}
+
+                        </h3>
+
+
+                        {% if item.code or item.short_name %}
+
+                            <div class="subject-code">
+
+                                {% if item.code %}
+                                    Code: {{ item.code }}
+                                {% endif %}
+
+                                {% if item.code and item.short_name %}
+                                    ·
+                                {% endif %}
+
+                                {% if item.short_name %}
+                                    {{ item.short_name }}
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- Subject Details -->
+
+                        <div class="subject-details">
+
+                            <!-- Type -->
+
+                            <div class="detail-item">
+
+                                <span class="detail-label">
+                                    Type
+                                </span>
+
+                                <span class="detail-value">
+
+                                    {% if item.subject_type %}
+                                        {{ item.subject_type|replace("_", " ")|title }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+
+                            <!-- Max Marks -->
+
+                            <div class="detail-item">
+
+                                <span class="detail-label">
+                                    Max Marks
+                                </span>
+
+                                <span class="detail-value">
+
+                                    {% if item.max_marks is not none %}
+                                        {{ item.max_marks }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+
+                            <!-- Pass Marks -->
+
+                            <div class="detail-item">
+
+                                <span class="detail-label">
+                                    Pass Marks
+                                </span>
+
+                                <span class="detail-value">
+
+                                    {% if item.pass_marks is not none %}
+                                        {{ item.pass_marks }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+
+                            <!-- Weekly Hours -->
+
+                            <div class="detail-item">
+
+                                <span class="detail-label">
+                                    Weekly Hours
+                                </span>
+
+                                <span class="detail-value">
+
+                                    {% if item.weekly_hours is not none %}
+                                        {{ item.weekly_hours }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Assignment Summary -->
+
+                        <div class="assignment-summary">
+
+                            <div class="assignment-count">
+
+                                <i class="fa-solid fa-link"></i>
+
+                                {{ item.assignment_count }}
+
+                                {% if item.assignment_count == 1 %}
+                                    assignment
+                                {% else %}
+                                    assignments
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="scope-badges">
+
+                                {% if item.program_count > 0 %}
+
+                                    <span class="scope-badge">
+                                        {{ item.program_count }}
+                                        Program{% if item.program_count != 1 %}s{% endif %}
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if item.class_count > 0 %}
+
+                                    <span class="scope-badge">
+                                        {{ item.class_count }}
+                                        Class{% if item.class_count != 1 %}es{% endif %}
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if item.section_count > 0 %}
+
+                                    <span class="scope-badge">
+                                        {{ item.section_count }}
+                                        Section{% if item.section_count != 1 %}s{% endif %}
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if item.academic_year_count > 0 %}
+
+                                    <span class="scope-badge">
+                                        {{ item.academic_year_count }}
+                                        Year{% if item.academic_year_count != 1 %}s{% endif %}
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+        {% else %}
+
+            <!-- ==================================================
+                 EMPTY STATE
+                 ================================================== -->
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+
+                    <i class="fa-solid fa-book-open"></i>
+
+                </div>
+
+                <h3>
+                    No Subjects Found
+                </h3>
+
+                <p>
+                    You currently have no subjects matching
+                    the selected filters.
+                </p>
+
+                {% if search
+                    or selected_program_id
+                    or selected_class_id
+                    or selected_section_id
+                    or selected_academic_year_id
+                    or selected_status != "active"
+                %}
+
+                    <a
+                        href="{{ url_for('main.teacher_my_subjects') }}"
+                        class="empty-action"
+                    >
+                        Clear Filters
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

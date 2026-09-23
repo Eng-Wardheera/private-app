@@ -1,3 +1,4 @@
+from functools import wraps
 import os
 from datetime import datetime
 
@@ -5,7 +6,7 @@ import cloudinary
 import pytz
 from dotenv import load_dotenv
 
-from flask import Flask
+from flask import Flask, g, redirect, session, url_for
 from flask_cors import CORS
 from flask_login import LoginManager
 from flask_mail import Mail
@@ -427,7 +428,7 @@ def create_app():
     # IMPORT MODELS
     # ========================================================
 
-    from app.model import User
+    from app.model import User, Teacher
 
 
     # ========================================================
@@ -452,6 +453,38 @@ def create_app():
             return None
 
 
+    def teacher_login_required(view):
+        @wraps(view)
+        def wrapped_view(*args, **kwargs):
+
+            teacher_id = session.get("teacher_id")
+
+            if not teacher_id:
+                return redirect(
+                    url_for("main.teacher_login")
+                )
+
+            teacher = Teacher.query.filter(
+                Teacher.id == teacher_id,
+                Teacher.is_active.is_(True),
+                Teacher.status == "active"
+            ).first()
+
+            if not teacher:
+                session.pop("teacher_id", None)
+
+                return redirect(
+                    url_for("main.teacher_login")
+                )
+
+            g.teacher = teacher
+
+            return view(*args, **kwargs)
+
+        return wrapped_view
+
+
+    
     # ========================================================
     # IMPORT BLUEPRINT
     # ========================================================

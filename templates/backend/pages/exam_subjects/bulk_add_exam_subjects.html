@@ -1,0 +1,2533 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   BULK EXAM SUBJECT PAGE
+============================================================ */
+
+.bulk-exam-page {
+    width: 100%;
+    max-width: 1450px;
+    margin: 0 auto;
+    padding: 5px 0 35px;
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.bulk-exam-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.bulk-exam-header-left {
+    min-width: 0;
+}
+
+.bulk-exam-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.bulk-exam-breadcrumb a {
+    color: #64748b;
+    text-decoration: none;
+}
+
+.bulk-exam-breadcrumb a:hover {
+    color: #06245f;
+}
+
+.bulk-exam-breadcrumb i {
+    font-size: 8px;
+}
+
+.bulk-exam-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.bulk-exam-subtitle {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.bulk-exam-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+
+.bulk-btn {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        background .18s ease,
+        border-color .18s ease;
+}
+
+.bulk-btn:hover {
+    transform: translateY(-1px);
+}
+
+.bulk-btn-primary {
+    background: #06245f;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(6, 36, 95, .16);
+}
+
+.bulk-btn-primary:hover {
+    background: #041b49;
+    color: #fff;
+}
+
+.bulk-btn-success {
+    background: #32b73a;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(50, 183, 58, .16);
+}
+
+.bulk-btn-success:hover {
+    background: #299d31;
+    color: #fff;
+}
+
+.bulk-btn-light {
+    background: #fff;
+    color: #334155;
+    border-color: #dbe3ef;
+}
+
+.bulk-btn-light:hover {
+    background: #f8fafc;
+    border-color: #bdc9da;
+}
+
+/* ============================================================
+   LAYOUT
+============================================================ */
+
+.bulk-exam-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 350px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* ============================================================
+   CARD
+============================================================ */
+
+.bulk-card,
+.bulk-side-card {
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 15px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, .045);
+    overflow: hidden;
+}
+
+.bulk-card + .bulk-card,
+.bulk-side-card + .bulk-side-card {
+    margin-top: 18px;
+}
+
+.bulk-card-header,
+.bulk-side-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e8edf4;
+}
+
+.bulk-card-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 15px;
+}
+
+.bulk-card-title-wrap {
+    min-width: 0;
+}
+
+.bulk-card-title,
+.bulk-side-title {
+    margin: 0;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.bulk-card-subtitle {
+    margin: 3px 0 0;
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.bulk-card-body {
+    padding: 20px;
+}
+
+/* ============================================================
+   FIELD
+============================================================ */
+
+.bulk-field {
+    min-width: 0;
+}
+
+.bulk-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.bulk-required {
+    color: #dc2626;
+}
+
+.bulk-select-wrapper {
+    position: relative;
+}
+
+.bulk-select-wrapper::after {
+    content: "\f078";
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: #94a3b8;
+    pointer-events: none;
+    font-size: 10px;
+}
+
+.bulk-select {
+    width: 100%;
+    height: 45px;
+    box-sizing: border-box;
+    padding: 0 38px 0 12px;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
+    outline: none;
+    appearance: none;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.bulk-select:focus,
+.bulk-input:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.bulk-help {
+    margin-top: 6px;
+    color: #94a3b8;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   EXAM PREVIEW
+============================================================ */
+
+.exam-preview {
+    margin-top: 18px;
+    border: 1px solid #dce5f1;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.exam-preview-top {
+    padding: 18px;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #173f84
+    );
+    color: #fff;
+}
+
+.exam-preview-label {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    opacity: .72;
+}
+
+.exam-preview-name {
+    margin: 5px 0 0;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.exam-preview-program {
+    margin-top: 5px;
+    font-size: 11px;
+    opacity: .78;
+}
+
+.exam-preview-body {
+    padding: 14px 16px;
+}
+
+.exam-preview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.exam-preview-row:last-child {
+    border-bottom: none;
+}
+
+.exam-preview-label-2 {
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.exam-preview-value {
+    color: #334155;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: right;
+}
+
+/* ============================================================
+   FORM GRID
+============================================================ */
+
+.bulk-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 17px;
+}
+
+.bulk-input {
+    width: 100%;
+    height: 45px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+.bulk-status-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.bulk-status-option {
+    position: relative;
+}
+
+.bulk-status-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.bulk-status-label {
+    min-height: 47px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 12px;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #fff;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.bulk-status-label:hover {
+    border-color: #b9c9e3;
+    background: #f8fafc;
+}
+
+.bulk-status-option input:checked + .bulk-status-label {
+    border-color: #32b73a;
+    background: #f1fbf2;
+}
+
+.bulk-status-dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 9px;
+    border-radius: 50%;
+}
+
+.bulk-status-dot.active {
+    background: #32b73a;
+}
+
+.bulk-status-dot.inactive {
+    background: #94a3b8;
+}
+
+.bulk-status-name {
+    color: #334155;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   INFO ALERT
+============================================================ */
+
+.bulk-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 14px 15px;
+    border: 1px solid #dbe7f7;
+    border-radius: 11px;
+    background: #f5f9ff;
+}
+
+.bulk-alert-icon {
+    margin-top: 2px;
+    color: #06245f;
+}
+
+.bulk-alert-content {
+    min-width: 0;
+}
+
+.bulk-alert-title {
+    color: #06245f;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.bulk-alert-text {
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+/* ============================================================
+   TEACHER STATUS
+============================================================ */
+
+.teacher-status-card {
+    margin-top: 18px;
+    border: 1px solid #e3eaf3;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.teacher-status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e8edf4;
+}
+
+.teacher-status-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.teacher-status-title i {
+    color: #06245f;
+}
+
+.teacher-status-summary {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.teacher-status-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.teacher-status-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 15px;
+    padding: 11px 16px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.teacher-status-row:last-child {
+    border-bottom: none;
+}
+
+.teacher-subject-name {
+    color: #334155;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.teacher-subject-code {
+    margin-top: 2px;
+    color: #94a3b8;
+    font-size: 9px;
+}
+
+.teacher-assignment {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 28px;
+    padding: 0 9px;
+    border-radius: 7px;
+    font-size: 9px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.teacher-assignment.assigned {
+    color: #23782b;
+    background: #eefaf0;
+    border: 1px solid #cfe9d2;
+}
+
+.teacher-assignment.missing {
+    color: #9a6700;
+    background: #fff9eb;
+    border: 1px solid #f1dfb5;
+}
+
+.teacher-assignment.multiple {
+    color: #b42318;
+    background: #fff1f0;
+    border: 1px solid #f3c5c1;
+}
+
+.teacher-name {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 9px;
+}
+
+/* ============================================================
+   BULK FLOW
+============================================================ */
+
+.bulk-flow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.bulk-flow-item {
+    padding: 13px;
+    border: 1px solid #e3eaf3;
+    border-radius: 10px;
+    background: #f8fafc;
+    text-align: center;
+}
+
+.bulk-flow-number {
+    color: #06245f;
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.bulk-flow-label {
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   FOOTER
+============================================================ */
+
+.bulk-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e8edf4;
+}
+
+.bulk-form-note {
+    color: #94a3b8;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.bulk-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+/* ============================================================
+   SIDE
+============================================================ */
+
+.bulk-side-column {
+    min-width: 0;
+}
+
+.bulk-side-header {
+    padding: 17px 18px;
+}
+
+.bulk-side-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bulk-side-title i {
+    color: #06245f;
+}
+
+.bulk-side-body {
+    padding: 18px;
+}
+
+/* ============================================================
+   PROCESS
+============================================================ */
+
+.bulk-process {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.bulk-process-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+}
+
+.bulk-process-number {
+    width: 29px;
+    height: 29px;
+    flex: 0 0 29px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.bulk-process-content {
+    min-width: 0;
+}
+
+.bulk-process-title {
+    color: #334155;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.bulk-process-text {
+    margin-top: 2px;
+    color: #94a3b8;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   WARNING
+============================================================ */
+
+.bulk-warning {
+    padding: 13px;
+    border: 1px solid #f1dfb5;
+    border-radius: 10px;
+    background: #fffaf0;
+}
+
+.bulk-warning-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #9a6700;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.bulk-warning-text {
+    margin-top: 5px;
+    color: #8a6a28;
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 1100px) {
+
+    .bulk-exam-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .bulk-side-column {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .bulk-side-card + .bulk-side-card {
+        margin-top: 0;
+    }
+
+}
+
+@media (max-width: 800px) {
+
+    .bulk-exam-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bulk-exam-header-actions {
+        width: 100%;
+    }
+
+    .bulk-exam-header-actions .bulk-btn {
+        flex: 1;
+    }
+
+    .bulk-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bulk-side-column {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .bulk-exam-page {
+        padding-bottom: 20px;
+    }
+
+    .bulk-exam-title {
+        font-size: 23px;
+    }
+
+    .bulk-exam-header-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .bulk-card-body,
+    .bulk-side-body {
+        padding: 15px;
+    }
+
+    .bulk-card-header,
+    .bulk-side-header {
+        padding: 15px;
+    }
+
+    .bulk-form-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .bulk-form-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .bulk-form-actions .bulk-btn {
+        width: 100%;
+    }
+
+    .bulk-status-options {
+        grid-template-columns: 1fr;
+    }
+
+    .bulk-flow {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-status-row {
+        grid-template-columns: 1fr;
+        align-items: flex-start;
+    }
+
+    .teacher-assignment {
+        justify-content: flex-start;
+        width: fit-content;
+    }
+
+}
+
+</style>
+
+
+<div class="bulk-exam-page">
+
+    <!-- ========================================================
+         HEADER
+    ======================================================== -->
+
+    <div class="bulk-exam-header">
+
+        <div class="bulk-exam-header-left">
+
+            <div class="bulk-exam-breadcrumb">
+
+                <a href="{{ url_for('main.dashboard') }}">
+                    Dashboard
+                </a>
+
+                <i class="fa-solid fa-chevron-right"></i>
+
+                <a href="{{ url_for('main.all_exam_subjects') }}">
+                    Exam Subjects
+                </a>
+
+                <i class="fa-solid fa-chevron-right"></i>
+
+                <span>
+                    Bulk Add
+                </span>
+
+            </div>
+
+
+            <h1 class="bulk-exam-title">
+
+                <i class="fa-solid fa-layer-group"></i>
+
+                Bulk Add Exam Subjects
+
+            </h1>
+
+
+            <p class="bulk-exam-subtitle">
+
+                Add assigned subjects to all classes of an
+                examination in one step.
+
+            </p>
+
+        </div>
+
+
+        <div class="bulk-exam-header-actions">
+
+            <a
+                href="{{ url_for('main.all_exam_subjects') }}"
+                class="bulk-btn bulk-btn-light"
+            >
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Back to Exam Subjects
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         MAIN LAYOUT
+    ======================================================== -->
+
+    <div class="bulk-exam-layout">
+
+
+        <!-- ====================================================
+             LEFT
+        ==================================================== -->
+
+        <div>
+
+
+            <!-- ==================================================
+                 EXAMINATION
+            ================================================== -->
+
+            <div class="bulk-card">
+
+                <div class="bulk-card-header">
+
+                    <div class="bulk-card-icon">
+
+                        <i class="fa-solid fa-file-lines"></i>
+
+                    </div>
+
+
+                    <div class="bulk-card-title-wrap">
+
+                        <h2 class="bulk-card-title">
+                            Examination
+                        </h2>
+
+                        <p class="bulk-card-subtitle">
+                            Select the examination you want to configure.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="bulk-card-body">
+
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('main.bulk_add_exam_subjects') }}"
+                        id="bulkExamSubjectForm"
+                        autocomplete="off"
+                    >
+
+
+                        <div class="bulk-field">
+
+                            <label
+                                class="bulk-label"
+                                for="exam_id"
+                            >
+
+                                Examination
+
+                                <span class="bulk-required">
+                                    *
+                                </span>
+
+                            </label>
+
+
+                            <div class="bulk-select-wrapper">
+
+                                <select
+                                    id="exam_id"
+                                    name="exam_id"
+                                    class="bulk-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select examination
+                                    </option>
+
+
+                                    {% for exam in exams %}
+
+                                        <option
+                                            value="{{ exam.id }}"
+                                            {% if selected_exam_id == exam.id %}
+                                                selected
+                                            {% endif %}
+                                        >
+
+                                            {{ exam.name }}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="bulk-help">
+
+                                The program, subjects, classes, and
+                                teacher assignments are determined
+                                by the selected examination.
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ==================================================
+                             EXAM PREVIEW
+                        ================================================== -->
+
+                        <div
+                            class="exam-preview"
+                            id="examPreview"
+                        >
+
+                            <div class="exam-preview-top">
+
+                                <div class="exam-preview-label">
+                                    Selected Examination
+                                </div>
+
+                                <div
+                                    class="exam-preview-name"
+                                    id="examPreviewName"
+                                >
+                                    No examination selected
+                                </div>
+
+                                <div
+                                    class="exam-preview-program"
+                                    id="examPreviewProgram"
+                                >
+                                    Program will be loaded from the exam
+                                </div>
+
+                            </div>
+
+
+                            <div class="exam-preview-body">
+
+                                <div class="exam-preview-row">
+
+                                    <span class="exam-preview-label-2">
+                                        Examination
+                                    </span>
+
+                                    <span
+                                        class="exam-preview-value"
+                                        id="previewExam"
+                                    >
+                                        —
+                                    </span>
+
+                                </div>
+
+
+                                <div class="exam-preview-row">
+
+                                    <span class="exam-preview-label-2">
+                                        Program
+                                    </span>
+
+                                    <span
+                                        class="exam-preview-value"
+                                        id="previewProgram"
+                                    >
+                                        Automatic
+                                    </span>
+
+                                </div>
+
+
+                                <div class="exam-preview-row">
+
+                                    <span class="exam-preview-label-2">
+                                        Subjects
+                                    </span>
+
+                                    <span
+                                        class="exam-preview-value"
+                                        id="previewSubjectCount"
+                                    >
+                                        —
+                                    </span>
+
+                                </div>
+
+
+                                <div class="exam-preview-row">
+
+                                    <span class="exam-preview-label-2">
+                                        Classes
+                                    </span>
+
+                                    <span
+                                        class="exam-preview-value"
+                                        id="previewClassCount"
+                                    >
+                                        —
+                                    </span>
+
+                                </div>
+
+
+                                <div class="exam-preview-row">
+
+                                    <span class="exam-preview-label-2">
+                                        Section
+                                    </span>
+
+                                    <span class="exam-preview-value">
+                                        All Sections
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 DEFAULT MARKS
+            ================================================== -->
+
+            <div class="bulk-card">
+
+                <div class="bulk-card-header">
+
+                    <div class="bulk-card-icon">
+
+                        <i class="fa-solid fa-chart-column"></i>
+
+                    </div>
+
+
+                    <div class="bulk-card-title-wrap">
+
+                        <h2 class="bulk-card-title">
+                            Default Exam Marks
+                        </h2>
+
+                        <p class="bulk-card-subtitle">
+                            These values will be applied to every
+                            successfully assigned subject/class combination.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="bulk-card-body">
+
+
+                    <div class="bulk-form-grid">
+
+
+                        <!-- MAX MARKS -->
+
+                        <div class="bulk-field">
+
+                            <label
+                                class="bulk-label"
+                                for="max_marks"
+                            >
+
+                                Maximum Marks
+
+                                <span class="bulk-required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="number"
+                                id="max_marks"
+                                name="max_marks"
+                                class="bulk-input"
+                                min="1"
+                                step="0.01"
+                                value="100"
+                                required
+                            >
+
+                            <div class="bulk-help">
+                                Example: 100
+                            </div>
+
+                        </div>
+
+
+                        <!-- PASS MARKS -->
+
+                        <div class="bulk-field">
+
+                            <label
+                                class="bulk-label"
+                                for="pass_marks"
+                            >
+
+                                Pass Marks
+
+                                <span class="bulk-required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="number"
+                                id="pass_marks"
+                                name="pass_marks"
+                                class="bulk-input"
+                                min="0"
+                                step="0.01"
+                                value="50"
+                                required
+                            >
+
+                            <div class="bulk-help">
+                                Must not exceed maximum marks.
+                            </div>
+
+                        </div>
+
+
+                        <!-- WEIGHT -->
+
+                        <div class="bulk-field">
+
+                            <label
+                                class="bulk-label"
+                                for="weight"
+                            >
+
+                                Weight
+
+                                <span class="bulk-required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="number"
+                                id="weight"
+                                name="weight"
+                                class="bulk-input"
+                                min="0.01"
+                                step="0.01"
+                                value="100"
+                                required
+                            >
+
+                            <div class="bulk-help">
+                                Default subject weight.
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         STATUS
+                    ================================================== -->
+
+                    <div style="margin-top:20px;">
+
+                        <label class="bulk-label">
+                            Status
+                        </label>
+
+
+                        <div class="bulk-status-options">
+
+                            <div class="bulk-status-option">
+
+                                <input
+                                    type="radio"
+                                    id="status_active"
+                                    name="status"
+                                    value="active"
+                                    checked
+                                >
+
+                                <label
+                                    for="status_active"
+                                    class="bulk-status-label"
+                                >
+
+                                    <span class="bulk-status-dot active"></span>
+
+                                    <span class="bulk-status-name">
+                                        Active
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+
+                            <div class="bulk-status-option">
+
+                                <input
+                                    type="radio"
+                                    id="status_inactive"
+                                    name="status"
+                                    value="inactive"
+                                >
+
+                                <label
+                                    for="status_inactive"
+                                    class="bulk-status-label"
+                                >
+
+                                    <span class="bulk-status-dot inactive"></span>
+
+                                    <span class="bulk-status-name">
+                                        Inactive
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         BULK FLOW
+                    ================================================== -->
+
+                    <div class="bulk-flow">
+
+                        <div class="bulk-flow-item">
+
+                            <div
+                                class="bulk-flow-number"
+                                id="subjectCount"
+                            >
+                                —
+                            </div>
+
+                            <div class="bulk-flow-label">
+                                Assigned Subjects
+                            </div>
+
+                        </div>
+
+
+                        <div class="bulk-flow-item">
+
+                            <div
+                                class="bulk-flow-number"
+                                id="classCount"
+                            >
+                                —
+                            </div>
+
+                            <div class="bulk-flow-label">
+                                Classes
+                            </div>
+
+                        </div>
+
+
+                        <div class="bulk-flow-item">
+
+                            <div
+                                class="bulk-flow-number"
+                                id="totalCount"
+                            >
+                                —
+                            </div>
+
+                            <div class="bulk-flow-label">
+                                Will Be Created
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         TEACHER ASSIGNMENT STATUS
+                    ================================================== -->
+
+                    {% if selected_exam_id and subjects %}
+
+                        <div class="teacher-status-card">
+
+                            <div class="teacher-status-header">
+
+                                <div class="teacher-status-title">
+
+                                    <i class="fa-solid fa-chalkboard-user"></i>
+
+                                    Teacher Assignment Status
+
+                                </div>
+
+                                <div
+                                    class="teacher-status-summary"
+                                    id="teacherStatusSummary"
+                                >
+                                    Checking...
+                                </div>
+
+                            </div>
+
+
+                            <div class="teacher-status-list">
+
+                                {% for subject in subjects %}
+
+                                    {% set subject_teachers =
+                                        teachers_by_subject.get(subject.id, [])
+                                    %}
+
+                                    <div class="teacher-status-row">
+
+                                        <div>
+
+                                            <div class="teacher-subject-name">
+
+                                                {{ subject.name }}
+
+                                            </div>
+
+                                            {% if subject.code %}
+
+                                                <div class="teacher-subject-code">
+
+                                                    {{ subject.code }}
+
+                                                </div>
+
+                                            {% endif %}
+
+                                            {% if subject_teachers|length == 1 %}
+
+                                                <div class="teacher-name">
+
+                                                    <i class="fa-solid fa-user"></i>
+
+                                                    {{ subject_teachers[0].full_name }}
+
+                                                </div>
+
+                                            {% elif subject_teachers|length > 1 %}
+
+                                                <div class="teacher-name">
+
+                                                    {{ subject_teachers|length }}
+                                                    active teachers assigned
+
+                                                </div>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        {% if subject_teachers|length == 1 %}
+
+                                            <span class="teacher-assignment assigned">
+
+                                                <i class="fa-solid fa-circle-check"></i>
+
+                                                Assigned
+
+                                            </span>
+
+                                        {% elif subject_teachers|length > 1 %}
+
+                                            <span class="teacher-assignment multiple">
+
+                                                <i class="fa-solid fa-users"></i>
+
+                                                Multiple
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="teacher-assignment missing">
+
+                                                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                                                No Teacher
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- ==================================================
+                         INFO ALERT
+                    ================================================== -->
+
+                    <div
+                        class="bulk-alert"
+                        style="margin-top:18px;"
+                    >
+
+                        <div class="bulk-alert-icon">
+
+                            <i class="fa-solid fa-circle-info"></i>
+
+                        </div>
+
+
+                        <div class="bulk-alert-content">
+
+                            <div class="bulk-alert-title">
+
+                                How bulk creation works
+
+                            </div>
+
+
+                            <div class="bulk-alert-text">
+
+                                The system creates one
+                                <strong>ExamSubject</strong>
+                                for every valid
+                                <strong>Subject × Class</strong>
+                                combination.
+
+                                Only subjects with exactly one active
+                                teacher assignment are submitted.
+
+                                Subjects without a teacher are skipped.
+
+                                Subjects with multiple active teachers
+                                are also skipped so the system never
+                                guesses a teacher.
+
+                                <br><br>
+
+                                <strong>Section is optional.</strong>
+
+                                Bulk creation uses
+                                <strong>section_id = NULL</strong>,
+                                meaning the ExamSubject applies to the
+                                whole selected class.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         FOOTER
+                    ================================================== -->
+
+                    <div class="bulk-form-footer">
+
+                        <div class="bulk-form-note">
+
+                            <i class="fa-solid fa-shield-halved"></i>
+
+                            Only active
+                            <strong>TeacherSubject</strong>
+                            assignments are used.
+
+                        </div>
+
+
+                        <div class="bulk-form-actions">
+
+                            <a
+                                href="{{ url_for('main.all_exam_subjects') }}"
+                                class="bulk-btn bulk-btn-light"
+                            >
+                                Cancel
+                            </a>
+
+
+                            <button
+                                type="submit"
+                                class="bulk-btn bulk-btn-success"
+                                id="bulkSaveBtn"
+                            >
+
+                                <i class="fa-solid fa-layer-group"></i>
+
+                                Create Assigned Subjects
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                </form>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ====================================================
+             RIGHT SIDEBAR
+        ==================================================== -->
+
+        <div class="bulk-side-column">
+
+
+            <!-- ==================================================
+                 WHAT WILL BE CREATED
+            ================================================== -->
+
+            <div class="bulk-side-card">
+
+                <div class="bulk-side-header">
+
+                    <h3 class="bulk-side-title">
+
+                        <i class="fa-solid fa-list-check"></i>
+
+                        What Will Be Created
+
+                    </h3>
+
+                </div>
+
+
+                <div class="bulk-side-body">
+
+
+                    <div class="bulk-process">
+
+
+                        <div class="bulk-process-item">
+
+                            <div class="bulk-process-number">
+                                1
+                            </div>
+
+                            <div class="bulk-process-content">
+
+                                <div class="bulk-process-title">
+                                    Select Exam
+                                </div>
+
+                                <div class="bulk-process-text">
+                                    The selected exam determines
+                                    the program automatically.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="bulk-process-item">
+
+                            <div class="bulk-process-number">
+                                2
+                            </div>
+
+                            <div class="bulk-process-content">
+
+                                <div class="bulk-process-title">
+                                    Load Subjects
+                                </div>
+
+                                <div class="bulk-process-text">
+                                    Active subjects belonging to the
+                                    exam program are loaded.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="bulk-process-item">
+
+                            <div class="bulk-process-number">
+                                3
+                            </div>
+
+                            <div class="bulk-process-content">
+
+                                <div class="bulk-process-title">
+                                    Check Teachers
+                                </div>
+
+                                <div class="bulk-process-text">
+                                    Each subject is checked against
+                                    active TeacherSubject assignments.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="bulk-process-item">
+
+                            <div class="bulk-process-number">
+                                4
+                            </div>
+
+                            <div class="bulk-process-content">
+
+                                <div class="bulk-process-title">
+                                    Load Classes
+                                </div>
+
+                                <div class="bulk-process-text">
+                                    All valid classes belonging to the
+                                    exam program are included.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="bulk-process-item">
+
+                            <div class="bulk-process-number">
+                                5
+                            </div>
+
+                            <div class="bulk-process-content">
+
+                                <div class="bulk-process-title">
+                                    Create Records
+                                </div>
+
+                                <div class="bulk-process-text">
+                                    One ExamSubject is created for
+                                    each assigned Subject × Class pair.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 IMPORTANT
+            ================================================== -->
+
+            <div class="bulk-side-card">
+
+                <div class="bulk-side-header">
+
+                    <h3 class="bulk-side-title">
+
+                        <i class="fa-solid fa-circle-exclamation"></i>
+
+                        Important
+
+                    </h3>
+
+                </div>
+
+
+                <div class="bulk-side-body">
+
+
+                    <!-- TEACHER -->
+
+                    <div class="bulk-warning">
+
+                        <div class="bulk-warning-title">
+
+                            <i class="fa-solid fa-chalkboard-user"></i>
+
+                            Teacher Assignment
+
+                        </div>
+
+
+                        <div class="bulk-warning-text">
+
+                            A subject with exactly one active
+                            TeacherSubject assignment will be created.
+
+                            Subjects without a teacher are
+                            <strong>skipped</strong>, not used as
+                            a reason to cancel the entire submission.
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MULTIPLE -->
+
+                    <div
+                        class="bulk-warning"
+                        style="
+                            margin-top:10px;
+                            border-color:#f3c5c1;
+                            background:#fff7f6;
+                        "
+                    >
+
+                        <div
+                            class="bulk-warning-title"
+                            style="color:#b42318;"
+                        >
+
+                            <i class="fa-solid fa-users"></i>
+
+                            Multiple Teachers
+
+                        </div>
+
+
+                        <div
+                            class="bulk-warning-text"
+                            style="color:#8f3a34;"
+                        >
+
+                            If a subject has multiple active teachers,
+                            the system does not guess which teacher
+                            should be used. That subject is skipped.
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SECTION -->
+
+                    <div
+                        class="bulk-warning"
+                        style="
+                            margin-top:10px;
+                            border-color:#dbe7f7;
+                            background:#f5f9ff;
+                        "
+                    >
+
+                        <div
+                            class="bulk-warning-title"
+                            style="color:#06245f;"
+                        >
+
+                            <i class="fa-solid fa-layer-group"></i>
+
+                            Section
+
+                        </div>
+
+
+                        <div
+                            class="bulk-warning-text"
+                            style="color:#64748b;"
+                        >
+
+                            Section is optional.
+
+                            Bulk creation uses
+                            <strong>section_id = NULL</strong>,
+                            meaning the ExamSubject applies to the
+                            whole class.
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DUPLICATES -->
+
+                    <div
+                        class="bulk-warning"
+                        style="
+                            margin-top:10px;
+                            border-color:#d9eadb;
+                            background:#f3fbf4;
+                        "
+                    >
+
+                        <div
+                            class="bulk-warning-title"
+                            style="color:#269530;"
+                        >
+
+                            <i class="fa-solid fa-shield-halved"></i>
+
+                            Duplicate Protection
+
+                        </div>
+
+
+                        <div
+                            class="bulk-warning-text"
+                            style="color:#4d7651;"
+                        >
+
+                            Existing Subject × Class combinations
+                            will not be duplicated.
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        "use strict";
+
+
+        /* ====================================================
+           ELEMENTS
+        ==================================================== */
+
+        const form =
+            document.getElementById(
+                "bulkExamSubjectForm"
+            );
+
+        const examSelect =
+            document.getElementById(
+                "exam_id"
+            );
+
+        const maxMarksInput =
+            document.getElementById(
+                "max_marks"
+            );
+
+        const passMarksInput =
+            document.getElementById(
+                "pass_marks"
+            );
+
+        const saveButton =
+            document.getElementById(
+                "bulkSaveBtn"
+            );
+
+        const examPreviewName =
+            document.getElementById(
+                "examPreviewName"
+            );
+
+        const examPreviewProgram =
+            document.getElementById(
+                "examPreviewProgram"
+            );
+
+        const previewExam =
+            document.getElementById(
+                "previewExam"
+            );
+
+        const previewProgram =
+            document.getElementById(
+                "previewProgram"
+            );
+
+        const previewSubjectCount =
+            document.getElementById(
+                "previewSubjectCount"
+            );
+
+        const previewClassCount =
+            document.getElementById(
+                "previewClassCount"
+            );
+
+        const subjectCount =
+            document.getElementById(
+                "subjectCount"
+            );
+
+        const classCount =
+            document.getElementById(
+                "classCount"
+            );
+
+        const totalCount =
+            document.getElementById(
+                "totalCount"
+            );
+
+        const teacherStatusSummary =
+            document.getElementById(
+                "teacherStatusSummary"
+            );
+
+
+        /* ====================================================
+           SAFETY
+        ==================================================== */
+
+        if (!form || !examSelect) {
+            return;
+        }
+
+
+        /* ====================================================
+           EXAM PREVIEW
+        ==================================================== */
+
+        function updateExamPreview() {
+
+            const selectedOption =
+                examSelect.options[
+                    examSelect.selectedIndex
+                ];
+
+
+            if (
+                !selectedOption ||
+                !selectedOption.value
+            ) {
+
+                examPreviewName.textContent =
+                    "No examination selected";
+
+                examPreviewProgram.textContent =
+                    "Program will be loaded from the exam";
+
+                previewExam.textContent =
+                    "—";
+
+                previewProgram.textContent =
+                    "Automatic";
+
+                if (previewSubjectCount) {
+                    previewSubjectCount.textContent = "—";
+                }
+
+                if (previewClassCount) {
+                    previewClassCount.textContent = "—";
+                }
+
+                if (subjectCount) {
+                    subjectCount.textContent = "—";
+                }
+
+                if (classCount) {
+                    classCount.textContent = "—";
+                }
+
+                if (totalCount) {
+                    totalCount.textContent = "—";
+                }
+
+                if (teacherStatusSummary) {
+                    teacherStatusSummary.textContent =
+                        "Select an examination";
+                }
+
+                return;
+            }
+
+
+            const examName =
+                selectedOption.textContent.trim();
+
+
+            examPreviewName.textContent =
+                examName;
+
+            examPreviewProgram.textContent =
+                "Program, subjects, classes and teachers are checked automatically.";
+
+            previewExam.textContent =
+                examName;
+
+            previewProgram.textContent =
+                "From selected exam";
+
+
+            /*
+             * Counts shown here are populated from the
+             * server-rendered page when an exam is selected.
+             *
+             * When changing exam, the route must be requested
+             * again so that the new subject/class/teacher data
+             * is loaded.
+             */
+
+        }
+
+
+        /* ====================================================
+           EXAM CHANGE
+        ==================================================== */
+
+        examSelect.addEventListener(
+            "change",
+            function () {
+
+                if (!examSelect.value) {
+
+                    updateExamPreview();
+
+                    return;
+                }
+
+
+                /*
+                 * Reload the GET page with the selected exam.
+                 *
+                 * This is important because the backend route
+                 * loads the actual:
+                 *
+                 * - subjects
+                 * - classes
+                 * - teacher assignments
+                 *
+                 * for the selected exam.
+                 */
+
+                const currentUrl =
+                    new URL(
+                        window.location.href
+                    );
+
+                currentUrl.searchParams.set(
+                    "exam_id",
+                    examSelect.value
+                );
+
+                window.location.href =
+                    currentUrl.toString();
+
+            }
+        );
+
+
+        /* ====================================================
+           MARK VALIDATION
+        ==================================================== */
+
+        function validateMarks() {
+
+            if (!maxMarksInput || !passMarksInput) {
+                return;
+            }
+
+
+            const maxMarks =
+                parseFloat(
+                    maxMarksInput.value
+                );
+
+            const passMarks =
+                parseFloat(
+                    passMarksInput.value
+                );
+
+
+            /* MAX */
+
+            if (
+                Number.isNaN(maxMarks) ||
+                maxMarks <= 0
+            ) {
+
+                maxMarksInput.setCustomValidity(
+                    "Maximum marks must be greater than zero."
+                );
+
+            } else {
+
+                maxMarksInput.setCustomValidity(
+                    ""
+                );
+
+            }
+
+
+            /* PASS */
+
+            if (
+                Number.isNaN(passMarks) ||
+                passMarks < 0
+            ) {
+
+                passMarksInput.setCustomValidity(
+                    "Pass marks cannot be negative."
+                );
+
+            } else if (
+                !Number.isNaN(maxMarks) &&
+                passMarks > maxMarks
+            ) {
+
+                passMarksInput.setCustomValidity(
+                    "Pass marks cannot exceed maximum marks."
+                );
+
+            } else {
+
+                passMarksInput.setCustomValidity(
+                    ""
+                );
+
+            }
+
+        }
+
+
+        if (maxMarksInput) {
+
+            maxMarksInput.addEventListener(
+                "input",
+                validateMarks
+            );
+
+        }
+
+
+        if (passMarksInput) {
+
+            passMarksInput.addEventListener(
+                "input",
+                validateMarks
+            );
+
+        }
+
+
+        /* ====================================================
+           CALCULATE SERVER-SIDE DISPLAY COUNTS
+        ==================================================== */
+
+        function updateServerCounts() {
+
+            /*
+             * The backend provides:
+             *
+             * subjects
+             * classes
+             * teachers_by_subject
+             *
+             * through Jinja.
+             *
+             * We calculate the number of subjects that have
+             * EXACTLY ONE teacher.
+             */
+
+            let assignedSubjects = 0;
+            let multipleSubjects = 0;
+            let missingSubjects = 0;
+
+
+            {% if subjects %}
+
+                {% for subject in subjects %}
+
+                    {% set teacher_total =
+                        teachers_by_subject.get(subject.id, [])|length
+                    %}
+
+                    {% if teacher_total == 1 %}
+
+                        assignedSubjects++;
+
+                    {% elif teacher_total > 1 %}
+
+                        multipleSubjects++;
+
+                    {% else %}
+
+                        missingSubjects++;
+
+                    {% endif %}
+
+                {% endfor %}
+
+            {% endif %}
+
+
+            const classesTotal =
+                {{ classes|length if classes else 0 }};
+
+
+            const creatableTotal =
+                assignedSubjects *
+                classesTotal;
+
+
+            if (subjectCount) {
+
+                subjectCount.textContent =
+                    assignedSubjects;
+
+            }
+
+
+            if (classCount) {
+
+                classCount.textContent =
+                    classesTotal;
+
+            }
+
+
+            if (totalCount) {
+
+                totalCount.textContent =
+                    creatableTotal;
+
+            }
+
+
+            if (previewSubjectCount) {
+
+                previewSubjectCount.textContent =
+                    assignedSubjects +
+                    " assigned";
+
+            }
+
+
+            if (previewClassCount) {
+
+                previewClassCount.textContent =
+                    classesTotal;
+
+            }
+
+
+            if (teacherStatusSummary) {
+
+                let summaryParts = [];
+
+
+                if (assignedSubjects > 0) {
+
+                    summaryParts.push(
+                        assignedSubjects +
+                        " ready"
+                    );
+
+                }
+
+
+                if (missingSubjects > 0) {
+
+                    summaryParts.push(
+                        missingSubjects +
+                        " without teacher"
+                    );
+
+                }
+
+
+                if (multipleSubjects > 0) {
+
+                    summaryParts.push(
+                        multipleSubjects +
+                        " multiple"
+                    );
+
+                }
+
+
+                teacherStatusSummary.textContent =
+                    summaryParts.length
+                        ? summaryParts.join(" • ")
+                        : "No subjects found";
+
+            }
+
+        }
+
+
+        /* ====================================================
+           SUBMIT
+        ==================================================== */
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+                validateMarks();
+
+
+                if (!form.checkValidity()) {
+
+                    event.preventDefault();
+
+                    form.reportValidity();
+
+                    return;
+
+                }
+
+
+                if (!examSelect.value) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Please select an examination."
+                    );
+
+                    examSelect.focus();
+
+                    return;
+
+                }
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * We do NOT block submission when a subject
+                 * has no teacher.
+                 *
+                 * The backend route handles this:
+                 *
+                 *   assigned teacher -> CREATE
+                 *   no teacher       -> SKIP
+                 *   multiple         -> SKIP
+                 *
+                 */
+
+
+                if (saveButton) {
+
+                    saveButton.disabled =
+                        true;
+
+                    saveButton.innerHTML =
+                        '<i class="fa-solid fa-spinner fa-spin"></i>' +
+                        ' Creating Assigned Subjects...';
+
+                }
+
+            }
+        );
+
+
+        /* ====================================================
+           INITIALIZE
+        ==================================================== */
+
+        updateExamPreview();
+
+        validateMarks();
+
+        updateServerCounts();
+
+    }
+);
+
+</script>
+
+{% endblock %}

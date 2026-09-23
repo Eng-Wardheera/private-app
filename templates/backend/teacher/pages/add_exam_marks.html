@@ -1,0 +1,2872 @@
+
+{% extends "backend/teacher/home/index.html" %}
+
+{% block title %}
+Enter Exam Marks
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   GLOBAL PAGE
+============================================================ */
+
+.marks-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 24px 28px 40px;
+    box-sizing: border-box;
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.page-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+}
+
+.page-title {
+    min-width: 0;
+}
+
+.page-title h1 {
+    margin: 0;
+    color: #06245f;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.page-title p {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background .2s ease,
+        color .2s ease,
+        box-shadow .2s ease,
+        transform .15s ease;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.btn-success {
+    background: #32b73a;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(50, 183, 58, .18);
+}
+
+.btn-success:hover {
+    background: #26972e;
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: #ffffff;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+}
+
+.btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ============================================================
+   FLASH
+============================================================ */
+
+.flash-area {
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+.alert {
+    padding: 12px 15px;
+    border-radius: 9px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.alert-success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alert-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.alert-info {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+/* ============================================================
+   SUBMISSION STATUS
+============================================================ */
+
+.submission-status {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 15px 17px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.submission-status-icon {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.submission-status-content {
+    min-width: 0;
+}
+
+.submission-status-title {
+    margin: 0 0 3px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.submission-status-text {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Submitted */
+
+.submission-status.submitted {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.submission-status.submitted .submission-status-icon {
+    background: #10b981;
+    color: #ffffff;
+}
+
+/* Pending */
+
+.submission-status.pending {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+}
+
+.submission-status.pending .submission-status-icon {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+/* ============================================================
+   EXAM STATUS BADGES
+============================================================ */
+
+.exam-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .45px;
+}
+
+.exam-status-draft {
+    background: rgba(255, 255, 255, .16);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, .25);
+}
+
+.exam-status-active {
+    background: rgba(50, 183, 58, .18);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, .3);
+}
+
+/* ============================================================
+   COMMON CARD
+============================================================ */
+
+.exam-card,
+.marks-card {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, .05);
+    box-sizing: border-box;
+}
+
+/* ============================================================
+   EXAM HEADER
+============================================================ */
+
+.exam-card {
+    margin-bottom: 20px;
+}
+
+.exam-card-header {
+    background: linear-gradient(
+        135deg,
+        #06245f 0%,
+        #33206f 100%
+    );
+    color: #ffffff;
+    padding: 20px 24px;
+}
+
+.exam-card-header h2 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.exam-card-header p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    opacity: .88;
+}
+
+/* ============================================================
+   EXAM INFORMATION GRID
+============================================================ */
+
+.exam-info {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.info-item {
+    min-width: 0;
+    padding: 16px 18px;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    box-sizing: border-box;
+}
+
+.info-item:nth-child(4n) {
+    border-right: 0;
+}
+
+.info-label {
+    margin-bottom: 5px;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .55px;
+}
+
+.info-value {
+    color: #111827;
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+/* ============================================================
+   SUMMARY
+============================================================ */
+
+.summary-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.summary-card {
+    min-width: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 13px;
+    padding: 17px 19px;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, .04);
+    box-sizing: border-box;
+}
+
+.summary-label {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.summary-value {
+    color: #06245f;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.summary-value.submitted-value {
+    color: #059669;
+}
+
+.summary-value.pending-value {
+    color: #d97706;
+}
+
+/* ============================================================
+   MARKS CARD HEADER
+============================================================ */
+
+.marks-card {
+    margin-bottom: 20px;
+}
+
+.marks-card-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px 22px;
+    border-bottom: 1px solid #e5e7eb;
+    box-sizing: border-box;
+}
+
+.marks-card-title {
+    min-width: 0;
+}
+
+.marks-card-title h3 {
+    margin: 0;
+    color: #06245f;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.marks-card-title p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.limit-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    background: #eef4ff;
+    color: #06245f;
+    border: 1px solid #d7e3ff;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   STUDENT TOOLBAR
+============================================================ */
+
+.student-toolbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fafbfc;
+    box-sizing: border-box;
+}
+
+.student-search {
+    position: relative;
+    width: 340px;
+    max-width: 100%;
+}
+
+.student-search input {
+    width: 100%;
+    height: 41px;
+    padding: 0 13px 0 39px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    outline: none;
+    background: #ffffff;
+    color: #111827;
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: .2s ease;
+}
+
+.student-search input:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.student-search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.student-count {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   LOCKED TABLE
+============================================================ */
+
+.marks-locked .marks-table tbody tr {
+    background: #fcfcfd;
+}
+
+.marks-locked .mark-input,
+.marks-locked .absent-box {
+    opacity: .72;
+}
+
+.marks-locked .student-toolbar {
+    background: #f8fafc;
+}
+
+/* ============================================================
+   TABLE WRAPPER
+============================================================ */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================================
+   MARKS TABLE
+============================================================ */
+
+.marks-table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.marks-table thead th {
+    background: #f8fafc;
+    color: #475569;
+    padding: 13px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.marks-table thead th:first-child {
+    width: 65px;
+    text-align: center;
+}
+
+.marks-table thead th:nth-child(2) {
+    width: auto;
+}
+
+.marks-table thead th:nth-child(3) {
+    width: 150px;
+    text-align: center;
+}
+
+.marks-table thead th:nth-child(4) {
+    width: 180px;
+    text-align: center;
+}
+
+.marks-table tbody tr {
+    transition: background .15s ease;
+}
+
+.marks-table tbody tr:hover {
+    background: #fafcff;
+}
+
+.marks-table tbody td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #eef2f7;
+    color: #374151;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+/* ============================================================
+   NUMBER
+============================================================ */
+
+.number-cell {
+    text-align: center;
+    color: #94a3b8 !important;
+    font-weight: 800;
+}
+
+/* ============================================================
+   STUDENT
+============================================================ */
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.student-avatar {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #e8eef9;
+    color: #06245f;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.student-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.student-name {
+    min-width: 0;
+    color: #111827;
+    font-size: 14px;
+    font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   ABSENT
+============================================================ */
+
+.absent-cell {
+    text-align: center;
+}
+
+.absent-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.absent-toggle input {
+    display: none;
+}
+
+.absent-box {
+    width: 19px;
+    height: 19px;
+    border: 2px solid #cbd5e1;
+    border-radius: 5px;
+    position: relative;
+    transition: .2s ease;
+    box-sizing: border-box;
+}
+
+.absent-toggle input:checked + .absent-box {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+.absent-toggle input:checked + .absent-box::after {
+    content: "✓";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -54%);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* ============================================================
+   MARK INPUT
+============================================================ */
+
+.mark-cell {
+    text-align: center;
+}
+
+.mark-input {
+    width: 115px;
+    height: 41px;
+    padding: 0 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    color: #111827;
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+    box-sizing: border-box;
+    transition: .2s ease;
+}
+
+.mark-input:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .09);
+}
+
+.mark-input:disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* Remove number arrows */
+
+.mark-input::-webkit-outer-spin-button,
+.mark-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.mark-input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* ============================================================
+   PAGINATION
+============================================================ */
+
+.pagination-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 15px 20px;
+    border-top: 1px solid #e5e7eb;
+    background: #fafbfc;
+}
+
+.pagination-info {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    min-width: 35px;
+    height: 35px;
+    padding: 0 9px;
+    border: 1px solid #dbe2ea;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: #06245f;
+    color: #06245f;
+    background: #f8faff;
+}
+
+.page-btn.active {
+    background: #06245f;
+    border-color: #06245f;
+    color: #ffffff;
+}
+
+.page-btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.page-dots {
+    color: #94a3b8;
+    padding: 0 2px;
+}
+
+/* ============================================================
+   FORM FOOTER
+============================================================ */
+
+.form-footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+    padding: 16px 20px;
+    border-top: 1px solid #e5e7eb;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.form-footer .btn {
+    min-width: 130px;
+}
+
+/* ============================================================
+   ALREADY SUBMITTED BUTTON
+============================================================ */
+
+.already-submitted-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    min-width: 170px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+    font-size: 13px;
+    font-weight: 800;
+    box-sizing: border-box;
+}
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+
+.empty-state {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    width: 62px;
+    height: 62px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2f7;
+    font-size: 25px;
+}
+
+.empty-state h3 {
+    margin: 0 0 7px;
+    color: #1f2937;
+    font-size: 17px;
+}
+
+.empty-state p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* ============================================================
+   LARGE DESKTOP
+============================================================ */
+
+@media (min-width: 1500px) {
+
+    .marks-page {
+        padding-left: 34px;
+        padding-right: 34px;
+    }
+
+    .exam-info {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .marks-table thead th,
+    .marks-table tbody td {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+}
+
+/* ============================================================
+   DESKTOP / LAPTOP
+============================================================ */
+
+@media (max-width: 1200px) {
+
+    .marks-page {
+        padding: 22px;
+    }
+
+    .exam-info {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .info-item {
+        padding: 14px;
+    }
+
+    .marks-table {
+        min-width: 680px;
+    }
+}
+
+/* ============================================================
+   TABLET
+============================================================ */
+
+@media (max-width: 950px) {
+
+    .marks-page {
+        padding: 18px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+    }
+
+    .exam-info {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .info-item:nth-child(4n) {
+        border-right: 1px solid #e5e7eb;
+    }
+
+    .info-item:nth-child(2n) {
+        border-right: 0;
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .student-toolbar {
+        align-items: center;
+    }
+}
+
+/* ============================================================
+   SMALL TABLET
+============================================================ */
+
+@media (max-width: 760px) {
+
+    .marks-page {
+        padding: 15px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-actions .btn {
+        flex: 1;
+    }
+
+    .student-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .student-search {
+        width: 100%;
+    }
+
+    .student-count {
+        text-align: left;
+    }
+
+    .marks-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .limit-badge {
+        align-self: flex-start;
+    }
+}
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 650px) {
+
+    .marks-page {
+        padding: 11px;
+    }
+
+    .page-title h1 {
+        font-size: 22px;
+    }
+
+    .page-title p {
+        font-size: 12px;
+    }
+
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+        flex: none;
+    }
+
+    .submission-status {
+        padding: 13px;
+    }
+
+    /* --------------------------------------------------------
+       EXAM
+    -------------------------------------------------------- */
+
+    .exam-card-header {
+        padding: 17px;
+    }
+
+    .exam-card-header h2 {
+        font-size: 18px;
+    }
+
+    .exam-info {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .info-item {
+        padding: 12px;
+    }
+
+    .info-label {
+        font-size: 9px;
+    }
+
+    .info-value {
+        font-size: 12px;
+    }
+
+    /* --------------------------------------------------------
+       SUMMARY
+    -------------------------------------------------------- */
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 9px;
+    }
+
+    .summary-card {
+        padding: 13px 15px;
+    }
+
+    .summary-value {
+        font-size: 20px;
+    }
+
+    /* --------------------------------------------------------
+       MARKS HEADER
+    -------------------------------------------------------- */
+
+    .marks-card-header {
+        padding: 14px;
+    }
+
+    .marks-card-title h3 {
+        font-size: 16px;
+    }
+
+    .marks-card-title p {
+        font-size: 11px;
+    }
+
+    /* --------------------------------------------------------
+       TABLE AS MOBILE CARDS
+    -------------------------------------------------------- */
+
+    .table-wrapper {
+        width: 100%;
+        overflow: visible;
+    }
+
+    .marks-table,
+    .marks-table tbody,
+    .marks-table tr,
+    .marks-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .marks-table {
+        min-width: 0;
+    }
+
+    .marks-table thead {
+        display: none;
+    }
+
+    .marks-table tbody {
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .marks-table tbody tr {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        padding: 12px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, .03);
+    }
+
+    .marks-table tbody tr:hover {
+        background: #ffffff;
+    }
+
+    .marks-table tbody td {
+        border: 0;
+        padding: 0;
+    }
+
+    .number-cell {
+        display: none !important;
+    }
+
+    /* --------------------------------------------------------
+       STUDENT
+    -------------------------------------------------------- */
+
+    .student-info {
+        padding-bottom: 11px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .student-avatar {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+    }
+
+    .student-name {
+        font-size: 14px;
+    }
+
+    /* --------------------------------------------------------
+       ABSENT
+    -------------------------------------------------------- */
+
+    .absent-cell {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 0 !important;
+        border-bottom: 1px solid #eef2f7 !important;
+    }
+
+    .absent-cell::before {
+        content: "Absent";
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    /* --------------------------------------------------------
+       MARK
+    -------------------------------------------------------- */
+
+    .mark-cell {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 10px !important;
+    }
+
+    .mark-cell::before {
+        content: "Mark";
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .mark-input {
+        width: 115px;
+        height: 42px;
+    }
+
+    /* --------------------------------------------------------
+       PAGINATION
+    -------------------------------------------------------- */
+
+    .pagination-area {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 13px;
+    }
+
+    .pagination-info {
+        text-align: center;
+    }
+
+    .pagination {
+        justify-content: center;
+    }
+
+    /* --------------------------------------------------------
+       FOOTER
+    -------------------------------------------------------- */
+
+    .form-footer {
+        padding: 13px;
+        flex-direction: column-reverse;
+    }
+
+    .form-footer .btn,
+    .already-submitted-btn {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* ============================================================
+   VERY SMALL MOBILE
+============================================================ */
+
+@media (max-width: 400px) {
+
+    .marks-page {
+        padding: 8px;
+    }
+
+    .exam-info {
+        grid-template-columns: 1fr;
+    }
+
+    .info-item,
+    .info-item:nth-child(2n),
+    .info-item:nth-child(4n) {
+        border-right: 0;
+    }
+
+    .header-actions {
+        gap: 7px;
+    }
+
+    .student-toolbar {
+        padding: 12px;
+    }
+
+    .marks-table tbody {
+        padding: 8px;
+    }
+
+    .marks-table tbody tr {
+        padding: 10px;
+    }
+
+    .page-btn {
+        min-width: 31px;
+        height: 31px;
+        padding: 0 7px;
+        font-size: 11px;
+    }
+}
+
+/* ============================================================
+   EXTRA SMALL DEVICES
+============================================================ */
+
+@media (max-width: 330px) {
+
+    .marks-page {
+        padding: 6px;
+    }
+
+    .exam-card-header {
+        padding: 14px;
+    }
+
+    .marks-card-header {
+        padding: 12px;
+    }
+
+    .student-avatar {
+        width: 38px;
+        height: 38px;
+        flex-basis: 38px;
+    }
+
+    .student-name {
+        font-size: 13px;
+    }
+
+    .mark-input {
+        width: 100px;
+    }
+}
+
+</style>
+
+
+<div class="marks-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="page-header">
+
+        <div class="page-title">
+
+            <h1>
+                Enter Exam Marks
+            </h1>
+
+            <p>
+
+                {{ subject.name if subject else 'Exam Subject' }}
+
+                {% if selected_class %}
+                    · {{ selected_class.name }}
+                {% endif %}
+
+                {% if selected_section %}
+                    · {{ selected_section.name }}
+                {% endif %}
+
+            </p>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <a
+                href="{{ url_for('main.teacher_my_exams') }}"
+                class="btn btn-secondary"
+            >
+                ← My Exams
+            </a>
+
+            <a
+                href="{{ url_for('main.teacher_dashboard') }}"
+                class="btn btn-secondary"
+            >
+                Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FLASH
+    ====================================================== -->
+
+    <div class="flash-area">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+    </div>
+
+
+    <!-- =====================================================
+         SUBMISSION STATUS
+    ====================================================== -->
+
+    {% if marks_locked %}
+
+        <div class="submission-status submitted">
+
+            <div class="submission-status-icon">
+                ✓
+            </div>
+
+            <div class="submission-status-content">
+
+                <p class="submission-status-title">
+                    Already Submitted
+                </p>
+
+                <p class="submission-status-text">
+                    Marks for
+                    <strong>
+                        {{ subject.name if subject else 'this subject' }}
+                    </strong>
+                    have already been submitted.
+                    You can view the marks, but you cannot edit or
+                    submit them again.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <div class="submission-status pending">
+
+            <div class="submission-status-icon">
+                !
+            </div>
+
+            <div class="submission-status-content">
+
+                <p class="submission-status-title">
+                    Marks Pending Submission
+                </p>
+
+                <p class="submission-status-text">
+                    Enter marks for all students and click
+                    <strong>Save &amp; Submit Marks</strong>.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         EXAM INFORMATION
+    ====================================================== -->
+
+    <div class="exam-card">
+
+        <div class="exam-card-header">
+
+            <h2>
+                {{ exam.name or 'Exam' }}
+            </h2>
+
+            <p>
+
+                {% if exam.code %}
+                    Exam Code: {{ exam.code }}
+                {% endif %}
+
+                {% if exam.exam_type %}
+                    · {{ exam.exam_type|replace('_', ' ')|title }}
+                {% endif %}
+
+            </p>
+
+
+            <!-- =================================================
+                 EXAM STATUS
+            ================================================== -->
+
+            {% set current_exam_status =
+                (exam.status|string|lower|trim)
+            %}
+
+            {% if current_exam_status == 'draft' %}
+
+                <span class="exam-status-badge exam-status-draft">
+                    ● Draft — Marks Entry Allowed
+                </span>
+
+            {% elif current_exam_status in ['active', 'open'] %}
+
+                <span class="exam-status-badge exam-status-active">
+                    ● Open — Marks Entry Allowed
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="exam-info">
+
+            <!-- SUBJECT -->
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Subject
+                </div>
+
+                <div class="info-value">
+
+                    {{ subject.name if subject else '—' }}
+
+                    {% if subject and subject.code %}
+                        ({{ subject.code }})
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- PROGRAM -->
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Program
+                </div>
+
+                <div class="info-value">
+                    {{ program.name if program else '—' }}
+                </div>
+
+            </div>
+
+
+            <!-- CLASS -->
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Class
+                </div>
+
+                <div class="info-value">
+
+                    {% if selected_class %}
+                        {{ selected_class.name }}
+                    {% else %}
+                        All Classes
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- SECTION -->
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Section
+                </div>
+
+                <div class="info-value">
+
+                    {% if selected_section %}
+                        {{ selected_section.name }}
+                    {% else %}
+                        All Sections
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ACADEMIC YEAR -->
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Academic Year
+                </div>
+
+                <div class="info-value">
+                    {{ exam.academic_year.name if exam.academic_year else '—' }}
+                </div>
+
+            </div>
+
+
+            <!-- TERM -->
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Term
+                </div>
+
+                <div class="info-value">
+                    {{ exam.term.name if exam.term else '—' }}
+                </div>
+
+            </div>
+
+
+            <!-- MAXIMUM -->
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Maximum Marks
+                </div>
+
+                <div class="info-value">
+                    {{ max_marks }}
+                </div>
+
+            </div>
+
+
+            <!-- PASS -->
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Pass Marks
+                </div>
+
+                <div class="info-value">
+                    {{ pass_marks }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SUMMARY
+    ====================================================== -->
+
+    <div class="summary-grid">
+
+        <!-- TOTAL STUDENTS -->
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+                Students
+            </div>
+
+            <div
+                class="summary-value"
+                id="totalStudents"
+            >
+                {{ student_count }}
+            </div>
+
+        </div>
+
+
+        <!-- SUBMITTED -->
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+                Submitted
+            </div>
+
+            <div
+                class="summary-value submitted-value"
+                id="submittedStudents"
+            >
+                {{ submitted_count }}
+            </div>
+
+        </div>
+
+
+        <!-- MAXIMUM -->
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+                Maximum Mark
+            </div>
+
+            <div class="summary-value">
+                {{ max_marks }}
+            </div>
+
+        </div>
+
+
+        <!-- PASS -->
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+                Pass Mark
+            </div>
+
+            <div class="summary-value">
+                {{ pass_marks }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MARKS FORM
+    ====================================================== -->
+
+    <form
+        method="POST"
+        action="{{ url_for(
+            'main.teacher_enter_marks',
+            exam_subject_id=exam_subject.id
+        ) }}"
+        id="marksForm"
+        autocomplete="off"
+    >
+
+        <div
+            class="marks-card {% if marks_locked %}marks-locked{% endif %}"
+        >
+
+            <!-- =================================================
+                 MARKS HEADER
+            ================================================== -->
+
+            <div class="marks-card-header">
+
+                <div class="marks-card-title">
+
+                    <h3>
+                        Student Marks
+                    </h3>
+
+                    <p>
+
+                        {% if marks_locked %}
+
+                            Marks have already been submitted.
+                            Viewing is allowed, editing is locked.
+
+                        {% else %}
+
+                            Enter marks for each student.
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+
+                <div class="limit-badge">
+                    Maximum: {{ max_marks }}
+                </div>
+
+            </div>
+
+
+            {% if students %}
+
+                <!-- =============================================
+                     SEARCH TOOLBAR
+                ============================================== -->
+
+                <div class="student-toolbar">
+
+                    <div class="student-search">
+
+                        <span class="student-search-icon">
+                            🔎
+                        </span>
+
+                        <input
+                            type="search"
+                            id="studentSearch"
+                            placeholder="Search student..."
+                            autocomplete="off"
+                            aria-label="Search students"
+                        >
+
+                    </div>
+
+
+                    <div
+                        class="student-count"
+                        id="visibleCount"
+                    >
+
+                        {{ student_count }}
+
+                        {% if student_count == 1 %}
+                            student
+                        {% else %}
+                            students
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     TABLE
+                ============================================== -->
+
+                <div class="table-wrapper">
+
+                    <table
+                        class="marks-table"
+                        id="marksTable"
+                    >
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    #
+                                </th>
+
+                                <th>
+                                    Student
+                                </th>
+
+                                <th>
+                                    Absent
+                                </th>
+
+                                <th>
+                                    Mark
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="studentTableBody">
+
+                            {% for row in students %}
+
+                                {% set student = row.student %}
+
+                                <tr
+                                    class="student-row"
+                                    data-name="{{ student.full_name|lower }}"
+                                >
+
+                                    <!-- NUMBER -->
+
+                                    <td class="number-cell">
+                                        {{ loop.index }}
+                                    </td>
+
+
+                                    <!-- STUDENT -->
+
+                                    <td>
+
+                                        <div class="student-info">
+
+                                            <div class="student-avatar">
+
+                                                {% if student.photo %}
+
+                                                    <img
+                                                        src="{{ url_for(
+                                                            'static',
+                                                            filename=student.photo
+                                                        ) }}"
+                                                        alt="{{ student.full_name }}"
+                                                        loading="lazy"
+                                                    >
+
+                                                {% else %}
+
+                                                    {{
+                                                        (
+                                                            student.full_name[:1]
+                                                            if student.full_name
+                                                            else '?'
+                                                        )|upper
+                                                    }}
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            <div class="student-name">
+
+                                                {{ student.full_name }}
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- ABSENT -->
+
+                                    <td class="absent-cell">
+
+                                        <label
+                                            class="absent-toggle"
+                                            title="Mark student as absent"
+                                        >
+
+                                            <input
+                                                type="checkbox"
+                                                name="absent_{{ student.id }}"
+                                                value="1"
+                                                class="absent-checkbox"
+
+                                                {% if row.is_absent %}
+                                                    checked
+                                                {% endif %}
+
+                                                {% if marks_locked %}
+                                                    disabled
+                                                {% endif %}
+                                            >
+
+                                            <span class="absent-box"></span>
+
+                                        </label>
+
+                                    </td>
+
+
+                                    <!-- MARK -->
+
+                                    <td class="mark-cell">
+
+                                        <input
+                                            type="number"
+                                            class="mark-input"
+                                            name="marks_{{ student.id }}"
+
+                                            value="{% if row.marks_obtained is not none %}{{ row.marks_obtained }}{% endif %}"
+
+                                            min="0"
+                                            max="{{ max_marks }}"
+                                            step="0.01"
+
+                                            placeholder="0 - {{ max_marks }}"
+                                            inputmode="decimal"
+
+                                            {% if row.is_absent or row.is_exempted %}
+                                                disabled
+                                            {% endif %}
+
+                                            {% if marks_locked %}
+                                                disabled
+                                            {% endif %}
+                                        >
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- =============================================
+                     PAGINATION
+                ============================================== -->
+
+                <div class="pagination-area">
+
+                    <div
+                        class="pagination-info"
+                        id="paginationInfo"
+                    >
+                        Showing 1–{{ student_count }}
+                    </div>
+
+
+                    <div
+                        class="pagination"
+                        id="pagination"
+                    ></div>
+
+                </div>
+
+
+                <!-- =============================================
+                     FORM FOOTER
+                ============================================== -->
+
+                <div class="form-footer">
+
+                    <a
+                        href="{{ url_for('main.teacher_my_exams') }}"
+                        class="btn btn-secondary"
+                    >
+                        ← My Exams
+                    </a>
+
+
+                    {% if marks_locked %}
+
+                        <div class="already-submitted-btn">
+                            ✓ Already Submitted
+                        </div>
+
+                    {% else %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                            id="saveMarksBtn"
+                        >
+                            Save &amp; Submit Marks
+                        </button>
+
+                    {% endif %}
+
+                </div>
+
+            {% else %}
+
+                <!-- =============================================
+                     EMPTY STATE
+                ============================================== -->
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        👨‍🎓
+                    </div>
+
+                    <h3>
+                        No Students Found
+                    </h3>
+
+                    <p>
+                        No active students are enrolled
+                        for this exam.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        "use strict";
+
+        /* =====================================================
+           SERVER STATE
+        ====================================================== */
+
+        const marksLocked =
+            {{ "true" if marks_locked else "false" }};
+
+        const totalStudents =
+            {{ total_student_count|int }};
+
+        const submittedStudents =
+            {{ submitted_count|int }};
+
+
+        /* =====================================================
+           ELEMENTS
+        ====================================================== */
+
+        const form =
+            document.getElementById("marksForm");
+
+        const searchInput =
+            document.getElementById("studentSearch");
+
+        const rows =
+            Array.from(
+                document.querySelectorAll(".student-row")
+            );
+
+        const pagination =
+            document.getElementById("pagination");
+
+        const paginationInfo =
+            document.getElementById("paginationInfo");
+
+        const visibleCount =
+            document.getElementById("visibleCount");
+
+        const saveButton =
+            document.getElementById("saveMarksBtn");
+
+
+        const maxMarks =
+            parseFloat(
+                "{{ max_marks }}"
+            );
+
+
+        /* =====================================================
+           SETTINGS
+        ====================================================== */
+
+        const perPage = 10;
+
+        let currentPage = 1;
+
+        let filteredRows = [...rows];
+
+
+        /* =====================================================
+           UPDATE ABSENT / MARK
+        ====================================================== */
+
+        function updateRow(row) {
+
+            const markInput =
+                row.querySelector(
+                    ".mark-input"
+                );
+
+            const absentCheckbox =
+                row.querySelector(
+                    ".absent-checkbox"
+                );
+
+
+            if (
+                !markInput ||
+                !absentCheckbox
+            ) {
+                return;
+            }
+
+
+            /*
+             * If the entire ExamSubject is already submitted,
+             * never allow JavaScript to unlock the inputs.
+             */
+
+            if (marksLocked) {
+
+                markInput.disabled = true;
+
+                absentCheckbox.disabled = true;
+
+                return;
+
+            }
+
+
+            if (absentCheckbox.checked) {
+
+                markInput.disabled = true;
+
+                markInput.value = "";
+
+            } else {
+
+                markInput.disabled = false;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           INITIALIZE ROWS
+        ====================================================== */
+
+        rows.forEach(
+            function (row) {
+
+                const absentCheckbox =
+                    row.querySelector(
+                        ".absent-checkbox"
+                    );
+
+
+                if (absentCheckbox) {
+
+                    absentCheckbox.addEventListener(
+                        "change",
+                        function () {
+
+                            updateRow(row);
+
+                        }
+                    );
+
+                }
+
+
+                updateRow(row);
+
+            }
+        );
+
+
+        /* =====================================================
+           FILTER ROWS
+        ====================================================== */
+
+        function filterRows() {
+
+            const search =
+                searchInput
+                    ? searchInput.value
+                        .trim()
+                        .toLowerCase()
+                    : "";
+
+
+            filteredRows =
+                rows.filter(
+                    function (row) {
+
+                        const name =
+                            row.dataset.name || "";
+
+                        return name.includes(
+                            search
+                        );
+
+                    }
+                );
+
+
+            currentPage = 1;
+
+            renderPagination();
+
+            renderRows();
+
+        }
+
+
+        /* =====================================================
+           RENDER ROWS
+        ====================================================== */
+
+        function renderRows() {
+
+            rows.forEach(
+                function (row) {
+
+                    row.style.display = "none";
+
+                }
+            );
+
+
+            const start =
+                (currentPage - 1) *
+                perPage;
+
+
+            const end =
+                start + perPage;
+
+
+            const pageRows =
+                filteredRows.slice(
+                    start,
+                    end
+                );
+
+
+            pageRows.forEach(
+                function (row) {
+
+                    row.style.display = "";
+
+                }
+            );
+
+
+            /* -------------------------------------------------
+               COUNT
+            -------------------------------------------------- */
+
+            if (visibleCount) {
+
+                visibleCount.textContent =
+                    filteredRows.length +
+                    (
+                        filteredRows.length === 1
+                            ? " student"
+                            : " students"
+                    );
+
+            }
+
+
+            /* -------------------------------------------------
+               PAGINATION INFO
+            -------------------------------------------------- */
+
+            if (paginationInfo) {
+
+                if (
+                    filteredRows.length === 0
+                ) {
+
+                    paginationInfo.textContent =
+                        "No students found";
+
+                } else {
+
+                    const first =
+                        start + 1;
+
+
+                    const last =
+                        Math.min(
+                            end,
+                            filteredRows.length
+                        );
+
+
+                    paginationInfo.textContent =
+                        `Showing ${first}–${last} of ${filteredRows.length}`;
+
+                }
+
+            }
+
+        }
+
+
+        /* =====================================================
+           CREATE PAGE BUTTON
+        ====================================================== */
+
+        function createPageButton(
+            label,
+            page,
+            disabled = false,
+            active = false
+        ) {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.type = "button";
+
+            button.className =
+                "page-btn";
+
+            button.textContent =
+                label;
+
+            button.disabled =
+                disabled;
+
+
+            if (active) {
+
+                button.classList.add(
+                    "active"
+                );
+
+            }
+
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    currentPage = page;
+
+                    renderPagination();
+
+                    renderRows();
+
+
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth"
+                    });
+
+                }
+            );
+
+
+            return button;
+
+        }
+
+
+        /* =====================================================
+           PAGINATION
+        ====================================================== */
+
+        function renderPagination() {
+
+            if (!pagination) {
+                return;
+            }
+
+
+            pagination.innerHTML = "";
+
+
+            const totalPages =
+                Math.ceil(
+                    filteredRows.length /
+                    perPage
+                );
+
+
+            if (totalPages <= 1) {
+                return;
+            }
+
+
+            /* -------------------------------------------------
+               PREVIOUS
+            -------------------------------------------------- */
+
+            pagination.appendChild(
+                createPageButton(
+                    "‹",
+                    currentPage - 1,
+                    currentPage === 1
+                )
+            );
+
+
+            /* -------------------------------------------------
+               PAGE NUMBERS
+            -------------------------------------------------- */
+
+            let pages = [];
+
+
+            if (totalPages <= 7) {
+
+                for (
+                    let i = 1;
+                    i <= totalPages;
+                    i++
+                ) {
+
+                    pages.push(i);
+
+                }
+
+            } else {
+
+                pages.push(1);
+
+
+                if (currentPage > 4) {
+
+                    pages.push("...");
+
+                }
+
+
+                const start =
+                    Math.max(
+                        2,
+                        currentPage - 1
+                    );
+
+
+                const end =
+                    Math.min(
+                        totalPages - 1,
+                        currentPage + 1
+                    );
+
+
+                for (
+                    let i = start;
+                    i <= end;
+                    i++
+                ) {
+
+                    pages.push(i);
+
+                }
+
+
+                if (
+                    currentPage <
+                    totalPages - 3
+                ) {
+
+                    pages.push("...");
+
+                }
+
+
+                pages.push(
+                    totalPages
+                );
+
+            }
+
+
+            pages.forEach(
+                function (page) {
+
+                    if (page === "...") {
+
+                        const dots =
+                            document.createElement(
+                                "span"
+                            );
+
+
+                        dots.className =
+                            "page-dots";
+
+                        dots.textContent =
+                            "…";
+
+
+                        pagination.appendChild(
+                            dots
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    pagination.appendChild(
+                        createPageButton(
+                            page,
+                            page,
+                            false,
+                            page === currentPage
+                        )
+                    );
+
+                }
+            );
+
+
+            /* -------------------------------------------------
+               NEXT
+            -------------------------------------------------- */
+
+            pagination.appendChild(
+                createPageButton(
+                    "›",
+                    currentPage + 1,
+                    currentPage === totalPages
+                )
+            );
+
+        }
+
+
+        /* =====================================================
+           SEARCH
+        ====================================================== */
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                filterRows
+            );
+
+        }
+
+
+        /* =====================================================
+           FORM VALIDATION
+        ====================================================== */
+
+        if (form) {
+
+            form.addEventListener(
+                "submit",
+                function (event) {
+
+                    /*
+                     * This is a second layer of protection.
+                     * Backend route is the real security.
+                     */
+
+                    if (marksLocked) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Marks have already been submitted. They cannot be edited or submitted again."
+                        );
+
+                        return false;
+
+                    }
+
+
+                    let invalid = false;
+
+                    let firstInvalidInput = null;
+
+
+                    rows.forEach(
+                        function (row) {
+
+                            const markInput =
+                                row.querySelector(
+                                    ".mark-input"
+                                );
+
+                            const absentCheckbox =
+                                row.querySelector(
+                                    ".absent-checkbox"
+                                );
+
+
+                            if (
+                                !markInput ||
+                                !absentCheckbox
+                            ) {
+                                return;
+                            }
+
+
+                            /* ---------------------------------
+                               ABSENT STUDENT
+                            ---------------------------------- */
+
+                            if (
+                                absentCheckbox.checked
+                            ) {
+                                return;
+                            }
+
+
+                            /* ---------------------------------
+                               EMPTY MARK
+                            ---------------------------------- */
+
+                            const value =
+                                markInput.value.trim();
+
+
+                            if (
+                                value === ""
+                            ) {
+
+                                invalid = true;
+
+                                if (
+                                    !firstInvalidInput
+                                ) {
+
+                                    firstInvalidInput =
+                                        markInput;
+
+                                }
+
+                                return;
+
+                            }
+
+
+                            /* ---------------------------------
+                               NUMERIC VALIDATION
+                            ---------------------------------- */
+
+                            const number =
+                                parseFloat(
+                                    value
+                                );
+
+
+                            if (
+                                Number.isNaN(number) ||
+                                number < 0 ||
+                                number > maxMarks
+                            ) {
+
+                                invalid = true;
+
+                                if (
+                                    !firstInvalidInput
+                                ) {
+
+                                    firstInvalidInput =
+                                        markInput;
+
+                                }
+
+                            }
+
+                        }
+                    );
+
+
+                    /* =================================================
+                       INVALID
+                    ================================================== */
+
+                    if (invalid) {
+
+                        event.preventDefault();
+
+
+                        /*
+                         * Find invalid row and show its page.
+                         */
+
+                        if (firstInvalidInput) {
+
+                            const invalidRow =
+                                firstInvalidInput.closest(
+                                    ".student-row"
+                                );
+
+
+                            if (invalidRow) {
+
+                                const index =
+                                    filteredRows.indexOf(
+                                        invalidRow
+                                    );
+
+
+                                if (index >= 0) {
+
+                                    currentPage =
+                                        Math.floor(
+                                            index /
+                                            perPage
+                                        ) + 1;
+
+
+                                    renderPagination();
+
+                                    renderRows();
+
+                                }
+
+
+                                setTimeout(
+                                    function () {
+
+                                        firstInvalidInput.focus();
+
+                                        firstInvalidInput.scrollIntoView({
+                                            behavior: "smooth",
+                                            block: "center"
+                                        });
+
+                                    },
+                                    50
+                                );
+
+                            }
+
+                        }
+
+
+                        alert(
+                            "Please enter valid marks for every student. " +
+                            "Marks must be between 0 and " +
+                            maxMarks +
+                            "."
+                        );
+
+
+                        return false;
+
+                    }
+
+
+                    /* =================================================
+                       CONFIRM SUBMISSION
+                    ================================================== */
+
+                    const confirmed =
+                        window.confirm(
+                            "Are you sure you want to submit these marks?\n\n" +
+                            "After submission, the marks cannot be edited again."
+                        );
+
+
+                    if (!confirmed) {
+
+                        event.preventDefault();
+
+                        return false;
+
+                    }
+
+
+                    /* =================================================
+                       SAVE BUTTON
+                    ================================================= */
+
+                    if (saveButton) {
+
+                        saveButton.disabled = true;
+
+                        saveButton.textContent =
+                            "Submitting Marks...";
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           INITIAL RENDER
+        ====================================================== */
+
+        renderPagination();
+
+        renderRows();
+
+    }
+
+);
+
+</script>
+
+{% endblock %}
+
