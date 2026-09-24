@@ -713,6 +713,19 @@ class Institution(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan"
     )
+    # ========================================================
+    # SITE SETTINGS
+    #
+    # One Institution → One SiteSettings
+    # ========================================================
+
+    site_settings = db.relationship(
+        "SiteSettings",
+        back_populates="institution",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     def __repr__(self):
 
@@ -971,6 +984,18 @@ class Branch(db.Model):
         back_populates="branch",
         lazy="dynamic",
         cascade="all, delete-orphan"
+    )
+    # ========================================================
+    # SITE SETTINGS
+    #
+    # Branch → Optional SiteSettings
+    # ========================================================
+
+    site_settings = db.relationship(
+        "SiteSettings",
+        back_populates="branch",
+        uselist=False,
+        passive_deletes=True
     )
 
     # ========================================================
@@ -6727,6 +6752,342 @@ class AttendanceRecord(db.Model):
 
 
 
+
+
+
+
+
+# ============================================================
+# SITE SETTINGS MODEL
+# PostgreSQL / Neon
+# ============================================================
+
+class SiteSettings(db.Model):
+
+    __tablename__ = "site_settings"
+
+    # ========================================================
+    # PRIMARY KEY
+    # ========================================================
+
+    id = db.Column(
+        db.BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    # ========================================================
+    # INSTITUTION
+    #
+    # One Institution → One SiteSettings
+    # ========================================================
+
+    institution_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "institutions.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        unique=True,
+        index=True
+    )
+
+    # ========================================================
+    # OPTIONAL DEFAULT BRANCH
+    #
+    # Can be used when the site is operating under
+    # a specific/default branch.
+    # ========================================================
+
+    branch_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "branches.id",
+            ondelete="SET NULL"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # GENERAL SITE INFORMATION
+    # ========================================================
+
+    site_title = db.Column(
+        db.String(200),
+        nullable=True
+    )
+
+    site_name = db.Column(
+        db.String(200),
+        nullable=True
+    )
+
+    short_name = db.Column(
+        db.String(100),
+        nullable=True
+    )
+
+    tagline = db.Column(
+        db.String(255),
+        nullable=True
+    )
+
+    description = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # CONTACT INFORMATION
+    # ========================================================
+
+    phone = db.Column(
+        db.String(30),
+        nullable=True
+    )
+
+    email = db.Column(
+        db.String(150),
+        nullable=True
+    )
+
+    website = db.Column(
+        db.String(255),
+        nullable=True
+    )
+
+    country = db.Column(
+        db.String(100),
+        nullable=True
+    )
+
+    state = db.Column(
+        db.String(100),
+        nullable=True
+    )
+
+    city = db.Column(
+        db.String(100),
+        nullable=True
+    )
+
+    address = db.Column(
+        db.String(255),
+        nullable=True
+    )
+
+    # ========================================================
+    # BRANDING / LOGOS
+    # ========================================================
+
+    main_logo = db.Column(
+        db.String(500),
+        nullable=True
+    )
+
+    sub_logo = db.Column(
+        db.String(500),
+        nullable=True
+    )
+
+    sign_logo = db.Column(
+        db.String(500),
+        nullable=True
+    )
+
+    favicon = db.Column(
+        db.String(500),
+        nullable=True
+    )
+
+    # ========================================================
+    # COLORS
+    # ========================================================
+
+    primary_color = db.Column(
+        db.String(20),
+        nullable=False,
+        default="#06245f",
+        server_default="#06245f"
+    )
+
+    secondary_color = db.Column(
+        db.String(20),
+        nullable=False,
+        default="#32b73a",
+        server_default="#32b73a"
+    )
+
+    accent_color = db.Column(
+        db.String(20),
+        nullable=False,
+        default="#33206f",
+        server_default="#33206f"
+    )
+
+    # ========================================================
+    # ACADEMIC INFORMATION
+    # ========================================================
+
+    academic_year = db.Column(
+        db.String(50),
+        nullable=True
+    )
+
+    # ========================================================
+    # EXAM CARD / EXAMINATION SETTINGS
+    # ========================================================
+
+    exam_title = db.Column(
+        db.String(200),
+        nullable=True,
+        default="STUDENT EXAM CARD"
+    )
+
+    exam_subtitle = db.Column(
+        db.String(255),
+        nullable=True,
+        default="EXAMINATION ADMISSION CARD"
+    )
+
+    exam_footer = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # CERTIFICATE SETTINGS
+    # ========================================================
+
+    certificate_footer = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # ========================================================
+    # PRINCIPAL / AUTHORIZED PERSON
+    # ========================================================
+
+    principal_name = db.Column(
+        db.String(150),
+        nullable=True
+    )
+
+    principal_title = db.Column(
+        db.String(100),
+        nullable=True,
+        default="Principal"
+    )
+
+    principal_phone = db.Column(
+        db.String(30),
+        nullable=True
+    )
+
+    principal_email = db.Column(
+        db.String(150),
+        nullable=True
+    )
+
+    principal_signature = db.Column(
+        db.String(500),
+        nullable=True
+    )
+
+    # ========================================================
+    # SYSTEM / DISPLAY SETTINGS
+    # ========================================================
+
+    timezone = db.Column(
+        db.String(100),
+        nullable=False,
+        default="Africa/Mogadishu",
+        server_default="Africa/Mogadishu"
+    )
+
+    currency = db.Column(
+        db.String(10),
+        nullable=False,
+        default="USD",
+        server_default="USD"
+    )
+
+    date_format = db.Column(
+        db.String(50),
+        nullable=False,
+        default="DD/MM/YYYY",
+        server_default="DD/MM/YYYY"
+    )
+
+    language = db.Column(
+        db.String(20),
+        nullable=False,
+        default="en",
+        server_default="en"
+    )
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="active",
+        server_default="active",
+        index=True
+    )
+
+    # ========================================================
+    # TIMESTAMPS
+    # ========================================================
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=db.func.now(),
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=db.func.now()
+    )
+
+    # ========================================================
+    # RELATIONSHIPS
+    # ========================================================
+
+    institution = db.relationship(
+        "Institution",
+        back_populates="site_settings"
+    )
+
+    branch = db.relationship(
+        "Branch",
+        back_populates="site_settings"
+    )
+
+    # ========================================================
+    # REPRESENTATION
+    # ========================================================
+
+    def __repr__(self):
+
+        return (
+            f"<SiteSettings "
+            f"id={self.id} "
+            f"institution_id={self.institution_id} "
+            f"branch_id={self.branch_id} "
+            f"site_name={self.site_name!r} "
+            f"status={self.status!r}>"
+        )
 
 
 

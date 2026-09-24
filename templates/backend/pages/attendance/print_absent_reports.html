@@ -1,0 +1,3037 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Absent Attendance Report
+    </title>
+
+    <style>
+
+        /* ============================================================
+           ROOT
+        ============================================================ */
+
+        :root {
+            --primary: #06245f;
+            --primary-dark: #041a46;
+            --green: #32b73a;
+            --green-dark: #21852a;
+            --purple: #33206f;
+
+            --text: #111827;
+            --muted: #6b7280;
+            --border: #d7dce5;
+            --soft: #f5f7fb;
+            --white: #ffffff;
+
+            --danger: #b42318;
+            --danger-soft: #fff1f0;
+
+            --success: #16794a;
+            --success-soft: #edf9f2;
+
+            --shadow:
+                0 12px 35px rgba(6, 36, 95, .10);
+
+            --radius: 14px;
+        }
+
+
+        /* ============================================================
+           RESET
+        ============================================================ */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #eef2f7;
+            color: var(--text);
+            font-family:
+                Inter,
+                "Segoe UI",
+                Arial,
+                Helvetica,
+                sans-serif;
+            font-size: 14px;
+        }
+
+        button,
+        a {
+            font: inherit;
+        }
+
+
+        /* ============================================================
+           SCREEN TOOLBAR
+        ============================================================ */
+
+        .print-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+
+            width: 100%;
+
+            background:
+                rgba(255, 255, 255, .96);
+
+            border-bottom: 1px solid var(--border);
+
+            backdrop-filter: blur(12px);
+
+            padding: 12px 18px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toolbar-brand {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: var(--primary);
+            color: white;
+
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .toolbar-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .toolbar-subtitle {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar-btn {
+            border: 0;
+            border-radius: 9px;
+
+            min-height: 38px;
+
+            padding: 0 15px;
+
+            cursor: pointer;
+
+            font-size: 12px;
+            font-weight: 800;
+
+            transition:
+                transform .15s ease,
+                box-shadow .15s ease,
+                opacity .15s ease;
+        }
+
+        .toolbar-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .toolbar-btn:active {
+            transform: translateY(0);
+        }
+
+        .toolbar-btn.print {
+            background: var(--primary);
+            color: white;
+
+            box-shadow:
+                0 5px 15px rgba(6, 36, 95, .20);
+        }
+
+        .toolbar-btn.close {
+            background: #eef1f5;
+            color: var(--text);
+        }
+
+
+        /* ============================================================
+           REPORT WRAPPER
+        ============================================================ */
+
+        .report-wrapper {
+            padding: 28px 18px 50px;
+        }
+
+        .report-paper {
+
+            width: 100%;
+            max-width: 1400px;
+
+            margin: 0 auto;
+
+            background: white;
+
+            box-shadow: var(--shadow);
+
+            border-radius: 16px;
+
+            overflow: hidden;
+        }
+
+
+        /* ============================================================
+           REPORT CONTENT
+        ============================================================ */
+
+        .report-content {
+            padding: 28px 32px 35px;
+        }
+
+
+        /* ============================================================
+           INSTITUTION HEADER
+        ============================================================ */
+
+        .institution-header {
+
+            position: relative;
+
+            display: grid;
+
+            grid-template-columns:
+                145px
+                minmax(0, 1fr)
+                220px;
+
+            align-items: center;
+
+            gap: 22px;
+
+            padding-bottom: 17px;
+
+            border-bottom:
+                3px solid var(--primary);
+        }
+
+        .institution-header::after {
+
+            content: "";
+
+            position: absolute;
+
+            bottom: -6px;
+            left: 0;
+
+            width: 32%;
+
+            height: 3px;
+
+            background: var(--green);
+
+            border-radius: 4px;
+        }
+
+
+        /* ============================================================
+           LOGOS
+        ============================================================ */
+
+        .logo-area {
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 115px;
+        }
+
+        .institution-logo {
+
+            width: 105px;
+            height: 105px;
+
+            object-fit: contain;
+
+            display: block;
+        }
+
+        .branch-logo {
+
+            width: 82px;
+            height: 82px;
+
+            object-fit: contain;
+
+            display: block;
+
+            margin: 0 auto 8px;
+        }
+
+
+        /* ============================================================
+           INSTITUTION CENTER
+        ============================================================ */
+
+        .institution-center {
+
+            text-align: center;
+
+            min-width: 0;
+        }
+
+        .institution-name {
+
+            margin: 0;
+
+            font-size: clamp(22px, 2.4vw, 31px);
+
+            line-height: 1.1;
+
+            font-weight: 950;
+
+            color: var(--primary);
+
+            text-transform: uppercase;
+
+            letter-spacing: .4px;
+        }
+
+        .institution-subtitle {
+
+            margin-top: 7px;
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+            color: var(--purple);
+
+            text-transform: uppercase;
+
+            letter-spacing: .6px;
+        }
+
+        .institution-tagline {
+
+            margin-top: 5px;
+
+            font-size: 11px;
+
+            color: var(--muted);
+        }
+
+
+        /* ============================================================
+           BRANCH
+        ============================================================ */
+
+        .branch-title {
+
+            margin-top: 12px;
+
+            font-size: 17px;
+
+            font-weight: 950;
+
+            color: var(--green-dark);
+
+            text-transform: uppercase;
+
+            letter-spacing: .4px;
+        }
+
+        .branch-code {
+
+            margin-top: 3px;
+
+            font-size: 10px;
+
+            color: var(--muted);
+
+            font-weight: 700;
+        }
+
+
+        /* ============================================================
+           BRANCH CONTACT
+        ============================================================ */
+
+        .branch-contact {
+
+            text-align: right;
+
+            font-size: 10px;
+
+            line-height: 1.65;
+
+            color: #374151;
+        }
+
+        .branch-contact-item {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            justify-content: flex-end;
+
+            gap: 5px;
+
+            margin-bottom: 2px;
+        }
+
+        .branch-contact-icon {
+
+            color: var(--primary);
+
+            font-weight: 900;
+
+            min-width: 13px;
+        }
+
+        .all-branches {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            min-height: 28px;
+
+            padding: 0 10px;
+
+            border-radius: 8px;
+
+            background: #edf2ff;
+
+            color: var(--primary);
+
+            font-size: 10px;
+
+            font-weight: 900;
+
+            text-transform: uppercase;
+        }
+
+
+        /* ============================================================
+           REPORT TITLE
+        ============================================================ */
+
+        .report-heading {
+
+            text-align: center;
+
+            padding: 18px 0 14px;
+        }
+
+        .report-heading h1 {
+
+            margin: 0;
+
+            font-size: 22px;
+
+            line-height: 1.2;
+
+            color: var(--primary);
+
+            font-weight: 950;
+
+            text-transform: uppercase;
+
+            letter-spacing: .8px;
+        }
+
+        .report-heading p {
+
+            margin: 6px 0 0;
+
+            color: var(--muted);
+
+            font-size: 11px;
+
+            font-weight: 600;
+        }
+
+        .heading-line {
+
+            display: flex;
+
+            justify-content: center;
+
+            gap: 5px;
+
+            margin-top: 8px;
+        }
+
+        .heading-line span:first-child {
+
+            width: 65px;
+            height: 3px;
+
+            background: var(--primary);
+
+            border-radius: 5px;
+        }
+
+        .heading-line span:last-child {
+
+            width: 24px;
+            height: 3px;
+
+            background: var(--green);
+
+            border-radius: 5px;
+        }
+
+
+        /* ============================================================
+           REPORT INFORMATION
+        ============================================================ */
+
+        .report-information {
+
+            border: 1px solid var(--border);
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f8fafc,
+                    #f2f5fa
+                );
+
+            border-radius: 11px;
+
+            padding: 12px 14px;
+
+            margin-bottom: 14px;
+        }
+
+        .information-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            color: var(--primary);
+
+            font-size: 11px;
+
+            font-weight: 900;
+
+            text-transform: uppercase;
+
+            margin-bottom: 9px;
+        }
+
+        .information-title::before {
+
+            content: "";
+
+            width: 4px;
+            height: 15px;
+
+            border-radius: 4px;
+
+            background: var(--green);
+        }
+
+        .information-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 8px 15px;
+        }
+
+        .info-item {
+
+            min-width: 0;
+
+            font-size: 10px;
+        }
+
+        .info-label {
+
+            display: block;
+
+            color: var(--muted);
+
+            font-size: 8px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: .4px;
+
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+
+            display: block;
+
+            color: var(--text);
+
+            font-weight: 800;
+
+            overflow-wrap: anywhere;
+        }
+
+
+        /* ============================================================
+           STATISTICS
+        ============================================================ */
+
+        .statistics {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, minmax(0, 1fr));
+
+            gap: 9px;
+
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+
+            position: relative;
+
+            overflow: hidden;
+
+            border: 1px solid var(--border);
+
+            border-radius: 11px;
+
+            background: white;
+
+            padding: 11px 12px;
+
+            min-height: 74px;
+        }
+
+        .stat-card::before {
+
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 3px;
+
+            background: var(--primary);
+        }
+
+        .stat-card:nth-child(2)::before {
+            background: var(--danger);
+        }
+
+        .stat-card:nth-child(3)::before {
+            background: var(--purple);
+        }
+
+        .stat-card:nth-child(4)::before {
+            background: var(--green);
+        }
+
+        .stat-card:nth-child(5)::before {
+            background: #d68a00;
+        }
+
+        .stat-label {
+
+            font-size: 8px;
+
+            color: var(--muted);
+
+            font-weight: 900;
+
+            text-transform: uppercase;
+
+            letter-spacing: .35px;
+        }
+
+        .stat-value {
+
+            margin-top: 4px;
+
+            font-size: 20px;
+
+            line-height: 1;
+
+            color: var(--primary);
+
+            font-weight: 950;
+        }
+
+        .stat-card:nth-child(2) .stat-value {
+            color: var(--danger);
+        }
+
+        .stat-card:nth-child(3) .stat-value {
+            color: var(--purple);
+        }
+
+        .stat-card:nth-child(4) .stat-value {
+            color: var(--green-dark);
+        }
+
+
+        /* ============================================================
+           TABLE HEADER
+        ============================================================ */
+
+        .table-section-title {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            margin-bottom: 7px;
+        }
+
+        .table-section-title h2 {
+
+            margin: 0;
+
+            font-size: 12px;
+
+            color: var(--primary);
+
+            text-transform: uppercase;
+
+            font-weight: 950;
+        }
+
+        .record-count {
+
+            font-size: 9px;
+
+            color: var(--muted);
+
+            font-weight: 800;
+        }
+
+
+        /* ============================================================
+           TABLE
+        ============================================================ */
+
+        .table-container {
+
+            width: 100%;
+
+            overflow-x: auto;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 9px;
+        }
+
+        .attendance-table {
+
+            width: 100%;
+
+            min-width: 1050px;
+
+            border-collapse: collapse;
+
+            table-layout: fixed;
+        }
+
+        .attendance-table thead {
+
+            display: table-header-group;
+        }
+
+        .attendance-table th {
+
+            background: var(--primary);
+
+            color: white;
+
+            border:
+                1px solid
+                rgba(255, 255, 255, .18);
+
+            padding: 7px 5px;
+
+            font-size: 8px;
+
+            line-height: 1.2;
+
+            text-transform: uppercase;
+
+            font-weight: 900;
+
+            text-align: left;
+
+            vertical-align: middle;
+        }
+
+        .attendance-table td {
+
+            border:
+                1px solid var(--border);
+
+            padding: 6px 5px;
+
+            font-size: 8.5px;
+
+            line-height: 1.35;
+
+            vertical-align: middle;
+
+            overflow-wrap: anywhere;
+        }
+
+        .attendance-table tbody tr:nth-child(even) {
+
+            background: #f8fafc;
+        }
+
+        .attendance-table tbody tr {
+
+            page-break-inside: avoid;
+
+            break-inside: avoid;
+        }
+
+        .student-name {
+
+            font-size: 9px;
+
+            font-weight: 900;
+
+            color: var(--text);
+        }
+
+        .student-meta {
+
+            margin-top: 2px;
+
+            font-size: 7.5px;
+
+            color: var(--muted);
+
+            line-height: 1.35;
+        }
+
+        .rate {
+
+            font-weight: 950;
+
+            color: var(--danger);
+        }
+
+        .absent-value {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            min-width: 25px;
+
+            min-height: 20px;
+
+            padding: 2px 5px;
+
+            border-radius: 5px;
+
+            background: var(--danger-soft);
+
+            color: var(--danger);
+
+            font-weight: 950;
+        }
+
+        .status-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 3px 6px;
+
+            border-radius: 5px;
+
+            background: var(--danger-soft);
+
+            color: var(--danger);
+
+            font-size: 7.5px;
+
+            font-weight: 950;
+
+            text-transform: uppercase;
+        }
+
+        .center {
+
+            text-align: center !important;
+        }
+
+        .nowrap {
+
+            white-space: nowrap;
+        }
+
+
+        /* ============================================================
+           NO DATA
+        ============================================================ */
+
+        .no-data {
+
+            padding: 35px 20px;
+
+            text-align: center;
+
+            border: 1px dashed #c8ced8;
+
+            border-radius: 10px;
+
+            background: #fafbfc;
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            font-weight: 700;
+        }
+
+
+        /* ============================================================
+           SIGNATURE SECTION
+        ============================================================ */
+
+        .signature-section {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 35px;
+
+            margin-top: 38px;
+
+            page-break-inside: avoid;
+
+            break-inside: avoid;
+        }
+
+        .signature-card {
+
+            min-height: 105px;
+
+            text-align: center;
+
+            position: relative;
+        }
+
+        .signature-image {
+
+            width: 115px;
+
+            height: 50px;
+
+            object-fit: contain;
+
+            margin: 0 auto 2px;
+
+            display: block;
+        }
+
+        .signature-space {
+
+            height: 50px;
+        }
+
+        .signature-line {
+
+            width: 75%;
+
+            margin: 5px auto 6px;
+
+            border-top:
+                1px solid #1f2937;
+        }
+
+        .signature-label {
+
+            font-size: 9px;
+
+            font-weight: 950;
+
+            color: var(--primary);
+
+            text-transform: uppercase;
+        }
+
+        .signature-name {
+
+            margin-top: 3px;
+
+            font-size: 9px;
+
+            font-weight: 800;
+
+            color: var(--text);
+        }
+
+        .signature-title {
+
+            margin-top: 2px;
+
+            font-size: 8px;
+
+            color: var(--muted);
+        }
+
+
+        /* ============================================================
+           FOOTER
+        ============================================================ */
+
+        .report-footer {
+
+            margin-top: 20px;
+
+            padding-top: 8px;
+
+            border-top:
+                1px solid var(--border);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            font-size: 8px;
+
+            color: var(--muted);
+
+            page-break-inside: avoid;
+        }
+
+        .footer-center {
+
+            text-align: center;
+
+            font-weight: 800;
+        }
+
+        .footer-right {
+
+            text-align: right;
+        }
+
+
+        /* ============================================================
+           PRINT ONLY ELEMENTS
+        ============================================================ */
+
+        .print-only {
+            display: none;
+        }
+
+
+        /* ============================================================
+           RESPONSIVE
+        ============================================================ */
+
+        @media (max-width: 1050px) {
+
+            .institution-header {
+
+                grid-template-columns:
+                    105px
+                    minmax(0, 1fr)
+                    160px;
+            }
+
+            .institution-logo {
+                width: 80px;
+                height: 80px;
+            }
+
+            .information-grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .statistics {
+                grid-template-columns:
+                    repeat(3, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .print-toolbar {
+
+                position: static;
+
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+            .toolbar-actions {
+
+                width: 100%;
+            }
+
+            .toolbar-btn {
+
+                flex: 1;
+            }
+
+            .report-wrapper {
+
+                padding: 10px;
+            }
+
+            .report-content {
+
+                padding: 18px 14px 25px;
+            }
+
+            .institution-header {
+
+                grid-template-columns: 1fr;
+
+                text-align: center;
+            }
+
+            .branch-contact {
+
+                text-align: center;
+            }
+
+            .branch-contact-item {
+
+                justify-content: center;
+            }
+
+            .information-grid {
+
+                grid-template-columns: 1fr;
+            }
+
+            .statistics {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .signature-section {
+
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .report-footer {
+
+                flex-direction: column;
+
+                text-align: center;
+            }
+
+        }
+
+
+        /* ============================================================
+           PRINT
+        ============================================================ */
+
+        @media print {
+
+            @page {
+
+                size: A4 landscape;
+
+                margin: 8mm 8mm 10mm 8mm;
+            }
+
+            html,
+            body {
+
+                background: white !important;
+
+                margin: 0 !important;
+
+                padding: 0 !important;
+            }
+
+            body {
+
+                font-size: 9px;
+            }
+
+            .print-toolbar {
+
+                display: none !important;
+            }
+
+            .report-wrapper {
+
+                padding: 0 !important;
+
+                margin: 0 !important;
+            }
+
+            .report-paper {
+
+                width: 100% !important;
+
+                max-width: none !important;
+
+                margin: 0 !important;
+
+                box-shadow: none !important;
+
+                border-radius: 0 !important;
+
+                overflow: visible !important;
+            }
+
+            .report-content {
+
+                padding: 0 !important;
+            }
+
+            .institution-header {
+
+                grid-template-columns:
+                    110px
+                    minmax(0, 1fr)
+                    170px;
+
+                gap: 12px;
+
+                padding-bottom: 9px;
+            }
+
+            .institution-header::after {
+
+                bottom: -5px;
+            }
+
+            .logo-area {
+
+                min-height: 82px;
+            }
+
+            .institution-logo {
+
+                width: 75px;
+                height: 75px;
+            }
+
+            .branch-logo {
+
+                width: 58px;
+                height: 58px;
+
+                margin-bottom: 3px;
+            }
+
+            .institution-name {
+
+                font-size: 21px;
+            }
+
+            .institution-subtitle {
+
+                font-size: 8px;
+
+                margin-top: 4px;
+            }
+
+            .institution-tagline {
+
+                font-size: 8px;
+
+                margin-top: 2px;
+            }
+
+            .branch-title {
+
+                font-size: 11px;
+
+                margin-top: 6px;
+            }
+
+            .branch-code {
+
+                font-size: 7px;
+            }
+
+            .branch-contact {
+
+                font-size: 7.5px;
+
+                line-height: 1.4;
+            }
+
+            .report-heading {
+
+                padding: 8px 0 7px;
+            }
+
+            .report-heading h1 {
+
+                font-size: 15px;
+            }
+
+            .report-heading p {
+
+                font-size: 7px;
+
+                margin-top: 3px;
+            }
+
+            .heading-line {
+
+                margin-top: 4px;
+            }
+
+            .heading-line span:first-child {
+
+                height: 2px;
+                width: 45px;
+            }
+
+            .heading-line span:last-child {
+
+                height: 2px;
+                width: 17px;
+            }
+
+            .report-information {
+
+                padding: 6px 8px;
+
+                margin-bottom: 7px;
+
+                border-radius: 5px;
+            }
+
+            .information-title {
+
+                font-size: 7px;
+
+                margin-bottom: 4px;
+            }
+
+            .information-title::before {
+
+                height: 10px;
+                width: 2px;
+            }
+
+            .information-grid {
+
+                gap: 3px 10px;
+            }
+
+            .info-item {
+
+                font-size: 7px;
+            }
+
+            .info-label {
+
+                font-size: 5.5px;
+
+                margin-bottom: 1px;
+            }
+
+            .statistics {
+
+                gap: 5px;
+
+                margin-bottom: 7px;
+            }
+
+            .stat-card {
+
+                min-height: 42px;
+
+                padding: 5px 7px;
+
+                border-radius: 5px;
+            }
+
+            .stat-card::before {
+
+                height: 2px;
+            }
+
+            .stat-label {
+
+                font-size: 5.5px;
+            }
+
+            .stat-value {
+
+                font-size: 12px;
+
+                margin-top: 2px;
+            }
+
+            .table-section-title {
+
+                margin-bottom: 4px;
+            }
+
+            .table-section-title h2 {
+
+                font-size: 7px;
+            }
+
+            .record-count {
+
+                font-size: 6px;
+            }
+
+            .table-container {
+
+                overflow: visible;
+
+                border-radius: 0;
+            }
+
+            .attendance-table {
+
+                min-width: 0;
+
+                width: 100%;
+
+                table-layout: fixed;
+            }
+
+            .attendance-table th {
+
+                padding: 4px 3px;
+
+                font-size: 6.2px;
+            }
+
+            .attendance-table td {
+
+                padding: 3px 3px;
+
+                font-size: 6.7px;
+
+                line-height: 1.2;
+            }
+
+            .student-name {
+
+                font-size: 7px;
+            }
+
+            .student-meta {
+
+                font-size: 5.7px;
+            }
+
+            .status-badge {
+
+                padding: 2px 4px;
+
+                font-size: 5.7px;
+            }
+
+            .absent-value {
+
+                min-width: 18px;
+
+                min-height: 14px;
+
+                padding: 1px 3px;
+
+                font-size: 6px;
+            }
+
+            .signature-section {
+
+                margin-top: 18px;
+
+                gap: 20px;
+            }
+
+            .signature-card {
+
+                min-height: 65px;
+            }
+
+            .signature-image {
+
+                width: 80px;
+
+                height: 30px;
+            }
+
+            .signature-space {
+
+                height: 28px;
+            }
+
+            .signature-line {
+
+                margin-top: 2px;
+
+                margin-bottom: 3px;
+            }
+
+            .signature-label {
+
+                font-size: 6.5px;
+            }
+
+            .signature-name {
+
+                font-size: 6.5px;
+
+                margin-top: 2px;
+            }
+
+            .signature-title {
+
+                font-size: 5.8px;
+            }
+
+            .report-footer {
+
+                margin-top: 8px;
+
+                padding-top: 4px;
+
+                font-size: 5.7px;
+            }
+
+            .print-only {
+
+                display: block !important;
+            }
+
+            .attendance-table thead {
+
+                display: table-header-group;
+            }
+
+            .attendance-table tr {
+
+                page-break-inside: avoid;
+
+                break-inside: avoid;
+            }
+
+            .report-information,
+            .statistics,
+            .signature-section,
+            .report-footer {
+
+                page-break-inside: avoid;
+
+                break-inside: avoid;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ============================================================
+         SCREEN TOOLBAR
+    ============================================================ -->
+
+    <div class="print-toolbar">
+
+        <div class="toolbar-left">
+
+            <div class="toolbar-brand">
+                AR
+            </div>
+
+            <div>
+
+                <div class="toolbar-title">
+                    Absent Attendance Report
+                </div>
+
+                <div class="toolbar-subtitle">
+                    Print-ready official report
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="toolbar-actions">
+
+            <button
+                type="button"
+                class="toolbar-btn print"
+                onclick="printReport()"
+            >
+                🖨 Print Report
+            </button>
+
+            <button
+                type="button"
+                class="toolbar-btn close"
+                onclick="closeReport()"
+            >
+                ✕ Close
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         REPORT
+    ============================================================ -->
+
+    <main class="report-wrapper">
+
+        <section class="report-paper">
+
+            <div class="report-content">
+
+
+                <!-- ==================================================
+                     INSTITUTION HEADER
+                =================================================== -->
+
+                <header class="institution-header">
+
+
+                    <!-- MAIN LOGO -->
+
+                    <div class="logo-area">
+
+                        {% if site_settings is defined
+                              and site_settings
+                              and site_settings.main_logo %}
+
+                            <img
+                                src="{{ url_for(
+                                    'static',
+                                    filename=site_settings.main_logo
+                                ) }}"
+                                class="institution-logo"
+                                alt="Institution Logo"
+                            >
+
+                        {% elif site_settings is defined
+                              and site_settings
+                              and site_settings.sub_logo %}
+
+                            <img
+                                src="{{ url_for(
+                                    'static',
+                                    filename=site_settings.sub_logo
+                                ) }}"
+                                class="institution-logo"
+                                alt="Institution Logo"
+                            >
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- CENTER -->
+
+                    <div class="institution-center">
+
+                        <h1 class="institution-name">
+
+                            {% if site_settings is defined
+                                  and site_settings
+                                  and site_settings.institution_name %}
+
+                                {{ site_settings.institution_name }}
+
+                            {% else %}
+
+                                SOOYAAL EDUCATIONAL INSTITUTE
+
+                            {% endif %}
+
+                        </h1>
+
+
+                        {% if site_settings is defined
+                              and site_settings
+                              and site_settings.subtitle %}
+
+                            <div class="institution-subtitle">
+
+                                {{ site_settings.subtitle }}
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="institution-subtitle">
+
+                                OF LANGUAGES HEALTHY AND SCIENTIFIC SUBJECTS
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if site_settings is defined
+                              and site_settings
+                              and site_settings.tagline %}
+
+                            <div class="institution-tagline">
+
+                                {{ site_settings.tagline }}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if selected_branch %}
+
+                            <div class="branch-title">
+
+                                {{ selected_branch.name }}
+
+                            </div>
+
+
+                            {% if selected_branch.code %}
+
+                                <div class="branch-code">
+
+                                    Branch Code:
+                                    {{ selected_branch.code }}
+
+                                </div>
+
+                            {% endif %}
+
+                        {% else %}
+
+                            <div class="branch-title">
+
+                                All Branches
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- BRANCH INFO -->
+
+                    <div class="branch-contact">
+
+                        {% if selected_branch
+                              and selected_branch.main_logo %}
+
+                            <img
+                                src="{{ url_for(
+                                    'static',
+                                    filename=selected_branch.main_logo
+                                ) }}"
+                                class="branch-logo"
+                                alt="Branch Logo"
+                            >
+
+                        {% endif %}
+
+
+                        {% if selected_branch %}
+
+                            {% if selected_branch.phone %}
+
+                                <div class="branch-contact-item">
+
+                                    <span
+                                        class="branch-contact-icon"
+                                    >
+                                        ☎
+                                    </span>
+
+                                    <span>
+                                        {{ selected_branch.phone }}
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if selected_branch.email %}
+
+                                <div class="branch-contact-item">
+
+                                    <span
+                                        class="branch-contact-icon"
+                                    >
+                                        ✉
+                                    </span>
+
+                                    <span>
+                                        {{ selected_branch.email }}
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if selected_branch.address %}
+
+                                <div class="branch-contact-item">
+
+                                    <span
+                                        class="branch-contact-icon"
+                                    >
+                                        ⌖
+                                    </span>
+
+                                    <span>
+                                        {{ selected_branch.address }}
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if selected_branch.city %}
+
+                                <div class="branch-contact-item">
+
+                                    <span
+                                        class="branch-contact-icon"
+                                    >
+                                        ●
+                                    </span>
+
+                                    <span>
+                                        {{ selected_branch.city }}
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+                        {% else %}
+
+                            <span class="all-branches">
+                                All Branches
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </header>
+
+
+                <!-- ==================================================
+                     REPORT TITLE
+                =================================================== -->
+
+                <section class="report-heading">
+
+                    <h1>
+                        Absent Attendance Report
+                    </h1>
+
+                    <p>
+                        Official student attendance absence report
+                    </p>
+
+                    <div class="heading-line">
+
+                        <span></span>
+                        <span></span>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     FILTER INFORMATION
+                =================================================== -->
+
+                <section class="report-information">
+
+                    <div class="information-title">
+                        Report Information
+                    </div>
+
+
+                    <div class="information-grid">
+
+
+                        <!-- BRANCH -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Branch
+                            </span>
+
+                            <span class="info-value">
+
+                                {% if selected_branch %}
+
+                                    {{ selected_branch.name }}
+
+                                    {% if selected_branch.code %}
+                                        — {{ selected_branch.code }}
+                                    {% endif %}
+
+                                {% else %}
+
+                                    All Branches
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- ACADEMIC YEAR -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Academic Year
+                            </span>
+
+                            <span class="info-value">
+
+                                {% if academic_year_name is defined
+                                      and academic_year_name %}
+
+                                    {{ academic_year_name }}
+
+                                {% elif academic_year_id %}
+
+                                    {{ academic_year_id }}
+
+                                {% else %}
+
+                                    All Academic Years
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- TEACHER -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Teacher
+                            </span>
+
+                            <span class="info-value">
+
+                                {% if selected_teacher is defined
+                                      and selected_teacher %}
+
+                                    {{ selected_teacher.full_name }}
+
+                                {% elif teacher_name is defined
+                                      and teacher_name %}
+
+                                    {{ teacher_name }}
+
+                                {% elif teacher_id %}
+
+                                    {{ teacher_id }}
+
+                                {% else %}
+
+                                    All Teachers
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- CLASS -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Class
+                            </span>
+
+                            <span class="info-value">
+
+                                {% if selected_class is defined
+                                      and selected_class %}
+
+                                    {{ selected_class.name }}
+
+                                {% elif class_name is defined
+                                      and class_name %}
+
+                                    {{ class_name }}
+
+                                {% elif class_id %}
+
+                                    {{ class_id }}
+
+                                {% else %}
+
+                                    All Classes
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- SECTION -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Section
+                            </span>
+
+                            <span class="info-value">
+
+                                {% if selected_section is defined
+                                      and selected_section %}
+
+                                    {{ selected_section.name }}
+
+                                {% elif section_name is defined
+                                      and section_name %}
+
+                                    {{ section_name }}
+
+                                {% elif section_id %}
+
+                                    {{ section_id }}
+
+                                {% else %}
+
+                                    All Sections
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- SUBJECT -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Subject
+                            </span>
+
+                            <span class="info-value">
+
+                                {% if selected_subject is defined
+                                      and selected_subject %}
+
+                                    {{ selected_subject.name }}
+
+                                {% elif subject_name is defined
+                                      and subject_name %}
+
+                                    {{ subject_name }}
+
+                                {% elif subject_id %}
+
+                                    {{ subject_id }}
+
+                                {% else %}
+
+                                    All Subjects
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- DATE FROM -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Date From
+                            </span>
+
+                            <span class="info-value">
+
+                                {{ date_from or "Beginning" }}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- DATE TO -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Date To
+                            </span>
+
+                            <span class="info-value">
+
+                                {{ date_to or "Today" }}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- SEARCH -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Student Search
+                            </span>
+
+                            <span class="info-value">
+
+                                {{ search or "All Students" }}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- GENERATED -->
+
+                        <div class="info-item">
+
+                            <span class="info-label">
+                                Generated
+                            </span>
+
+                            <span class="info-value">
+
+                                {% if generated_at %}
+
+                                    {{ generated_at.strftime(
+                                        "%d %b %Y %H:%M"
+                                    ) }}
+
+                                {% else %}
+
+                                    {{ now if now is defined else "—" }}
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     STATISTICS
+                =================================================== -->
+
+                <section class="statistics">
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Absent Records
+                        </div>
+
+                        <div class="stat-value">
+                            {{ total_absent or 0 }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Absent Students
+                        </div>
+
+                        <div class="stat-value">
+                            {{ total_absent_students or 0 }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Absent Days
+                        </div>
+
+                        <div class="stat-value">
+                            {{ total_absent_days or 0 }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Total Attendance
+                        </div>
+
+                        <div class="stat-value">
+                            {{ total_attendance or 0 }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Overall Absence Rate
+                        </div>
+
+                        <div class="stat-value">
+
+                            {{
+                                "%.1f"|format(
+                                    overall_absence_rate or 0
+                                )
+                            }}%
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     TABLE TITLE
+                =================================================== -->
+
+                <div class="table-section-title">
+
+                    <h2>
+                        Absence Records
+                    </h2>
+
+                    <div class="record-count">
+
+                        {{ absent_reports|length }}
+                        records displayed
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     TABLE
+                =================================================== -->
+
+                {% if absent_reports %}
+
+                    <div class="table-container">
+
+                        <table
+                            class="attendance-table"
+                        >
+
+                            <thead>
+
+                                <tr>
+
+                                    <th
+                                        class="center"
+                                        style="width: 3%;"
+                                    >
+                                        #
+                                    </th>
+
+                                    <th style="width: 13%;">
+                                        Student
+                                    </th>
+
+                                    <th
+                                        class="center"
+                                        style="width: 7%;"
+                                    >
+                                        Absence Rate
+                                    </th>
+
+                                    <th
+                                        class="center"
+                                        style="width: 6%;"
+                                    >
+                                        Absent
+                                    </th>
+
+                                    <th
+                                        class="center"
+                                        style="width: 7%;"
+                                    >
+                                        Attendance
+                                    </th>
+
+                                    <th style="width: 9%;">
+                                        Class
+                                    </th>
+
+                                    <th style="width: 8%;">
+                                        Section
+                                    </th>
+
+                                    <th style="width: 10%;">
+                                        Subject
+                                    </th>
+
+                                    <th style="width: 11%;">
+                                        Teacher
+                                    </th>
+
+                                    <th
+                                        class="center"
+                                        style="width: 8%;"
+                                    >
+                                        Date
+                                    </th>
+
+                                    <th
+                                        class="center"
+                                        style="width: 6%;"
+                                    >
+                                        Session
+                                    </th>
+
+                                    <th
+                                        class="center"
+                                        style="width: 5%;"
+                                    >
+                                        Status
+                                    </th>
+
+                                    <th style="width: 7%;">
+                                        Notes
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for record in absent_reports %}
+
+                                    {% set student =
+                                        record.student %}
+
+                                    {% set session =
+                                        record.session %}
+
+
+                                    <tr>
+
+
+                                        <!-- NUMBER -->
+
+                                        <td class="center">
+
+                                            {{ loop.index }}
+
+                                        </td>
+
+
+                                        <!-- STUDENT -->
+
+                                        <td>
+
+                                            <div class="student-name">
+
+                                                {% if student %}
+
+                                                    {{ student.full_name
+                                                       or student.name
+                                                       or "—" }}
+
+                                                {% else %}
+
+                                                    —
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            {% if student %}
+
+                                                <div class="student-meta">
+
+                                                    {% if student.admission_no %}
+
+                                                        ID:
+                                                        {{ student.admission_no }}
+
+                                                    {% endif %}
+
+
+                                                    {% if student.roll_no %}
+
+                                                        {% if student.admission_no %}
+                                                            ·
+                                                        {% endif %}
+
+                                                        Roll:
+                                                        {{ student.roll_no }}
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- RATE -->
+
+                                        <td class="center">
+
+                                            <span class="rate">
+
+                                                {{
+                                                    "%.1f"|format(
+                                                        record.absence_rate
+                                                        or 0
+                                                    )
+                                                }}%
+
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- ABSENT -->
+
+                                        <td class="center">
+
+                                            <span class="absent-value">
+
+                                                {{ record.absent_count or 0 }}
+
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- TOTAL -->
+
+                                        <td class="center">
+
+                                            {{ record.total_attendance or 0 }}
+
+                                        </td>
+
+
+                                        <!-- CLASS -->
+
+                                        <td>
+
+                                            {% if session
+                                                  and session.class_ %}
+
+                                                {{ session.class_.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- SECTION -->
+
+                                        <td>
+
+                                            {% if session
+                                                  and session.section %}
+
+                                                {{ session.section.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- SUBJECT -->
+
+                                        <td>
+
+                                            {% if session
+                                                  and session.subject %}
+
+                                                {{ session.subject.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- TEACHER -->
+
+                                        <td>
+
+                                            {% if session
+                                                  and session.teacher %}
+
+                                                {{
+                                                    session.teacher.full_name
+                                                }}
+
+                                            {% elif record.marked_by_teacher %}
+
+                                                {{
+                                                    record.marked_by_teacher.full_name
+                                                }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- DATE -->
+
+                                        <td
+                                            class="center nowrap"
+                                        >
+
+                                            {% if session
+                                                  and session.attendance_date %}
+
+                                                {{
+                                                    session.attendance_date
+                                                    .strftime(
+                                                        "%d %b %Y"
+                                                    )
+                                                }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- SESSION -->
+
+                                        <td class="center">
+
+                                            {% if session %}
+
+                                                #{{ session.id }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- STATUS -->
+
+                                        <td class="center">
+
+                                            <span class="status-badge">
+                                                Absent
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- NOTES -->
+
+                                        <td>
+
+                                            {{ record.notes or "—" }}
+
+                                        </td>
+
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="no-data">
+
+                        No absent attendance records were found
+                        for the selected filters.
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- ==================================================
+                     SIGNATURES
+                =================================================== -->
+
+                <section class="signature-section">
+
+
+                    <!-- PREPARED BY -->
+
+                    <div class="signature-card">
+
+                        <div class="signature-space"></div>
+
+                        <div class="signature-line"></div>
+
+                        <div class="signature-label">
+
+                            Prepared By
+
+                        </div>
+
+                        <div class="signature-name">
+
+                            {% if current_user is defined
+                                  and current_user %}
+
+                                {{
+                                    current_user.fullname
+                                    or current_user.full_name
+                                    or current_user.username
+                                    or "Attendance Office"
+                                }}
+
+                            {% else %}
+
+                                Attendance Office
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="signature-title">
+
+                            Attendance Department
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- AUTHORIZED -->
+
+                    <div class="signature-card">
+
+
+                        {% if selected_branch
+                              and selected_branch.signature_photo %}
+
+                            <img
+                                src="{{ url_for(
+                                    'static',
+                                    filename=selected_branch.signature_photo
+                                ) }}"
+                                class="signature-image"
+                                alt="Authorized Signature"
+                            >
+
+                        {% elif site_settings is defined
+                              and site_settings
+                              and site_settings.sign_logo %}
+
+                            <img
+                                src="{{ url_for(
+                                    'static',
+                                    filename=site_settings.sign_logo
+                                ) }}"
+                                class="signature-image"
+                                alt="Authorized Signature"
+                            >
+
+                        {% else %}
+
+                            <div class="signature-space"></div>
+
+                        {% endif %}
+
+
+                        <div class="signature-line"></div>
+
+                        <div class="signature-label">
+
+                            Authorized Signature
+
+                        </div>
+
+
+                        <div class="signature-name">
+
+                            {% if site_settings is defined
+                                  and site_settings
+                                  and site_settings.principal_name %}
+
+                                {{ site_settings.principal_name }}
+
+                            {% else %}
+
+                                Principal / Director
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="signature-title">
+
+                            {% if site_settings is defined
+                                  and site_settings
+                                  and site_settings.principal_title %}
+
+                                {{ site_settings.principal_title }}
+
+                            {% else %}
+
+                                Institution Administration
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STAMP -->
+
+                    <div class="signature-card">
+
+                        <div class="signature-space"></div>
+
+                        <div class="signature-line"></div>
+
+                        <div class="signature-label">
+
+                            Official Stamp
+
+                        </div>
+
+                        <div class="signature-name">
+
+                            Institution / Branch
+
+                        </div>
+
+                        <div class="signature-title">
+
+                            Official Seal
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     FOOTER
+                =================================================== -->
+
+                <footer class="report-footer">
+
+
+                    <div>
+
+                        {% if selected_branch %}
+
+                            {{ selected_branch.name }}
+
+                            {% if selected_branch.code %}
+
+                                · {{ selected_branch.code }}
+
+                            {% endif %}
+
+                        {% else %}
+
+                            All Branches
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="footer-center">
+
+                        Absent Attendance Report
+
+                    </div>
+
+
+                    <div class="footer-right">
+
+                        Generated:
+
+                        {% if generated_at %}
+
+                            {{ generated_at.strftime(
+                                "%d %b %Y %H:%M"
+                            ) }}
+
+                        {% endif %}
+
+                    </div>
+
+                </footer>
+
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ============================================================
+         JAVASCRIPT
+    ============================================================ -->
+
+    <script>
+
+        /* ============================================================
+           PRINT REPORT
+        ============================================================ */
+
+        function printReport() {
+
+            window.print();
+
+        }
+
+
+        /* ============================================================
+           CLOSE REPORT
+        ============================================================ */
+
+        function closeReport() {
+
+            if (
+                window.history.length > 1
+            ) {
+
+                window.close();
+
+                setTimeout(
+                    function () {
+
+                        window.history.back();
+
+                    },
+                    150
+                );
+
+            } else {
+
+                window.location.href =
+                    "{{ url_for('main.absent_reports') }}";
+
+            }
+
+        }
+
+
+        /* ============================================================
+           KEYBOARD SHORTCUT
+        ============================================================ */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    (event.ctrlKey || event.metaKey)
+                    &&
+                    event.key.toLowerCase() === "p"
+                ) {
+
+                    event.preventDefault();
+
+                    printReport();
+
+                }
+
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    closeReport();
+
+                }
+
+            }
+        );
+
+
+        /* ============================================================
+           PRINT EVENT
+        ============================================================ */
+
+        window.addEventListener(
+            "beforeprint",
+            function () {
+
+                document.body.classList.add(
+                    "is-printing"
+                );
+
+            }
+        );
+
+
+        window.addEventListener(
+            "afterprint",
+            function () {
+
+                document.body.classList.remove(
+                    "is-printing"
+                );
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
