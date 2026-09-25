@@ -5605,6 +5605,10 @@ def calculate_grade(percentage):
 # GPA POINT
 # ============================================================
 
+# ============================================================
+# GRADE POINTS
+# ============================================================
+
 GRADE_POINTS = {
     "A+": Decimal("4.00"),
     "A":  Decimal("4.00"),
@@ -5624,70 +5628,67 @@ GRADE_POINTS = {
 }
 
 
+# ============================================================
+# GPA CALCULATION
+# ============================================================
+
 def calculate_gpa_from_subjects(subject_results):
-    """
-    subject_results:
-
-    [
-        {
-            "grade": "A",
-            "credit_hours": Decimal("3")
-        },
-        ...
-    ]
-
-    If credit hours are unavailable,
-    equal weighting is used.
-    """
 
     if not subject_results:
         return Decimal("0.00")
 
-    weighted_points = Decimal("0")
-    total_credits = Decimal("0")
+    total_quality_points = Decimal("0.00")
+    total_credit_hours = Decimal("0.00")
 
     for item in subject_results:
 
-        grade = item.get("grade")
+        grade = str(
+            item.get("grade") or ""
+        ).strip().upper()
 
         if not grade:
             continue
 
-        point = GRADE_POINTS.get(
-            grade,
-            Decimal("0")
-        )
+        grade_point = GRADE_POINTS.get(grade)
 
-        credit = to_decimal(
+        if grade_point is None:
+            continue
+
+        credit_hours = to_decimal(
             item.get("credit_hours"),
-            Decimal("0")
+            Decimal("0.00")
         )
 
-        if credit > 0:
-
-            weighted_points += (
-                point * credit
+        if credit_hours <= Decimal("0.00"):
+            raise ValueError(
+                f"Credit hours are required for grade {grade}."
             )
 
-            total_credits += credit
+        # Grade Point × Credit Hours
+        total_quality_points += (
+            grade_point * credit_hours
+        )
 
-        else:
+        # Total Credits
+        total_credit_hours += credit_hours
 
-            # Equal weighting fallback
-            weighted_points += point
-            total_credits += Decimal("1")
-
-    if total_credits <= 0:
+    if total_credit_hours <= Decimal("0.00"):
         return Decimal("0.00")
 
+    # GPA = Total Quality Points / Total Credit Hours
     gpa = (
-        weighted_points / total_credits
+        total_quality_points /
+        total_credit_hours
     )
 
+    # Final result = 2 decimal places
     return gpa.quantize(
         Decimal("0.01"),
         rounding=ROUND_HALF_UP
     )
+
+
+
 
 # ============================================================
 # TEACHER ENTER MARKS
@@ -75201,6 +75202,22 @@ def exam_results():
 # ============================================================
 # DELETE EXAM RESULT
 # ============================================================
+# ============================================================
+# DELETE EXAM RESULT
+#
+# DELETE ONLY:
+#   1. MARK
+#   2. STUDENT RESULT
+#
+# KEEP:
+#   - ExamSubject
+#   - Exam
+#   - Subject
+#   - Class
+#   - Section
+#
+# PostgreSQL / Neon
+# ============================================================
 
 @bp.route(
     "/exam-results/<int:result_id>/delete",
@@ -75213,7 +75230,24 @@ def delete_exam_result(result_id):
     # SECURITY
     # ========================================================
 
-    role = getattr(current_user, "role", None)
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    # --------------------------------------------------------
+    # Support Enum role
+    # --------------------------------------------------------
+
+    if hasattr(role, "value"):
+        role = role.value
+
+    role = (
+        str(role).strip().lower()
+        if role
+        else None
+    )
 
     allowed_roles = {
         "superadmin",
@@ -75225,7 +75259,7 @@ def delete_exam_result(result_id):
         abort(403)
 
     # ========================================================
-    # LOAD RESULT
+    # LOAD STUDENT RESULT
     # ========================================================
 
     result = (
@@ -75237,10 +75271,12 @@ def delete_exam_result(result_id):
     )
 
     if not result:
+
         flash(
             "Exam result was not found.",
             "error"
         )
+
         return redirect(
             url_for("main.exam_results")
         )
@@ -75251,10 +75287,19 @@ def delete_exam_result(result_id):
 
     if role == "superadmin":
 
-        # Superadmin can manage all institutions/results.
+        # ----------------------------------------------------
+        # SUPERADMIN
+        # Can manage all results.
+        # ----------------------------------------------------
+
         pass
 
     elif role == "school_admin":
+
+        # ----------------------------------------------------
+        # SCHOOL ADMIN
+        # Institution scope.
+        # ----------------------------------------------------
 
         user_institution_id = getattr(
             current_user,
@@ -75265,10 +75310,18 @@ def delete_exam_result(result_id):
         if not user_institution_id:
             abort(403)
 
-        if result.institution_id != user_institution_id:
+        if (
+            result.institution_id
+            != user_institution_id
+        ):
             abort(403)
 
     elif role == "branch_admin":
+
+        # ----------------------------------------------------
+        # BRANCH ADMIN
+        # Institution + branch scope.
+        # ----------------------------------------------------
 
         user_institution_id = getattr(
             current_user,
@@ -75282,54 +75335,82 @@ def delete_exam_result(result_id):
             None
         )
 
-        if not user_institution_id or not user_branch_id:
+        if (
+            not user_institution_id
+            or not user_branch_id
+        ):
             abort(403)
 
         if (
-            result.institution_id != user_institution_id
-            or result.branch_id != user_branch_id
+            result.institution_id
+            != user_institution_id
+            or result.branch_id
+            != user_branch_id
         ):
             abort(403)
 
     # ========================================================
-    # KEEP BASIC INFORMATION FOR FLASH MESSAGE
+    # SAVE REQUIRED IDs
+    # ========================================================
+
+    exam_id = result.exam_id
+    student_id = result.student_id
+
+    # ========================================================
+    # STUDENT NAME
     # ========================================================
 
     student_name = "Student"
 
-    if getattr(result, "student", None):
+    student = getattr(
+        result,
+        "student",
+        None
+    )
+
+    if student:
 
         student_name = (
             getattr(
-                result.student,
+                student,
                 "full_name",
                 None
             )
             or getattr(
-                result.student,
+                student,
                 "name",
                 None
             )
             or "Student"
         )
 
+    # ========================================================
+    # EXAM NAME
+    # ========================================================
+
     exam_name = "Exam"
 
-    if getattr(result, "exam", None):
+    exam = getattr(
+        result,
+        "exam",
+        None
+    )
+
+    if exam:
 
         exam_name = (
             getattr(
-                result.exam,
+                exam,
                 "name",
                 None
             )
             or getattr(
-                result.exam,
+                exam,
                 "title",
                 None
             )
             or getattr(
-                result.exam,
+                exam,
                 "code",
                 None
             )
@@ -75342,39 +75423,123 @@ def delete_exam_result(result_id):
 
     try:
 
+        # ====================================================
+        # STEP 1
+        # GET EXAM SUBJECT IDs
+        #
+        # IMPORTANT:
+        #
+        # We are ONLY reading ExamSubject.
+        #
+        # NOTHING is deleted from ExamSubject.
+        # ====================================================
+
+        exam_subject_rows = (
+            db.session.query(
+                ExamSubject.id
+            )
+            .filter(
+                ExamSubject.exam_id == exam_id
+            )
+            .all()
+        )
+
+        exam_subject_ids = [
+            row[0]
+            for row in exam_subject_rows
+        ]
+
+        # ====================================================
+        # STEP 2
+        # DELETE MARKS
+        #
+        # ONLY:
+        #
+        #   student_id = this student
+        #
+        #   AND
+        #
+        #   exam_subject_id belongs to this exam
+        #
+        # ====================================================
+
+        deleted_marks = 0
+
+        if exam_subject_ids:
+
+            deleted_marks = (
+                Mark.query
+                .filter(
+                    Mark.student_id == student_id,
+                    Mark.exam_subject_id.in_(
+                        exam_subject_ids
+                    )
+                )
+                .delete(
+                    synchronize_session=False
+                )
+            )
+
+        # ====================================================
+        # STEP 3
+        # DELETE STUDENT RESULT
+        # ====================================================
+
         db.session.delete(result)
+
+        # ====================================================
+        # STEP 4
+        # COMMIT
+        # ====================================================
 
         db.session.commit()
 
+        # ====================================================
+        # SUCCESS MESSAGE
+        # ====================================================
+
         flash(
             f"Exam result for {student_name} "
-            f"({exam_name}) was deleted successfully.",
+            f"({exam_name}) was deleted successfully. "
+            f"{deleted_marks} subject mark(s) were also deleted.",
             "success"
         )
 
     except Exception as exc:
 
+        # ====================================================
+        # ROLLBACK
+        # ====================================================
+
         db.session.rollback()
 
         current_app.logger.exception(
-            "Failed to delete exam result %s: %s",
+            "DELETE EXAM RESULT FAILED | "
+            "result_id=%s | exam_id=%s | student_id=%s",
             result_id,
-            exc
+            exam_id,
+            student_id
         )
 
+        # ====================================================
+        # ERROR MESSAGE
+        # ====================================================
+
         flash(
-            "Unable to delete the exam result. "
-            "Please try again.",
+            "Unable to delete the exam result "
+            "and related subject marks. "
+            "No changes were saved.",
             "error"
         )
 
     # ========================================================
-    # RETURN TO RESULTS PAGE
+    # RETURN
     # ========================================================
 
     return redirect(
         url_for("main.exam_results")
     )
+
 
 
 # ============================================================
@@ -77351,6 +77516,35 @@ def add_exam_result():
     )
 
     # ========================================================
+    # RESPONSE TYPE
+    #
+    # IMPORTANT:
+    # X-Requested-With is NOT used here.
+    #
+    # The exam-result JavaScript sends:
+    #     X-Requested-With: XMLHttpRequest
+    #     Accept: text/html, */*
+    #
+    # Therefore this request must remain an HTML request.
+    #
+    # JSON is returned ONLY when the client explicitly asks for
+    # application/json.
+    # ========================================================
+
+    accept_header = (
+        request.headers.get(
+            "Accept",
+            ""
+        )
+        or ""
+    ).lower()
+
+    is_json_request = (
+        "application/json"
+        in accept_header
+    )
+
+    # ========================================================
     # HELPERS
     # ========================================================
 
@@ -77360,7 +77554,10 @@ def add_exam_result():
             return None
 
         try:
-            value = str(value).strip()
+
+            value = str(
+                value
+            ).strip()
 
             if not value:
                 return None
@@ -77371,6 +77568,7 @@ def add_exam_result():
             ValueError,
             TypeError,
         ):
+
             return None
 
     def request_value(
@@ -77441,6 +77639,13 @@ def add_exam_result():
             if value
             else ""
         )
+
+    def json_error(message):
+
+        return jsonify({
+            "success": False,
+            "message": str(message),
+        }), 400
 
     # ========================================================
     # REQUEST VALUES
@@ -77530,6 +77735,12 @@ def add_exam_result():
         ]
     )
 
+    navigation = (
+        str(navigation).strip().lower()
+        if navigation
+        else None
+    )
+
     # ========================================================
     # EXAMS
     # ========================================================
@@ -77541,9 +77752,12 @@ def add_exam_result():
         if not current_institution_id:
             abort(403)
 
-        exams_query = exams_query.filter(
-            Exam.institution_id
-            == current_institution_id
+        exams_query = (
+            exams_query
+            .filter(
+                Exam.institution_id
+                == current_institution_id
+            )
         )
 
     elif role == "branch_admin":
@@ -77554,11 +77768,14 @@ def add_exam_result():
         ):
             abort(403)
 
-        exams_query = exams_query.filter(
-            Exam.institution_id
-            == current_institution_id,
-            Exam.branch_id
-            == current_branch_id,
+        exams_query = (
+            exams_query
+            .filter(
+                Exam.institution_id
+                == current_institution_id,
+                Exam.branch_id
+                == current_branch_id,
+            )
         )
 
     exams = (
@@ -77581,18 +77798,24 @@ def add_exam_result():
 
         if role == "school_admin":
 
-            exam_query = exam_query.filter(
-                Exam.institution_id
-                == current_institution_id
+            exam_query = (
+                exam_query
+                .filter(
+                    Exam.institution_id
+                    == current_institution_id
+                )
             )
 
         elif role == "branch_admin":
 
-            exam_query = exam_query.filter(
-                Exam.institution_id
-                == current_institution_id,
-                Exam.branch_id
-                == current_branch_id,
+            exam_query = (
+                exam_query
+                .filter(
+                    Exam.institution_id
+                    == current_institution_id,
+                    Exam.branch_id
+                    == current_branch_id,
+                )
             )
 
         exam = (
@@ -77605,8 +77828,18 @@ def add_exam_result():
 
         if not exam:
 
+            message = (
+                "The selected examination was not found "
+                "or is outside your access scope."
+            )
+
+            if is_json_request:
+                return json_error(
+                    message
+                )
+
             flash(
-                "The selected examination was not found or is outside your access scope.",
+                message,
                 "error"
             )
 
@@ -77636,8 +77869,18 @@ def add_exam_result():
             "published",
         }:
 
+            message = (
+                "Marks can only be entered for draft, "
+                "ongoing, or published examinations."
+            )
+
+            if is_json_request:
+                return json_error(
+                    message
+                )
+
             flash(
-                "Marks can only be entered for draft, ongoing, or published examinations.",
+                message,
                 "error"
             )
 
@@ -77683,16 +77926,12 @@ def add_exam_result():
 
     if exam:
 
-        programs_query = (
+        programs = (
             Program.query
             .filter(
                 Program.institution_id
                 == exam.institution_id
             )
-        )
-
-        programs = (
-            programs_query
             .order_by(
                 db.func.lower(
                     Program.name
@@ -77720,11 +77959,6 @@ def add_exam_result():
                 == exam.academic_year_id,
             )
         )
-
-        # ----------------------------------------------------
-        # If exam has a program, show only that program's
-        # classes.
-        # ----------------------------------------------------
 
         if getattr(
             exam,
@@ -77835,12 +78069,7 @@ def add_exam_result():
                 )
 
             # =================================================
-            # IMPORTANT:
-            # CLEAR UNUSED SCOPE VALUES
-            #
-            # This prevents old class values from interfering
-            # when switching between Section / All Students /
-            # All Program.
+            # CLEAR UNUSED VALUES
             # =================================================
 
             if scope_type == "class":
@@ -77893,8 +78122,7 @@ def add_exam_result():
                 selected_class = (
                     Class.query
                     .filter(
-                        Class.id
-                        == class_id,
+                        Class.id == class_id,
                         Class.institution_id
                         == exam.institution_id,
                         Class.branch_id
@@ -77932,8 +78160,7 @@ def add_exam_result():
                 selected_section = (
                     Section.query
                     .filter(
-                        Section.id
-                        == section_id,
+                        Section.id == section_id,
                         Section.institution_id
                         == exam.institution_id,
                         Section.branch_id
@@ -77949,10 +78176,6 @@ def add_exam_result():
                     raise ValueError(
                         "Selected section does not belong to this examination."
                     )
-
-                # ---------------------------------------------
-                # Validate section's class
-                # ---------------------------------------------
 
                 section_class = (
                     Class.query
@@ -77996,8 +78219,7 @@ def add_exam_result():
                 selected_program = (
                     Program.query
                     .filter(
-                        Program.id
-                        == program_id,
+                        Program.id == program_id,
                         Program.institution_id
                         == exam.institution_id,
                     )
@@ -78037,8 +78259,7 @@ def add_exam_result():
             student = (
                 Student.query
                 .filter(
-                    Student.id
-                    == student_id,
+                    Student.id == student_id,
                     Student.institution_id
                     == exam.institution_id,
                     Student.branch_id
@@ -78064,6 +78285,8 @@ def add_exam_result():
                     == student.id,
                     StudentEnrollment.academic_year_id
                     == exam.academic_year_id,
+                    StudentEnrollment.branch_id
+                    == exam.branch_id,
                 )
                 .order_by(
                     StudentEnrollment.id.desc()
@@ -78129,10 +78352,14 @@ def add_exam_result():
                 )
             )
 
-            if enrollment_status and enrollment_status not in {
-                "active",
-                "enrolled",
-            }:
+            if (
+                enrollment_status
+                and enrollment_status
+                not in {
+                    "active",
+                    "enrolled",
+                }
+            ):
 
                 raise ValueError(
                     "The selected student is not actively enrolled for this academic year."
@@ -78174,10 +78401,6 @@ def add_exam_result():
                 None
             )
 
-            # -------------------------------------------------
-            # CLASS
-            # -------------------------------------------------
-
             if (
                 scope_type == "class"
                 and enrollment_class_id
@@ -78188,10 +78411,6 @@ def add_exam_result():
                     "The selected student does not belong to the selected class."
                 )
 
-            # -------------------------------------------------
-            # SECTION
-            # -------------------------------------------------
-
             if (
                 scope_type == "section"
                 and enrollment_section_id
@@ -78201,10 +78420,6 @@ def add_exam_result():
                 raise ValueError(
                     "The selected student does not belong to the selected section."
                 )
-
-            # -------------------------------------------------
-            # PROGRAM
-            # -------------------------------------------------
 
             if (
                 scope_type == "all_program"
@@ -78228,8 +78443,7 @@ def add_exam_result():
             existing_marks = (
                 Mark.query
                 .filter(
-                    Mark.student_id
-                    == student.id,
+                    Mark.student_id == student.id,
                     Mark.exam_subject_id.in_(
                         exam_subject_ids
                     )
@@ -78304,13 +78518,15 @@ def add_exam_result():
                 is_absent = (
                     request.form.get(
                         absent_field
-                    ) == "1"
+                    )
+                    == "1"
                 )
 
                 is_exempted = (
                     request.form.get(
                         exempted_field
-                    ) == "1"
+                    )
+                    == "1"
                 )
 
                 subject_remark = request.form.get(
@@ -78325,7 +78541,7 @@ def add_exam_result():
                 )
 
                 # =================================================
-                # BOTH ABSENT + EXEMPTED
+                # BOTH
                 # =================================================
 
                 if (
@@ -78363,9 +78579,7 @@ def add_exam_result():
                     if mark is None:
 
                         mark = Mark(
-                            exam_subject_id=(
-                                exam_subject_id
-                            ),
+                            exam_subject_id=exam_subject_id,
                             student_id=student.id,
                             marks_obtained=None,
                             is_absent=True,
@@ -78378,7 +78592,9 @@ def add_exam_result():
                             entered_by=None,
                         )
 
-                        db.session.add(mark)
+                        db.session.add(
+                            mark
+                        )
 
                         mark_map[
                             exam_subject_id
@@ -78396,6 +78612,7 @@ def add_exam_result():
                         mark.status = "submitted"
 
                     changed_any = True
+
                     continue
 
                 # =================================================
@@ -78407,9 +78624,7 @@ def add_exam_result():
                     if mark is None:
 
                         mark = Mark(
-                            exam_subject_id=(
-                                exam_subject_id
-                            ),
+                            exam_subject_id=exam_subject_id,
                             student_id=student.id,
                             marks_obtained=None,
                             is_absent=False,
@@ -78422,7 +78637,9 @@ def add_exam_result():
                             entered_by=None,
                         )
 
-                        db.session.add(mark)
+                        db.session.add(
+                            mark
+                        )
 
                         mark_map[
                             exam_subject_id
@@ -78440,6 +78657,7 @@ def add_exam_result():
                         mark.status = "submitted"
 
                     changed_any = True
+
                     continue
 
                 # =================================================
@@ -78498,9 +78716,7 @@ def add_exam_result():
                 if mark is None:
 
                     mark = Mark(
-                        exam_subject_id=(
-                            exam_subject_id
-                        ),
+                        exam_subject_id=exam_subject_id,
                         student_id=student.id,
                         marks_obtained=marks,
                         is_absent=False,
@@ -78513,7 +78729,9 @@ def add_exam_result():
                         entered_by=None,
                     )
 
-                    db.session.add(mark)
+                    db.session.add(
+                        mark
+                    )
 
                     mark_map[
                         exam_subject_id
@@ -78553,7 +78771,7 @@ def add_exam_result():
             db.session.flush()
 
             # =================================================
-            # PRESERVE EXISTING RESULT STATUS
+            # PRESERVE RESULT STATUS
             # =================================================
 
             old_result = (
@@ -78599,7 +78817,7 @@ def add_exam_result():
             db.session.flush()
 
             # =================================================
-            # RESTORE WORKFLOW STATUS
+            # RESTORE RESULT STATUS
             # =================================================
 
             saved_result = (
@@ -78627,7 +78845,9 @@ def add_exam_result():
                     None
                 ):
 
-                    saved_result.status = "draft"
+                    saved_result.status = (
+                        "draft"
+                    )
 
             # =================================================
             # RANKINGS
@@ -78648,17 +78868,429 @@ def add_exam_result():
             db.session.commit()
 
             # =================================================
-            # SUCCESS
+            # BUILD NEXT / PREVIOUS STUDENTS
+            # =================================================
+
+            navigation_query = (
+                StudentEnrollment.query
+                .join(
+                    Student,
+                    Student.id
+                    == StudentEnrollment.student_id
+                )
+                .filter(
+                    StudentEnrollment.academic_year_id
+                    == exam.academic_year_id,
+
+                    StudentEnrollment.branch_id
+                    == exam.branch_id,
+
+                    StudentEnrollment.institution_id
+                    == exam.institution_id,
+
+                    Student.branch_id
+                    == exam.branch_id,
+
+                    Student.institution_id
+                    == exam.institution_id,
+                )
+            )
+
+            # =================================================
+            # EXAM PROGRAM
+            # =================================================
+
+            if exam.program_id:
+
+                navigation_query = (
+                    navigation_query
+                    .filter(
+                        StudentEnrollment.program_id
+                        == exam.program_id
+                    )
+                )
+
+            # =================================================
+            # SCOPE
+            # =================================================
+
+            if scope_type == "class":
+
+                navigation_query = (
+                    navigation_query
+                    .filter(
+                        StudentEnrollment.class_id
+                        == class_id
+                    )
+                )
+
+            elif scope_type == "section":
+
+                navigation_query = (
+                    navigation_query
+                    .filter(
+                        StudentEnrollment.section_id
+                        == section_id
+                    )
+                )
+
+            elif scope_type == "all_program":
+
+                navigation_query = (
+                    navigation_query
+                    .filter(
+                        StudentEnrollment.program_id
+                        == program_id
+                    )
+                )
+
+            # =================================================
+            # ACTIVE ENROLLMENTS
+            # =================================================
+
+            enrollment_status_column = getattr(
+                StudentEnrollment,
+                "status",
+                None
+            )
+
+            if enrollment_status_column is not None:
+
+                navigation_query = (
+                    navigation_query
+                    .filter(
+                        db.func.lower(
+                            enrollment_status_column
+                        ).in_(
+                            [
+                                "active",
+                                "enrolled",
+                            ]
+                        )
+                    )
+                )
+
+            # =================================================
+            # NAVIGATION ENROLLMENTS
+            # =================================================
+
+            navigation_enrollments = (
+                navigation_query
+                .order_by(
+                    db.func.lower(
+                        Student.full_name
+                    ).asc(),
+                    Student.id.asc()
+                )
+                .all()
+            )
+
+            navigation_student_ids = [
+                enrollment.student_id
+                for enrollment
+                in navigation_enrollments
+                if getattr(
+                    enrollment,
+                    "student_id",
+                    None
+                )
+            ]
+
+            navigation_exam_subject_ids = [
+                item.id
+                for item in exam_subjects
+            ]
+
+            navigation_marks = []
+
+            if (
+                navigation_student_ids
+                and navigation_exam_subject_ids
+            ):
+
+                navigation_marks = (
+                    Mark.query
+                    .filter(
+                        Mark.student_id.in_(
+                            navigation_student_ids
+                        ),
+                        Mark.exam_subject_id.in_(
+                            navigation_exam_subject_ids
+                        ),
+                    )
+                    .all()
+                )
+
+            navigation_marks_by_student = {}
+
+            for mark in navigation_marks:
+
+                navigation_marks_by_student.setdefault(
+                    mark.student_id,
+                    {}
+                )[
+                    mark.exam_subject_id
+                ] = mark
+
+            navigation_students = []
+
+            for nav_enrollment in navigation_enrollments:
+
+                nav_student = getattr(
+                    nav_enrollment,
+                    "student",
+                    None
+                )
+
+                if not nav_student:
+                    continue
+
+                nav_mark_map = (
+                    navigation_marks_by_student.get(
+                        nav_student.id,
+                        {}
+                    )
+                )
+
+                has_missing = False
+
+                for exam_subject in exam_subjects:
+
+                    nav_mark = nav_mark_map.get(
+                        exam_subject.id
+                    )
+
+                    if nav_mark is None:
+
+                        has_missing = True
+                        break
+
+                    if (
+                        nav_mark.marks_obtained is None
+                        and not nav_mark.is_absent
+                        and not nav_mark.is_exempted
+                    ):
+
+                        has_missing = True
+                        break
+
+                # ------------------------------------------------
+                # COMPLETE STUDENTS ARE HIDDEN
+                # ------------------------------------------------
+
+                if not has_missing:
+                    continue
+
+                navigation_students.append(
+                    nav_student
+                )
+
+            # =================================================
+            # CURRENT INDEX
+            # =================================================
+
+            current_index = None
+
+            for index, nav_student in enumerate(
+                navigation_students
+            ):
+
+                if nav_student.id == student.id:
+
+                    current_index = index
+
+                    break
+
+            previous_student = None
+            next_student = None
+
+            if current_index is not None:
+
+                if current_index > 0:
+
+                    previous_student = (
+                        navigation_students[
+                            current_index - 1
+                        ]
+                    )
+
+                if (
+                    current_index
+                    < len(navigation_students) - 1
+                ):
+
+                    next_student = (
+                        navigation_students[
+                            current_index + 1
+                        ]
+                    )
+
+            # =================================================
+            # DYNAMIC URLs
+            # =================================================
+
+            next_url = None
+            previous_url = None
+
+            if next_student:
+
+                next_url = url_for(
+                    "main.add_exam_result",
+                    exam_id=exam.id,
+                    scope_type=scope_type,
+                    class_id=class_id,
+                    section_id=section_id,
+                    program_id=program_id,
+                    student_id=next_student.id,
+                )
+
+            if previous_student:
+
+                previous_url = url_for(
+                    "main.add_exam_result",
+                    exam_id=exam.id,
+                    scope_type=scope_type,
+                    class_id=class_id,
+                    section_id=section_id,
+                    program_id=program_id,
+                    student_id=previous_student.id,
+                )
+
+            # =================================================
+            # EXPLICIT JSON REQUEST ONLY
+            #
+            # IMPORTANT:
+            # Normal JS exam-result request does NOT come here.
+            # It requests HTML, so it gets normal redirect.
+            # =================================================
+
+            if is_json_request:
+
+                return jsonify({
+                    "success": True,
+
+                    "message": (
+                        f"Marks for "
+                        f"{getattr(student, 'full_name', 'student')} "
+                        f"were saved successfully."
+                    ),
+
+                    "exam_id": exam.id,
+
+                    "student_id": student.id,
+
+                    "current_student": {
+                        "id": student.id,
+                        "name": getattr(
+                            student,
+                            "full_name",
+                            "Student"
+                        ),
+                    },
+
+                    "previous_student": (
+                        {
+                            "id": previous_student.id,
+                            "name": getattr(
+                                previous_student,
+                                "full_name",
+                                "Student"
+                            ),
+                            "url": previous_url,
+                        }
+                        if previous_student
+                        else None
+                    ),
+
+                    "next_student": (
+                        {
+                            "id": next_student.id,
+                            "name": getattr(
+                                next_student,
+                                "full_name",
+                                "Student"
+                            ),
+                            "url": next_url,
+                        }
+                        if next_student
+                        else None
+                    ),
+
+                    "previous_url": previous_url,
+
+                    "next_url": next_url,
+
+                    "has_previous": (
+                        previous_student
+                        is not None
+                    ),
+
+                    "has_next": (
+                        next_student
+                        is not None
+                    ),
+
+                    "total_students": len(
+                        navigation_students
+                    ),
+
+                    "current_index": (
+                        current_index + 1
+                        if current_index is not None
+                        else None
+                    ),
+
+                    "navigation": (
+                        navigation
+                        or "save"
+                    ),
+                })
+
+            # =================================================
+            # NORMAL HTML SUBMISSION
+            #
+            # THIS IS WHAT YOUR CURRENT JS USES.
+            #
+            # The request contains XMLHttpRequest header,
+            # but Accept is text/html.
+            #
+            # Therefore:
+            #     SAVE -> COMMIT -> FLASH -> REDIRECT
+            #
+            # This prevents the false:
+            #     "Unable to save the exam result."
             # =================================================
 
             flash(
-                f"Marks for {getattr(student, 'full_name', 'student')} were saved successfully.",
+                f"Marks for "
+                f"{getattr(student, 'full_name', 'student')} "
+                f"were saved successfully.",
                 "success"
             )
 
             # =================================================
-            # SAME STUDENT
+            # REDIRECT STUDENT
             # =================================================
+
+            redirect_student_id = student.id
+
+            if (
+                navigation == "next"
+                and next_student
+            ):
+
+                redirect_student_id = (
+                    next_student.id
+                )
+
+            elif (
+                navigation == "previous"
+                and previous_student
+            ):
+
+                redirect_student_id = (
+                    previous_student.id
+                )
 
             return redirect(
                 url_for(
@@ -78668,7 +79300,7 @@ def add_exam_result():
                     class_id=class_id,
                     section_id=section_id,
                     program_id=program_id,
-                    student_id=student.id,
+                    student_id=redirect_student_id,
                 )
             )
 
@@ -78679,6 +79311,13 @@ def add_exam_result():
         except ValueError as exc:
 
             db.session.rollback()
+
+            if is_json_request:
+
+                return jsonify({
+                    "success": False,
+                    "message": str(exc),
+                }), 400
 
             flash(
                 str(exc),
@@ -78709,6 +79348,16 @@ def add_exam_result():
                 program_id,
             )
 
+            if is_json_request:
+
+                return jsonify({
+                    "success": False,
+                    "message": (
+                        "Unable to save the exam result. "
+                        "The update was rolled back."
+                    ),
+                }), 500
+
             flash(
                 "Unable to save the exam result. "
                 "The update was rolled back. "
@@ -78737,10 +79386,16 @@ def add_exam_result():
             .filter(
                 StudentEnrollment.academic_year_id
                 == exam.academic_year_id,
+
                 StudentEnrollment.branch_id
                 == exam.branch_id,
+
+                StudentEnrollment.institution_id
+                == exam.institution_id,
+
                 Student.institution_id
                 == exam.institution_id,
+
                 Student.branch_id
                 == exam.branch_id,
             )
@@ -78775,9 +79430,9 @@ def add_exam_result():
                         == class_id
                     )
                 )
+
             else:
 
-                # No class selected = no students.
                 enrollment_query = (
                     enrollment_query
                     .filter(
@@ -78800,6 +79455,7 @@ def add_exam_result():
                         == section_id
                     )
                 )
+
             else:
 
                 enrollment_query = (
@@ -78824,6 +79480,7 @@ def add_exam_result():
                         == program_id
                     )
                 )
+
             else:
 
                 enrollment_query = (
@@ -78868,7 +79525,7 @@ def add_exam_result():
             )
 
         # ====================================================
-        # SORT NAME ASC
+        # SORT
         # ====================================================
 
         enrollments = (
@@ -78892,7 +79549,7 @@ def add_exam_result():
         ]
 
         # ====================================================
-        # GET ALL MARKS IN ONE QUERY
+        # GET MARKS ONCE
         # ====================================================
 
         student_ids = [
@@ -78937,7 +79594,7 @@ def add_exam_result():
             ] = mark
 
         # ====================================================
-        # BUILD LIST
+        # BUILD STUDENT LIST
         # ====================================================
 
         for enrollment in enrollments:
@@ -78985,13 +79642,14 @@ def add_exam_result():
                     )
 
             # ------------------------------------------------
-            # COMPLETE STUDENTS ARE HIDDEN
+            # COMPLETE STUDENTS HIDDEN
             # ------------------------------------------------
 
             if (
                 exam_subjects
                 and not missing_subject_ids
             ):
+
                 continue
 
             students.append({
@@ -79022,8 +79680,7 @@ def add_exam_result():
         selected_student = (
             Student.query
             .filter(
-                Student.id
-                == student_id,
+                Student.id == student_id,
                 Student.institution_id
                 == exam.institution_id,
                 Student.branch_id
@@ -79039,10 +79696,15 @@ def add_exam_result():
                 .filter(
                     StudentEnrollment.student_id
                     == selected_student.id,
+
                     StudentEnrollment.academic_year_id
                     == exam.academic_year_id,
+
                     StudentEnrollment.branch_id
                     == exam.branch_id,
+
+                    StudentEnrollment.institution_id
+                    == exam.institution_id,
                 )
                 .order_by(
                     StudentEnrollment.id.desc()
@@ -79068,9 +79730,10 @@ def add_exam_result():
                     .filter(
                         Mark.student_id
                         == selected_student.id,
+
                         Mark.exam_subject_id.in_(
                             exam_subject_ids
-                        )
+                        ),
                     )
                     .all()
                 )
@@ -79139,9 +79802,13 @@ def add_exam_result():
 
                 selected_subject_rows.append({
                     "exam_subject": exam_subject,
+
                     "mark": mark,
+
                     "subject_name": subject_name,
+
                     "teacher_name": teacher_name,
+
                     "marks": (
                         mark.marks_obtained
                         if (
@@ -79151,31 +79818,38 @@ def add_exam_result():
                         )
                         else None
                     ),
+
                     "max_marks": (
                         exam_subject.max_marks
                     ),
+
                     "pass_marks": (
                         exam_subject.pass_marks
                     ),
+
                     "is_absent": (
                         bool(mark.is_absent)
                         if mark
                         else False
                     ),
+
                     "is_exempted": (
                         bool(mark.is_exempted)
                         if mark
                         else False
                     ),
+
                     "is_missing": True,
                 })
 
     # ========================================================
-    # DYNAMIC NEXT / PREVIOUS
+    # CURRENT / PREVIOUS / NEXT
     # ========================================================
 
     current_student_index = None
+
     previous_student = None
+
     next_student = None
 
     student_objects = [
@@ -79192,6 +79866,7 @@ def add_exam_result():
             if item_student.id == student_id:
 
                 current_student_index = index
+
                 break
 
     if current_student_index is not None:
@@ -79239,79 +79914,98 @@ def add_exam_result():
     return render_template(
         "backend/pages/results/add_exam_result.html",
 
-        # ----------------------------------------------------
-        # EXAMS
-        # ----------------------------------------------------
-
         exams=exams,
+
         exam=exam,
 
-        # ----------------------------------------------------
-        # PROGRAMS / CLASSES / SECTIONS
-        # ----------------------------------------------------
-
         programs=programs,
+
         classes=classes,
+
         sections=sections,
 
-        # ----------------------------------------------------
-        # CURRENT SELECTION
-        # ----------------------------------------------------
-
         scope_type=scope_type,
+
         selected_class_id=class_id,
+
         selected_section_id=section_id,
+
         selected_program_id=program_id,
+
         selected_student_id=student_id,
 
-        # ----------------------------------------------------
-        # STUDENTS
-        # ----------------------------------------------------
-
         students=students,
+
         total_students=total_students,
+
         missing_subject_count=missing_subject_count,
 
-        # ----------------------------------------------------
-        # SELECTED STUDENT
-        # ----------------------------------------------------
-
         selected_student=selected_student,
+
         selected_enrollment=selected_enrollment,
 
-        # ----------------------------------------------------
-        # SUBJECTS
-        # ----------------------------------------------------
-
         exam_subjects=exam_subjects,
+
         subject_rows=selected_subject_rows,
+
         selected_subject_rows=selected_subject_rows,
+
         selected_missing_count=selected_missing_count,
 
-        # ----------------------------------------------------
-        # NAVIGATION
-        # ----------------------------------------------------
-
         current_student_index=current_student_index,
+
         previous_student=previous_student,
+
         next_student=next_student,
 
-        # ----------------------------------------------------
-        # PAGE
-        # ----------------------------------------------------
-
         page_mode="add",
+
         can_edit_subject_marks=True,
+
         can_edit_workflow_status=False,
 
-        # ----------------------------------------------------
-        # USER
-        # ----------------------------------------------------
-
         user=current_user,
-    )
 
-    
+        # ====================================================
+        # DYNAMIC NAVIGATION
+        # ====================================================
+
+        has_previous=(
+            previous_student is not None
+        ),
+
+        has_next=(
+            next_student is not None
+        ),
+
+        previous_url=(
+            url_for(
+                "main.add_exam_result",
+                exam_id=exam.id,
+                scope_type=scope_type,
+                class_id=class_id,
+                section_id=section_id,
+                program_id=program_id,
+                student_id=previous_student.id,
+            )
+            if previous_student
+            else None
+        ),
+
+        next_url=(
+            url_for(
+                "main.add_exam_result",
+                exam_id=exam.id,
+                scope_type=scope_type,
+                class_id=class_id,
+                section_id=section_id,
+                program_id=program_id,
+                student_id=next_student.id,
+            )
+            if next_student
+            else None
+        ),
+    )
 
 
 
