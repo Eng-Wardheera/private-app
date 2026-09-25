@@ -2536,11 +2536,20 @@
    18. No Bootstrap
    19. No CSRF
    20. Backend remains final authority
+   21. Responsive status messages
+   22. Responsive loading messages
+   23. Responsive success/error/warning messages
+   24. Mobile-friendly DataTables
+   25. No Role ID
+   26. No Role Text
+   27. No Admission No
+   28. No Roll No
 
    STUDENT DISPLAY
    ------------------------------------------------------------
    Student Photo
    Student Name
+   Attendance
 
    REMOVED COMPLETELY
    ------------------------------------------------------------
@@ -2907,6 +2916,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ========================================================
        SHOW ALERT
+       --------------------------------------------------------
+       RESPONSIVE MESSAGE SUPPORT
     ======================================================== */
 
     function showAlert(
@@ -2937,6 +2948,50 @@ document.addEventListener("DOMContentLoaded", function () {
             "show",
             type
         );
+
+        /*
+         * Responsive accessibility behavior.
+         * On small screens the message becomes visible
+         * immediately without breaking the layout.
+         */
+        attendanceAlert.setAttribute(
+            "role",
+            "alert"
+        );
+
+        attendanceAlert.setAttribute(
+            "aria-live",
+            "assertive"
+        );
+
+        /*
+         * Scroll only when the alert is outside the
+         * current visible area.
+         */
+        try {
+
+            const rect =
+                attendanceAlert.getBoundingClientRect();
+
+            if (
+                rect.top < 0 ||
+                rect.bottom >
+                    window.innerHeight
+            ) {
+
+                attendanceAlert.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest"
+                });
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Responsive alert scroll warning:",
+                error
+            );
+        }
     }
 
 
@@ -2956,6 +3011,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         attendanceAlert.textContent =
             "";
+
+        attendanceAlert.setAttribute(
+            "aria-live",
+            "polite"
+        );
     }
 
 
@@ -2963,12 +3023,48 @@ document.addEventListener("DOMContentLoaded", function () {
        SHOW LOADING
     ======================================================== */
 
-    function showLoading() {
+    function showLoading(
+        message = "Loading..."
+    ) {
 
         if (attendanceLoading) {
 
+            const loadingText =
+                attendanceLoading.querySelector(
+                    ".attendance-loading-text"
+                );
+
+            if (loadingText) {
+
+                loadingText.textContent =
+                    message;
+
+            } else {
+
+                /*
+                 * Preserve existing spinner and
+                 * loading structure.
+                 */
+                const spans =
+                    attendanceLoading.querySelectorAll(
+                        "span"
+                    );
+
+                if (spans.length > 1) {
+
+                    spans[spans.length - 1].textContent =
+                        message;
+
+                }
+            }
+
             attendanceLoading.classList.add(
                 "show"
+            );
+
+            attendanceLoading.setAttribute(
+                "aria-live",
+                "polite"
             );
         }
     }
@@ -2986,6 +3082,49 @@ document.addEventListener("DOMContentLoaded", function () {
                 "show"
             );
         }
+    }
+
+
+    /* ========================================================
+       RESPONSIVE STATUS MESSAGE
+       --------------------------------------------------------
+       This is an additional responsive message area
+       that uses the existing subjectStatus element.
+
+       It automatically adapts to:
+       - Desktop
+       - Tablet
+       - Mobile
+    ======================================================== */
+
+    function updateResponsiveStatus(
+        message,
+        type = "info"
+    ) {
+
+        if (!subjectStatus) {
+
+            return;
+        }
+
+        subjectStatus.textContent =
+            safeString(message);
+
+        subjectStatus.classList.remove(
+            "status-info",
+            "status-success",
+            "status-warning",
+            "status-error"
+        );
+
+        subjectStatus.classList.add(
+            "status-" + type
+        );
+
+        subjectStatus.setAttribute(
+            "aria-live",
+            "polite"
+        );
     }
 
 
@@ -3365,13 +3504,10 @@ document.addEventListener("DOMContentLoaded", function () {
         message
     ) {
 
-        if (!subjectStatus) {
-
-            return;
-        }
-
-        subjectStatus.textContent =
-            safeString(message);
+        updateResponsiveStatus(
+            message,
+            "info"
+        );
     }
 
 
@@ -3542,8 +3678,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     "Select another subject to take attendance."
                 );
 
-                updateSubjectStatus(
-                    "This subject has already been submitted for today."
+                updateResponsiveStatus(
+                    "This subject has already been submitted for today.",
+                    "warning"
                 );
             },
 
@@ -3636,20 +3773,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!classId) {
 
-            updateSubjectStatus(
-                "Select a class to load your assigned subjects."
+            updateResponsiveStatus(
+                "Select a class to load your assigned subjects.",
+                "info"
             );
 
             return;
         }
 
-        showLoading();
+        showLoading(
+            "Loading assigned subjects..."
+        );
 
         const requestId =
             ++loadingRequestId;
 
-        updateSubjectStatus(
-            "Loading assigned subjects..."
+        updateResponsiveStatus(
+            "Loading assigned subjects...",
+            "info"
         );
 
         try {
@@ -3861,8 +4002,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!subjectsCache.length) {
 
-                updateSubjectStatus(
-                    "No active subject assignment was found for this class."
+                updateResponsiveStatus(
+                    "No active subject assignment was found for this class.",
+                    "warning"
                 );
 
                 if (attendanceEmptyText) {
@@ -3892,8 +4034,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!availableSubjects.length) {
 
-                updateSubjectStatus(
-                    "All assigned subjects have already been submitted for today."
+                updateResponsiveStatus(
+                    "All assigned subjects have already been submitted for today.",
+                    "warning"
                 );
 
                 if (attendanceEmptyText) {
@@ -3906,9 +4049,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            updateSubjectStatus(
+            updateResponsiveStatus(
                 subjectsCache.length +
-                " subject(s) loaded. Select a subject to load students."
+                " subject(s) loaded. Select a subject to load students.",
+                "success"
             );
 
 
@@ -3942,8 +4086,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 "error"
             );
 
-            updateSubjectStatus(
-                "Unable to load assigned subjects."
+            updateResponsiveStatus(
+                "Unable to load assigned subjects.",
+                "error"
             );
 
         } finally {
@@ -4142,10 +4287,13 @@ document.addEventListener("DOMContentLoaded", function () {
            LOADING
         ==================================================== */
 
-        showLoading();
-
-        updateSubjectStatus(
+        showLoading(
             "Loading students..."
+        );
+
+        updateResponsiveStatus(
+            "Loading students...",
+            "info"
         );
 
         const requestId =
@@ -4279,8 +4427,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     "Attendance for this subject has already been submitted today."
                 );
 
-                updateSubjectStatus(
-                    "Attendance has already been submitted for today."
+                updateResponsiveStatus(
+                    "Attendance has already been submitted for today.",
+                    "warning"
                 );
 
                 openModal(
@@ -4367,8 +4516,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     "No active students were found for this class, subject and section."
                 );
 
-                updateSubjectStatus(
-                    "No active students found."
+                updateResponsiveStatus(
+                    "No active students found.",
+                    "warning"
                 );
 
                 return;
@@ -4449,7 +4599,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     )
                     : "All Sections";
 
-            updateSubjectStatus(
+            updateResponsiveStatus(
                 subjectName +
                 " • " +
                 sectionName +
@@ -4457,7 +4607,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 today +
                 " • " +
                 students.length +
-                " student(s)"
+                " student(s)",
+                "success"
             );
 
 
@@ -4510,8 +4661,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 "error"
             );
 
-            updateSubjectStatus(
-                "Unable to load students."
+            updateResponsiveStatus(
+                "Unable to load students.",
+                "error"
             );
 
         } finally {
@@ -4534,6 +4686,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
        Student Photo
        Student Name
+       Attendance
 
        REMOVED:
 
@@ -4794,9 +4947,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     "#attendanceTable",
                     {
 
-                        responsive:
-                            true,
-
                         autoWidth:
                             false,
 
@@ -4902,7 +5052,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                         /* ====================================
-                           RESPONSIVE
+                           RESPONSIVE DATATABLE
+                           ------------------------------------------------
+                           Mobile/tablet/desktop support.
                         ==================================== */
 
                         responsive: {
@@ -5024,6 +5176,11 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             showAlert(
+                "Unable to initialize the student table.",
+                "error"
+            );
+
+            updateResponsiveStatus(
                 "Unable to initialize the student table.",
                 "error"
             );
@@ -5200,6 +5357,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
        Statistics use ALL students,
        not only current DataTables page.
+
+       submittedStudents remains 0 because the frontend
+       does not receive per-student submitted state.
+
+       Existing submitted attendance is handled at
+       SUBJECT / SECTION / SESSION level.
     ======================================================== */
 
     function updateStatistics() {
@@ -5230,31 +5393,13 @@ document.addEventListener("DOMContentLoaded", function () {
             ).length;
 
 
-        /* ====================================================
-           CURRENT STUDENTS ARE NEWLY LOADED.
-
-           submittedStudents is kept at 0 unless backend
-           explicitly supplies per-student submission state.
-        ==================================================== */
-
-        let submitted =
+        /*
+         * Attendance is submitted as a whole session.
+         * Therefore there is no fake per-student submitted
+         * count here.
+         */
+        const submitted =
             0;
-
-        students.forEach(
-            function (student) {
-
-                if (
-                    student.already_submitted ===
-                        true ||
-
-                    student.attendance_submitted ===
-                        true
-                ) {
-
-                    submitted += 1;
-                }
-            }
-        );
 
 
         if (totalStudentsEl) {
@@ -5442,8 +5587,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     "Select a subject to load students."
                 );
 
-                updateSubjectStatus(
-                    "Select a subject to load students."
+                updateResponsiveStatus(
+                    "Select a subject to load students.",
+                    "info"
                 );
 
                 return;
@@ -5515,6 +5661,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ========================================================
        DATE PROTECTION
+       --------------------------------------------------------
+       User cannot change the date.
+       Browser changes are immediately restored.
     ======================================================== */
 
     attendanceDateInput.addEventListener(
@@ -5901,17 +6050,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (attendanceTable) {
 
-            const lengthSelect =
-                attendanceTable
-                    .closest(".dt-container")
-                    ?.querySelector(
+            const tableContainer =
+                attendanceTable.closest(
+                    ".dt-container"
+                );
+
+            if (tableContainer) {
+
+                const lengthSelect =
+                    tableContainer.querySelector(
                         ".dt-length select"
                     );
 
-            if (lengthSelect) {
+                if (lengthSelect) {
 
-                lengthSelect.disabled =
-                    true;
+                    lengthSelect.disabled =
+                        true;
+                }
             }
         }
 
@@ -6033,11 +6188,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     10
                 );
 
+
             const teacherSubjectId =
                 parseInt(
                     subjectSelect.value,
                     10
                 );
+
 
             const sectionId =
                 sectionSelect.value
@@ -6063,7 +6220,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             /* =================================================
                SUBMIT ALL STUDENTS
-               -------------------------------------------------
+
                IMPORTANT:
 
                DataTables page size does NOT affect submission.
@@ -6282,10 +6439,11 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
 
-            updateSubjectStatus(
+            updateResponsiveStatus(
                 "Attendance submitted successfully for " +
                 getTodayLocal() +
-                "."
+                ".",
+                "success"
             );
 
 
@@ -6350,8 +6508,135 @@ document.addEventListener("DOMContentLoaded", function () {
                 "Unable to save attendance. Please try again.",
                 "error"
             );
+
+
+            updateResponsiveStatus(
+                error.message ||
+                "Unable to save attendance. Please try again.",
+                "error"
+            );
         }
     }
+
+
+    /* ========================================================
+       RESPONSIVE WINDOW HANDLING
+       --------------------------------------------------------
+       This keeps DataTables and the attendance layout
+       synchronized when screen size changes.
+
+       Useful for:
+       - Desktop resize
+       - Tablet rotation
+       - Mobile rotation
+       - Browser split-screen
+    ======================================================== */
+
+    let responsiveResizeTimer = null;
+
+    window.addEventListener(
+        "resize",
+        function () {
+
+            clearTimeout(
+                responsiveResizeTimer
+            );
+
+            responsiveResizeTimer =
+                setTimeout(
+                    function () {
+
+                        if (
+                            attendanceDataTable &&
+                            typeof attendanceDataTable.columns ===
+                                "object"
+                        ) {
+
+                            try {
+
+                                attendanceDataTable
+                                    .columns
+                                    .adjust();
+
+                                if (
+                                    typeof attendanceDataTable.responsive ===
+                                        "object" &&
+                                    attendanceDataTable.responsive &&
+                                    typeof attendanceDataTable.responsive.recalc ===
+                                        "function"
+                                ) {
+
+                                    attendanceDataTable
+                                        .responsive
+                                        .recalc();
+                                }
+
+                            } catch (error) {
+
+                                console.warn(
+                                    "Responsive DataTables resize warning:",
+                                    error
+                                );
+                            }
+                        }
+
+                    },
+                    150
+                );
+        }
+    );
+
+
+    /* ========================================================
+       MOBILE ORIENTATION CHANGE
+    ======================================================== */
+
+    window.addEventListener(
+        "orientationchange",
+        function () {
+
+            setTimeout(
+                function () {
+
+                    if (
+                        attendanceDataTable &&
+                        typeof attendanceDataTable.columns ===
+                            "object"
+                    ) {
+
+                        try {
+
+                            attendanceDataTable
+                                .columns
+                                .adjust();
+
+                            if (
+                                typeof attendanceDataTable.responsive ===
+                                    "object" &&
+                                attendanceDataTable.responsive &&
+                                typeof attendanceDataTable.responsive.recalc ===
+                                    "function"
+                            ) {
+
+                                attendanceDataTable
+                                    .responsive
+                                    .recalc();
+                            }
+
+                        } catch (error) {
+
+                            console.warn(
+                                "Orientation DataTables warning:",
+                                error
+                            );
+                        }
+                    }
+
+                },
+                200
+            );
+        }
+    );
 
 
     /* ========================================================
@@ -6386,8 +6671,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } else {
 
-            updateSubjectStatus(
-                "Select a class to load your assigned subjects."
+            updateResponsiveStatus(
+                "Select a class to load your assigned subjects.",
+                "info"
             );
         }
     }
