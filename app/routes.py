@@ -7280,23 +7280,6 @@ def get_student_exam_subjects(
 
 # ============================================================
 # CALCULATE STUDENT RESULT
-#
-# RULES
-# ------------------------------------------------------------
-# 1. Student is scoped by active enrollment.
-# 2. ExamSubjects are scoped by:
-#       institution
-#       branch
-#       program
-#       class
-#       section
-# 3. One subject is counted only once.
-# 4. Section-specific ExamSubject overrides class-level.
-# 5. Missing marks do NOT become zero.
-# 6. Absent / exempted have no obtained mark.
-# 7. 49.99 = FAIL.
-# 8. 50.00 = PASS.
-# 9. Result remains INCOMPLETE if any subject is missing.
 # ============================================================
 
 def calculate_student_result(
@@ -7307,6 +7290,22 @@ def calculate_student_result(
 ):
 
     # ========================================================
+    # VALIDATE EXAM
+    # ========================================================
+
+    if not exam:
+
+        current_app.logger.warning(
+            "Cannot calculate result: exam is None | "
+            "student=%s institution=%s branch=%s",
+            student_id,
+            institution_id,
+            branch_id
+        )
+
+        return None
+
+    # ========================================================
     # GET ACTIVE ENROLLMENT FOR THIS EXAM
     # ========================================================
 
@@ -7314,10 +7313,16 @@ def calculate_student_result(
         StudentEnrollment.query
         .filter(
             StudentEnrollment.student_id == student_id,
-            StudentEnrollment.institution_id == institution_id,
-            StudentEnrollment.branch_id == branch_id,
+
+            StudentEnrollment.institution_id
+            == institution_id,
+
+            StudentEnrollment.branch_id
+            == branch_id,
+
             StudentEnrollment.academic_year_id
             == exam.academic_year_id,
+
             StudentEnrollment.status == "active"
         )
         .order_by(
@@ -7327,6 +7332,7 @@ def calculate_student_result(
     )
 
     if not enrollment:
+
         current_app.logger.warning(
             "No active enrollment found | "
             "student=%s exam=%s institution=%s branch=%s",
@@ -7340,6 +7346,16 @@ def calculate_student_result(
 
     # ========================================================
     # GET ONLY THE STUDENT'S VALID EXAM SUBJECTS
+    #
+    # This helper must already implement:
+    #
+    # - institution scope
+    # - branch scope
+    # - program scope
+    # - class scope
+    # - section scope
+    # - section-specific priority over class-level
+    # - duplicate subject protection
     # ========================================================
 
     exam_subjects = get_student_exam_subjects(
@@ -7369,22 +7385,102 @@ def calculate_student_result(
         return None
 
     # ========================================================
-    # GET MARK IDs
+    # REMOVE DUPLICATE SUBJECTS SAFELY
+    #
+    # One subject must be counted only once.
+    #
+    # get_student_exam_subjects() should already handle the
+    # section-specific-over-class-level rule.
+    #
+    # This extra protection prevents accidental double counting.
+    # ========================================================
+
+    unique_exam_subjects = []
+
+    seen_subject_ids = set()
+
+    for exam_subject in exam_subjects:
+
+        subject_id = getattr(
+            exam_subject,
+            "subject_id",
+            None
+        )
+
+        if subject_id is None:
+
+            current_app.logger.warning(
+                "ExamSubject has no subject_id | "
+                "exam_subject=%s exam=%s",
+                getattr(
+                    exam_subject,
+                    "id",
+                    None
+                ),
+                exam.id
+            )
+
+            continue
+
+        if subject_id in seen_subject_ids:
+
+            current_app.logger.error(
+                "Duplicate ExamSubject subject detected | "
+                "exam=%s student=%s subject=%s "
+                "exam_subject=%s",
+                exam.id,
+                student_id,
+                subject_id,
+                getattr(
+                    exam_subject,
+                    "id",
+                    None
+                )
+            )
+
+            continue
+
+        seen_subject_ids.add(
+            subject_id
+        )
+
+        unique_exam_subjects.append(
+            exam_subject
+        )
+
+    # ========================================================
+    # IF ALL EXAM SUBJECTS WERE INVALID
+    # ========================================================
+
+    if not unique_exam_subjects:
+
+        current_app.logger.warning(
+            "No valid unique ExamSubjects remain | "
+            "student=%s exam=%s",
+            student_id,
+            exam.id
+        )
+
+        return None
+
+    # ========================================================
+    # GET EXAM SUBJECT IDS
     # ========================================================
 
     exam_subject_ids = [
         item.id
-        for item in exam_subjects
+        for item in unique_exam_subjects
     ]
 
     # ========================================================
-    # GET MARKS
+    # GET STUDENT MARKS
     # ========================================================
 
     marks = (
         Mark.query
         .filter(
             Mark.student_id == student_id,
+
             Mark.exam_subject_id.in_(
                 exam_subject_ids
             )
@@ -7398,23 +7494,30 @@ def calculate_student_result(
     # ========================================================
     # BUILD MARK MAP
     #
-    # If old duplicate Mark rows exist, keep the first
-    # canonical record instead of allowing dictionary overwrite.
+    # If duplicate Mark rows somehow exist, keep the first
+    # canonical row.
     # ========================================================
 
     marks_by_exam_subject = {}
 
     for mark in marks:
 
-        exam_subject_id = mark.exam_subject_id
+        exam_subject_id = (
+            mark.exam_subject_id
+        )
 
-        if exam_subject_id in marks_by_exam_subject:
+        if exam_subject_id in (
+            marks_by_exam_subject
+        ):
 
             current_app.logger.error(
                 "Duplicate Mark detected | "
-                "student=%s exam_subject=%s "
-                "existing_mark=%s duplicate_mark=%s",
+                "student=%s exam=%s "
+                "exam_subject=%s "
+                "existing_mark=%s "
+                "duplicate_mark=%s",
                 student_id,
+                exam.id,
                 exam_subject_id,
                 marks_by_exam_subject[
                     exam_subject_id
@@ -7432,26 +7535,34 @@ def calculate_student_result(
     # CALCULATION VARIABLES
     # ========================================================
 
-    total_marks = Decimal("0.00")
+    total_marks = Decimal(
+        "0.00"
+    )
 
-    total_possible = Decimal("0.00")
+    total_possible = Decimal(
+        "0.00"
+    )
 
+    # Number of subjects with an actual numeric mark.
     completed = 0
 
+    # Number of subjects whose calculated percentage is < 50.
     failed = 0
 
     subject_results = []
 
-    PASS_MARK = Decimal("50.00")
+    PASS_MARK = Decimal(
+        "50.00"
+    )
 
     # ========================================================
-    # LOOP THROUGH SCOPED SUBJECTS
+    # LOOP THROUGH ALL ASSIGNED SUBJECTS
     # ========================================================
 
-    for exam_subject in exam_subjects:
+    for exam_subject in unique_exam_subjects:
 
         # ====================================================
-        # SUBJECT
+        # GET SUBJECT
         # ====================================================
 
         subject = getattr(
@@ -7463,14 +7574,23 @@ def calculate_student_result(
         if subject is None:
 
             current_app.logger.warning(
-                "ExamSubject %s has no Subject.",
-                exam_subject.id
+                "ExamSubject %s has no Subject | "
+                "exam=%s student=%s",
+                getattr(
+                    exam_subject,
+                    "id",
+                    None
+                ),
+                exam.id,
+                student_id
             )
 
+            # No valid subject means it cannot safely be
+            # included in calculation.
             continue
 
         # ====================================================
-        # MAX MARKS
+        # GET MAX MARKS
         # ====================================================
 
         max_marks = to_decimal(
@@ -7481,7 +7601,9 @@ def calculate_student_result(
             )
         )
 
-        if max_marks <= Decimal("0.00"):
+        if max_marks <= Decimal(
+            "0.00"
+        ):
 
             max_marks = to_decimal(
                 getattr(
@@ -7491,12 +7613,26 @@ def calculate_student_result(
                 )
             )
 
-        if max_marks <= Decimal("0.00"):
+        if max_marks <= Decimal(
+            "0.00"
+        ):
 
-            max_marks = Decimal("100.00")
+            max_marks = Decimal(
+                "100.00"
+            )
 
         # ====================================================
-        # TOTAL POSSIBLE
+        # ALL ASSIGNED SUBJECTS ENTER DENOMINATOR
+        #
+        # IMPORTANT:
+        # Even if there is NO Mark row, this subject still
+        # contributes its max_marks.
+        #
+        # Example:
+        #
+        # 5 subjects × 100
+        # total_possible = 500
+        #
         # ====================================================
 
         total_possible += max_marks
@@ -7510,86 +7646,180 @@ def calculate_student_result(
         )
 
         # ====================================================
-        # NO MARK
+        # DEFAULT:
+        #
+        # Missing = ZERO
+        # ====================================================
+
+        obtained = Decimal(
+            "0.00"
+        )
+
+        has_numeric_mark = False
+
+        # ====================================================
+        # NO MARK ROW
+        #
+        # Missing subject = ZERO
         # ====================================================
 
         if mark is None:
-            continue
+
+            obtained = Decimal(
+                "0.00"
+            )
+
+            current_app.logger.info(
+                "Missing mark treated as ZERO | "
+                "student=%s exam=%s "
+                "exam_subject=%s subject=%s",
+                student_id,
+                exam.id,
+                exam_subject.id,
+                getattr(
+                    subject,
+                    "id",
+                    None
+                )
+            )
 
         # ====================================================
-        # ABSENT / EXEMPTED
+        # ABSENT
         #
-        # They are not completed.
+        # Absent = ZERO
         # ====================================================
 
-        if (
-            getattr(
-                mark,
-                "is_absent",
-                False
-            )
-            or
-            getattr(
-                mark,
-                "is_exempted",
-                False
-            )
+        elif getattr(
+            mark,
+            "is_absent",
+            False
         ):
 
-            continue
+            obtained = Decimal(
+                "0.00"
+            )
+
+            current_app.logger.info(
+                "Absent mark treated as ZERO | "
+                "student=%s exam=%s "
+                "exam_subject=%s mark=%s",
+                student_id,
+                exam.id,
+                exam_subject.id,
+                mark.id
+            )
+
+        # ====================================================
+        # EXEMPTED
+        #
+        # Exempted = ZERO
+        # ====================================================
+
+        elif getattr(
+            mark,
+            "is_exempted",
+            False
+        ):
+
+            obtained = Decimal(
+                "0.00"
+            )
+
+            current_app.logger.info(
+                "Exempted mark treated as ZERO | "
+                "student=%s exam=%s "
+                "exam_subject=%s mark=%s",
+                student_id,
+                exam.id,
+                exam_subject.id,
+                mark.id
+            )
 
         # ====================================================
         # NULL MARK
+        #
+        # NULL = ZERO
         # ====================================================
 
-        if mark.marks_obtained is None:
-            continue
+        elif mark.marks_obtained is None:
+
+            obtained = Decimal(
+                "0.00"
+            )
+
+            current_app.logger.info(
+                "NULL mark treated as ZERO | "
+                "student=%s exam=%s "
+                "exam_subject=%s mark=%s",
+                student_id,
+                exam.id,
+                exam_subject.id,
+                mark.id
+            )
 
         # ====================================================
-        # CONVERT MARK
+        # NUMERIC MARK
         # ====================================================
 
-        obtained = to_decimal(
-            mark.marks_obtained
-        )
+        else:
+
+            obtained = to_decimal(
+                mark.marks_obtained
+            )
+
+            has_numeric_mark = True
+
+            # ----------------------------------------------
+            # NEGATIVE SAFETY
+            # ----------------------------------------------
+
+            if obtained < Decimal(
+                "0.00"
+            ):
+
+                obtained = Decimal(
+                    "0.00"
+                )
+
+            # ----------------------------------------------
+            # MAX MARK SAFETY
+            # ----------------------------------------------
+
+            if obtained > max_marks:
+
+                obtained = max_marks
+
+            # ----------------------------------------------
+            # ACTUAL ENTERED MARK
+            # ----------------------------------------------
+
+            completed += 1
 
         # ====================================================
-        # NEGATIVE SAFETY
-        # ====================================================
-
-        if obtained < Decimal("0.00"):
-
-            obtained = Decimal("0.00")
-
-        # ====================================================
-        # MAX MARK SAFETY
-        # ====================================================
-
-        if obtained > max_marks:
-
-            obtained = max_marks
-
-        # ====================================================
-        # ADD TOTAL
+        # ADD OBTAINED MARK
         # ====================================================
 
         total_marks += obtained
-
-        completed += 1
 
         # ====================================================
         # SUBJECT PERCENTAGE
         # ====================================================
 
-        if max_marks > Decimal("0.00"):
+        if max_marks > Decimal(
+            "0.00"
+        ):
 
             subject_percentage = (
                 obtained / max_marks
-            ) * Decimal("100.00")
+            ) * Decimal(
+                "100.00"
+            )
 
         else:
 
-            subject_percentage = Decimal("0.00")
+            subject_percentage = Decimal(
+                "0.00"
+            )
 
         subject_percentage = (
             subject_percentage.quantize(
@@ -7608,6 +7838,12 @@ def calculate_student_result(
 
         # ====================================================
         # SUBJECT PASS / FAIL
+        #
+        # Missing = 0%
+        # Absent = 0%
+        # Exempted = 0%
+        #
+        # Therefore all are FAIL when max_marks > 0.
         # ====================================================
 
         if subject_percentage < PASS_MARK:
@@ -7626,6 +7862,8 @@ def calculate_student_result(
 
         # ====================================================
         # GPA INPUT
+        #
+        # Every assigned subject is included.
         # ====================================================
 
         subject_results.append({
@@ -7633,27 +7871,92 @@ def calculate_student_result(
             "credit_hours": credit_hours
         })
 
+        # ====================================================
+        # SUBJECT LOG
+        # ====================================================
+
+        current_app.logger.debug(
+            "Subject result | "
+            "student=%s exam=%s "
+            "subject=%s exam_subject=%s "
+            "mark=%s obtained=%s max=%s "
+            "percentage=%s grade=%s "
+            "numeric=%s",
+            student_id,
+            exam.id,
+            getattr(
+                subject,
+                "id",
+                None
+            ),
+            exam_subject.id,
+            getattr(
+                mark,
+                "id",
+                None
+            ),
+            obtained,
+            max_marks,
+            subject_percentage,
+            subject_grade,
+            has_numeric_mark
+        )
+
     # ========================================================
     # TOTAL SUBJECTS
     # ========================================================
 
     subjects_total = len(
-        exam_subjects
+        unique_exam_subjects
     )
 
     # ========================================================
-    # OVERALL PERCENTAGE
+    # SAFETY
+    #
+    # If some ExamSubjects had no valid Subject relationship
+    # and were skipped above, use actual calculated subjects.
     # ========================================================
 
-    if total_possible > Decimal("0.00"):
+    if len(subject_results) != subjects_total:
+
+        subjects_total = len(
+            subject_results
+        )
+
+    # ========================================================
+    # OVERALL PERCENTAGE
+    #
+    # ALL ASSIGNED SUBJECTS are included.
+    #
+    # Example:
+    #
+    # Math    80
+    # English 70
+    # Somali  60
+    # Biology 0   <-- missing
+    # Physics 0   <-- missing
+    #
+    # total = 210
+    # possible = 500
+    # percentage = 42%
+    #
+    # ========================================================
+
+    if total_possible > Decimal(
+        "0.00"
+    ):
 
         percentage = (
             total_marks / total_possible
-        ) * Decimal("100.00")
+        ) * Decimal(
+            "100.00"
+        )
 
     else:
 
-        percentage = Decimal("0.00")
+        percentage = Decimal(
+            "0.00"
+        )
 
     percentage = percentage.quantize(
         Decimal("0.01"),
@@ -7664,21 +7967,16 @@ def calculate_student_result(
     # AVERAGE
     # ========================================================
 
-    if completed > 0:
-
-        average = percentage
-
-    else:
-
-        average = Decimal("0.00")
-
-    average = average.quantize(
+    average = percentage.quantize(
         Decimal("0.01"),
         rounding=ROUND_HALF_UP
     )
 
     # ========================================================
     # OVERALL GRADE
+    #
+    # 49.99 -> F
+    # 50.00 -> D
     # ========================================================
 
     grade = calculate_grade(
@@ -7687,6 +7985,8 @@ def calculate_student_result(
 
     # ========================================================
     # GPA
+    #
+    # Calculated from ALL assigned subjects.
     # ========================================================
 
     gpa = calculate_gpa_from_subjects(
@@ -7696,36 +7996,44 @@ def calculate_student_result(
     # ========================================================
     # RESULT STATUS
     #
-    # MISSING / ABSENT / EXEMPTED = INCOMPLETE
+    # IMPORTANT:
+    #
+    # There is NO INCOMPLETE for missing subjects.
+    #
+    # Missing = ZERO
+    #
+    # Therefore:
+    #
+    # percentage >= 50 -> PASS
+    # percentage <  50 -> FAIL
+    #
     # ========================================================
 
-    if completed < subjects_total:
-
-        result_status = "incomplete"
-
-    elif failed > 0:
-
-        result_status = "fail"
-
-    else:
+    if percentage >= PASS_MARK:
 
         result_status = "pass"
 
+    else:
+
+        result_status = "fail"
+
     # ========================================================
-    # FIND EXISTING RESULT
+    # FIND EXISTING STUDENT RESULT
     # ========================================================
 
     result = (
         StudentResult.query
         .filter(
             StudentResult.exam_id == exam.id,
-            StudentResult.student_id == student_id
+
+            StudentResult.student_id
+            == student_id
         )
         .first()
     )
 
     # ========================================================
-    # CREATE IF NEEDED
+    # CREATE RESULT IF NEEDED
     # ========================================================
 
     if not result:
@@ -7818,36 +8126,55 @@ def calculate_student_result(
     # ========================================================
     # WORKFLOW STATUS
     #
-    # Calculation does not approve/publish automatically.
+    # Any recalculation means the previous approval/publication
+    # is no longer valid.
     # ========================================================
 
     result.status = "draft"
+
+    # Clear approval/publication timestamps if those columns
+    # exist on your StudentResult model.
+    if hasattr(
+        result,
+        "approved_at"
+    ):
+
+        result.approved_at = None
+
+    if hasattr(
+        result,
+        "published_at"
+    ):
+
+        result.published_at = None
 
     # ========================================================
     # CALCULATED TIME
     # ========================================================
 
     result.calculated_at = (
-        datetime.now(timezone.utc)
+        datetime.now(
+            timezone.utc
+        )
     )
 
     # ========================================================
     # FLUSH
-    #
-    # Makes result available to ranking calculation.
     # ========================================================
 
     db.session.flush()
 
     # ========================================================
-    # LOG FINAL RESULT
+    # FINAL LOG
     # ========================================================
 
     current_app.logger.info(
         "Student result calculated | "
-        "student=%s exam=%s class=%s section=%s "
+        "student=%s exam=%s "
+        "class=%s section=%s "
         "subjects=%s completed=%s failed=%s "
-        "total=%s possible=%s percentage=%s "
+        "total=%s possible=%s "
+        "percentage=%s grade=%s "
         "status=%s",
         student_id,
         exam.id,
@@ -7859,6 +8186,7 @@ def calculate_student_result(
         total_marks,
         total_possible,
         percentage,
+        grade,
         result_status
     )
 
@@ -63450,26 +63778,6 @@ def add_exam_subject():
 
 # ============================================================
 # BULK ADD EXAM SUBJECTS
-#
-# RULES
-# ------------------------------------------------------------
-# 1. One teacher CAN teach multiple subjects.
-# 2. One teacher CAN teach multiple classes.
-# 3. Teacher assignments are evaluated PER SUBJECT + CLASS.
-# 4. Class-specific TeacherSubject has priority over global
-#    TeacherSubject where class_id is NULL.
-# 5. Section-specific TeacherSubject has priority over
-#    class-level TeacherSubject when applicable.
-# 6. Multiple rows for the SAME teacher are NOT treated as
-#    multiple teachers.
-# 7. Multiple DISTINCT teachers for the SAME SUBJECT + CLASS
-#    are NOT automatically selected.
-# 8. Existing ExamSubject combinations are never duplicated.
-# 9. Branch security is preserved.
-# 10. GET data remains compatible with templates expecting:
-#
-#       teachers_by_subject[subject_id][0].full_name
-#
 # ============================================================
 
 @bp.route(
@@ -76669,66 +76977,7 @@ def delete_exam_result(result_id):
 
 # ============================================================
 # DELETE EXAM MARK + STUDENT RESULT
-#
-# RULES
-# ------------------------------------------------------------
-# 1. superadmin:
-#       can delete any mark.
-#
-# 2. school_admin:
-#       only marks from own institution.
-#
-# 3. branch_admin:
-#       only marks from own institution + branch.
-#
-# 4. teacher:
-#       only marks from own institution + branch.
-#
-# 5. Mark must belong to a valid ExamSubject.
-#
-# 6. ExamSubject must belong to a valid Exam.
-#
-# 7. When a Mark is deleted:
-#       - Mark is deleted.
-#       - Related StudentResult is deleted.
-#
-# 8. Mark + StudentResult are deleted in ONE transaction.
-#
-# 9. If anything fails:
-#       - rollback everything.
-#
-# 10. No automatic recalculation after deletion because the
-#     complete StudentResult itself is intentionally removed.
-# ============================================================
-# ============================================================
-# DELETE EXAM MARK
-#
-# RULES
-# ------------------------------------------------------------
-# 1. Only superadmin / school_admin / branch_admin / teacher.
-# 2. Mark must exist.
-# 3. Mark must belong to a valid ExamSubject.
-# 4. Mark must belong to a valid Exam.
-# 5. StudentResult is deleted together with the Mark.
-# 6. Everything happens in ONE transaction.
-# 7. If anything fails, everything is rolled back.
-# ============================================================
-
-# ============================================================
-# DELETE EXAM MARK
-#
-# RULES
-# ------------------------------------------------------------
-# 1. marks_obtained = 0.00 IS A VALID MARK.
-# 2. URL MUST contain Mark.id.
-# 3. Delete ONLY selected Mark.
-# 4. NEVER delete StudentResult.
-# 5. Recalculate existing StudentResult.
-# 6. Deleted subject becomes MISSING.
-# 7. Other marks remain untouched.
-# 8. Missing subject => INCOMPLETE.
-# ============================================================
-
+ #============================================================
 @bp.route(
     "/exam-results/marks/<int:mark_id>/delete",
     methods=["POST"]
@@ -77662,7 +77911,7 @@ def delete_exam_mark(mark_id):
         or url_for("main.exam_results")
     )
 
-    
+
 
 # ============================================================
 # EDIT EXAM RESULT
