@@ -1,3 +1,4 @@
+
 {% extends "backend/home/base.html" %}
 
 {% block title %}
@@ -9,8 +10,10 @@ View Exam Result
 <style>
 
 /* ============================================================
-   VIEW EXAM RESULT
-   ============================================================ */
+   SOOYAAL - VIEW EXAM RESULT
+   PURE CSS
+   NO BOOTSTRAP
+============================================================ */
 
 .view-result-page {
     width: 100%;
@@ -21,7 +24,7 @@ View Exam Result
 
 /* ============================================================
    PAGE HEADER
-   ============================================================ */
+============================================================ */
 
 .result-page-header {
     display: flex;
@@ -41,29 +44,39 @@ View Exam Result
     width: 52px;
     height: 52px;
     border-radius: 14px;
+
     background: linear-gradient(
         135deg,
         #06245f,
         #33206f
     );
+
     color: #fff;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 21px;
-    box-shadow: 0 8px 20px rgba(6, 36, 95, .18);
+
+    box-shadow:
+        0 8px 20px rgba(6, 36, 95, .18);
+
     flex-shrink: 0;
 }
 
 .result-header-title h1 {
     margin: 0 0 5px;
+
     font-size: 26px;
     font-weight: 800;
+
     color: #16213e;
 }
 
 .result-header-title p {
     margin: 0;
+
     color: #718096;
     font-size: 14px;
 }
@@ -73,7 +86,9 @@ View Exam Result
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
+
     margin-top: 9px;
+
     font-size: 12px;
     color: #8b95a7;
 }
@@ -90,7 +105,7 @@ View Exam Result
 
 /* ============================================================
    HEADER ACTIONS
-   ============================================================ */
+============================================================ */
 
 .result-header-actions {
     display: flex;
@@ -101,19 +116,27 @@ View Exam Result
 
 .result-action {
     height: 42px;
+
     padding: 0 16px;
+
     border-radius: 10px;
     border: 1px solid #dfe5ef;
+
     background: #fff;
     color: #334155;
+
     text-decoration: none;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+
     font-size: 13px;
     font-weight: 700;
+
     cursor: pointer;
+
     transition: .2s ease;
 }
 
@@ -129,14 +152,9 @@ View Exam Result
     color: #fff;
 }
 
-.result-action.primary:hover {
-    background: #041d4d;
-    color: #fff;
-}
-
 /* ============================================================
-   FLASH MESSAGES
-   ============================================================ */
+   FLASH
+============================================================ */
 
 .flash-container {
     margin-bottom: 20px;
@@ -144,12 +162,17 @@ View Exam Result
 
 .flash-message {
     padding: 13px 16px;
+
     border-radius: 10px;
+
     margin-bottom: 10px;
+
     font-size: 13px;
+
     display: flex;
     align-items: center;
     gap: 10px;
+
     border: 1px solid transparent;
 }
 
@@ -180,29 +203,40 @@ View Exam Result
 
 /* ============================================================
    MAIN LAYOUT
-   ============================================================ */
+============================================================ */
 
 .result-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 370px;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        370px;
+
     gap: 24px;
+
     align-items: start;
 }
 
 /* ============================================================
    MAIN CARD
-   ============================================================ */
+============================================================ */
 
 .result-main-card {
     background: #fff;
+
     border: 1px solid #e5eaf1;
+
     border-radius: 16px;
-    box-shadow: 0 7px 25px rgba(15, 23, 42, .06);
+
+    box-shadow:
+        0 7px 25px rgba(15, 23, 42, .06);
+
     overflow: hidden;
 }
 
 .result-section {
     padding: 26px 28px;
+
     border-bottom: 1px solid #edf0f5;
 }
 
@@ -212,30 +246,37 @@ View Exam Result
 
 /* ============================================================
    SECTION HEADER
-   ============================================================ */
+============================================================ */
 
 .result-section-header {
     display: flex;
     align-items: center;
     gap: 12px;
+
     margin-bottom: 22px;
 }
 
 .section-icon {
     width: 38px;
     height: 38px;
+
     border-radius: 10px;
+
     background: #eef3fb;
     color: #06245f;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 15px;
+
     flex-shrink: 0;
 }
 
 .result-section-header h2 {
     margin: 0;
+
     font-size: 16px;
     color: #182338;
     font-weight: 800;
@@ -243,45 +284,60 @@ View Exam Result
 
 .result-section-header p {
     margin: 3px 0 0;
+
     color: #8993a5;
     font-size: 12px;
 }
 
 /* ============================================================
    STUDENT HERO
-   ============================================================ */
+============================================================ */
 
 .student-hero {
     display: flex;
     align-items: center;
     gap: 18px;
+
     padding: 20px;
+
     border: 1px solid #e5eaf1;
-    background: linear-gradient(
-        135deg,
-        #f7f9fd,
-        #fbfcff
-    );
+
+    background:
+        linear-gradient(
+            135deg,
+            #f7f9fd,
+            #fbfcff
+        );
+
     border-radius: 14px;
 }
 
 .student-avatar {
     width: 72px;
     height: 72px;
+
     border-radius: 18px;
-    background: linear-gradient(
-        135deg,
-        #06245f,
-        #33206f
-    );
+
+    background:
+        linear-gradient(
+            135deg,
+            #06245f,
+            #33206f
+        );
+
     color: #fff;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 26px;
     font-weight: 800;
+
     flex-shrink: 0;
-    box-shadow: 0 8px 20px rgba(6, 36, 95, .16);
+
+    box-shadow:
+        0 8px 20px rgba(6, 36, 95, .16);
 }
 
 .student-hero-content {
@@ -290,9 +346,12 @@ View Exam Result
 
 .student-hero-content h2 {
     margin: 0;
+
     color: #172033;
+
     font-size: 21px;
     font-weight: 800;
+
     line-height: 1.3;
 }
 
@@ -300,6 +359,7 @@ View Exam Result
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+
     margin-top: 8px;
 }
 
@@ -307,11 +367,16 @@ View Exam Result
     display: inline-flex;
     align-items: center;
     gap: 6px;
+
     padding: 6px 9px;
+
     border-radius: 8px;
+
     background: #fff;
     border: 1px solid #e3e8f0;
+
     color: #647084;
+
     font-size: 11px;
     font-weight: 700;
 }
@@ -322,14 +387,14 @@ View Exam Result
 
 /* ============================================================
    INFORMATION GRID
-   ============================================================ */
+============================================================ */
 
 .info-grid {
     display: grid;
-    grid-template-columns: repeat(
-        2,
-        minmax(0, 1fr)
-    );
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
     gap: 16px;
 }
 
@@ -337,19 +402,20 @@ View Exam Result
     min-width: 0;
 }
 
-.info-item.full {
-    grid-column: 1 / -1;
-}
-
 .info-label {
     display: flex;
     align-items: center;
     gap: 7px;
+
     margin-bottom: 7px;
+
     color: #7a8496;
+
     font-size: 11px;
     font-weight: 800;
+
     text-transform: uppercase;
+
     letter-spacing: .45px;
 }
 
@@ -360,114 +426,155 @@ View Exam Result
 
 .info-value {
     min-height: 45px;
+
     padding: 11px 13px;
+
     background: #f8fafc;
+
     border: 1px solid #e8edf3;
+
     border-radius: 10px;
+
     color: #202b3c;
+
     font-size: 13px;
     font-weight: 600;
+
     display: flex;
     align-items: center;
+
     word-break: break-word;
 }
 
-.info-value.muted {
-    color: #8b95a7;
+.empty-value {
+    color: #98a1b1;
+    font-style: italic;
     font-weight: 500;
 }
 
 /* ============================================================
-   EXAM CODE
-   ============================================================ */
+   RESULT CODE
+============================================================ */
 
 .code-box {
-    background: linear-gradient(
-        135deg,
-        #f4f7fc,
-        #f8f9fd
-    );
+    background:
+        linear-gradient(
+            135deg,
+            #f4f7fc,
+            #f8f9fd
+        );
+
     border: 1px dashed #b9c6dc;
+
     border-radius: 12px;
+
     padding: 18px;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 15px;
-}
 
-.code-content {
-    min-width: 0;
+    gap: 15px;
 }
 
 .code-label {
     font-size: 10px;
     font-weight: 800;
+
     text-transform: uppercase;
+
     color: #8b95a7;
+
     letter-spacing: .7px;
+
     margin-bottom: 6px;
 }
 
 .code-value {
     font-family: "Courier New", monospace;
+
     font-size: 23px;
     font-weight: 800;
+
     color: #06245f;
+
     letter-spacing: 1px;
+
     word-break: break-all;
 }
 
 .copy-code-btn {
     border: 1px solid #d9e0eb;
+
     background: #fff;
+
     color: #06245f;
+
     height: 40px;
+
     padding: 0 13px;
+
     border-radius: 9px;
+
     display: inline-flex;
     align-items: center;
     gap: 7px;
+
     font-size: 12px;
     font-weight: 700;
+
     cursor: pointer;
+
     transition: .2s ease;
+
     flex-shrink: 0;
 }
 
 .copy-code-btn:hover {
     background: #06245f;
+
     border-color: #06245f;
+
     color: #fff;
 }
 
 .copy-code-btn.copied {
     background: #32b73a;
+
     border-color: #32b73a;
+
     color: #fff;
 }
 
 /* ============================================================
-   STATUS BADGES
-   ============================================================ */
+   STATUS
+============================================================ */
 
 .status-badge {
     display: inline-flex;
     align-items: center;
     gap: 7px;
+
     padding: 7px 11px;
+
     border-radius: 999px;
+
     font-size: 10px;
     font-weight: 800;
+
     text-transform: uppercase;
+
     letter-spacing: .35px;
+
     white-space: nowrap;
 }
 
 .status-dot {
     width: 7px;
     height: 7px;
+
     border-radius: 50%;
+
     background: currentColor;
 }
 
@@ -512,34 +619,38 @@ View Exam Result
 }
 
 /* ============================================================
-   OVERALL RESULT
-   ============================================================ */
+   SUMMARY
+============================================================ */
 
 .result-summary-grid {
     display: grid;
-    grid-template-columns: repeat(
-        4,
-        minmax(0, 1fr)
-    );
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
     gap: 12px;
 }
 
 .summary-box {
-    position: relative;
     padding: 17px 15px;
+
     border-radius: 12px;
+
     background: #f8fafc;
+
     border: 1px solid #e8edf3;
-    overflow: hidden;
 }
 
 .summary-box.primary {
-    background: linear-gradient(
-        135deg,
-        #06245f,
-        #33206f
-    );
+    background:
+        linear-gradient(
+            135deg,
+            #06245f,
+            #33206f
+        );
+
     border-color: transparent;
+
     color: #fff;
 }
 
@@ -561,13 +672,18 @@ View Exam Result
 .summary-icon {
     width: 32px;
     height: 32px;
+
     border-radius: 9px;
+
     background: #eef3fb;
     color: #06245f;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 12px;
+
     margin-bottom: 9px;
 }
 
@@ -593,8 +709,11 @@ View Exam Result
 
 .summary-value {
     font-size: 22px;
+
     font-weight: 850;
+
     line-height: 1.15;
+
     color: #1b2639;
 }
 
@@ -604,8 +723,11 @@ View Exam Result
 
 .summary-label {
     margin-top: 4px;
+
     font-size: 10px;
+
     font-weight: 700;
+
     color: #8993a5;
 }
 
@@ -626,89 +748,121 @@ View Exam Result
 }
 
 /* ============================================================
-   RANKING GRID
-   ============================================================ */
+   RANKING
+============================================================ */
 
 .ranking-grid {
     display: grid;
-    grid-template-columns: repeat(
-        5,
-        minmax(0, 1fr)
-    );
+
+    grid-template-columns:
+        repeat(5, minmax(0, 1fr));
+
     gap: 10px;
 }
 
 .rank-box {
     background: #f8fafc;
+
     border: 1px solid #e8edf3;
+
     border-radius: 11px;
+
     padding: 14px 10px;
+
     text-align: center;
 }
 
 .rank-icon {
     width: 31px;
     height: 31px;
+
     border-radius: 8px;
+
     background: #eef3fb;
     color: #06245f;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     margin: 0 auto 8px;
+
     font-size: 12px;
 }
 
 .rank-value {
     color: #182338;
+
     font-size: 18px;
+
     font-weight: 850;
 }
 
 .rank-label {
     margin-top: 3px;
+
     color: #8993a5;
+
     font-size: 9px;
+
     font-weight: 800;
+
     text-transform: uppercase;
-    letter-spacing: .3px;
 }
 
 /* ============================================================
    SUBJECT TABLE
-   ============================================================ */
+============================================================ */
 
 .subject-table-wrapper {
     width: 100%;
+
     overflow-x: auto;
+
     border: 1px solid #e5eaf1;
+
     border-radius: 12px;
 }
 
 .subject-table {
     width: 100%;
-    min-width: 900px;
+
+    min-width: 1080px;
+
     border-collapse: collapse;
 }
 
 .subject-table thead th {
     background: #f6f8fc;
+
     border-bottom: 1px solid #dfe5ef;
+
     color: #697589;
+
     font-size: 10px;
+
     font-weight: 800;
+
     text-transform: uppercase;
+
     letter-spacing: .4px;
+
     padding: 13px 12px;
+
     text-align: left;
+
     white-space: nowrap;
 }
 
 .subject-table tbody td {
     padding: 13px 12px;
+
     border-bottom: 1px solid #edf0f5;
+
     color: #344054;
+
     font-size: 12px;
+
     vertical-align: middle;
 }
 
@@ -722,7 +876,9 @@ View Exam Result
 
 .subject-number {
     width: 40px;
+
     color: #8993a5;
+
     font-weight: 800;
 }
 
@@ -732,186 +888,303 @@ View Exam Result
 
 .subject-name {
     color: #1c2940;
+
     font-size: 13px;
+
     font-weight: 800;
 }
 
 .subject-code {
     margin-top: 3px;
+
     color: #8b95a7;
+
     font-size: 10px;
+
     font-family: "Courier New", monospace;
 }
 
 .marks-value {
     font-size: 14px;
+
     font-weight: 850;
+
     color: #1d2939;
 }
 
 .marks-muted {
     color: #98a1b1;
+
     font-weight: 600;
 }
 
 .percentage-value {
     color: #06245f;
+
     font-weight: 850;
 }
 
 .grade-value {
     font-size: 14px;
+
     font-weight: 850;
+
     color: #33206f;
 }
 
 .pass-marks {
     color: #667085;
+
     font-size: 11px;
+
     font-weight: 700;
 }
 
 .subject-remarks {
     max-width: 190px;
+
     color: #667085;
+
     font-size: 11px;
+
     line-height: 1.5;
 }
 
 /* ============================================================
+   DELETE BUTTON
+   IMPORTANT:
+   data-mark-id MUST BE mark.id
+   NEVER marks_obtained
+============================================================ */
+
+.subject-delete-column {
+    white-space: nowrap;
+}
+
+.subject-delete-btn {
+    border: 1px solid #dc3545;
+
+    background: #fff;
+
+    color: #dc3545;
+
+    min-height: 34px;
+
+    padding: 7px 12px;
+
+    border-radius: 8px;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    transition: .2s ease;
+
+    white-space: nowrap;
+}
+
+.subject-delete-btn:hover {
+    background: #dc3545;
+
+    border-color: #dc3545;
+
+    color: #fff;
+
+    transform: translateY(-1px);
+}
+
+.subject-delete-btn:disabled {
+    opacity: .6;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+/* ============================================================
    REMARKS
-   ============================================================ */
+============================================================ */
 
 .remarks-box {
     background: #f8fafc;
+
     border: 1px solid #e8edf3;
+
     border-radius: 11px;
+
     padding: 17px 18px;
+
     color: #4d596b;
+
     font-size: 13px;
+
     line-height: 1.8;
+
     min-height: 85px;
+
     white-space: pre-wrap;
+
     word-break: break-word;
 }
 
 /* ============================================================
-   RECORD INFORMATION
-   ============================================================ */
+   RECORD
+============================================================ */
 
 .record-grid {
     display: grid;
-    grid-template-columns: repeat(
-        3,
-        minmax(0, 1fr)
-    );
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
     gap: 14px;
 }
 
 .record-item {
     background: #f8fafc;
+
     border: 1px solid #e8edf3;
+
     border-radius: 11px;
+
     padding: 15px;
 }
 
 .record-item-label {
     font-size: 10px;
+
     color: #8993a5;
+
     font-weight: 800;
+
     text-transform: uppercase;
+
     letter-spacing: .4px;
+
     margin-bottom: 7px;
 }
 
 .record-item-value {
     font-size: 12px;
+
     color: #263247;
+
     font-weight: 700;
+
     word-break: break-word;
 }
 
 /* ============================================================
    SIDEBAR
-   ============================================================ */
+============================================================ */
 
 .result-sidebar {
     position: sticky;
+
     top: 20px;
+
     display: flex;
+
     flex-direction: column;
+
     gap: 18px;
 }
 
-/* ============================================================
-   STUDENT IDENTITY
-   ============================================================ */
+.identity-card,
+.sidebar-card {
+    background: #fff;
+
+    border: 1px solid #e5eaf1;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 7px 25px rgba(15, 23, 42, .06);
+}
 
 .identity-card {
-    background: #fff;
-    border: 1px solid #e5eaf1;
-    border-radius: 16px;
     padding: 25px 22px;
-    box-shadow: 0 7px 25px rgba(15, 23, 42, .06);
+
     text-align: center;
 }
 
 .identity-icon {
     width: 70px;
     height: 70px;
+
     border-radius: 20px;
-    background: linear-gradient(
-        135deg,
-        #06245f,
-        #33206f
-    );
+
+    background:
+        linear-gradient(
+            135deg,
+            #06245f,
+            #33206f
+        );
+
     color: #fff;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     margin: 0 auto 14px;
+
     font-size: 27px;
-    box-shadow: 0 10px 25px rgba(6, 36, 95, .2);
 }
 
 .identity-card h3 {
     margin: 0;
+
     font-size: 18px;
+
     color: #182338;
+
     font-weight: 800;
+
     line-height: 1.4;
+
     word-break: break-word;
 }
 
 .identity-code {
     margin-top: 6px;
+
     font-family: "Courier New", monospace;
+
     color: #06245f;
+
     font-size: 12px;
+
     font-weight: 800;
-    letter-spacing: .6px;
 }
 
 .identity-status {
     margin-top: 14px;
 }
 
-/* ============================================================
-   SIDEBAR CARD
-   ============================================================ */
-
 .sidebar-card {
-    background: #fff;
-    border: 1px solid #e5eaf1;
-    border-radius: 16px;
     padding: 20px;
-    box-shadow: 0 7px 25px rgba(15, 23, 42, .06);
 }
 
 .sidebar-card-title {
     display: flex;
+
     align-items: center;
+
     gap: 9px;
+
     margin-bottom: 15px;
 }
 
@@ -921,200 +1194,559 @@ View Exam Result
 
 .sidebar-card-title h3 {
     margin: 0;
+
     font-size: 14px;
+
     font-weight: 800;
+
     color: #1b2639;
 }
 
-/* ============================================================
-   SIDEBAR STATS
-   ============================================================ */
-
 .sidebar-stats {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
     gap: 10px;
 }
 
 .sidebar-stat {
     border: 1px solid #e8edf3;
+
     background: #f8fafc;
+
     border-radius: 11px;
+
     padding: 13px 11px;
 }
 
 .sidebar-stat-icon {
     width: 30px;
     height: 30px;
+
     border-radius: 8px;
+
     background: #eef3fb;
+
     color: #06245f;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     font-size: 12px;
+
     margin-bottom: 8px;
 }
 
 .sidebar-stat-number {
     font-size: 18px;
+
     font-weight: 800;
+
     color: #1c2940;
 }
 
 .sidebar-stat-label {
     margin-top: 2px;
+
     color: #8993a5;
+
     font-size: 10px;
+
     font-weight: 700;
 }
 
 /* ============================================================
-   EXAM INFORMATION LIST
-   ============================================================ */
+   EXAM INFO
+============================================================ */
 
 .exam-info-list {
     display: flex;
+
     flex-direction: column;
+
     gap: 9px;
 }
 
 .exam-info-item {
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
+
     gap: 10px;
+
     padding: 10px 11px;
+
     border-radius: 9px;
+
     background: #f8fafc;
+
     border: 1px solid #e8edf3;
 }
 
 .exam-info-label {
     color: #8993a5;
+
     font-size: 10px;
+
     font-weight: 800;
+
     text-transform: uppercase;
 }
 
 .exam-info-value {
     color: #344054;
+
     font-size: 11px;
+
     font-weight: 800;
+
     text-align: right;
 }
 
 /* ============================================================
    TIPS
-   ============================================================ */
+============================================================ */
 
 .tips-card {
-    background: linear-gradient(
-        135deg,
-        #f3f6fc,
-        #fafbfe
-    );
+    background:
+        linear-gradient(
+            135deg,
+            #f3f6fc,
+            #fafbfe
+        );
+
     border: 1px solid #dfe6f1;
+
     border-radius: 16px;
+
     padding: 19px;
 }
 
 .tips-title {
     display: flex;
+
     align-items: center;
+
     gap: 9px;
+
     color: #06245f;
+
     font-size: 13px;
+
     font-weight: 800;
+
     margin-bottom: 10px;
 }
 
 .tips-card ul {
     margin: 0;
+
     padding-left: 18px;
 }
 
 .tips-card li {
     color: #687386;
-    font-size: 11px;
-    line-height: 1.7;
-    margin-bottom: 5px;
-}
 
-.tips-card li:last-child {
-    margin-bottom: 0;
+    font-size: 11px;
+
+    line-height: 1.7;
+
+    margin-bottom: 5px;
 }
 
 /* ============================================================
    SIDEBAR ACTIONS
-   ============================================================ */
+============================================================ */
 
 .sidebar-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+
+    grid-template-columns:
+        1fr 1fr;
+
     gap: 9px;
 }
 
 .sidebar-action {
     height: 40px;
+
     border-radius: 9px;
+
     border: 1px solid #dfe5ef;
+
     background: #fff;
+
     color: #334155;
+
     text-decoration: none;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     gap: 7px;
+
     font-size: 11px;
+
     font-weight: 800;
+
     transition: .2s ease;
+
     cursor: pointer;
 }
 
 .sidebar-action:hover {
     border-color: #06245f;
+
     color: #06245f;
 }
 
 .sidebar-action.primary {
     background: #06245f;
-    border-color: #06245f;
-    color: #fff;
-}
 
-.sidebar-action.primary:hover {
-    background: #041d4d;
+    border-color: #06245f;
+
     color: #fff;
 }
 
 /* ============================================================
-   EMPTY VALUE
-   ============================================================ */
+   DELETE MARK MODAL
+============================================================ */
 
-.empty-value {
-    color: #98a1b1;
-    font-style: italic;
-    font-weight: 500;
+.delete-mark-modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 99999;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+}
+
+.delete-mark-modal.is-open {
+    display: flex;
+}
+
+.delete-mark-modal-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        rgba(4, 26, 70, .68);
+
+    backdrop-filter: blur(4px);
+}
+
+.delete-mark-modal-dialog {
+    position: relative;
+
+    width: 100%;
+
+    max-width: 520px;
+
+    background: #fff;
+
+    border-radius: 18px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, .28);
+
+    animation:
+        deleteModalIn .2s ease-out;
+}
+
+@keyframes deleteModalIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(15px)
+            scale(.97);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+.delete-mark-modal-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 20px 22px;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.delete-mark-warning-icon {
+    width: 44px;
+    height: 44px;
+
+    flex: 0 0 44px;
+
+    border-radius: 12px;
+
+    background: #fff1f2;
+
+    color: #dc3545;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 18px;
+}
+
+.delete-mark-modal-header h3 {
+    margin: 0;
+
+    color: #06245f;
+
+    font-size: 18px;
+
+    font-weight: 800;
+}
+
+.delete-mark-modal-header p {
+    margin: 3px 0 0;
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+.delete-mark-modal-close {
+    margin-left: auto;
+
+    width: 36px;
+    height: 36px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background: #f3f4f6;
+
+    color: #6b7280;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+.delete-mark-modal-body {
+    padding: 22px;
+}
+
+.delete-mark-warning {
+    display: flex;
+
+    gap: 12px;
+
+    padding: 15px;
+
+    margin-bottom: 18px;
+
+    border: 1px solid #fecaca;
+
+    background: #fff7f7;
+
+    border-radius: 12px;
+}
+
+.delete-mark-warning > i {
+    color: #dc3545;
+
+    font-size: 18px;
+
+    margin-top: 2px;
+}
+
+.delete-mark-warning strong {
+    display: block;
+
+    color: #991b1b;
+
+    font-size: 14px;
+}
+
+.delete-mark-warning p {
+    margin: 5px 0 0;
+
+    color: #7f1d1d;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+}
+
+.delete-mark-information {
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    background: #f9fafb;
+}
+
+.delete-mark-information-row {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 13px 15px;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.delete-mark-information-row:last-child {
+    border-bottom: 0;
+}
+
+.delete-mark-information-row span {
+    color: #6b7280;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+.delete-mark-information-row strong {
+    color: #06245f;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    text-align: right;
+
+    word-break: break-word;
+}
+
+.delete-mark-modal-footer {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding: 16px 22px;
+
+    background: #f9fafb;
+
+    border-top: 1px solid #e5e7eb;
+}
+
+.delete-mark-cancel-btn,
+.delete-mark-confirm-btn {
+    min-height: 42px;
+
+    border-radius: 9px;
+
+    padding: 9px 17px;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+}
+
+.delete-mark-cancel-btn {
+    border: 1px solid #d1d5db;
+
+    background: #fff;
+
+    color: #374151;
+}
+
+.delete-mark-confirm-btn {
+    min-width: 140px;
+
+    border: 1px solid #dc3545;
+
+    background: #dc3545;
+
+    color: #fff;
+}
+
+.delete-mark-confirm-btn:hover {
+    background: #b91c1c;
+
+    border-color: #b91c1c;
+}
+
+.delete-mark-confirm-btn:disabled,
+.delete-mark-cancel-btn:disabled {
+    opacity: .65;
+
+    cursor: not-allowed;
 }
 
 /* ============================================================
    RESPONSIVE
-   ============================================================ */
+============================================================ */
 
 @media (max-width: 1200px) {
 
     .result-layout {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 1fr;
     }
 
     .result-sidebar {
         position: static;
+
         display: grid;
-        grid-template-columns: repeat(
-            2,
-            minmax(0, 1fr)
-        );
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
 
     .tips-card,
@@ -1123,22 +1755,21 @@ View Exam Result
     }
 
     .ranking-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns:
+            repeat(3, 1fr);
     }
 }
 
 @media (max-width: 900px) {
 
     .result-summary-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
     .record-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .ranking-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 }
 
@@ -1160,10 +1791,6 @@ View Exam Result
         grid-template-columns: 1fr;
     }
 
-    .info-item.full {
-        grid-column: auto;
-    }
-
     .result-sidebar {
         grid-template-columns: 1fr;
     }
@@ -1182,7 +1809,8 @@ View Exam Result
     }
 
     .ranking-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
     .record-grid {
@@ -1191,30 +1819,18 @@ View Exam Result
 
     .code-box {
         align-items: flex-start;
+
         flex-direction: column;
     }
 
     .copy-code-btn {
         width: 100%;
+
         justify-content: center;
     }
 }
 
 @media (max-width: 480px) {
-
-    .view-result-page {
-        padding-bottom: 20px;
-    }
-
-    .result-header-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 17px;
-    }
-
-    .result-header-title h1 {
-        font-size: 21px;
-    }
 
     .result-header-actions {
         flex-direction: column;
@@ -1226,7 +1842,9 @@ View Exam Result
 
     .student-hero {
         flex-direction: column;
+
         text-align: center;
+
         align-items: center;
     }
 
@@ -1235,25 +1853,36 @@ View Exam Result
     }
 
     .result-summary-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns:
+            1fr 1fr;
     }
 
     .ranking-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns:
+            1fr 1fr;
     }
 
     .code-value {
         font-size: 19px;
     }
 
-    .result-section-header {
-        align-items: flex-start;
+    .delete-mark-modal {
+        padding: 12px;
+    }
+
+    .delete-mark-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .delete-mark-cancel-btn,
+    .delete-mark-confirm-btn {
+        width: 100%;
     }
 }
 
 /* ============================================================
    PRINT
-   ============================================================ */
+============================================================ */
 
 @media print {
 
@@ -1267,19 +1896,19 @@ View Exam Result
         background: #fff !important;
     }
 
-    body {
-        color: #000 !important;
-    }
-
     .result-page-header,
     .result-sidebar,
-    .flash-container {
+    .flash-container,
+    .delete-mark-modal,
+    .subject-delete-column {
         display: none !important;
     }
 
     .view-result-page {
         max-width: 100%;
+
         padding: 0;
+
         margin: 0;
     }
 
@@ -1289,17 +1918,21 @@ View Exam Result
 
     .result-main-card {
         border: 0;
+
         box-shadow: none;
+
         border-radius: 0;
     }
 
     .result-section {
         padding: 15px 0;
+
         page-break-inside: avoid;
     }
 
     .student-hero {
         background: #fff !important;
+
         border: 1px solid #bbb;
     }
 
@@ -1313,6 +1946,7 @@ View Exam Result
 
     .subject-table-wrapper {
         overflow: visible;
+
         border: 1px solid #aaa;
     }
 
@@ -1322,6 +1956,7 @@ View Exam Result
 
     .subject-table thead th {
         background: #f2f2f2 !important;
+
         color: #000 !important;
     }
 
@@ -1331,13 +1966,17 @@ View Exam Result
 
     .status-badge {
         border: 1px solid #999;
+
         background: #fff !important;
+
         color: #000 !important;
     }
 
     .summary-box.primary {
         background: #fff !important;
+
         border: 1px solid #555;
+
         color: #000 !important;
     }
 
@@ -1348,21 +1987,10 @@ View Exam Result
 
     .student-avatar {
         background: #eee !important;
+
         color: #000 !important;
+
         box-shadow: none;
-    }
-
-    .result-section-header {
-        page-break-after: avoid;
-    }
-
-    .subject-table tr {
-        page-break-inside: avoid;
-    }
-
-    a {
-        color: #000 !important;
-        text-decoration: none !important;
     }
 
     .code-box {
@@ -1375,2186 +2003,2688 @@ View Exam Result
 
 <div class="view-result-page">
 
-    <!-- ========================================================
-         PAGE HEADER
-         ======================================================== -->
 
-    <div class="result-page-header">
+<!-- ============================================================
+     PAGE HEADER
+============================================================ -->
 
-        <div class="result-header-left">
+<div class="result-page-header">
 
-            <div class="result-header-icon">
-                <i class="fa-solid fa-square-poll-vertical"></i>
-            </div>
+    <div class="result-header-left">
 
-            <div class="result-header-title">
-
-                <h1>
-                    View Exam Result
-                </h1>
-
-                <p>
-                    View complete student examination result,
-                    marks, performance and academic ranking.
-                </p>
-
-                <div class="result-breadcrumb">
-
-                    <a href="{{ url_for('main.dashboard') }}">
-                        <i class="fa-solid fa-house"></i>
-                        Dashboard
-                    </a>
-
-                    <i class="fa-solid fa-chevron-right"></i>
-
-                    <a href="{{ url_for('main.exam_results') }}">
-                        Exam Results
-                    </a>
-
-                    <i class="fa-solid fa-chevron-right"></i>
-
-                    <span>
-                        View Result
-                    </span>
-
-                </div>
-
-            </div>
-
+        <div class="result-header-icon">
+            <i class="fa-solid fa-square-poll-vertical"></i>
         </div>
 
+        <div class="result-header-title">
 
-        <div class="result-header-actions">
+            <h1>
+                View Exam Result
+            </h1>
 
-            <button
-                type="button"
-                class="result-action"
-                onclick="window.print()"
-            >
-                <i class="fa-solid fa-print"></i>
-                Print
-            </button>
+            <p>
+                View complete student examination result,
+                marks, performance and academic ranking.
+            </p>
 
+            <div class="result-breadcrumb">
 
-            <a
-                href="{{ url_for('main.exam_results') }}"
-                class="result-action"
-            >
-                <i class="fa-solid fa-arrow-left"></i>
-                Back
-            </a>
+                <a href="{{ url_for('main.dashboard') }}">
+                    <i class="fa-solid fa-house"></i>
+                    Dashboard
+                </a>
+
+                <i class="fa-solid fa-chevron-right"></i>
+
+                <a href="{{ url_for('main.exam_results') }}">
+                    Exam Results
+                </a>
+
+                <i class="fa-solid fa-chevron-right"></i>
+
+                <span>
+                    View Result
+                </span>
+
+            </div>
 
         </div>
 
     </div>
 
 
-    <!-- ========================================================
-         FLASH MESSAGES
-         ======================================================== -->
+    <div class="result-header-actions">
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
+        <button
+            type="button"
+            class="result-action"
+            onclick="window.print()"
+        >
+            <i class="fa-solid fa-print"></i>
+            Print
+        </button>
 
-        {% if messages %}
 
-            <div class="flash-container">
+        <a
+            href="{{ url_for('main.exam_results') }}"
+            class="result-action"
+        >
+            <i class="fa-solid fa-arrow-left"></i>
+            Back
+        </a>
 
-                {% for category, message in messages %}
+    </div>
 
-                    <div class="flash-message {{ category }}">
+</div>
 
-                        {% if category == 'success' %}
 
-                            <i class="fa-solid fa-circle-check"></i>
+<!-- ============================================================
+     FLASH MESSAGES
+============================================================ -->
 
-                        {% elif category in ['error', 'danger'] %}
+{% with messages = get_flashed_messages(with_categories=true) %}
 
-                            <i class="fa-solid fa-circle-exclamation"></i>
+    {% if messages %}
 
-                        {% elif category == 'warning' %}
+        <div class="flash-container">
 
-                            <i class="fa-solid fa-triangle-exclamation"></i>
+            {% for category, message in messages %}
 
-                        {% else %}
+                <div class="flash-message {{ category }}">
 
-                            <i class="fa-solid fa-circle-info"></i>
+                    {% if category == 'success' %}
 
-                        {% endif %}
+                        <i class="fa-solid fa-circle-check"></i>
 
-                        <span>
-                            {{ message }}
-                        </span>
+                    {% elif category in ['error', 'danger'] %}
 
-                    </div>
+                        <i class="fa-solid fa-circle-exclamation"></i>
 
-                {% endfor %}
+                    {% elif category == 'warning' %}
 
-            </div>
-
-        {% endif %}
-
-    {% endwith %}
-
-
-    <!-- ========================================================
-         MAIN LAYOUT
-         ======================================================== -->
-
-    <div class="result-layout">
-
-
-        <!-- ====================================================
-             MAIN INFORMATION CARD
-             ==================================================== -->
-
-        <div class="result-main-card">
-
-
-            <!-- ==================================================
-                 STUDENT INFORMATION
-                 ================================================== -->
-
-            <section class="result-section">
-
-                <div class="result-section-header">
-
-                    <div class="section-icon">
-                        <i class="fa-solid fa-user-graduate"></i>
-                    </div>
-
-                    <div>
-                        <h2>
-                            Student Information
-                        </h2>
-
-                        <p>
-                            Student identity and enrollment information.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="student-hero">
-
-                    <div class="student-avatar">
-
-                        {% set student_name = "Student" %}
-
-                        {% if student.full_name is defined and student.full_name %}
-                            {% set student_name = student.full_name %}
-                        {% elif student.name is defined and student.name %}
-                            {% set student_name = student.name %}
-                        {% elif student.first_name is defined and student.first_name %}
-                            {% set student_name = student.first_name %}
-                        {% endif %}
-
-                        {{ student_name[:1]|upper }}
-
-                    </div>
-
-
-                    <div class="student-hero-content">
-
-                        <h2>
-                            {{ student_name }}
-                        </h2>
-
-
-                        <div class="student-hero-meta">
-
-                            {% if student.admission_no is defined and student.admission_no %}
-
-                                <span class="student-meta-pill">
-                                    <i class="fa-solid fa-id-card"></i>
-                                    {{ student.admission_no }}
-                                </span>
-
-                            {% endif %}
-
-
-                            {% if student.roll_no is defined and student.roll_no %}
-
-                                <span class="student-meta-pill">
-                                    <i class="fa-solid fa-hashtag"></i>
-                                    Roll No: {{ student.roll_no }}
-                                </span>
-
-                            {% endif %}
-
-
-                            {% if student.gender is defined and student.gender %}
-
-                                <span class="student-meta-pill">
-                                    <i class="fa-solid fa-venus-mars"></i>
-                                    {{ student.gender }}
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div style="height:18px;"></div>
-
-
-                <div class="info-grid">
-
-
-                    <!-- Admission Number -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-id-card"></i>
-                            Admission Number
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if student.admission_no is defined
-                                  and student.admission_no %}
-
-                                {{ student.admission_no }}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not available
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Roll Number -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-hashtag"></i>
-                            Roll Number
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if student.roll_no is defined
-                                  and student.roll_no %}
-
-                                {{ student.roll_no }}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not provided
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Institution -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-school"></i>
-                            Institution
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if institution %}
-
-                                {{ institution.name }}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not available
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Branch -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-code-branch"></i>
-                            Branch
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if branch %}
-
-                                {{ branch.name }}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not available
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                </div>
-
-            </section>
-
-
-            <!-- ==================================================
-                 EXAM INFORMATION
-                 ================================================== -->
-
-            <section class="result-section">
-
-                <div class="result-section-header">
-
-                    <div class="section-icon">
-                        <i class="fa-solid fa-file-lines"></i>
-                    </div>
-
-                    <div>
-                        <h2>
-                            Examination Information
-                        </h2>
-
-                        <p>
-                            Examination and academic structure.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="info-grid">
-
-
-                    <!-- Exam -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-file-signature"></i>
-                            Examination
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if exam.name is defined
-                                  and exam.name %}
-
-                                {{ exam.name }}
-
-                            {% elif exam.title is defined
-                                  and exam.title %}
-
-                                {{ exam.title }}
-
-                            {% elif exam.exam_name is defined
-                                  and exam.exam_name %}
-
-                                {{ exam.exam_name }}
-
-                            {% else %}
-
-                                Exam #{{ exam.id }}
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Exam Type -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-layer-group"></i>
-                            Exam Type
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if exam.exam_type is defined
-                                  and exam.exam_type %}
-
-                                {{ exam.exam_type|replace('_', ' ')|title }}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not specified
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Program -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-graduation-cap"></i>
-                            Program
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if program %}
-
-                                {{ program.name }}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not available
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Academic Year -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-calendar"></i>
-                            Academic Year
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if academic_year %}
-
-                                {% if academic_year.name is defined
-                                      and academic_year.name %}
-
-                                    {{ academic_year.name }}
-
-                                {% elif academic_year.year is defined
-                                      and academic_year.year %}
-
-                                    {{ academic_year.year }}
-
-                                {% else %}
-
-                                    #{{ academic_year.id }}
-
-                                {% endif %}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not available
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Term -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-calendar-days"></i>
-                            Term
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if term %}
-
-                                {% if term.name is defined
-                                      and term.name %}
-
-                                    {{ term.name }}
-
-                                {% elif term.code is defined
-                                      and term.code %}
-
-                                    {{ term.code }}
-
-                                {% else %}
-
-                                    #{{ term.id }}
-
-                                {% endif %}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not available
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Class -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-chalkboard"></i>
-                            Class
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if selected_class %}
-
-                                {{ selected_class.name }}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not assigned
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Section -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-users"></i>
-                            Section
-                        </div>
-
-                        <div class="info-value">
-
-                            {% if section %}
-
-                                {{ section.name }}
-
-                            {% else %}
-
-                                <span class="empty-value">
-                                    Not assigned
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Result Status -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-circle-check"></i>
-                            Result Status
-                        </div>
-
-                        <div class="info-value">
-
-                            {% set rs = result_status|lower|replace(' ', '-') %}
-
-                            <span class="status-badge {{ rs }}">
-
-                                <span class="status-dot"></span>
-
-                                {{ result_status|replace('_', ' ')|title }}
-
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Workflow Status -->
-
-                    <div class="info-item">
-
-                        <div class="info-label">
-                            <i class="fa-solid fa-workflow"></i>
-                            Workflow Status
-                        </div>
-
-                        <div class="info-value">
-
-                            {% set ws = status|lower|replace(' ', '-') %}
-
-                            <span class="status-badge {{ ws }}">
-
-                                <span class="status-dot"></span>
-
-                                {{ status|replace('_', ' ')|title }}
-
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- ==================================================
-                 RESULT CODE
-                 ================================================== -->
-
-            <section class="result-section">
-
-                <div class="result-section-header">
-
-                    <div class="section-icon">
-                        <i class="fa-solid fa-barcode"></i>
-                    </div>
-
-                    <div>
-                        <h2>
-                            Result Reference
-                        </h2>
-
-                        <p>
-                            Unique system identification for this result.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="code-box">
-
-                    <div class="code-content">
-
-                        <div class="code-label">
-                            Result ID
-                        </div>
-
-                        <div
-                            class="code-value"
-                            id="resultCode"
-                        >
-                            RESULT-{{ result.id }}
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        class="copy-code-btn"
-                        id="copyResultBtn"
-                        onclick="copyResultCode()"
-                    >
-                        <i class="fa-regular fa-copy"></i>
-                        <span>Copy ID</span>
-                    </button>
-
-                </div>
-
-            </section>
-
-
-            <!-- ==================================================
-                 OVERALL PERFORMANCE
-                 ================================================== -->
-
-            <section class="result-section">
-
-                <div class="result-section-header">
-
-                    <div class="section-icon">
-                        <i class="fa-solid fa-chart-line"></i>
-                    </div>
-
-                    <div>
-                        <h2>
-                            Overall Performance
-                        </h2>
-
-                        <p>
-                            Final calculated performance for this examination.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="result-summary-grid">
-
-
-                    <!-- Total Marks -->
-
-                    <div class="summary-box primary">
-
-                        <div class="summary-icon">
-                            <i class="fa-solid fa-star"></i>
-                        </div>
-
-                        <div class="summary-value">
-                            {{ total_marks }}
-                        </div>
-
-                        <div class="summary-label">
-                            Total Marks
-                        </div>
-
-                    </div>
-
-
-                    <!-- Total Possible -->
-
-                    <div class="summary-box">
-
-                        <div class="summary-icon">
-                            <i class="fa-solid fa-bullseye"></i>
-                        </div>
-
-                        <div class="summary-value">
-                            {{ total_possible_marks }}
-                        </div>
-
-                        <div class="summary-label">
-                            Possible Marks
-                        </div>
-
-                    </div>
-
-
-                    <!-- Percentage -->
-
-                    <div class="summary-box green">
-
-                        <div class="summary-icon">
-                            <i class="fa-solid fa-percent"></i>
-                        </div>
-
-                        <div class="summary-value">
-                            {{ percentage }}%
-                        </div>
-
-                        <div class="summary-label">
-                            Percentage
-                        </div>
-
-                    </div>
-
-
-                    <!-- Grade -->
-
-                    <div class="summary-box purple">
-
-                        <div class="summary-icon">
-                            <i class="fa-solid fa-award"></i>
-                        </div>
-
-                        <div class="summary-value">
-                            {{ grade }}
-                        </div>
-
-                        <div class="summary-label">
-                            Grade
-                        </div>
-
-                    </div>
-
-
-                    <!-- Average -->
-
-                    <div class="summary-box">
-
-                        <div class="summary-icon">
-                            <i class="fa-solid fa-chart-simple"></i>
-                        </div>
-
-                        <div class="summary-value">
-                            {{ average }}
-                        </div>
-
-                        <div class="summary-label">
-                            Average
-                        </div>
-
-                    </div>
-
-
-                    <!-- GPA -->
-
-                    <div class="summary-box">
-
-                        <div class="summary-icon">
-                            <i class="fa-solid fa-graduation-cap"></i>
-                        </div>
-
-                        <div class="summary-value">
-
-                            {% if gpa is not none %}
-                                {{ gpa }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                        <div class="summary-label">
-                            GPA
-                        </div>
-
-                    </div>
-
-
-                    <!-- Completed -->
-
-                    <div class="summary-box green">
-
-                        <div class="summary-icon">
-                            <i class="fa-solid fa-circle-check"></i>
-                        </div>
-
-                        <div class="summary-value">
-                            {{ subjects_completed }}
-                        </div>
-
-                        <div class="summary-label">
-                            Subjects Completed
-                        </div>
-
-                    </div>
-
-
-                    <!-- Failed -->
-
-                    <div class="summary-box warning">
-
-                        <div class="summary-icon">
-                            <i class="fa-solid fa-circle-exclamation"></i>
-                        </div>
-
-                        <div class="summary-value">
-                            {{ subjects_failed }}
-                        </div>
-
-                        <div class="summary-label">
-                            Subjects Failed
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- ==================================================
-                 RANKINGS
-                 ================================================== -->
-
-            <section class="result-section">
-
-                <div class="result-section-header">
-
-                    <div class="section-icon">
-                        <i class="fa-solid fa-ranking-star"></i>
-                    </div>
-
-                    <div>
-                        <h2>
-                            Academic Ranking
-                        </h2>
-
-                        <p>
-                            Student position within each academic scope.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="ranking-grid">
-
-
-                    <!-- Institution -->
-
-                    <div class="rank-box">
-
-                        <div class="rank-icon">
-                            <i class="fa-solid fa-building"></i>
-                        </div>
-
-                        <div class="rank-value">
-
-                            {% if institution_position %}
-                                #{{ institution_position }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                        <div class="rank-label">
-                            Institution
-                        </div>
-
-                    </div>
-
-
-                    <!-- Branch -->
-
-                    <div class="rank-box">
-
-                        <div class="rank-icon">
-                            <i class="fa-solid fa-code-branch"></i>
-                        </div>
-
-                        <div class="rank-value">
-
-                            {% if branch_position %}
-                                #{{ branch_position }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                        <div class="rank-label">
-                            Branch
-                        </div>
-
-                    </div>
-
-
-                    <!-- Program -->
-
-                    <div class="rank-box">
-
-                        <div class="rank-icon">
-                            <i class="fa-solid fa-graduation-cap"></i>
-                        </div>
-
-                        <div class="rank-value">
-
-                            {% if program_position %}
-                                #{{ program_position }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                        <div class="rank-label">
-                            Program
-                        </div>
-
-                    </div>
-
-
-                    <!-- Class -->
-
-                    <div class="rank-box">
-
-                        <div class="rank-icon">
-                            <i class="fa-solid fa-chalkboard"></i>
-                        </div>
-
-                        <div class="rank-value">
-
-                            {% if class_position %}
-                                #{{ class_position }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                        <div class="rank-label">
-                            Class
-                        </div>
-
-                    </div>
-
-
-                    <!-- Section -->
-
-                    <div class="rank-box">
-
-                        <div class="rank-icon">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-
-                        <div class="rank-value">
-
-                            {% if section_position %}
-                                #{{ section_position }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                        <div class="rank-label">
-                            Section
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- ==================================================
-                 SUBJECT RESULTS
-                 ================================================== -->
-
-            <section class="result-section">
-
-                <div class="result-section-header">
-
-                    <div class="section-icon">
-                        <i class="fa-solid fa-book-open"></i>
-                    </div>
-
-                    <div>
-                        <h2>
-                            Subject Results
-                        </h2>
-
-                        <p>
-                            Detailed marks and performance for every examination subject.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                {% if subject_results %}
-
-                    <div class="subject-table-wrapper">
-
-                        <table class="subject-table">
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>
-                                        #
-                                    </th>
-
-                                    <th>
-                                        Subject
-                                    </th>
-
-                                    <th>
-                                        Marks
-                                    </th>
-
-                                    <th>
-                                        Max Marks
-                                    </th>
-
-                                    <th>
-                                        Pass Marks
-                                    </th>
-
-                                    <th>
-                                        Percentage
-                                    </th>
-
-                                    <th>
-                                        Grade
-                                    </th>
-
-                                    <th>
-                                        Status
-                                    </th>
-
-                                    <th>
-                                        Remarks
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-
-                            <tbody>
-
-                                {% for item in subject_results %}
-
-                                    {% set exam_subject = item.exam_subject %}
-                                    {% set subject = item.subject %}
-
-                                    <tr>
-
-                                        <!-- Number -->
-
-                                        <td class="subject-number">
-                                            {{ loop.index }}
-                                        </td>
-
-
-                                        <!-- Subject -->
-
-                                        <td class="subject-name-cell">
-
-                                            <div class="subject-name">
-
-                                                {% if subject %}
-
-                                                    {% if subject.name is defined
-                                                          and subject.name %}
-
-                                                        {{ subject.name }}
-
-                                                    {% else %}
-
-                                                        Subject #{{ subject.id }}
-
-                                                    {% endif %}
-
-                                                {% else %}
-
-                                                    Subject #{{ exam_subject.id }}
-
-                                                {% endif %}
-
-                                            </div>
-
-
-                                            {% if subject
-                                                  and subject.code is defined
-                                                  and subject.code %}
-
-                                                <div class="subject-code">
-                                                    {{ subject.code }}
-                                                </div>
-
-                                            {% elif exam_subject.code is defined
-                                                  and exam_subject.code %}
-
-                                                <div class="subject-code">
-                                                    {{ exam_subject.code }}
-                                                </div>
-
-                                            {% endif %}
-
-                                        </td>
-
-
-                                        <!-- Marks -->
-
-                                        <td>
-
-                                            {% if item.is_absent %}
-
-                                                <span class="marks-muted">
-                                                    Absent
-                                                </span>
-
-                                            {% elif item.is_exempted %}
-
-                                                <span class="marks-muted">
-                                                    Exempted
-                                                </span>
-
-                                            {% elif item.marks_obtained is not none %}
-
-                                                <span class="marks-value">
-                                                    {{ item.marks_obtained }}
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="marks-muted">
-                                                    —
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-
-                                        <!-- Max Marks -->
-
-                                        <td>
-
-                                            <span class="marks-value">
-                                                {{ item.max_marks }}
-                                            </span>
-
-                                        </td>
-
-
-                                        <!-- Pass Marks -->
-
-                                        <td>
-
-                                            <span class="pass-marks">
-                                                {{ item.pass_marks }}
-                                            </span>
-
-                                        </td>
-
-
-                                        <!-- Percentage -->
-
-                                        <td>
-
-                                            {% if item.percentage is not none %}
-
-                                                <span class="percentage-value">
-                                                    {{ item.percentage }}%
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="marks-muted">
-                                                    —
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-
-                                        <!-- Grade -->
-
-                                        <td>
-
-                                            {% if item.grade and item.grade != "-" %}
-
-                                                <span class="grade-value">
-                                                    {{ item.grade }}
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="marks-muted">
-                                                    —
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-
-                                        <!-- Status -->
-
-                                        <td>
-
-                                            {% set subject_status =
-                                                item.status|lower|replace(' ', '-') %}
-
-                                            <span class="status-badge {{ subject_status }}">
-
-                                                <span class="status-dot"></span>
-
-                                                {{ item.status }}
-
-                                            </span>
-
-                                        </td>
-
-
-                                        <!-- Remarks -->
-
-                                        <td>
-
-                                            {% if item.remarks %}
-
-                                                <div
-                                                    class="subject-remarks"
-                                                    title="{{ item.remarks }}"
-                                                >
-                                                    {{ item.remarks }}
-                                                </div>
-
-                                            {% else %}
-
-                                                <span class="marks-muted">
-                                                    —
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-                                    </tr>
-
-                                {% endfor %}
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                {% else %}
-
-                    <div class="remarks-box">
-
-                        <span class="empty-value">
-                            No examination subjects are available for this result.
-                        </span>
-
-                    </div>
-
-                {% endif %}
-
-            </section>
-
-
-            <!-- ==================================================
-                 RESULT REMARKS
-                 ================================================== -->
-
-            <section class="result-section">
-
-                <div class="result-section-header">
-
-                    <div class="section-icon">
-                        <i class="fa-solid fa-comment-dots"></i>
-                    </div>
-
-                    <div>
-                        <h2>
-                            Result Remarks
-                        </h2>
-
-                        <p>
-                            Additional comments associated with this result.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="remarks-box">
-
-                    {% if remarks %}
-
-                        {{ remarks }}
+                        <i class="fa-solid fa-triangle-exclamation"></i>
 
                     {% else %}
 
-                        <span class="empty-value">
-                            No additional remarks have been provided for this result.
-                        </span>
+                        <i class="fa-solid fa-circle-info"></i>
 
                     {% endif %}
 
-                </div>
-
-            </section>
-
-
-            <!-- ==================================================
-                 RECORD INFORMATION
-                 ================================================== -->
-
-            <section class="result-section">
-
-                <div class="result-section-header">
-
-                    <div class="section-icon">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                    </div>
-
-                    <div>
-                        <h2>
-                            Record Information
-                        </h2>
-
-                        <p>
-                            System timestamps and result processing information.
-                        </p>
-                    </div>
+                    <span>
+                        {{ message }}
+                    </span>
 
                 </div>
 
+            {% endfor %}
 
-                <div class="record-grid">
+        </div>
 
+    {% endif %}
 
-                    <!-- Result ID -->
+{% endwith %}
 
-                    <div class="record-item">
 
-                        <div class="record-item-label">
-                            Result ID
-                        </div>
+<!-- ============================================================
+     MAIN LAYOUT
+============================================================ -->
 
-                        <div class="record-item-value">
-                            #{{ result.id }}
-                        </div>
+<div class="result-layout">
 
-                    </div>
 
+<!-- ============================================================
+     MAIN CARD
+============================================================ -->
 
-                    <!-- Exam ID -->
+<div class="result-main-card">
 
-                    <div class="record-item">
 
-                        <div class="record-item-label">
-                            Exam ID
-                        </div>
+<!-- ============================================================
+     STUDENT INFORMATION
+============================================================ -->
 
-                        <div class="record-item-value">
-                            #{{ exam.id }}
-                        </div>
+<section class="result-section">
 
-                    </div>
+    <div class="result-section-header">
 
+        <div class="section-icon">
+            <i class="fa-solid fa-user-graduate"></i>
+        </div>
 
-                    <!-- Student ID -->
+        <div>
 
-                    <div class="record-item">
+            <h2>
+                Student Information
+            </h2>
 
-                        <div class="record-item-label">
-                            Student ID
-                        </div>
+            <p>
+                Student identity and enrollment information.
+            </p>
 
-                        <div class="record-item-value">
-                            #{{ student.id }}
-                        </div>
+        </div>
 
-                    </div>
+    </div>
 
 
-                    <!-- Calculated -->
+    {% set student_name = "Student" %}
 
-                    <div class="record-item">
+    {% if student.full_name is defined and student.full_name %}
 
-                        <div class="record-item-label">
-                            Calculated At
-                        </div>
+        {% set student_name = student.full_name %}
 
-                        <div class="record-item-value">
+    {% elif student.name is defined and student.name %}
 
-                            {% if result.calculated_at %}
+        {% set student_name = student.name %}
 
-                                {{ result.calculated_at.strftime(
-                                    '%d %b %Y, %I:%M %p'
-                                ) }}
+    {% elif student.first_name is defined and student.first_name %}
 
-                            {% else %}
+        {% set student_name = student.first_name %}
 
-                                —
+    {% endif %}
 
-                            {% endif %}
 
-                        </div>
+    <div class="student-hero">
 
-                    </div>
+        <div class="student-avatar">
+            {{ student_name[:1]|upper }}
+        </div>
 
+        <div class="student-hero-content">
 
-                    <!-- Approved -->
+            <h2>
+                {{ student_name }}
+            </h2>
 
-                    <div class="record-item">
+            <div class="student-hero-meta">
 
-                        <div class="record-item-label">
-                            Approved At
-                        </div>
+                {% if student.admission_no is defined and student.admission_no %}
 
-                        <div class="record-item-value">
+                    <span class="student-meta-pill">
+                        <i class="fa-solid fa-id-card"></i>
+                        {{ student.admission_no }}
+                    </span>
 
-                            {% if result.approved_at %}
+                {% endif %}
 
-                                {{ result.approved_at.strftime(
-                                    '%d %b %Y, %I:%M %p'
-                                ) }}
 
-                            {% else %}
+                {% if student.roll_no is defined and student.roll_no %}
 
-                                —
+                    <span class="student-meta-pill">
+                        <i class="fa-solid fa-hashtag"></i>
+                        Roll No: {{ student.roll_no }}
+                    </span>
 
-                            {% endif %}
+                {% endif %}
 
-                        </div>
 
-                    </div>
+                {% if student.gender is defined and student.gender %}
 
+                    <span class="student-meta-pill">
+                        <i class="fa-solid fa-venus-mars"></i>
+                        {{ student.gender }}
+                    </span>
 
-                    <!-- Published -->
+                {% endif %}
 
-                    <div class="record-item">
+            </div>
 
-                        <div class="record-item-label">
-                            Published At
-                        </div>
+        </div>
 
-                        <div class="record-item-value">
+    </div>
 
-                            {% if result.published_at %}
 
-                                {{ result.published_at.strftime(
-                                    '%d %b %Y, %I:%M %p'
-                                ) }}
+    <div style="height:18px;"></div>
 
-                            {% else %}
 
-                                —
+    <div class="info-grid">
 
-                            {% endif %}
 
-                        </div>
+        <div class="info-item">
 
-                    </div>
+            <div class="info-label">
+                <i class="fa-solid fa-id-card"></i>
+                Admission Number
+            </div>
 
+            <div class="info-value">
 
-                    <!-- Created -->
+                {% if student.admission_no is defined and student.admission_no %}
 
-                    <div class="record-item">
+                    {{ student.admission_no }}
 
-                        <div class="record-item-label">
-                            Created At
-                        </div>
+                {% else %}
 
-                        <div class="record-item-value">
+                    <span class="empty-value">
+                        Not available
+                    </span>
 
-                            {% if result.created_at %}
+                {% endif %}
 
-                                {{ result.created_at.strftime(
-                                    '%d %b %Y, %I:%M %p'
-                                ) }}
+            </div>
 
-                            {% else %}
+        </div>
 
-                                —
 
-                            {% endif %}
+        <div class="info-item">
 
-                        </div>
+            <div class="info-label">
+                <i class="fa-solid fa-hashtag"></i>
+                Roll Number
+            </div>
 
-                    </div>
+            <div class="info-value">
 
+                {% if student.roll_no is defined and student.roll_no %}
 
-                    <!-- Updated -->
+                    {{ student.roll_no }}
 
-                    <div class="record-item">
+                {% else %}
 
-                        <div class="record-item-label">
-                            Last Updated
-                        </div>
+                    <span class="empty-value">
+                        Not provided
+                    </span>
 
-                        <div class="record-item-value">
+                {% endif %}
 
-                            {% if result.updated_at %}
+            </div>
 
-                                {{ result.updated_at.strftime(
-                                    '%d %b %Y, %I:%M %p'
-                                ) }}
+        </div>
 
-                            {% else %}
 
-                                —
+        <div class="info-item">
 
-                            {% endif %}
+            <div class="info-label">
+                <i class="fa-solid fa-school"></i>
+                Institution
+            </div>
 
-                        </div>
+            <div class="info-value">
 
-                    </div>
+                {% if institution %}
 
+                    {{ institution.name }}
 
-                    <!-- Enrollment -->
+                {% else %}
 
-                    <div class="record-item">
+                    <span class="empty-value">
+                        Not available
+                    </span>
 
-                        <div class="record-item-label">
-                            Enrollment
-                        </div>
+                {% endif %}
 
-                        <div class="record-item-value">
+            </div>
 
-                            {% if enrollment %}
+        </div>
 
-                                {% if enrollment.id %}
-                                    #{{ enrollment.id }}
-                                {% else %}
-                                    Available
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-code-branch"></i>
+                Branch
+            </div>
+
+            <div class="info-value">
+
+                {% if branch %}
+
+                    {{ branch.name }}
+
+                {% else %}
+
+                    <span class="empty-value">
+                        Not available
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     EXAM INFORMATION
+============================================================ -->
+
+<section class="result-section">
+
+    <div class="result-section-header">
+
+        <div class="section-icon">
+            <i class="fa-solid fa-file-lines"></i>
+        </div>
+
+        <div>
+
+            <h2>
+                Examination Information
+            </h2>
+
+            <p>
+                Examination and academic structure.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="info-grid">
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-file-signature"></i>
+                Examination
+            </div>
+
+            <div class="info-value">
+
+                {% if exam.name is defined and exam.name %}
+
+                    {{ exam.name }}
+
+                {% elif exam.title is defined and exam.title %}
+
+                    {{ exam.title }}
+
+                {% elif exam.exam_name is defined and exam.exam_name %}
+
+                    {{ exam.exam_name }}
+
+                {% else %}
+
+                    Exam #{{ exam.id }}
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-layer-group"></i>
+                Exam Type
+            </div>
+
+            <div class="info-value">
+
+                {% if exam.exam_type is defined and exam.exam_type %}
+
+                    {{ exam.exam_type|replace('_', ' ')|title }}
+
+                {% else %}
+
+                    <span class="empty-value">
+                        Not specified
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-graduation-cap"></i>
+                Program
+            </div>
+
+            <div class="info-value">
+
+                {% if program %}
+
+                    {{ program.name }}
+
+                {% else %}
+
+                    <span class="empty-value">
+                        Not available
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-calendar"></i>
+                Academic Year
+            </div>
+
+            <div class="info-value">
+
+                {% if academic_year %}
+
+                    {% if academic_year.name is defined and academic_year.name %}
+
+                        {{ academic_year.name }}
+
+                    {% elif academic_year.year is defined and academic_year.year %}
+
+                        {{ academic_year.year }}
+
+                    {% else %}
+
+                        #{{ academic_year.id }}
+
+                    {% endif %}
+
+                {% else %}
+
+                    <span class="empty-value">
+                        Not available
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-calendar-days"></i>
+                Term
+            </div>
+
+            <div class="info-value">
+
+                {% if term %}
+
+                    {% if term.name is defined and term.name %}
+
+                        {{ term.name }}
+
+                    {% elif term.code is defined and term.code %}
+
+                        {{ term.code }}
+
+                    {% else %}
+
+                        #{{ term.id }}
+
+                    {% endif %}
+
+                {% else %}
+
+                    <span class="empty-value">
+                        Not available
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-chalkboard"></i>
+                Class
+            </div>
+
+            <div class="info-value">
+
+                {% if selected_class %}
+
+                    {{ selected_class.name }}
+
+                {% else %}
+
+                    <span class="empty-value">
+                        Not assigned
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-users"></i>
+                Section
+            </div>
+
+            <div class="info-value">
+
+                {% if section %}
+
+                    {{ section.name }}
+
+                {% else %}
+
+                    <span class="empty-value">
+                        Not assigned
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-circle-check"></i>
+                Result Status
+            </div>
+
+            <div class="info-value">
+
+                {% set rs =
+                    (result_status or 'not-entered')
+                    |lower
+                    |replace(' ', '-')
+                    |replace('_', '-')
+                %}
+
+                <span class="status-badge {{ rs }}">
+
+                    <span class="status-dot"></span>
+
+                    {{ (result_status or 'Not Entered')
+                        |replace('_', ' ')
+                        |title }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                <i class="fa-solid fa-diagram-project"></i>
+                Workflow Status
+            </div>
+
+            <div class="info-value">
+
+                {% set ws =
+                    (status or 'draft')
+                    |lower
+                    |replace(' ', '-')
+                    |replace('_', '-')
+                %}
+
+                <span class="status-badge {{ ws }}">
+
+                    <span class="status-dot"></span>
+
+                    {{ (status or 'Draft')
+                        |replace('_', ' ')
+                        |title }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     RESULT REFERENCE
+============================================================ -->
+
+<section class="result-section">
+
+    <div class="result-section-header">
+
+        <div class="section-icon">
+            <i class="fa-solid fa-barcode"></i>
+        </div>
+
+        <div>
+
+            <h2>
+                Result Reference
+            </h2>
+
+            <p>
+                Unique system identification for this result.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="code-box">
+
+        <div>
+
+            <div class="code-label">
+                Result ID
+            </div>
+
+            <div
+                class="code-value"
+                id="resultCode"
+            >
+                RESULT-{{ result.id }}
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="copy-code-btn"
+            id="copyResultBtn"
+            onclick="copyResultCode()"
+        >
+
+            <i class="fa-regular fa-copy"></i>
+
+            <span>
+                Copy ID
+            </span>
+
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     OVERALL PERFORMANCE
+============================================================ -->
+
+<section class="result-section">
+
+    <div class="result-section-header">
+
+        <div class="section-icon">
+            <i class="fa-solid fa-chart-line"></i>
+        </div>
+
+        <div>
+
+            <h2>
+                Overall Performance
+            </h2>
+
+            <p>
+                Final calculated performance for this examination.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="result-summary-grid">
+
+
+        <div class="summary-box primary">
+
+            <div class="summary-icon">
+                <i class="fa-solid fa-star"></i>
+            </div>
+
+            <div class="summary-value">
+                {{ total_marks }}
+            </div>
+
+            <div class="summary-label">
+                Total Marks
+            </div>
+
+        </div>
+
+
+        <div class="summary-box">
+
+            <div class="summary-icon">
+                <i class="fa-solid fa-bullseye"></i>
+            </div>
+
+            <div class="summary-value">
+                {{ total_possible_marks }}
+            </div>
+
+            <div class="summary-label">
+                Possible Marks
+            </div>
+
+        </div>
+
+
+        <div class="summary-box green">
+
+            <div class="summary-icon">
+                <i class="fa-solid fa-percent"></i>
+            </div>
+
+            <div class="summary-value">
+                {{ percentage }}%
+            </div>
+
+            <div class="summary-label">
+                Percentage
+            </div>
+
+        </div>
+
+
+        <div class="summary-box purple">
+
+            <div class="summary-icon">
+                <i class="fa-solid fa-award"></i>
+            </div>
+
+            <div class="summary-value">
+                {{ grade }}
+            </div>
+
+            <div class="summary-label">
+                Grade
+            </div>
+
+        </div>
+
+
+        <div class="summary-box">
+
+            <div class="summary-icon">
+                <i class="fa-solid fa-chart-simple"></i>
+            </div>
+
+            <div class="summary-value">
+                {{ average }}
+            </div>
+
+            <div class="summary-label">
+                Average
+            </div>
+
+        </div>
+
+
+        <div class="summary-box">
+
+            <div class="summary-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <div class="summary-value">
+
+                {% if gpa is not none %}
+
+                    {{ gpa }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+            <div class="summary-label">
+                GPA
+            </div>
+
+        </div>
+
+
+        <div class="summary-box green">
+
+            <div class="summary-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div class="summary-value">
+                {{ subjects_completed }}
+            </div>
+
+            <div class="summary-label">
+                Subjects Completed
+            </div>
+
+        </div>
+
+
+        <div class="summary-box warning">
+
+            <div class="summary-icon">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+
+            <div class="summary-value">
+                {{ subjects_failed }}
+            </div>
+
+            <div class="summary-label">
+                Subjects Failed
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     RANKINGS
+============================================================ -->
+
+<section class="result-section">
+
+    <div class="result-section-header">
+
+        <div class="section-icon">
+            <i class="fa-solid fa-ranking-star"></i>
+        </div>
+
+        <div>
+
+            <h2>
+                Academic Ranking
+            </h2>
+
+            <p>
+                Student position within each academic scope.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="ranking-grid">
+
+
+        <div class="rank-box">
+
+            <div class="rank-icon">
+                <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div class="rank-value">
+
+                {% if institution_position %}
+
+                    #{{ institution_position }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+            <div class="rank-label">
+                Institution
+            </div>
+
+        </div>
+
+
+        <div class="rank-box">
+
+            <div class="rank-icon">
+                <i class="fa-solid fa-code-branch"></i>
+            </div>
+
+            <div class="rank-value">
+
+                {% if branch_position %}
+
+                    #{{ branch_position }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+            <div class="rank-label">
+                Branch
+            </div>
+
+        </div>
+
+
+        <div class="rank-box">
+
+            <div class="rank-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <div class="rank-value">
+
+                {% if program_position %}
+
+                    #{{ program_position }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+            <div class="rank-label">
+                Program
+            </div>
+
+        </div>
+
+
+        <div class="rank-box">
+
+            <div class="rank-icon">
+                <i class="fa-solid fa-chalkboard"></i>
+            </div>
+
+            <div class="rank-value">
+
+                {% if class_position %}
+
+                    #{{ class_position }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+            <div class="rank-label">
+                Class
+            </div>
+
+        </div>
+
+
+        <div class="rank-box">
+
+            <div class="rank-icon">
+                <i class="fa-solid fa-users"></i>
+            </div>
+
+            <div class="rank-value">
+
+                {% if section_position %}
+
+                    #{{ section_position }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+            <div class="rank-label">
+                Section
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     SUBJECT RESULTS
+============================================================ -->
+
+<section class="result-section">
+
+    <div class="result-section-header">
+
+        <div class="section-icon">
+            <i class="fa-solid fa-book-open"></i>
+        </div>
+
+        <div>
+
+            <h2>
+                Subject Results
+            </h2>
+
+            <p>
+                Detailed marks and performance for every examination subject.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% if subject_results %}
+
+        <div class="subject-table-wrapper">
+
+            <table class="subject-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            #
+                        </th>
+
+                        <th>
+                            Subject
+                        </th>
+
+                        <th>
+                            Marks
+                        </th>
+
+                        <th>
+                            Max Marks
+                        </th>
+
+                        <th>
+                            Pass Marks
+                        </th>
+
+                        <th>
+                            Percentage
+                        </th>
+
+                        <th>
+                            Grade
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Remarks
+                        </th>
+
+                        <th class="subject-delete-column">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in subject_results %}
+
+                        {# =================================================
+                           EXPECTED item STRUCTURE:
+
+                           item.exam_subject
+                           item.subject
+                           item.mark
+
+                           IMPORTANT:
+                           item.mark MUST BE THE Mark MODEL OBJECT.
+
+                           DO NOT use:
+                           item.marks_obtained as mark_id.
+                        ================================================= #}
+
+                        {% set exam_subject = item.exam_subject %}
+                        {% set subject = item.subject %}
+                        {% set mark = item.mark %}
+
+
+                        <tr>
+
+
+                            <td class="subject-number">
+
+                                {{ loop.index }}
+
+                            </td>
+
+
+                            <!-- =================================================
+                                 SUBJECT
+                            ================================================= -->
+
+                            <td class="subject-name-cell">
+
+                                <div class="subject-name">
+
+                                    {% if subject %}
+
+                                        {% if subject.name is defined and subject.name %}
+
+                                            {{ subject.name }}
+
+                                        {% else %}
+
+                                            Subject #{{ subject.id }}
+
+                                        {% endif %}
+
+                                    {% elif exam_subject and exam_subject.subject %}
+
+                                        {{ exam_subject.subject.name }}
+
+                                    {% elif exam_subject %}
+
+                                        Subject #{{ exam_subject.id }}
+
+                                    {% else %}
+
+                                        Unknown Subject
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                {% if subject and subject.code is defined and subject.code %}
+
+                                    <div class="subject-code">
+
+                                        {{ subject.code }}
+
+                                    </div>
+
+                                {% elif exam_subject and exam_subject.code is defined and exam_subject.code %}
+
+                                    <div class="subject-code">
+
+                                        {{ exam_subject.code }}
+
+                                    </div>
+
                                 {% endif %}
 
-                            {% else %}
+                            </td>
 
-                                Not linked
 
-                            {% endif %}
+                            <!-- =================================================
+                                 MARK
+                            ================================================= -->
 
-                        </div>
+                            <td>
 
-                    </div>
+                                {% if mark and mark.is_absent %}
 
-                </div>
+                                    <span class="marks-muted">
+                                        Absent
+                                    </span>
 
-            </section>
+                                {% elif mark and mark.is_exempted %}
 
+                                    <span class="marks-muted">
+                                        Exempted
+                                    </span>
+
+                                {% elif mark and mark.marks_obtained is not none %}
+
+                                    {# IMPORTANT:
+                                       0.00 is valid.
+                                       Do NOT use "if mark.marks_obtained".
+                                    #}
+
+                                    <span class="marks-value">
+
+                                        {{ mark.marks_obtained }}
+
+                                    </span>
+
+                                {% elif item.marks_obtained is not none %}
+
+                                    <span class="marks-value">
+
+                                        {{ item.marks_obtained }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="marks-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =================================================
+                                 MAX MARKS
+                            ================================================= -->
+
+                            <td>
+
+                                {% if item.max_marks is not none %}
+
+                                    <span class="marks-value">
+                                        {{ item.max_marks }}
+                                    </span>
+
+                                {% elif exam_subject and exam_subject.max_marks is not none %}
+
+                                    <span class="marks-value">
+                                        {{ exam_subject.max_marks }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="marks-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =================================================
+                                 PASS MARKS
+                            ================================================= -->
+
+                            <td>
+
+                                {% if item.pass_marks is not none %}
+
+                                    <span class="pass-marks">
+                                        {{ item.pass_marks }}
+                                    </span>
+
+                                {% elif exam_subject and exam_subject.pass_marks is not none %}
+
+                                    <span class="pass-marks">
+                                        {{ exam_subject.pass_marks }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="marks-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =================================================
+                                 PERCENTAGE
+                            ================================================= -->
+
+                            <td>
+
+                                {% if item.percentage is not none %}
+
+                                    <span class="percentage-value">
+
+                                        {{ item.percentage }}%
+
+                                    </span>
+
+                                {% elif mark and mark.marks_obtained is not none and item.max_marks %}
+
+                                    <span class="percentage-value">
+
+                                        {{
+                                            (
+                                                (mark.marks_obtained / item.max_marks)
+                                                * 100
+                                            )|round(2)
+                                        }}%
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="marks-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =================================================
+                                 GRADE
+                            ================================================= -->
+
+                            <td>
+
+                                {% if item.grade and item.grade != "-" %}
+
+                                    <span class="grade-value">
+
+                                        {{ item.grade }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="marks-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =================================================
+                                 STATUS
+                            ================================================= -->
+
+                            <td>
+
+                                {% set subject_status =
+                                    (
+                                        item.status
+                                        or (
+                                            'Absent'
+                                            if mark and mark.is_absent
+                                            else (
+                                                'Exempted'
+                                                if mark and mark.is_exempted
+                                                else (
+                                                    'Entered'
+                                                    if mark and mark.marks_obtained is not none
+                                                    else 'Not Entered'
+                                                )
+                                            )
+                                        )
+                                    )
+                                    |lower
+                                    |replace(' ', '-')
+                                    |replace('_', '-')
+                                %}
+
+
+                                <span
+                                    class="status-badge {{ subject_status }}"
+                                >
+
+                                    <span class="status-dot"></span>
+
+                                    {{
+                                        item.status
+                                        or (
+                                            'Absent'
+                                            if mark and mark.is_absent
+                                            else (
+                                                'Exempted'
+                                                if mark and mark.is_exempted
+                                                else (
+                                                    'Entered'
+                                                    if mark and mark.marks_obtained is not none
+                                                    else 'Not Entered'
+                                                )
+                                            )
+                                        )
+                                    }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- =================================================
+                                 REMARKS
+                            ================================================= -->
+
+                            <td>
+
+                                {% if mark and mark.remarks %}
+
+                                    <div
+                                        class="subject-remarks"
+                                        title="{{ mark.remarks|e }}"
+                                    >
+                                        {{ mark.remarks }}
+                                    </div>
+
+                                {% elif item.remarks %}
+
+                                    <div
+                                        class="subject-remarks"
+                                        title="{{ item.remarks|e }}"
+                                    >
+                                        {{ item.remarks }}
+                                    </div>
+
+                                {% else %}
+
+                                    <span class="marks-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =================================================
+                                 DELETE ACTION
+
+                                 CRITICAL FIX:
+
+                                 USE:
+
+                                 mark.id
+
+                                 NOT:
+
+                                 mark.marks_obtained
+                                 item.marks_obtained
+                                 0
+                            ================================================= -->
+
+                            <td class="subject-delete-column">
+
+                                {% if mark %}
+
+                                    <button
+                                        type="button"
+                                        class="subject-delete-btn"
+
+                                        data-mark-id="{{ mark.id }}"
+
+                                        data-delete-url="{{ url_for(
+                                            'main.delete_exam_mark',
+                                            mark_id=mark.id
+                                        ) }}"
+
+                                        data-student-name="{{ student_name|e }}"
+
+                                        data-subject-name="{{
+                                            subject.name
+                                            if subject and subject.name
+                                            else (
+                                                exam_subject.subject.name
+                                                if exam_subject
+                                                and exam_subject.subject
+                                                and exam_subject.subject.name
+                                                else 'Unknown Subject'
+                                            )
+                                        }}"
+
+                                        data-mark-value="{{
+                                            mark.marks_obtained
+                                            if mark.marks_obtained is not none
+                                            else '-'
+                                        }}"
+
+                                        onclick="openDeleteMarkModalFromButton(this)"
+                                    >
+
+                                        <i class="fa-solid fa-trash"></i>
+
+                                        Delete
+
+                                    </button>
+
+                                {% else %}
+
+                                    <span class="marks-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="remarks-box">
+
+            <span class="empty-value">
+
+                No examination subjects are available
+                for this result.
+
+            </span>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- ============================================================
+     RESULT REMARKS
+============================================================ -->
+
+<section class="result-section">
+
+    <div class="result-section-header">
+
+        <div class="section-icon">
+            <i class="fa-solid fa-comment-dots"></i>
+        </div>
+
+        <div>
+
+            <h2>
+                Result Remarks
+            </h2>
+
+            <p>
+                Additional comments associated with this result.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="remarks-box">
+
+        {% if remarks %}
+
+            {{ remarks }}
+
+        {% else %}
+
+            <span class="empty-value">
+
+                No additional remarks have been provided
+                for this result.
+
+            </span>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     RECORD INFORMATION
+============================================================ -->
+
+<section class="result-section">
+
+    <div class="result-section-header">
+
+        <div class="section-icon">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+
+        <div>
+
+            <h2>
+                Record Information
+            </h2>
+
+            <p>
+                System timestamps and result processing information.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="record-grid">
+
+
+        <div class="record-item">
+
+            <div class="record-item-label">
+                Result ID
+            </div>
+
+            <div class="record-item-value">
+                #{{ result.id }}
+            </div>
+
+        </div>
+
+
+        <div class="record-item">
+
+            <div class="record-item-label">
+                Exam ID
+            </div>
+
+            <div class="record-item-value">
+                #{{ exam.id }}
+            </div>
+
+        </div>
+
+
+        <div class="record-item">
+
+            <div class="record-item-label">
+                Student ID
+            </div>
+
+            <div class="record-item-value">
+                #{{ student.id }}
+            </div>
+
+        </div>
+
+
+        <div class="record-item">
+
+            <div class="record-item-label">
+                Calculated At
+            </div>
+
+            <div class="record-item-value">
+
+                {% if result.calculated_at %}
+
+                    {{ result.calculated_at.strftime(
+                        '%d %b %Y, %I:%M %p'
+                    ) }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="record-item">
+
+            <div class="record-item-label">
+                Approved At
+            </div>
+
+            <div class="record-item-value">
+
+                {% if result.approved_at %}
+
+                    {{ result.approved_at.strftime(
+                        '%d %b %Y, %I:%M %p'
+                    ) }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="record-item">
+
+            <div class="record-item-label">
+                Published At
+            </div>
+
+            <div class="record-item-value">
+
+                {% if result.published_at %}
+
+                    {{ result.published_at.strftime(
+                        '%d %b %Y, %I:%M %p'
+                    ) }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="record-item">
+
+            <div class="record-item-label">
+                Created At
+            </div>
+
+            <div class="record-item-value">
+
+                {% if result.created_at %}
+
+                    {{ result.created_at.strftime(
+                        '%d %b %Y, %I:%M %p'
+                    ) }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="record-item">
+
+            <div class="record-item-label">
+                Last Updated
+            </div>
+
+            <div class="record-item-value">
+
+                {% if result.updated_at %}
+
+                    {{ result.updated_at.strftime(
+                        '%d %b %Y, %I:%M %p'
+                    ) }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="record-item">
+
+            <div class="record-item-label">
+                Enrollment
+            </div>
+
+            <div class="record-item-value">
+
+                {% if enrollment %}
+
+                    {% if enrollment.id %}
+
+                        #{{ enrollment.id }}
+
+                    {% else %}
+
+                        Available
+
+                    {% endif %}
+
+                {% else %}
+
+                    Not linked
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+</div>
+
+
+<!-- ============================================================
+     SIDEBAR
+============================================================ -->
+
+<aside class="result-sidebar">
+
+
+<!-- ============================================================
+     STUDENT IDENTITY
+============================================================ -->
+
+<div class="identity-card">
+
+    <div class="identity-icon">
+        <i class="fa-solid fa-user-graduate"></i>
+    </div>
+
+
+    <h3>
+        {{ student_name }}
+    </h3>
+
+
+    <div class="identity-code">
+
+        {% if student.admission_no is defined
+              and student.admission_no %}
+
+            {{ student.admission_no }}
+
+        {% else %}
+
+            STUDENT-{{ student.id }}
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="identity-status">
+
+        {% set identity_status =
+            (result_status or 'Not Entered')
+            |lower
+            |replace(' ', '-')
+            |replace('_', '-')
+        %}
+
+
+        <span class="status-badge {{ identity_status }}">
+
+            <span class="status-dot"></span>
+
+            {{
+                (result_status or 'Not Entered')
+                |replace('_', ' ')
+                |title
+            }}
+
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     QUICK OVERVIEW
+============================================================ -->
+
+<div class="sidebar-card">
+
+    <div class="sidebar-card-title">
+
+        <i class="fa-solid fa-chart-simple"></i>
+
+        <h3>
+            Quick Overview
+        </h3>
+
+    </div>
+
+
+    <div class="sidebar-stats">
+
+
+        <div class="sidebar-stat">
+
+            <div class="sidebar-stat-icon">
+                <i class="fa-solid fa-percent"></i>
+            </div>
+
+            <div class="sidebar-stat-number">
+                {{ percentage }}%
+            </div>
+
+            <div class="sidebar-stat-label">
+                Percentage
+            </div>
+
+        </div>
+
+
+        <div class="sidebar-stat">
+
+            <div class="sidebar-stat-icon">
+                <i class="fa-solid fa-award"></i>
+            </div>
+
+            <div class="sidebar-stat-number">
+                {{ grade }}
+            </div>
+
+            <div class="sidebar-stat-label">
+                Grade
+            </div>
+
+        </div>
+
+
+        <div class="sidebar-stat">
+
+            <div class="sidebar-stat-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <div class="sidebar-stat-number">
+
+                {% if gpa is not none %}
+
+                    {{ gpa }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+            <div class="sidebar-stat-label">
+                GPA
+            </div>
+
+        </div>
+
+
+        <div class="sidebar-stat">
+
+            <div class="sidebar-stat-icon">
+                <i class="fa-solid fa-book"></i>
+            </div>
+
+            <div class="sidebar-stat-number">
+                {{ subjects_total }}
+            </div>
+
+            <div class="sidebar-stat-label">
+                Subjects
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     EXAMINATION
+============================================================ -->
+
+<div class="sidebar-card">
+
+    <div class="sidebar-card-title">
+
+        <i class="fa-solid fa-file-lines"></i>
+
+        <h3>
+            Examination
+        </h3>
+
+    </div>
+
+
+    <div class="exam-info-list">
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Exam
+            </div>
+
+            <div class="exam-info-value">
+
+                {% if exam.name is defined and exam.name %}
+
+                    {{ exam.name }}
+
+                {% elif exam.title is defined and exam.title %}
+
+                    {{ exam.title }}
+
+                {% else %}
+
+                    #{{ exam.id }}
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Program
+            </div>
+
+            <div class="exam-info-value">
+
+                {% if program %}
+
+                    {{ program.name }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Class
+            </div>
+
+            <div class="exam-info-value">
+
+                {% if selected_class %}
+
+                    {{ selected_class.name }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Section
+            </div>
+
+            <div class="exam-info-value">
+
+                {% if section %}
+
+                    {{ section.name }}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Year
+            </div>
+
+            <div class="exam-info-value">
+
+                {% if academic_year %}
+
+                    {% if academic_year.name is defined
+                          and academic_year.name %}
+
+                        {{ academic_year.name }}
+
+                    {% elif academic_year.year is defined
+                          and academic_year.year %}
+
+                        {{ academic_year.year }}
+
+                    {% else %}
+
+                        #{{ academic_year.id }}
+
+                    {% endif %}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Term
+            </div>
+
+            <div class="exam-info-value">
+
+                {% if term %}
+
+                    {% if term.name is defined and term.name %}
+
+                        {{ term.name }}
+
+                    {% elif term.code is defined and term.code %}
+
+                        {{ term.code }}
+
+                    {% else %}
+
+                        #{{ term.id }}
+
+                    {% endif %}
+
+                {% else %}
+
+                    —
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     RESULT BREAKDOWN
+============================================================ -->
+
+<div class="sidebar-card">
+
+    <div class="sidebar-card-title">
+
+        <i class="fa-solid fa-list-check"></i>
+
+        <h3>
+            Result Breakdown
+        </h3>
+
+    </div>
+
+
+    <div class="exam-info-list">
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Total Subjects
+            </div>
+
+            <div class="exam-info-value">
+                {{ subjects_total }}
+            </div>
+
+        </div>
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Completed
+            </div>
+
+            <div class="exam-info-value">
+                {{ subjects_completed }}
+            </div>
+
+        </div>
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Failed
+            </div>
+
+            <div class="exam-info-value">
+                {{ subjects_failed }}
+            </div>
+
+        </div>
+
+
+        <div class="exam-info-item">
+
+            <div class="exam-info-label">
+                Pending
+            </div>
+
+            <div class="exam-info-value">
+
+                {% set pending_subjects =
+                    subjects_total - subjects_completed
+                %}
+
+                {% if pending_subjects > 0 %}
+
+                    {{ pending_subjects }}
+
+                {% else %}
+
+                    0
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     TIPS
+============================================================ -->
+
+<div class="tips-card">
+
+    <div class="tips-title">
+
+        <i class="fa-solid fa-lightbulb"></i>
+
+        Result Information
+
+    </div>
+
+
+    <ul>
+
+        <li>
+            Subject marks are calculated from the
+            examination marks entered for this student.
+        </li>
+
+        <li>
+            Absent and exempted subjects are displayed
+            separately from normal marks.
+        </li>
+
+        <li>
+            Ranking positions are stored separately for
+            institution, branch, program, class and section.
+        </li>
+
+        <li>
+            Deleting a mark removes only the selected
+            Mark record and recalculates the student's result.
+        </li>
+
+    </ul>
+
+</div>
+
+
+<!-- ============================================================
+     SIDEBAR ACTIONS
+============================================================ -->
+
+<div class="sidebar-actions">
+
+
+    <a
+        href="{{ url_for(
+            'main.edit_exam_result',
+            result_id=result.id
+        ) }}"
+        class="sidebar-action"
+    >
+
+        <i class="fa-solid fa-pen"></i>
+
+        Edit Result
+
+    </a>
+
+
+    <a
+        href="{{ url_for('main.exam_results') }}"
+        class="sidebar-action"
+    >
+
+        <i class="fa-solid fa-list"></i>
+
+        All Results
+
+    </a>
+
+
+    <button
+        type="button"
+        class="sidebar-action primary"
+        onclick="window.print()"
+    >
+
+        <i class="fa-solid fa-print"></i>
+
+        Print
+
+    </button>
+
+</div>
+
+
+</aside>
+
+</div>
+
+</div>
+
+
+<!-- ============================================================
+     DELETE MARK MODAL
+============================================================ -->
+
+<div
+    id="deleteMarkModal"
+    class="delete-mark-modal"
+    aria-hidden="true"
+>
+
+
+    <div
+        class="delete-mark-modal-overlay"
+        onclick="closeDeleteMarkModal()"
+    ></div>
+
+
+    <div
+        class="delete-mark-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteMarkModalTitle"
+    >
+
+
+        <!-- ====================================================
+             MODAL HEADER
+        ==================================================== -->
+
+        <div class="delete-mark-modal-header">
+
+
+            <div class="delete-mark-warning-icon">
+
+                <i class="fa-solid fa-trash"></i>
+
+            </div>
+
+
+            <div>
+
+                <h3 id="deleteMarkModalTitle">
+                    Delete Mark
+                </h3>
+
+                <p>
+                    Confirm mark deletion
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="delete-mark-modal-close"
+                id="deleteMarkCloseButton"
+                onclick="closeDeleteMarkModal()"
+                aria-label="Close"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
 
         </div>
 
 
         <!-- ====================================================
-             SIDEBAR
-             ==================================================== -->
+             MODAL BODY
+        ==================================================== -->
 
-        <aside class="result-sidebar">
-
-
-            <!-- ==================================================
-                 STUDENT IDENTITY
-                 ================================================== -->
-
-            <div class="identity-card">
-
-                <div class="identity-icon">
-                    <i class="fa-solid fa-user-graduate"></i>
-                </div>
+        <div class="delete-mark-modal-body">
 
 
-                <h3>
-                    {{ student_name }}
-                </h3>
+            <div class="delete-mark-warning">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
 
 
-                <div class="identity-code">
+                <div>
 
-                    {% if student.admission_no is defined
-                          and student.admission_no %}
+                    <strong>
+                        This action cannot be undone.
+                    </strong>
 
-                        {{ student.admission_no }}
-
-                    {% else %}
-
-                        STUDENT-{{ student.id }}
-
-                    {% endif %}
+                    <p>
+                        The selected mark will be permanently
+                        removed from this student's examination
+                        result. The Student Result itself will
+                        remain and will be recalculated.
+                    </p>
 
                 </div>
 
+            </div>
 
-                <div class="identity-status">
 
-                    {% set identity_status =
-                        result_status|lower|replace(' ', '-') %}
+            <div class="delete-mark-information">
 
-                    <span class="status-badge {{ identity_status }}">
 
-                        <span class="status-dot"></span>
+                <div class="delete-mark-information-row">
 
-                        {{ result_status|replace('_', ' ')|title }}
-
+                    <span>
+                        Student
                     </span>
 
-                </div>
-
-            </div>
-
-
-            <!-- ==================================================
-                 QUICK OVERVIEW
-                 ================================================== -->
-
-            <div class="sidebar-card">
-
-                <div class="sidebar-card-title">
-
-                    <i class="fa-solid fa-chart-simple"></i>
-
-                    <h3>
-                        Quick Overview
-                    </h3>
+                    <strong id="deleteMarkStudent">
+                        {{ student_name }}
+                    </strong>
 
                 </div>
 
 
-                <div class="sidebar-stats">
+                <div class="delete-mark-information-row">
 
+                    <span>
+                        Subject
+                    </span>
 
-                    <!-- Percentage -->
-
-                    <div class="sidebar-stat">
-
-                        <div class="sidebar-stat-icon">
-                            <i class="fa-solid fa-percent"></i>
-                        </div>
-
-                        <div class="sidebar-stat-number">
-                            {{ percentage }}%
-                        </div>
-
-                        <div class="sidebar-stat-label">
-                            Percentage
-                        </div>
-
-                    </div>
-
-
-                    <!-- Grade -->
-
-                    <div class="sidebar-stat">
-
-                        <div class="sidebar-stat-icon">
-                            <i class="fa-solid fa-award"></i>
-                        </div>
-
-                        <div class="sidebar-stat-number">
-                            {{ grade }}
-                        </div>
-
-                        <div class="sidebar-stat-label">
-                            Grade
-                        </div>
-
-                    </div>
-
-
-                    <!-- GPA -->
-
-                    <div class="sidebar-stat">
-
-                        <div class="sidebar-stat-icon">
-                            <i class="fa-solid fa-graduation-cap"></i>
-                        </div>
-
-                        <div class="sidebar-stat-number">
-
-                            {% if gpa is not none %}
-                                {{ gpa }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                        <div class="sidebar-stat-label">
-                            GPA
-                        </div>
-
-                    </div>
-
-
-                    <!-- Subjects -->
-
-                    <div class="sidebar-stat">
-
-                        <div class="sidebar-stat-icon">
-                            <i class="fa-solid fa-book"></i>
-                        </div>
-
-                        <div class="sidebar-stat-number">
-                            {{ subjects_total }}
-                        </div>
-
-                        <div class="sidebar-stat-label">
-                            Subjects
-                        </div>
-
-                    </div>
-
-
-                </div>
-
-            </div>
-
-
-            <!-- ==================================================
-                 EXAM INFORMATION
-                 ================================================== -->
-
-            <div class="sidebar-card">
-
-                <div class="sidebar-card-title">
-
-                    <i class="fa-solid fa-file-lines"></i>
-
-                    <h3>
-                        Examination
-                    </h3>
+                    <strong id="deleteMarkSubject">
+                        —
+                    </strong>
 
                 </div>
 
 
-                <div class="exam-info-list">
-
-
-                    <!-- Exam -->
-
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Exam
-                        </div>
-
-                        <div class="exam-info-value">
-
-                            {% if exam.name is defined
-                                  and exam.name %}
-
-                                {{ exam.name }}
-
-                            {% elif exam.title is defined
-                                  and exam.title %}
-
-                                {{ exam.title }}
-
-                            {% else %}
-
-                                #{{ exam.id }}
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Program -->
-
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Program
-                        </div>
-
-                        <div class="exam-info-value">
-
-                            {% if program %}
-                                {{ program.name }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Class -->
-
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Class
-                        </div>
-
-                        <div class="exam-info-value">
-
-                            {% if selected_class %}
-                                {{ selected_class.name }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Section -->
-
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Section
-                        </div>
-
-                        <div class="exam-info-value">
-
-                            {% if section %}
-                                {{ section.name }}
-                            {% else %}
-                                —
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Academic Year -->
-
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Year
-                        </div>
-
-                        <div class="exam-info-value">
-
-                            {% if academic_year %}
-
-                                {% if academic_year.name is defined
-                                      and academic_year.name %}
-
-                                    {{ academic_year.name }}
-
-                                {% elif academic_year.year is defined
-                                      and academic_year.year %}
-
-                                    {{ academic_year.year }}
-
-                                {% else %}
-
-                                    #{{ academic_year.id }}
-
-                                {% endif %}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Term -->
-
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Term
-                        </div>
-
-                        <div class="exam-info-value">
-
-                            {% if term %}
-
-                                {% if term.name is defined
-                                      and term.name %}
-
-                                    {{ term.name }}
-
-                                {% elif term.code is defined
-                                      and term.code %}
-
-                                    {{ term.code }}
-
-                                {% else %}
-
-                                    #{{ term.id }}
-
-                                {% endif %}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                </div>
-
-            </div>
-
-
-            <!-- ==================================================
-                 RESULT BREAKDOWN
-                 ================================================== -->
-
-            <div class="sidebar-card">
-
-                <div class="sidebar-card-title">
-
-                    <i class="fa-solid fa-list-check"></i>
-
-                    <h3>
-                        Result Breakdown
-                    </h3>
+                <div class="delete-mark-information-row">
+
+                    <span>
+                        Mark
+                    </span>
+
+                    <strong id="deleteMarkValue">
+                        —
+                    </strong>
 
                 </div>
 
 
-                <div class="exam-info-list">
+                <!--
+                    DEBUG / REFERENCE
 
+                    This is the REAL database Mark ID.
+                    It is intentionally hidden from the user.
+                -->
 
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Total Subjects
-                        </div>
-
-                        <div class="exam-info-value">
-                            {{ subjects_total }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Completed
-                        </div>
-
-                        <div class="exam-info-value">
-                            {{ subjects_completed }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Failed
-                        </div>
-
-                        <div class="exam-info-value">
-                            {{ subjects_failed }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="exam-info-item">
-
-                        <div class="exam-info-label">
-                            Pending
-                        </div>
-
-                        <div class="exam-info-value">
-
-                            {% set pending_subjects =
-                                subjects_total - subjects_completed %}
-
-                            {% if pending_subjects > 0 %}
-                                {{ pending_subjects }}
-                            {% else %}
-                                0
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- ==================================================
-                 TIPS
-                 ================================================== -->
-
-            <div class="tips-card">
-
-                <div class="tips-title">
-
-                    <i class="fa-solid fa-lightbulb"></i>
-
-                    Result Information
-
-                </div>
-
-
-                <ul>
-
-                    <li>
-                        Subject marks are calculated from the
-                        examination marks entered for this student.
-                    </li>
-
-                    <li>
-                        Absent and exempted subjects are displayed
-                        separately from normal marks.
-                    </li>
-
-                    <li>
-                        Ranking positions are stored separately for
-                        institution, branch, program, class and section.
-                    </li>
-
-                    <li>
-                        Published results should be treated as the
-                        official student result.
-                    </li>
-
-                </ul>
-
-            </div>
-
-
-            <!-- ==================================================
-                 SIDEBAR ACTIONS
-                 ================================================== -->
-
-            <div class="sidebar-actions">
-
-                <a
-                    href="{{ url_for('main.exam_results') }}"
-                    class="sidebar-action"
+                <div
+                    class="delete-mark-information-row"
+                    style="display:none;"
                 >
-                    <i class="fa-solid fa-list"></i>
-                    All Results
-                </a>
+
+                    <span>
+                        Mark ID
+                    </span>
+
+                    <strong id="deleteMarkDatabaseId">
+                        —
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             MODAL FOOTER
+        ==================================================== -->
+
+        <div class="delete-mark-modal-footer">
+
+
+            <button
+                type="button"
+                class="delete-mark-cancel-btn"
+                id="deleteMarkCancelButton"
+                onclick="closeDeleteMarkModal()"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+                Cancel
+
+            </button>
+
+
+            <form
+                id="deleteMarkForm"
+                method="POST"
+                action=""
+                autocomplete="off"
+            >
+
+                <!--
+                    IMPORTANT:
+
+                    NO mark value is submitted as mark_id.
+
+                    The action URL itself already contains:
+
+                    /exam-results/marks/<REAL MARK ID>/delete
+
+                    Example:
+
+                    /exam-results/marks/91/delete
+
+                    NOT:
+
+                    /exam-results/marks/0/delete
+                -->
+
+                <input
+                    type="hidden"
+                    id="deleteMarkId"
+                    name="mark_id"
+                    value=""
+                >
 
 
                 <button
-                    type="button"
-                    class="sidebar-action primary"
-                    onclick="window.print()"
+                    type="submit"
+                    class="delete-mark-confirm-btn"
+                    id="deleteMarkConfirmButton"
                 >
-                    <i class="fa-solid fa-print"></i>
-                    Print
+
+                    <span id="deleteMarkButtonNormal">
+
+                        <i class="fa-solid fa-trash"></i>
+
+                        Delete Mark
+
+                    </span>
+
+
+                    <span
+                        id="deleteMarkButtonLoading"
+                        style="display:none;"
+                    >
+
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+
+                        Deleting...
+
+                    </span>
+
                 </button>
 
-            </div>
+            </form>
 
-
-        </aside>
-
+        </div>
 
     </div>
 
@@ -3564,173 +4694,912 @@ View Exam Result
 <script>
 
 /* ============================================================
-   COPY RESULT ID
-   ============================================================ */
+   SOOYAAL - VIEW EXAM RESULT JAVASCRIPT
+============================================================ */
 
-function copyResultCode() {
+(function () {
 
-    const codeElement =
-        document.getElementById("resultCode");
+    "use strict";
 
-    const button =
-        document.getElementById("copyResultBtn");
 
-    if (!codeElement || !button) {
-        return;
-    }
+    /* ========================================================
+       ELEMENT HELPERS
+    ======================================================== */
 
-    const code =
-        codeElement.textContent.trim();
+    function getElement(id) {
 
-    if (!code) {
-        return;
+        return document.getElementById(id);
+
     }
 
 
-    const success = () => {
+    /* ========================================================
+       OPEN DELETE MARK MODAL
+       
+       CRITICAL:
+       button.dataset.markId = REAL Mark.id
 
-        button.classList.add("copied");
+       NEVER marks_obtained.
+    ======================================================== */
 
-        button.innerHTML = `
-            <i class="fa-solid fa-check"></i>
-            <span>Copied</span>
-        `;
+    window.openDeleteMarkModalFromButton = function (button) {
+
+        if (!button) {
+
+            console.error(
+                "DELETE MARK ERROR: Button element is missing."
+            );
+
+            return;
+
+        }
 
 
-        setTimeout(() => {
+        const markId =
+            button.getAttribute("data-mark-id");
 
-            button.classList.remove("copied");
 
-            button.innerHTML = `
-                <i class="fa-regular fa-copy"></i>
-                <span>Copy ID</span>
-            `;
+        const deleteUrl =
+            button.getAttribute("data-delete-url");
 
-        }, 1800);
+
+        const studentName =
+            button.getAttribute("data-student-name")
+            || "Student";
+
+
+        const subjectName =
+            button.getAttribute("data-subject-name")
+            || "Unknown Subject";
+
+
+        const markValue =
+            button.getAttribute("data-mark-value")
+            || "-";
+
+
+        /* ====================================================
+           DEBUG
+        ==================================================== */
+
+        console.log(
+            "================================================"
+        );
+
+        console.log(
+            "DELETE MARK DEBUG"
+        );
+
+        console.log(
+            "Database Mark ID:",
+            markId
+        );
+
+        console.log(
+            "Delete URL:",
+            deleteUrl
+        );
+
+        console.log(
+            "Student:",
+            studentName
+        );
+
+        console.log(
+            "Subject:",
+            subjectName
+        );
+
+        console.log(
+            "Mark Value:",
+            markValue
+        );
+
+        console.log(
+            "================================================"
+        );
+
+
+        /* ====================================================
+           VALIDATE MARK ID
+        ==================================================== */
+
+        if (
+            !markId ||
+            markId === "0" ||
+            markId === "null" ||
+            markId === "undefined"
+        ) {
+
+            console.error(
+                "DELETE MARK ERROR: Invalid database Mark ID.",
+                {
+                    markId: markId,
+                    deleteUrl: deleteUrl,
+                    subject: subjectName,
+                    mark: markValue
+                }
+            );
+
+
+            alert(
+                "Unable to delete this mark because the database Mark ID is invalid."
+            );
+
+
+            return;
+
+        }
+
+
+        /* ====================================================
+           VALIDATE DELETE URL
+        ==================================================== */
+
+        if (
+            !deleteUrl ||
+            deleteUrl === "#" ||
+            deleteUrl === "undefined"
+        ) {
+
+            console.error(
+                "DELETE MARK ERROR: Delete URL is missing.",
+                {
+                    markId: markId,
+                    deleteUrl: deleteUrl
+                }
+            );
+
+
+            alert(
+                "Unable to delete this mark because the delete URL is missing."
+            );
+
+
+            return;
+
+        }
+
+
+        /* ====================================================
+           MODAL ELEMENTS
+        ==================================================== */
+
+        const modal =
+            getElement("deleteMarkModal");
+
+
+        const form =
+            getElement("deleteMarkForm");
+
+
+        const hiddenId =
+            getElement("deleteMarkId");
+
+
+        const studentElement =
+            getElement("deleteMarkStudent");
+
+
+        const subjectElement =
+            getElement("deleteMarkSubject");
+
+
+        const markElement =
+            getElement("deleteMarkValue");
+
+
+        const databaseIdElement =
+            getElement("deleteMarkDatabaseId");
+
+
+        const confirmButton =
+            getElement("deleteMarkConfirmButton");
+
+
+        const normalText =
+            getElement("deleteMarkButtonNormal");
+
+
+        const loadingText =
+            getElement("deleteMarkButtonLoading");
+
+
+        if (!modal || !form) {
+
+            console.error(
+                "DELETE MARK ERROR: Modal or form not found."
+            );
+
+            return;
+
+        }
+
+
+        /* ====================================================
+           SET MODAL CONTENT
+        ==================================================== */
+
+        if (studentElement) {
+
+            studentElement.textContent =
+                studentName;
+
+        }
+
+
+        if (subjectElement) {
+
+            subjectElement.textContent =
+                subjectName;
+
+        }
+
+
+        if (markElement) {
+
+            /*
+             * IMPORTANT:
+             * 0.00 is valid and must be displayed.
+             */
+
+            markElement.textContent =
+                markValue;
+
+        }
+
+
+        if (databaseIdElement) {
+
+            databaseIdElement.textContent =
+                markId;
+
+        }
+
+
+        if (hiddenId) {
+
+            /*
+             * The hidden value is the REAL Mark.id.
+             */
+
+            hiddenId.value =
+                markId;
+
+        }
+
+
+        /* ====================================================
+           SET FORM ACTION DIRECTLY
+           
+           NO replace()
+           NO mark value conversion
+        ==================================================== */
+
+        form.action =
+            deleteUrl;
+
+
+        console.log(
+            "DELETE FORM ACTION SET TO:",
+            form.action
+        );
+
+
+        console.log(
+            "DELETE FORM MARK ID:",
+            hiddenId ? hiddenId.value : null
+        );
+
+
+        /* ====================================================
+           RESET BUTTON STATE
+        ==================================================== */
+
+        if (confirmButton) {
+
+            confirmButton.disabled =
+                false;
+
+        }
+
+
+        if (normalText) {
+
+            normalText.style.display =
+                "inline-flex";
+
+        }
+
+
+        if (loadingText) {
+
+            loadingText.style.display =
+                "none";
+
+        }
+
+
+        /* ====================================================
+           OPEN MODAL
+        ==================================================== */
+
+        modal.classList.add(
+            "is-open"
+        );
+
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+
+        document.body.style.overflow =
+            "hidden";
+
 
     };
 
 
-    if (
-        navigator.clipboard &&
-        window.isSecureContext
-    ) {
+    /* ========================================================
+       CLOSE DELETE MODAL
+    ======================================================== */
 
-        navigator.clipboard
-            .writeText(code)
-            .then(success)
-            .catch(() => {
+    window.closeDeleteMarkModal = function () {
 
-                fallbackCopy(
-                    code,
-                    success
-                );
+        const modal =
+            getElement("deleteMarkModal");
 
-            });
 
-    } else {
+        if (!modal) {
 
-        fallbackCopy(
-            code,
-            success
+            return;
+
+        }
+
+
+        modal.classList.remove(
+            "is-open"
         );
 
-    }
 
-}
-
-
-/* ============================================================
-   FALLBACK COPY
-   ============================================================ */
-
-function fallbackCopy(
-    text,
-    callback
-) {
-
-    const textarea =
-        document.createElement("textarea");
-
-    textarea.value = text;
-
-    textarea.style.position = "fixed";
-    textarea.style.left = "-9999px";
-    textarea.style.top = "-9999px";
-
-    document.body.appendChild(
-        textarea
-    );
-
-    textarea.focus();
-    textarea.select();
-
-    try {
-
-        document.execCommand("copy");
-
-        callback();
-
-    } catch (error) {
-
-        console.error(
-            "Copy failed:",
-            error
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
         );
 
-    }
 
-    document.body.removeChild(
-        textarea
-    );
-
-}
+        document.body.style.overflow =
+            "";
 
 
-/* ============================================================
-   AUTO REMOVE FLASH MESSAGES
-   ============================================================ */
+        const form =
+            getElement("deleteMarkForm");
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
 
-        const messages =
-            document.querySelectorAll(
-                ".flash-message"
+        if (form) {
+
+            form.action =
+                "";
+
+        }
+
+
+        const hiddenId =
+            getElement("deleteMarkId");
+
+
+        if (hiddenId) {
+
+            hiddenId.value =
+                "";
+
+        }
+
+
+    };
+
+
+    /* ========================================================
+       COPY RESULT CODE
+    ======================================================== */
+
+    window.copyResultCode = function () {
+
+        const codeElement =
+            getElement("resultCode");
+
+
+        const button =
+            getElement("copyResultBtn");
+
+
+        if (!codeElement) {
+
+            return;
+
+        }
+
+
+        const value =
+            codeElement.textContent.trim();
+
+
+        if (!value) {
+
+            return;
+
+        }
+
+
+        function copySuccess() {
+
+            if (!button) {
+
+                return;
+
+            }
+
+
+            const icon =
+                button.querySelector("i");
+
+
+            const text =
+                button.querySelector("span");
+
+
+            button.classList.add(
+                "copied"
             );
 
-        messages.forEach(
-            function (message) {
 
-                setTimeout(
-                    function () {
+            if (icon) {
 
-                        message.style.transition =
-                            "opacity .3s ease";
+                icon.className =
+                    "fa-solid fa-check";
 
-                        message.style.opacity =
-                            "0";
+            }
 
-                        setTimeout(
-                            function () {
 
-                                message.remove();
+            if (text) {
 
-                            },
-                            300
+                text.textContent =
+                    "Copied";
+
+            }
+
+
+            setTimeout(function () {
+
+                button.classList.remove(
+                    "copied"
+                );
+
+
+                if (icon) {
+
+                    icon.className =
+                        "fa-regular fa-copy";
+
+                }
+
+
+                if (text) {
+
+                    text.textContent =
+                        "Copy ID";
+
+                }
+
+            }, 1800);
+
+        }
+
+
+        if (
+            navigator.clipboard &&
+            navigator.clipboard.writeText
+        ) {
+
+            navigator.clipboard
+                .writeText(value)
+                .then(copySuccess)
+                .catch(function () {
+
+                    fallbackCopy(value);
+
+                });
+
+        } else {
+
+            fallbackCopy(value);
+
+        }
+
+    };
+
+
+    /* ========================================================
+       FALLBACK COPY
+    ======================================================== */
+
+    function fallbackCopy(value) {
+
+        const textarea =
+            document.createElement("textarea");
+
+
+        textarea.value =
+            value;
+
+
+        textarea.style.position =
+            "fixed";
+
+
+        textarea.style.left =
+            "-9999px";
+
+
+        document.body.appendChild(
+            textarea
+        );
+
+
+        textarea.select();
+
+
+        try {
+
+            document.execCommand(
+                "copy"
+            );
+
+
+            const button =
+                getElement("copyResultBtn");
+
+
+            if (button) {
+
+                button.classList.add(
+                    "copied"
+                );
+
+
+                const icon =
+                    button.querySelector("i");
+
+
+                const text =
+                    button.querySelector("span");
+
+
+                if (icon) {
+
+                    icon.className =
+                        "fa-solid fa-check";
+
+                }
+
+
+                if (text) {
+
+                    text.textContent =
+                        "Copied";
+
+                }
+
+
+                setTimeout(function () {
+
+                    button.classList.remove(
+                        "copied"
+                    );
+
+
+                    if (icon) {
+
+                        icon.className =
+                            "fa-regular fa-copy";
+
+                    }
+
+
+                    if (text) {
+
+                        text.textContent =
+                            "Copy ID";
+
+                    }
+
+                }, 1800);
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Unable to copy result ID:",
+                error
+            );
+
+        }
+
+
+        document.body.removeChild(
+            textarea
+        );
+
+    }
+
+
+    /* ========================================================
+       DOM READY
+    ======================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+
+            /* ================================================
+               DELETE FORM SUBMIT
+            ================================================= */
+
+            const form =
+                getElement("deleteMarkForm");
+
+
+            if (form) {
+
+                form.addEventListener(
+                    "submit",
+                    function (event) {
+
+
+                        const hiddenId =
+                            getElement("deleteMarkId");
+
+
+                        const confirmButton =
+                            getElement(
+                                "deleteMarkConfirmButton"
+                            );
+
+
+                        const normalText =
+                            getElement(
+                                "deleteMarkButtonNormal"
+                            );
+
+
+                        const loadingText =
+                            getElement(
+                                "deleteMarkButtonLoading"
+                            );
+
+
+                        const markId =
+                            hiddenId
+                                ? hiddenId.value
+                                : "";
+
+
+                        /* ====================================
+                           FINAL SAFETY CHECK
+                        ==================================== */
+
+                        if (
+                            !markId ||
+                            markId === "0" ||
+                            markId === "null" ||
+                            markId === "undefined"
+                        ) {
+
+                            event.preventDefault();
+
+
+                            console.error(
+                                "DELETE BLOCKED: Invalid Mark ID.",
+                                markId
+                            );
+
+
+                            alert(
+                                "The selected mark has an invalid database ID. Delete was cancelled."
+                            );
+
+
+                            return;
+
+                        }
+
+
+                        console.log(
+                            "================================================"
                         );
 
-                    },
-                    5000
+
+                        console.log(
+                            "DELETE MARK SUBMIT"
+                        );
+
+
+                        console.log(
+                            "Mark ID:",
+                            markId
+                        );
+
+
+                        console.log(
+                            "Form Action:",
+                            form.action
+                        );
+
+
+                        console.log(
+                            "================================================"
+                        );
+
+
+                        /* ====================================
+                           DISABLE BUTTON
+                        ==================================== */
+
+                        if (confirmButton) {
+
+                            confirmButton.disabled =
+                                true;
+
+                        }
+
+
+                        if (normalText) {
+
+                            normalText.style.display =
+                                "none";
+
+                        }
+
+
+                        if (loadingText) {
+
+                            loadingText.style.display =
+                                "inline-flex";
+
+                        }
+
+
+                        /*
+                         * DO NOT preventDefault().
+                         *
+                         * The browser must POST the form
+                         * to the Flask delete route.
+                         */
+
+                    }
                 );
 
             }
-        );
 
-    }
-);
+
+            /* ================================================
+               ESC KEY
+            ================================================= */
+
+            document.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (
+                        event.key === "Escape"
+                    ) {
+
+                        const modal =
+                            getElement(
+                                "deleteMarkModal"
+                            );
+
+
+                        if (
+                            modal &&
+                            modal.classList.contains(
+                                "is-open"
+                            )
+                        ) {
+
+                            closeDeleteMarkModal();
+
+                        }
+
+                    }
+
+                }
+            );
+
+
+            /* ================================================
+               PREVENT MODAL DIALOG CLICK FROM CLOSING
+            ================================================= */
+
+            const dialog =
+                document.querySelector(
+                    ".delete-mark-modal-dialog"
+                );
+
+
+            if (dialog) {
+
+                dialog.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.stopPropagation();
+
+                    }
+                );
+
+            }
+
+
+            /* ================================================
+               DEBUG ALL DELETE BUTTONS
+            ================================================= */
+
+            const deleteButtons =
+                document.querySelectorAll(
+                    ".subject-delete-btn"
+                );
+
+
+            console.log(
+                "SOOYAAL DELETE BUTTONS:",
+                deleteButtons.length
+            );
+
+
+            deleteButtons.forEach(
+                function (button, index) {
+
+                    console.log(
+                        "DELETE BUTTON",
+                        index + 1,
+                        {
+                            markId:
+                                button.getAttribute(
+                                    "data-mark-id"
+                                ),
+
+                            deleteUrl:
+                                button.getAttribute(
+                                    "data-delete-url"
+                                ),
+
+                            subject:
+                                button.getAttribute(
+                                    "data-subject-name"
+                                ),
+
+                            mark:
+                                button.getAttribute(
+                                    "data-mark-value"
+                                )
+                        }
+                    );
+
+                }
+            );
+
+        }
+    );
+
+})();
 
 </script>
 
 {% endblock %}
+
+

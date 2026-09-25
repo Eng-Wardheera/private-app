@@ -5690,9 +5690,11 @@ def calculate_gpa_from_subjects(subject_results):
 
 
 
+
 # ============================================================
 # TEACHER ENTER MARKS
 # ============================================================
+
 @bp.route(
     "/teacher/exams/<int:exam_subject_id>/marks",
     methods=["GET", "POST"]
@@ -5700,9 +5702,9 @@ def calculate_gpa_from_subjects(subject_results):
 @teacher_login_required
 def teacher_enter_marks(exam_subject_id):
 
-    # ============================================================
+    # ========================================================
     # CURRENT TEACHER
-    # ============================================================
+    # ========================================================
 
     teacher = getattr(g, "teacher", None)
 
@@ -5713,6 +5715,7 @@ def teacher_enter_marks(exam_subject_id):
     branch_id = teacher.branch_id
 
     if not institution_id or not branch_id:
+
         flash(
             "Your teacher account is not assigned to an institution and branch.",
             "danger"
@@ -5722,9 +5725,9 @@ def teacher_enter_marks(exam_subject_id):
             url_for("main.teacher_dashboard")
         )
 
-    # ============================================================
+    # ========================================================
     # TEACHER ACCOUNT STATUS
-    # ============================================================
+    # ========================================================
 
     if (
         not getattr(teacher, "is_active", False)
@@ -5732,6 +5735,7 @@ def teacher_enter_marks(exam_subject_id):
             getattr(teacher, "status", "") or ""
         ).lower().strip() != "active"
     ):
+
         flash(
             "Your teacher account is not active.",
             "danger"
@@ -5739,9 +5743,9 @@ def teacher_enter_marks(exam_subject_id):
 
         abort(403)
 
-    # ============================================================
+    # ========================================================
     # GET EXAM SUBJECT
-    # ============================================================
+    # ========================================================
 
     exam_subject = (
         ExamSubject.query
@@ -5760,18 +5764,18 @@ def teacher_enter_marks(exam_subject_id):
     if not exam_subject:
         abort(404)
 
-    # ============================================================
+    # ========================================================
     # EXAM
-    # ============================================================
+    # ========================================================
 
     exam = exam_subject.exam
 
     if not exam:
         abort(404)
 
-    # ============================================================
+    # ========================================================
     # EXAM SECURITY
-    # ============================================================
+    # ========================================================
 
     if exam.institution_id != institution_id:
         abort(403)
@@ -5780,6 +5784,7 @@ def teacher_enter_marks(exam_subject_id):
         abort(403)
 
     if not exam.program_id:
+
         flash(
             "This exam is not connected to a program.",
             "danger"
@@ -5790,6 +5795,7 @@ def teacher_enter_marks(exam_subject_id):
         )
 
     if not exam.academic_year_id:
+
         flash(
             "This exam is not connected to an academic year.",
             "danger"
@@ -5799,20 +5805,17 @@ def teacher_enter_marks(exam_subject_id):
             url_for("main.teacher_dashboard")
         )
 
-    # ============================================================
+    # ========================================================
     # EXAM STATUS
-    # ============================================================
+    # ========================================================
     #
-    # DRAFT:
-    #   Teacher CAN view and enter marks.
-    #
-    # OPEN / ACTIVE:
-    #   Teacher CAN view and enter marks.
+    # DRAFT / OPEN / ACTIVE:
+    #       Teacher may enter marks.
     #
     # CLOSED / CANCELLED:
-    #   Teacher CANNOT enter marks.
+    #       Teacher cannot enter marks.
     #
-    # ============================================================
+    # ========================================================
 
     exam_status = str(
         getattr(exam, "status", "") or ""
@@ -5822,6 +5825,7 @@ def teacher_enter_marks(exam_subject_id):
         "cancelled",
         "closed"
     }:
+
         flash(
             "This examination is closed.",
             "danger"
@@ -5831,15 +5835,16 @@ def teacher_enter_marks(exam_subject_id):
             url_for("main.teacher_dashboard")
         )
 
-    # ============================================================
+    # ========================================================
     # EXAM SUBJECT STATUS
-    # ============================================================
+    # ========================================================
 
     exam_subject_status = str(
         getattr(exam_subject, "status", "") or ""
     ).lower().strip()
 
     if exam_subject_status != "active":
+
         flash(
             "This examination subject is not active.",
             "danger"
@@ -5849,13 +5854,14 @@ def teacher_enter_marks(exam_subject_id):
             url_for("main.teacher_dashboard")
         )
 
-    # ============================================================
+    # ========================================================
     # SUBJECT
-    # ============================================================
+    # ========================================================
 
     subject = exam_subject.subject
 
     if not subject:
+
         flash(
             "This exam subject is not connected to a subject.",
             "danger"
@@ -5865,14 +5871,13 @@ def teacher_enter_marks(exam_subject_id):
             url_for("main.teacher_dashboard")
         )
 
-    # ============================================================
+    # ========================================================
     # SUBJECT SECURITY
-    # ============================================================
+    # ========================================================
 
     if subject.institution_id != institution_id:
         abort(403)
 
-    # Global subject OR current branch
     if (
         getattr(subject, "branch_id", None) is not None
         and subject.branch_id != branch_id
@@ -5884,6 +5889,7 @@ def teacher_enter_marks(exam_subject_id):
     ).lower().strip()
 
     if subject_status != "active":
+
         flash(
             "This subject is not active.",
             "danger"
@@ -5893,9 +5899,9 @@ def teacher_enter_marks(exam_subject_id):
             url_for("main.teacher_dashboard")
         )
 
-    # ============================================================
+    # ========================================================
     # PROGRAM
-    # ============================================================
+    # ========================================================
 
     program_id = exam.program_id
 
@@ -5915,9 +5921,9 @@ def teacher_enter_marks(exam_subject_id):
     if not program:
         abort(404)
 
-    # ============================================================
+    # ========================================================
     # SUBJECT PROGRAM SECURITY
-    # ============================================================
+    # ========================================================
 
     subject_program_id = getattr(
         subject,
@@ -5931,15 +5937,15 @@ def teacher_enter_marks(exam_subject_id):
     ):
         abort(403)
 
-    # ============================================================
+    # ========================================================
     # ACADEMIC YEAR
-    # ============================================================
+    # ========================================================
 
     academic_year_id = exam.academic_year_id
 
-    # ============================================================
+    # ========================================================
     # CLASS
-    # ============================================================
+    # ========================================================
 
     class_id = exam_subject.class_id
 
@@ -5951,10 +5957,8 @@ def teacher_enter_marks(exam_subject_id):
             Class.query
             .filter(
                 Class.id == class_id,
-
                 Class.institution_id == institution_id,
                 Class.branch_id == branch_id,
-
                 Class.program_id == program_id,
                 Class.academic_year_id == academic_year_id
             )
@@ -5964,9 +5968,9 @@ def teacher_enter_marks(exam_subject_id):
         if not selected_class:
             abort(404)
 
-    # ============================================================
+    # ========================================================
     # SECTION
-    # ============================================================
+    # ========================================================
 
     section_id = exam_subject.section_id
 
@@ -5981,10 +5985,8 @@ def teacher_enter_marks(exam_subject_id):
             Section.query
             .filter(
                 Section.id == section_id,
-
                 Section.institution_id == institution_id,
                 Section.branch_id == branch_id,
-
                 Section.class_id == class_id,
                 Section.academic_year_id == academic_year_id
             )
@@ -5994,37 +5996,28 @@ def teacher_enter_marks(exam_subject_id):
         if not selected_section:
             abort(404)
 
-    # ============================================================
+    # ========================================================
     # TEACHER AUTHORIZATION
-    # ============================================================
+    # ========================================================
     #
-    # TeacherSubject:
+    # Teacher must have an active assignment for:
     #
-    #   teacher
-    #      ↓
-    #   program
-    #      ↓
-    #   subject
+    # teacher + institution + program + subject
     #
-    # It does NOT need:
+    # Branch can be:
     #
-    #   class_id
-    #   section_id
-    #   academic_year_id
+    #   current branch
+    #   OR global branch NULL
     #
-    # ============================================================
+    # ========================================================
 
-    teacher_assignment_query = (
+    teacher_assignment = (
         TeacherSubject.query
         .filter(
             TeacherSubject.teacher_id == teacher.id,
-
             TeacherSubject.institution_id == institution_id,
-
             TeacherSubject.program_id == program_id,
-
             TeacherSubject.subject_id == subject.id,
-
             TeacherSubject.status == "active"
         )
         .filter(
@@ -6033,23 +6026,15 @@ def teacher_enter_marks(exam_subject_id):
                 TeacherSubject.branch_id.is_(None)
             )
         )
-    )
-
-    # ============================================================
-    # GET TEACHER SUBJECT ASSIGNMENT
-    # ============================================================
-
-    teacher_assignment = (
-        teacher_assignment_query
         .order_by(
             TeacherSubject.id.desc()
         )
         .first()
     )
 
-    # ============================================================
+    # ========================================================
     # FINAL TEACHER AUTHORIZATION
-    # ============================================================
+    # ========================================================
 
     if not teacher_assignment:
 
@@ -6082,9 +6067,9 @@ def teacher_enter_marks(exam_subject_id):
 
         abort(403)
 
-    # ============================================================
-    # EXTRA TEACHER ASSIGNMENT SAFETY
-    # ============================================================
+    # ========================================================
+    # EXTRA ASSIGNMENT SAFETY
+    # ========================================================
 
     if teacher_assignment.teacher_id != teacher.id:
         abort(403)
@@ -6110,9 +6095,9 @@ def teacher_enter_marks(exam_subject_id):
     ):
         abort(403)
 
-    # ============================================================
+    # ========================================================
     # EXAM SUBJECT TEACHER CONSISTENCY
-    # ============================================================
+    # ========================================================
 
     if (
         exam_subject.teacher_id is not None
@@ -6136,9 +6121,9 @@ def teacher_enter_marks(exam_subject_id):
 
         abort(403)
 
-    # ============================================================
+    # ========================================================
     # MAX MARKS
-    # ============================================================
+    # ========================================================
 
     max_marks = to_decimal(
         exam_subject.max_marks
@@ -6146,19 +6131,21 @@ def teacher_enter_marks(exam_subject_id):
 
     if max_marks <= 0:
 
-        max_marks = to_decimal(
-            getattr(
-                subject,
-                "max_marks",
-                100
-            )
-            if getattr(subject, "max_marks", None) is not None
-            else 100
+        subject_max_marks = getattr(
+            subject,
+            "max_marks",
+            None
         )
 
-    # ============================================================
+        max_marks = (
+            to_decimal(subject_max_marks)
+            if subject_max_marks is not None
+            else Decimal("100")
+        )
+
+    # ========================================================
     # PASS MARKS
-    # ============================================================
+    # ========================================================
 
     pass_marks = to_decimal(
         exam_subject.pass_marks
@@ -6166,19 +6153,21 @@ def teacher_enter_marks(exam_subject_id):
 
     if pass_marks <= 0:
 
-        pass_marks = to_decimal(
-            getattr(
-                subject,
-                "pass_marks",
-                50
-            )
-            if getattr(subject, "pass_marks", None) is not None
-            else 50
+        subject_pass_marks = getattr(
+            subject,
+            "pass_marks",
+            None
         )
 
-    # ============================================================
-    # STUDENTS
-    # ============================================================
+        pass_marks = (
+            to_decimal(subject_pass_marks)
+            if subject_pass_marks is not None
+            else Decimal("50")
+        )
+
+    # ========================================================
+    # STUDENTS / ENROLLMENTS
+    # ========================================================
 
     enrollment_query = (
         StudentEnrollment.query
@@ -6187,40 +6176,23 @@ def teacher_enter_marks(exam_subject_id):
             Student.id == StudentEnrollment.student_id
         )
         .filter(
-
-            # ----------------------------------------------------
-            # INSTITUTION
-            # ----------------------------------------------------
-
             StudentEnrollment.institution_id == institution_id,
             Student.institution_id == institution_id,
-
-            # ----------------------------------------------------
-            # BRANCH
-            # ----------------------------------------------------
 
             StudentEnrollment.branch_id == branch_id,
             Student.branch_id == branch_id,
 
-            # ----------------------------------------------------
-            # ACADEMIC YEAR
-            # ----------------------------------------------------
-
             StudentEnrollment.academic_year_id
             == academic_year_id,
-
-            # ----------------------------------------------------
-            # PROGRAM
-            # ----------------------------------------------------
 
             StudentEnrollment.program_id
             == program_id
         )
     )
 
-    # ============================================================
-    # CLASS
-    # ============================================================
+    # ========================================================
+    # CLASS FILTER
+    # ========================================================
 
     if class_id:
 
@@ -6228,9 +6200,9 @@ def teacher_enter_marks(exam_subject_id):
             StudentEnrollment.class_id == class_id
         )
 
-    # ============================================================
-    # SECTION
-    # ============================================================
+    # ========================================================
+    # SECTION FILTER
+    # ========================================================
 
     if section_id:
 
@@ -6238,9 +6210,9 @@ def teacher_enter_marks(exam_subject_id):
             StudentEnrollment.section_id == section_id
         )
 
-    # ============================================================
+    # ========================================================
     # ACTIVE ENROLLMENT
-    # ============================================================
+    # ========================================================
 
     if hasattr(StudentEnrollment, "status"):
 
@@ -6248,9 +6220,9 @@ def teacher_enter_marks(exam_subject_id):
             StudentEnrollment.status == "active"
         )
 
-    # ============================================================
+    # ========================================================
     # ACTIVE STUDENT
-    # ============================================================
+    # ========================================================
 
     if hasattr(Student, "status"):
 
@@ -6258,9 +6230,9 @@ def teacher_enter_marks(exam_subject_id):
             Student.status == "active"
         )
 
-    # ============================================================
+    # ========================================================
     # LOAD STUDENTS
-    # ============================================================
+    # ========================================================
 
     students = (
         enrollment_query
@@ -6270,18 +6242,18 @@ def teacher_enter_marks(exam_subject_id):
         .all()
     )
 
-    # ============================================================
+    # ========================================================
     # STUDENT IDS
-    # ============================================================
+    # ========================================================
 
     student_ids = [
         enrollment.student_id
         for enrollment in students
     ]
 
-    # ============================================================
+    # ========================================================
     # EXISTING MARKS
-    # ============================================================
+    # ========================================================
 
     existing_marks = {}
 
@@ -6301,50 +6273,26 @@ def teacher_enter_marks(exam_subject_id):
             for mark in marks
         }
 
-    # ============================================================
+    # ========================================================
     # SUBMISSION STATUS
-    # ============================================================
-    #
-    # IMPORTANT:
-    #
-    # We consider the ExamSubject fully submitted when EVERY
-    # student currently included in this exam subject has a
-    # Mark record with status = "submitted".
-    #
-    # This means:
-    #
-    #     Draft exam
-    #         ↓
-    #     Teacher enters marks
-    #         ↓
-    #     Submit
-    #         ↓
-    #     All marks = submitted
-    #         ↓
-    #     Page becomes read-only
-    #
-    # ============================================================
+    # ========================================================
 
     total_student_count = len(student_ids)
 
-    submitted_count = 0
-
-    if student_ids:
-
-        submitted_count = sum(
-            1
-            for student_id in student_ids
-            if (
-                existing_marks.get(student_id)
-                and str(
-                    getattr(
-                        existing_marks[student_id],
-                        "status",
-                        ""
-                    ) or ""
-                ).lower().strip() == "submitted"
-            )
+    submitted_count = sum(
+        1
+        for student_id in student_ids
+        if (
+            existing_marks.get(student_id)
+            and str(
+                getattr(
+                    existing_marks[student_id],
+                    "status",
+                    ""
+                ) or ""
+            ).lower().strip() == "submitted"
         )
+    )
 
     marks_locked = (
         total_student_count > 0
@@ -6357,37 +6305,15 @@ def teacher_enter_marks(exam_subject_id):
         else "pending"
     )
 
-    # ============================================================
-    # BLOCK SECOND SUBMISSION
-    # ============================================================
-    #
-    # Teacher can VIEW already-submitted marks.
-    #
-    # But teacher cannot POST/edit them again.
-    #
-    # ============================================================
-
-    if request.method == "POST" and marks_locked:
-
-        flash(
-            "Marks for this examination subject have already been submitted.",
-            "warning"
-        )
-
-        return redirect(
-            url_for(
-                "main.teacher_enter_marks",
-                exam_subject_id=exam_subject.id
-            )
-        )
-
-    # ============================================================
+    # ========================================================
     # POST
-    # ============================================================
+    # ========================================================
 
     if request.method == "POST":
 
-        submitted_ids = set()
+        processed_student_ids = set()
+
+        skipped_submitted_ids = set()
 
         try:
 
@@ -6433,7 +6359,14 @@ def teacher_enter_marks(exam_subject_id):
                 abort(403)
 
             # ====================================================
-            # RE-CHECK SUBMISSION LOCK
+            # RELOAD CURRENT MARKS
+            # ====================================================
+            #
+            # IMPORTANT:
+            #
+            # We reload marks inside POST because another request
+            # could have submitted a mark after the GET request.
+            #
             # ====================================================
 
             current_marks = (
@@ -6451,6 +6384,10 @@ def teacher_enter_marks(exam_subject_id):
                 mark.student_id: mark
                 for mark in current_marks
             }
+
+            # ====================================================
+            # CHECK IF EVERYTHING IS ALREADY SUBMITTED
+            # ====================================================
 
             current_submitted_count = sum(
                 1
@@ -6494,10 +6431,63 @@ def teacher_enter_marks(exam_subject_id):
 
                 student_id = enrollment.student_id
 
-                submitted_ids.add(student_id)
+                # ------------------------------------------------
+                # EXISTING MARK
+                # ------------------------------------------------
+
+                mark = current_marks_map.get(
+                    student_id
+                )
+
+                # ------------------------------------------------
+                # IMPORTANT:
+                #
+                # If this student was already submitted,
+                # DO NOT TOUCH THE RECORD.
+                #
+                # DO NOT raise ValueError.
+                #
+                # Simply skip this student and continue with
+                # the remaining students.
+                # ------------------------------------------------
+
+                if mark is not None:
+
+                    existing_status = str(
+                        getattr(
+                            mark,
+                            "status",
+                            ""
+                        ) or ""
+                    ).lower().strip()
+
+                    if existing_status == "submitted":
+
+                        skipped_submitted_ids.add(
+                            student_id
+                        )
+
+                        continue
 
                 # ------------------------------------------------
                 # MARK
+                # ------------------------------------------------
+
+                if mark is None:
+
+                    mark = Mark(
+                        exam_subject_id=exam_subject.id,
+                        student_id=student_id
+                    )
+
+                    db.session.add(mark)
+
+                    current_marks_map[
+                        student_id
+                    ] = mark
+
+                # ------------------------------------------------
+                # RAW MARK
                 # ------------------------------------------------
 
                 raw_mark = request.form.get(
@@ -6533,47 +6523,6 @@ def teacher_enter_marks(exam_subject_id):
                     f"remarks_{student_id}",
                     ""
                 ).strip()
-
-                # ------------------------------------------------
-                # EXISTING MARK
-                # ------------------------------------------------
-
-                mark = existing_marks.get(
-                    student_id
-                )
-
-                if mark is None:
-
-                    mark = Mark(
-                        exam_subject_id=exam_subject.id,
-                        student_id=student_id
-                    )
-
-                    db.session.add(mark)
-
-                    existing_marks[
-                        student_id
-                    ] = mark
-
-                # ------------------------------------------------
-                # DO NOT EDIT AN ALREADY SUBMITTED INDIVIDUAL MARK
-                # ------------------------------------------------
-
-                existing_status = str(
-                    getattr(
-                        mark,
-                        "status",
-                        ""
-                    ) or ""
-                ).lower().strip()
-
-                if existing_status == "submitted":
-
-                    raise ValueError(
-                        f"Marks for "
-                        f"{enrollment.student.full_name} "
-                        f"have already been submitted."
-                    )
 
                 # ------------------------------------------------
                 # FLAGS
@@ -6625,12 +6574,20 @@ def teacher_enter_marks(exam_subject_id):
                             f"{enrollment.student.full_name}."
                         )
 
+                    # --------------------------------------------
+                    # NEGATIVE
+                    # --------------------------------------------
+
                     if obtained < 0:
 
                         raise ValueError(
                             f"Marks cannot be negative for "
                             f"{enrollment.student.full_name}."
                         )
+
+                    # --------------------------------------------
+                    # MAXIMUM
+                    # --------------------------------------------
 
                     if obtained > max_marks:
 
@@ -6640,6 +6597,10 @@ def teacher_enter_marks(exam_subject_id):
                             f"{max_marks}."
                         )
 
+                    # --------------------------------------------
+                    # SAVE MARK
+                    # --------------------------------------------
+
                     mark.marks_obtained = (
                         obtained.quantize(
                             Decimal("0.01"),
@@ -6648,13 +6609,37 @@ def teacher_enter_marks(exam_subject_id):
                     )
 
                 # ------------------------------------------------
-                # STATUS
+                # SUBMIT
                 # ------------------------------------------------
 
                 mark.status = "submitted"
 
                 mark.submitted_at = (
                     datetime.now(timezone.utc)
+                )
+
+                processed_student_ids.add(
+                    student_id
+                )
+
+            # ====================================================
+            # NOTHING NEW TO SAVE
+            # ====================================================
+
+            if not processed_student_ids:
+
+                db.session.rollback()
+
+                flash(
+                    "All available student marks have already been submitted.",
+                    "warning"
+                )
+
+                return redirect(
+                    url_for(
+                        "main.teacher_enter_marks",
+                        exam_subject_id=exam_subject.id
+                    )
                 )
 
             # ====================================================
@@ -6666,8 +6651,15 @@ def teacher_enter_marks(exam_subject_id):
             # ====================================================
             # CALCULATE RESULTS
             # ====================================================
+            #
+            # Only students whose marks were processed in this
+            # submission are recalculated here.
+            #
+            # Already-submitted students remain untouched.
+            #
+            # ====================================================
 
-            for student_id in submitted_ids:
+            for student_id in processed_student_ids:
 
                 calculate_student_result(
                     exam=exam,
@@ -6695,13 +6687,23 @@ def teacher_enter_marks(exam_subject_id):
             db.session.commit()
 
             # ====================================================
-            # SUCCESS
+            # SUCCESS MESSAGE
             # ====================================================
 
-            flash(
-                "Student marks were successfully saved and submitted.",
-                "success"
-            )
+            if skipped_submitted_ids:
+
+                flash(
+                    "Student marks were successfully saved. "
+                    "Previously submitted student marks were left unchanged.",
+                    "success"
+                )
+
+            else:
+
+                flash(
+                    "Student marks were successfully saved and submitted.",
+                    "success"
+                )
 
             return redirect(
                 url_for(
@@ -6709,6 +6711,10 @@ def teacher_enter_marks(exam_subject_id):
                     exam_subject_id=exam_subject.id
                 )
             )
+
+        # ========================================================
+        # VALIDATION ERROR
+        # ========================================================
 
         except ValueError as exc:
 
@@ -6718,6 +6724,10 @@ def teacher_enter_marks(exam_subject_id):
                 str(exc),
                 "danger"
             )
+
+        # ========================================================
+        # UNEXPECTED ERROR
+        # ========================================================
 
         except Exception:
 
@@ -6754,34 +6764,26 @@ def teacher_enter_marks(exam_subject_id):
                 for mark in marks
             }
 
-    # ============================================================
+    # ========================================================
     # RE-CALCULATE SUBMISSION STATUS
-    # ============================================================
-    #
-    # This is important after POST/rollback.
-    #
-    # ============================================================
+    # ========================================================
 
     total_student_count = len(student_ids)
 
-    submitted_count = 0
-
-    if student_ids:
-
-        submitted_count = sum(
-            1
-            for student_id in student_ids
-            if (
-                existing_marks.get(student_id)
-                and str(
-                    getattr(
-                        existing_marks[student_id],
-                        "status",
-                        ""
-                    ) or ""
-                ).lower().strip() == "submitted"
-            )
+    submitted_count = sum(
+        1
+        for student_id in student_ids
+        if (
+            existing_marks.get(student_id)
+            and str(
+                getattr(
+                    existing_marks[student_id],
+                    "status",
+                    ""
+                ) or ""
+            ).lower().strip() == "submitted"
         )
+    )
 
     marks_locked = (
         total_student_count > 0
@@ -6794,9 +6796,9 @@ def teacher_enter_marks(exam_subject_id):
         else "pending"
     )
 
-    # ============================================================
+    # ========================================================
     # PREPARE STUDENT ROWS
-    # ============================================================
+    # ========================================================
 
     student_rows = []
 
@@ -6847,9 +6849,9 @@ def teacher_enter_marks(exam_subject_id):
             )
         })
 
-    # ============================================================
+    # ========================================================
     # RENDER
-    # ============================================================
+    # ========================================================
 
     return render_template(
         "backend/teacher/pages/add_exam_marks.html",
@@ -6876,9 +6878,9 @@ def teacher_enter_marks(exam_subject_id):
 
         student_count=len(student_rows),
 
-        # --------------------------------------------------------
+        # ----------------------------------------------------
         # SUBMISSION STATE
-        # --------------------------------------------------------
+        # ----------------------------------------------------
 
         submitted_count=submitted_count,
 
@@ -6890,9 +6892,411 @@ def teacher_enter_marks(exam_subject_id):
     )
 
 
+# ============================================================
+# GET STUDENT EXAM SUBJECTS
+#
+# IMPORTANT
+# ------------------------------------------------------------
+# A student must ONLY receive ExamSubjects matching:
+#
+#   Institution
+#   Branch
+#   Program
+#   Class
+#   Section
+#
+# RULES
+# ------------------------------------------------------------
+# 1. KD21 student MUST NOT receive KD20 ExamSubjects.
+# 2. If student has a section:
+#       section-specific assignment has priority.
+# 3. If no section-specific assignment exists:
+#       class-level assignment is used.
+# 4. One subject is returned only ONCE.
+# 5. Existing ExamSubject rows are NEVER deleted.
+# 6. Duplicate ExamSubject rows are handled by selecting
+#    one canonical assignment.
+# ============================================================
+
+def get_student_exam_subjects(
+    exam,
+    enrollment
+):
+
+    # ========================================================
+    # BASIC VALUES
+    # ========================================================
+
+    student_class_id = getattr(
+        enrollment,
+        "class_id",
+        None
+    )
+
+    student_section_id = getattr(
+        enrollment,
+        "section_id",
+        None
+    )
+
+    student_program_id = getattr(
+        enrollment,
+        "program_id",
+        None
+    )
+
+    institution_id = getattr(
+        enrollment,
+        "institution_id",
+        None
+    )
+
+    branch_id = getattr(
+        enrollment,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # CLASS IS REQUIRED
+    # ========================================================
+
+    if not student_class_id:
+
+        current_app.logger.warning(
+            "Student enrollment has no class_id. "
+            "Cannot safely calculate exam subjects. "
+            "student_id=%s exam_id=%s",
+            getattr(enrollment, "student_id", None),
+            getattr(exam, "id", None)
+        )
+
+        return []
+
+    # ========================================================
+    # SAFETY:
+    # ExamSubject MUST HAVE class_id
+    # ========================================================
+
+    if "class_id" not in ExamSubject.__table__.columns:
+
+        current_app.logger.error(
+            "ExamSubject.class_id does not exist. "
+            "Class-level subject scoping cannot be enforced."
+        )
+
+        return []
+
+    # ========================================================
+    # SAFETY:
+    # If ExamSubject has program_id, program must be known.
+    # ========================================================
+
+    if (
+        "program_id" in ExamSubject.__table__.columns
+        and not student_program_id
+    ):
+
+        current_app.logger.warning(
+            "Student enrollment has no program_id. "
+            "Cannot safely scope ExamSubjects by program. "
+            "student_id=%s exam_id=%s",
+            getattr(enrollment, "student_id", None),
+            getattr(exam, "id", None)
+        )
+
+        return []
+
+    # ========================================================
+    # BASE QUERY
+    # ========================================================
+
+    query = (
+        ExamSubject.query
+        .filter(
+            ExamSubject.exam_id == exam.id,
+
+            # ------------------------------------------------
+            # CRITICAL CLASS FILTER
+            # ------------------------------------------------
+            ExamSubject.class_id == student_class_id
+        )
+    )
+
+    # ========================================================
+    # INSTITUTION SCOPE
+    # ========================================================
+
+    if (
+        "institution_id"
+        in ExamSubject.__table__.columns
+        and institution_id is not None
+    ):
+
+        query = query.filter(
+            ExamSubject.institution_id == institution_id
+        )
+
+    # ========================================================
+    # BRANCH SCOPE
+    # ========================================================
+
+    if (
+        "branch_id"
+        in ExamSubject.__table__.columns
+        and branch_id is not None
+    ):
+
+        query = query.filter(
+            ExamSubject.branch_id == branch_id
+        )
+
+    # ========================================================
+    # PROGRAM SCOPE
+    # ========================================================
+
+    if (
+        "program_id"
+        in ExamSubject.__table__.columns
+        and student_program_id is not None
+    ):
+
+        query = query.filter(
+            ExamSubject.program_id == student_program_id
+        )
+
+    # ========================================================
+    # LOAD CANDIDATES
+    # ========================================================
+
+    candidates = (
+        query
+        .order_by(
+            ExamSubject.id.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # DEBUG LOG
+    # ========================================================
+
+    current_app.logger.info(
+        "ExamSubject candidates | "
+        "exam=%s student=%s institution=%s branch=%s "
+        "program=%s class=%s section=%s count=%s",
+        getattr(exam, "id", None),
+        getattr(enrollment, "student_id", None),
+        institution_id,
+        branch_id,
+        student_program_id,
+        student_class_id,
+        student_section_id,
+        len(candidates)
+    )
+
+    # ========================================================
+    # CANONICAL SUBJECT MAP
+    #
+    # KEY:
+    #   subject_id
+    #
+    # VALUE:
+    #   {
+    #       "priority": ...,
+    #       "exam_subject": ...
+    #   }
+    # ========================================================
+
+    selected = {}
+
+    for exam_subject in candidates:
+
+        subject_id = getattr(
+            exam_subject,
+            "subject_id",
+            None
+        )
+
+        if not subject_id:
+            continue
+
+        # ====================================================
+        # SECTION
+        # ====================================================
+
+        exam_subject_section_id = getattr(
+            exam_subject,
+            "section_id",
+            None
+        )
+
+        # ====================================================
+        # STUDENT HAS NO SECTION
+        #
+        # Only class-level assignments are valid.
+        # ====================================================
+
+        if student_section_id is None:
+
+            if exam_subject_section_id is not None:
+                continue
+
+            priority = 1
+
+        # ====================================================
+        # STUDENT HAS SECTION
+        # ====================================================
+
+        else:
+
+            # ------------------------------------------------
+            # SECTION DOES NOT MATCH
+            # ------------------------------------------------
+
+            if exam_subject_section_id not in (
+                None,
+                student_section_id
+            ):
+                continue
+
+            # ------------------------------------------------
+            # SECTION-SPECIFIC = HIGHER PRIORITY
+            # ------------------------------------------------
+
+            if (
+                exam_subject_section_id
+                == student_section_id
+            ):
+
+                priority = 2
+
+            else:
+
+                # Class-level fallback
+                priority = 1
+
+        # ====================================================
+        # SELECT CANONICAL ASSIGNMENT
+        # ====================================================
+
+        current = selected.get(
+            subject_id
+        )
+
+        if current is None:
+
+            selected[subject_id] = {
+                "priority": priority,
+                "exam_subject": exam_subject
+            }
+
+            continue
+
+        current_priority = current["priority"]
+
+        current_exam_subject = current[
+            "exam_subject"
+        ]
+
+        # ----------------------------------------------------
+        # HIGHER PRIORITY WINS
+        # ----------------------------------------------------
+
+        if priority > current_priority:
+
+            selected[subject_id] = {
+                "priority": priority,
+                "exam_subject": exam_subject
+            }
+
+            continue
+
+        # ----------------------------------------------------
+        # SAME PRIORITY
+        #
+        # Use the lowest ExamSubject ID as canonical row.
+        # ----------------------------------------------------
+
+        if (
+            priority == current_priority
+            and exam_subject.id
+            < current_exam_subject.id
+        ):
+
+            selected[subject_id] = {
+                "priority": priority,
+                "exam_subject": exam_subject
+            }
+
+    # ========================================================
+    # FINAL SUBJECT LIST
+    # ========================================================
+
+    exam_subjects = [
+        item["exam_subject"]
+        for item in selected.values()
+    ]
+
+    # ========================================================
+    # STABLE DISPLAY ORDER
+    # ========================================================
+
+    exam_subjects.sort(
+        key=lambda item: (
+            getattr(
+                item,
+                "display_order",
+                None
+            ) or 999999,
+            item.id
+        )
+    )
+
+    # ========================================================
+    # DEBUG SELECTED
+    # ========================================================
+
+    current_app.logger.info(
+        "ExamSubject selected | "
+        "exam=%s student=%s class=%s section=%s "
+        "selected_ids=%s subject_ids=%s",
+        getattr(exam, "id", None),
+        getattr(enrollment, "student_id", None),
+        student_class_id,
+        student_section_id,
+        [
+            item.id
+            for item in exam_subjects
+        ],
+        [
+            item.subject_id
+            for item in exam_subjects
+        ]
+    )
+
+    return exam_subjects
+
 
 # ============================================================
 # CALCULATE STUDENT RESULT
+#
+# RULES
+# ------------------------------------------------------------
+# 1. Student is scoped by active enrollment.
+# 2. ExamSubjects are scoped by:
+#       institution
+#       branch
+#       program
+#       class
+#       section
+# 3. One subject is counted only once.
+# 4. Section-specific ExamSubject overrides class-level.
+# 5. Missing marks do NOT become zero.
+# 6. Absent / exempted have no obtained mark.
+# 7. 49.99 = FAIL.
+# 8. 50.00 = PASS.
+# 9. Result remains INCOMPLETE if any subject is missing.
 # ============================================================
 
 def calculate_student_result(
@@ -6903,7 +7307,7 @@ def calculate_student_result(
 ):
 
     # ========================================================
-    # GET STUDENT ENROLLMENT FOR THIS EXAM
+    # GET ACTIVE ENROLLMENT FOR THIS EXAM
     # ========================================================
 
     enrollment = (
@@ -6912,7 +7316,8 @@ def calculate_student_result(
             StudentEnrollment.student_id == student_id,
             StudentEnrollment.institution_id == institution_id,
             StudentEnrollment.branch_id == branch_id,
-            StudentEnrollment.academic_year_id == exam.academic_year_id,
+            StudentEnrollment.academic_year_id
+            == exam.academic_year_id,
             StudentEnrollment.status == "active"
         )
         .order_by(
@@ -6922,28 +7327,49 @@ def calculate_student_result(
     )
 
     if not enrollment:
+        current_app.logger.warning(
+            "No active enrollment found | "
+            "student=%s exam=%s institution=%s branch=%s",
+            student_id,
+            exam.id,
+            institution_id,
+            branch_id
+        )
+
         return None
 
     # ========================================================
-    # GET ALL EXAM SUBJECTS
+    # GET ONLY THE STUDENT'S VALID EXAM SUBJECTS
     # ========================================================
 
-    exam_subjects = (
-        ExamSubject.query
-        .filter(
-            ExamSubject.exam_id == exam.id
-        )
-        .order_by(
-            ExamSubject.id.asc()
-        )
-        .all()
+    exam_subjects = get_student_exam_subjects(
+        exam=exam,
+        enrollment=enrollment
     )
 
     if not exam_subjects:
+
+        current_app.logger.warning(
+            "No scoped ExamSubjects found | "
+            "student=%s exam=%s class=%s section=%s",
+            student_id,
+            exam.id,
+            getattr(
+                enrollment,
+                "class_id",
+                None
+            ),
+            getattr(
+                enrollment,
+                "section_id",
+                None
+            )
+        )
+
         return None
 
     # ========================================================
-    # GET MARKS
+    # GET MARK IDs
     # ========================================================
 
     exam_subject_ids = [
@@ -6951,60 +7377,101 @@ def calculate_student_result(
         for item in exam_subjects
     ]
 
+    # ========================================================
+    # GET MARKS
+    # ========================================================
+
     marks = (
         Mark.query
         .filter(
-            Mark.exam_subject_id.in_(exam_subject_ids),
-            Mark.student_id == student_id
+            Mark.student_id == student_id,
+            Mark.exam_subject_id.in_(
+                exam_subject_ids
+            )
+        )
+        .order_by(
+            Mark.id.asc()
         )
         .all()
     )
 
-    marks_by_exam_subject = {
-        mark.exam_subject_id: mark
-        for mark in marks
-    }
+    # ========================================================
+    # BUILD MARK MAP
+    #
+    # If old duplicate Mark rows exist, keep the first
+    # canonical record instead of allowing dictionary overwrite.
+    # ========================================================
+
+    marks_by_exam_subject = {}
+
+    for mark in marks:
+
+        exam_subject_id = mark.exam_subject_id
+
+        if exam_subject_id in marks_by_exam_subject:
+
+            current_app.logger.error(
+                "Duplicate Mark detected | "
+                "student=%s exam_subject=%s "
+                "existing_mark=%s duplicate_mark=%s",
+                student_id,
+                exam_subject_id,
+                marks_by_exam_subject[
+                    exam_subject_id
+                ].id,
+                mark.id
+            )
+
+            continue
+
+        marks_by_exam_subject[
+            exam_subject_id
+        ] = mark
 
     # ========================================================
-    # CALCULATE
+    # CALCULATION VARIABLES
     # ========================================================
 
     total_marks = Decimal("0.00")
+
     total_possible = Decimal("0.00")
 
     completed = 0
+
     failed = 0
 
     subject_results = []
 
-    # ========================================================
-    # PASS MARK
-    #
-    # 49.99 and below = FAIL
-    # 50.00 and above = PASS
-    # ========================================================
-
     PASS_MARK = Decimal("50.00")
 
     # ========================================================
-    # LOOP THROUGH EXAM SUBJECTS
+    # LOOP THROUGH SCOPED SUBJECTS
     # ========================================================
 
     for exam_subject in exam_subjects:
 
-        mark = marks_by_exam_subject.get(
-            exam_subject.id
+        # ====================================================
+        # SUBJECT
+        # ====================================================
+
+        subject = getattr(
+            exam_subject,
+            "subject",
+            None
         )
 
-        # ----------------------------------------------------
-        # SUBJECT
-        # ----------------------------------------------------
+        if subject is None:
 
-        subject = exam_subject.subject
+            current_app.logger.warning(
+                "ExamSubject %s has no Subject.",
+                exam_subject.id
+            )
 
-        # ----------------------------------------------------
+            continue
+
+        # ====================================================
         # MAX MARKS
-        # ----------------------------------------------------
+        # ====================================================
 
         max_marks = to_decimal(
             getattr(
@@ -7014,7 +7481,7 @@ def calculate_student_result(
             )
         )
 
-        if max_marks <= Decimal("0"):
+        if max_marks <= Decimal("0.00"):
 
             max_marks = to_decimal(
                 getattr(
@@ -7024,56 +7491,87 @@ def calculate_student_result(
                 )
             )
 
-        # Always include this subject in total possible marks
+        if max_marks <= Decimal("0.00"):
+
+            max_marks = Decimal("100.00")
+
+        # ====================================================
+        # TOTAL POSSIBLE
+        # ====================================================
+
         total_possible += max_marks
 
-        # ----------------------------------------------------
-        # NO MARK
-        # ----------------------------------------------------
+        # ====================================================
+        # GET MARK
+        # ====================================================
 
-        if not mark:
+        mark = marks_by_exam_subject.get(
+            exam_subject.id
+        )
+
+        # ====================================================
+        # NO MARK
+        # ====================================================
+
+        if mark is None:
             continue
 
-        # ----------------------------------------------------
+        # ====================================================
         # ABSENT / EXEMPTED
-        # ----------------------------------------------------
+        #
+        # They are not completed.
+        # ====================================================
 
         if (
-            mark.is_absent
-            or mark.is_exempted
+            getattr(
+                mark,
+                "is_absent",
+                False
+            )
+            or
+            getattr(
+                mark,
+                "is_exempted",
+                False
+            )
         ):
+
             continue
 
-        # ----------------------------------------------------
-        # MARK IS NULL
-        # ----------------------------------------------------
+        # ====================================================
+        # NULL MARK
+        # ====================================================
 
         if mark.marks_obtained is None:
             continue
 
-        # ----------------------------------------------------
-        # OBTAINED MARK
-        # ----------------------------------------------------
+        # ====================================================
+        # CONVERT MARK
+        # ====================================================
 
         obtained = to_decimal(
             mark.marks_obtained
         )
 
-        # ----------------------------------------------------
-        # SAFETY
-        # Do not allow negative marks
-        # ----------------------------------------------------
+        # ====================================================
+        # NEGATIVE SAFETY
+        # ====================================================
 
         if obtained < Decimal("0.00"):
+
             obtained = Decimal("0.00")
 
-        # ----------------------------------------------------
-        # SAFETY
-        # Do not allow obtained marks above max marks
-        # ----------------------------------------------------
+        # ====================================================
+        # MAX MARK SAFETY
+        # ====================================================
 
         if obtained > max_marks:
+
             obtained = max_marks
+
+        # ====================================================
+        # ADD TOTAL
+        # ====================================================
 
         total_marks += obtained
 
@@ -7093,10 +7591,6 @@ def calculate_student_result(
 
             subject_percentage = Decimal("0.00")
 
-        # ----------------------------------------------------
-        # ROUND SUBJECT PERCENTAGE
-        # ----------------------------------------------------
-
         subject_percentage = (
             subject_percentage.quantize(
                 Decimal("0.01"),
@@ -7114,10 +7608,6 @@ def calculate_student_result(
 
         # ====================================================
         # SUBJECT PASS / FAIL
-        #
-        # 49.99 = FAIL
-        # 50.00 = PASS
-        # 50.01 = PASS
         # ====================================================
 
         if subject_percentage < PASS_MARK:
@@ -7134,10 +7624,22 @@ def calculate_student_result(
             None
         )
 
+        # ====================================================
+        # GPA INPUT
+        # ====================================================
+
         subject_results.append({
             "grade": subject_grade,
-            "credit_hours": credit_hours,
+            "credit_hours": credit_hours
         })
+
+    # ========================================================
+    # TOTAL SUBJECTS
+    # ========================================================
+
+    subjects_total = len(
+        exam_subjects
+    )
 
     # ========================================================
     # OVERALL PERCENTAGE
@@ -7153,10 +7655,6 @@ def calculate_student_result(
 
         percentage = Decimal("0.00")
 
-    # --------------------------------------------------------
-    # ROUND OVERALL PERCENTAGE
-    # --------------------------------------------------------
-
     percentage = percentage.quantize(
         Decimal("0.01"),
         rounding=ROUND_HALF_UP
@@ -7167,15 +7665,6 @@ def calculate_student_result(
     # ========================================================
 
     if completed > 0:
-
-        # Overall percentage is used as the final average.
-        #
-        # This is correct when subjects can have different
-        # maximum marks because:
-        #
-        # total_marks / total_possible * 100
-        #
-        # represents the student's overall percentage.
 
         average = percentage
 
@@ -7206,49 +7695,17 @@ def calculate_student_result(
 
     # ========================================================
     # RESULT STATUS
-    # ========================================================
-
-    subjects_total = len(
-        exam_subjects
-    )
-
-    # --------------------------------------------------------
-    # INCOMPLETE
     #
-    # If at least one exam subject does not have a completed
-    # mark, result remains incomplete.
-    # --------------------------------------------------------
+    # MISSING / ABSENT / EXEMPTED = INCOMPLETE
+    # ========================================================
 
     if completed < subjects_total:
 
         result_status = "incomplete"
 
-    # --------------------------------------------------------
-    # FAIL
-    #
-    # Any completed subject below 50 = FAIL.
-    #
-    # Examples:
-    # 49.99 -> FAIL
-    # 49.50 -> FAIL
-    # 40.00 -> FAIL
-    # --------------------------------------------------------
-
     elif failed > 0:
 
         result_status = "fail"
-
-    # --------------------------------------------------------
-    # PASS
-    #
-    # Every subject is 50.00 or above.
-    #
-    # Examples:
-    # 50.00 -> PASS
-    # 50.01 -> PASS
-    # 60.00 -> PASS
-    # 100.00 -> PASS
-    # --------------------------------------------------------
 
     else:
 
@@ -7268,7 +7725,7 @@ def calculate_student_result(
     )
 
     # ========================================================
-    # CREATE RESULT IF NOT EXISTS
+    # CREATE IF NEEDED
     # ========================================================
 
     if not result:
@@ -7284,21 +7741,37 @@ def calculate_student_result(
     # BASIC DATA
     # ========================================================
 
-    result.student_enrollment_id = enrollment.id
+    result.student_enrollment_id = (
+        enrollment.id
+    )
 
-    result.institution_id = institution_id
+    result.institution_id = (
+        institution_id
+    )
 
-    result.branch_id = branch_id
+    result.branch_id = (
+        branch_id
+    )
 
-    result.program_id = enrollment.program_id
+    result.program_id = (
+        enrollment.program_id
+    )
 
-    result.academic_year_id = enrollment.academic_year_id
+    result.academic_year_id = (
+        enrollment.academic_year_id
+    )
 
-    result.term_id = exam.term_id
+    result.term_id = (
+        exam.term_id
+    )
 
-    result.class_id = enrollment.class_id
+    result.class_id = (
+        enrollment.class_id
+    )
 
-    result.section_id = enrollment.section_id
+    result.section_id = (
+        enrollment.section_id
+    )
 
     # ========================================================
     # CALCULATED DATA
@@ -7322,22 +7795,30 @@ def calculate_student_result(
 
     result.average = average
 
-    result.subjects_total = subjects_total
+    result.subjects_total = (
+        subjects_total
+    )
 
-    result.subjects_completed = completed
+    result.subjects_completed = (
+        completed
+    )
 
-    result.subjects_failed = failed
+    result.subjects_failed = (
+        failed
+    )
 
     result.grade = grade
 
     result.gpa = gpa
 
-    result.result_status = result_status
+    result.result_status = (
+        result_status
+    )
 
     # ========================================================
-    # RESULT WORKFLOW STATUS
+    # WORKFLOW STATUS
     #
-    # Keep result as draft until admin approves/publishes.
+    # Calculation does not approve/publish automatically.
     # ========================================================
 
     result.status = "draft"
@@ -7350,12 +7831,61 @@ def calculate_student_result(
         datetime.now(timezone.utc)
     )
 
+    # ========================================================
+    # FLUSH
+    #
+    # Makes result available to ranking calculation.
+    # ========================================================
+
+    db.session.flush()
+
+    # ========================================================
+    # LOG FINAL RESULT
+    # ========================================================
+
+    current_app.logger.info(
+        "Student result calculated | "
+        "student=%s exam=%s class=%s section=%s "
+        "subjects=%s completed=%s failed=%s "
+        "total=%s possible=%s percentage=%s "
+        "status=%s",
+        student_id,
+        exam.id,
+        enrollment.class_id,
+        enrollment.section_id,
+        subjects_total,
+        completed,
+        failed,
+        total_marks,
+        total_possible,
+        percentage,
+        result_status
+    )
+
     return result
-
-
 
 # ============================================================
 # CALCULATE EXAM RANKINGS
+#
+# RANKING LEVELS
+# ------------------------------------------------------------
+# 1. Institution
+# 2. Branch
+# 3. Program
+# 4. Class
+# 5. Section
+#
+# RULE
+# ------------------------------------------------------------
+# Same percentage + same GPA = SAME POSITION
+#
+# Example:
+#
+# 1st = 95%
+# 2nd = 90%
+# 2nd = 90%
+# 4th = 85%
+#
 # ============================================================
 
 def calculate_exam_rankings(
@@ -7365,78 +7895,41 @@ def calculate_exam_rankings(
 ):
 
     # ========================================================
-    # GET RESULTS
+    # GET EXAM
     # ========================================================
 
-    results = (
-        StudentResult.query
+    exam = (
+        Exam.query
         .filter(
-            StudentResult.exam_id == exam_id,
-            StudentResult.institution_id == institution_id,
-            StudentResult.branch_id == branch_id
+            Exam.id == exam_id,
+            Exam.institution_id == institution_id,
+            Exam.branch_id == branch_id
         )
-        .order_by(
-            StudentResult.percentage.desc(),
-            StudentResult.gpa.desc(),
-            StudentResult.student_id.asc()
-        )
-        .all()
+        .first()
     )
 
-    if not results:
+    if not exam:
+
+        current_app.logger.warning(
+            "Exam not found for ranking | "
+            "exam=%s institution=%s branch=%s",
+            exam_id,
+            institution_id,
+            branch_id
+        )
+
         return
 
     # ========================================================
-    # HELPER
-    # ========================================================
-
-    def assign_positions(
-        items,
-        percentage_attr="percentage"
-    ):
-
-        position = 0
-        previous_score = None
-
-        for index, item in enumerate(items, start=1):
-
-            score = to_decimal(
-                getattr(
-                    item,
-                    percentage_attr,
-                    0
-                )
-            )
-
-            if previous_score is None:
-
-                position = 1
-
-            elif score < previous_score:
-
-                position = index
-
-            # ------------------------------------------------
-            # SAME SCORE = SAME POSITION
-            # ------------------------------------------------
-
-            setattr(
-                item,
-                "_calculated_position",
-                position
-            )
-
-            previous_score = score
-
-    # ========================================================
-    # INSTITUTION RANK
+    # GET ALL RESULTS FOR THIS EXAM + INSTITUTION
     # ========================================================
 
     institution_results = (
         StudentResult.query
         .filter(
             StudentResult.exam_id == exam_id,
-            StudentResult.institution_id == institution_id
+            StudentResult.institution_id
+            == institution_id
         )
         .order_by(
             StudentResult.percentage.desc(),
@@ -7445,6 +7938,118 @@ def calculate_exam_rankings(
         )
         .all()
     )
+
+    if not institution_results:
+
+        current_app.logger.info(
+            "No student results for ranking | exam=%s",
+            exam_id
+        )
+
+        return
+
+    # ========================================================
+    # RESET OLD RANK POSITIONS
+    #
+    # This prevents stale positions when students are added,
+    # removed, or their marks change.
+    # ========================================================
+
+    for result in institution_results:
+
+        result.institution_position = None
+
+        result.branch_position = None
+
+        result.program_position = None
+
+        result.class_position = None
+
+        result.section_position = None
+
+    # ========================================================
+    # POSITION HELPER
+    #
+    # Same percentage + same GPA = same position.
+    # ========================================================
+
+    def assign_positions(
+        items
+    ):
+
+        position = 0
+
+        previous_percentage = None
+
+        previous_gpa = None
+
+        for index, item in enumerate(
+            items,
+            start=1
+        ):
+
+            current_percentage = to_decimal(
+                getattr(
+                    item,
+                    "percentage",
+                    0
+                )
+            )
+
+            current_gpa = to_decimal(
+                getattr(
+                    item,
+                    "gpa",
+                    0
+                )
+            )
+
+            # =================================================
+            # FIRST RESULT
+            # =================================================
+
+            if previous_percentage is None:
+
+                position = 1
+
+            # =================================================
+            # SAME SCORE
+            # =================================================
+
+            elif (
+                current_percentage
+                == previous_percentage
+                and
+                current_gpa
+                == previous_gpa
+            ):
+
+                # Same position.
+                pass
+
+            # =================================================
+            # DIFFERENT SCORE
+            # =================================================
+
+            else:
+
+                position = index
+
+            item._calculated_position = (
+                position
+            )
+
+            previous_percentage = (
+                current_percentage
+            )
+
+            previous_gpa = (
+                current_gpa
+            )
+
+    # ========================================================
+    # INSTITUTION RANK
+    # ========================================================
 
     assign_positions(
         institution_results
@@ -7457,22 +8062,33 @@ def calculate_exam_rankings(
         )
 
     # ========================================================
+    # BRANCH RESULTS
+    # ========================================================
+
+    branch_results = [
+        result
+        for result in institution_results
+        if result.branch_id == branch_id
+    ]
+
+    # ========================================================
     # BRANCH RANK
     # ========================================================
 
-    branch_results = (
-        StudentResult.query
-        .filter(
-            StudentResult.exam_id == exam_id,
-            StudentResult.institution_id == institution_id,
-            StudentResult.branch_id == branch_id
+    branch_results.sort(
+        key=lambda result: (
+            -float(
+                to_decimal(
+                    result.percentage
+                )
+            ),
+            -float(
+                to_decimal(
+                    result.gpa
+                )
+            ),
+            result.student_id
         )
-        .order_by(
-            StudentResult.percentage.desc(),
-            StudentResult.gpa.desc(),
-            StudentResult.student_id.asc()
-        )
-        .all()
     )
 
     assign_positions(
@@ -7492,7 +8108,7 @@ def calculate_exam_rankings(
     program_ids = {
         result.program_id
         for result in branch_results
-        if result.program_id
+        if result.program_id is not None
     }
 
     for current_program_id in program_ids:
@@ -7500,7 +8116,8 @@ def calculate_exam_rankings(
         program_results = [
             result
             for result in branch_results
-            if result.program_id == current_program_id
+            if result.program_id
+            == current_program_id
         ]
 
         program_results.sort(
@@ -7536,7 +8153,7 @@ def calculate_exam_rankings(
     class_ids = {
         result.class_id
         for result in branch_results
-        if result.class_id
+        if result.class_id is not None
     }
 
     for current_class_id in class_ids:
@@ -7544,7 +8161,8 @@ def calculate_exam_rankings(
         class_results = [
             result
             for result in branch_results
-            if result.class_id == current_class_id
+            if result.class_id
+            == current_class_id
         ]
 
         class_results.sort(
@@ -7580,7 +8198,7 @@ def calculate_exam_rankings(
     section_ids = {
         result.section_id
         for result in branch_results
-        if result.section_id
+        if result.section_id is not None
     }
 
     for current_section_id in section_ids:
@@ -7588,7 +8206,8 @@ def calculate_exam_rankings(
         section_results = [
             result
             for result in branch_results
-            if result.section_id == current_section_id
+            if result.section_id
+            == current_section_id
         ]
 
         section_results.sort(
@@ -7618,10 +8237,14 @@ def calculate_exam_rankings(
             )
 
     # ========================================================
-    # REMOVE TEMP ATTRIBUTE
+    # REMOVE TEMPORARY ATTRIBUTE
+    #
+    # Important:
+    # institution_results contains everybody in institution,
+    # not only the selected branch.
     # ========================================================
 
-    for result in results:
+    for result in institution_results:
 
         if hasattr(
             result,
@@ -7633,8 +8256,27 @@ def calculate_exam_rankings(
                 "_calculated_position"
             )
 
+    # ========================================================
+    # FLUSH
+    # ========================================================
+
     db.session.flush()
 
+    # ========================================================
+    # LOG
+    # ========================================================
+
+    current_app.logger.info(
+        "Exam rankings calculated | "
+        "exam=%s institution=%s branch=%s "
+        "institution_students=%s branch_students=%s",
+        exam_id,
+        institution_id,
+        branch_id,
+        len(institution_results),
+        len(branch_results)
+    )
+    
 
 
 # ============================================================
@@ -62806,6 +63448,29 @@ def add_exam_subject():
         user=current_user
     )
 
+# ============================================================
+# BULK ADD EXAM SUBJECTS
+#
+# RULES
+# ------------------------------------------------------------
+# 1. One teacher CAN teach multiple subjects.
+# 2. One teacher CAN teach multiple classes.
+# 3. Teacher assignments are evaluated PER SUBJECT + CLASS.
+# 4. Class-specific TeacherSubject has priority over global
+#    TeacherSubject where class_id is NULL.
+# 5. Section-specific TeacherSubject has priority over
+#    class-level TeacherSubject when applicable.
+# 6. Multiple rows for the SAME teacher are NOT treated as
+#    multiple teachers.
+# 7. Multiple DISTINCT teachers for the SAME SUBJECT + CLASS
+#    are NOT automatically selected.
+# 8. Existing ExamSubject combinations are never duplicated.
+# 9. Branch security is preserved.
+# 10. GET data remains compatible with templates expecting:
+#
+#       teachers_by_subject[subject_id][0].full_name
+#
+# ============================================================
 
 @bp.route(
     "/exam-subjects/bulk-add",
@@ -62833,12 +63498,14 @@ def bulk_add_exam_subjects():
     if hasattr(raw_role, "value"):
         current_role = raw_role.value
     else:
-        current_role = str(raw_role or "")
+        current_role = str(
+            raw_role or ""
+        )
 
     current_role = (
         current_role
-        .lower()
         .strip()
+        .lower()
     )
 
     if current_role not in allowed_roles:
@@ -62875,38 +63542,49 @@ def bulk_add_exam_subjects():
         )
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # SUPERADMIN
-    # --------------------------------------------------------
+    # ========================================================
 
     if current_role == "superadmin":
+
         pass
 
-    # --------------------------------------------------------
+    # ========================================================
     # SCHOOL ADMIN
-    # --------------------------------------------------------
+    # ========================================================
 
     elif current_role == "school_admin":
 
         if not institution_id:
             abort(403)
 
-        exams_query = exams_query.filter(
-            Exam.institution_id == institution_id
+        exams_query = (
+            exams_query
+            .filter(
+                Exam.institution_id ==
+                institution_id
+            )
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # BRANCH ADMIN
-    # --------------------------------------------------------
+    # ========================================================
 
     elif current_role == "branch_admin":
 
         if not institution_id or not branch_id:
             abort(403)
 
-        exams_query = exams_query.filter(
-            Exam.institution_id == institution_id,
-            Exam.branch_id == branch_id
+        exams_query = (
+            exams_query
+            .filter(
+                Exam.institution_id ==
+                institution_id,
+
+                Exam.branch_id ==
+                branch_id
+            )
         )
 
     exams = (
@@ -62924,7 +63602,7 @@ def bulk_add_exam_subjects():
     if request.method == "POST":
 
         # ====================================================
-        # EXAM
+        # EXAM ID
         # ====================================================
 
         exam_id = request.form.get(
@@ -62952,21 +63630,32 @@ def bulk_add_exam_subjects():
         exam_query = (
             Exam.query
             .filter(
-                Exam.id == exam_id
+                Exam.id ==
+                exam_id
             )
         )
 
         if current_role == "school_admin":
 
-            exam_query = exam_query.filter(
-                Exam.institution_id == institution_id
+            exam_query = (
+                exam_query
+                .filter(
+                    Exam.institution_id ==
+                    institution_id
+                )
             )
 
         elif current_role == "branch_admin":
 
-            exam_query = exam_query.filter(
-                Exam.institution_id == institution_id,
-                Exam.branch_id == branch_id
+            exam_query = (
+                exam_query
+                .filter(
+                    Exam.institution_id ==
+                    institution_id,
+
+                    Exam.branch_id ==
+                    branch_id
+                )
             )
 
         exam = exam_query.first()
@@ -63005,8 +63694,11 @@ def bulk_add_exam_subjects():
         program = (
             Program.query
             .filter(
-                Program.id == exam.program_id,
-                Program.institution_id == exam.institution_id
+                Program.id ==
+                exam.program_id,
+
+                Program.institution_id ==
+                exam.institution_id
             )
             .first()
         )
@@ -63201,14 +63893,19 @@ def bulk_add_exam_subjects():
 
         # ====================================================
         # LOAD SUBJECTS
-        # ========================================================
+        # ====================================================
 
         subjects_query = (
             Subject.query
             .filter(
-                Subject.program_id == exam.program_id,
-                Subject.institution_id == exam.institution_id,
-                Subject.status == "active"
+                Subject.program_id ==
+                exam.program_id,
+
+                Subject.institution_id ==
+                exam.institution_id,
+
+                Subject.status ==
+                "active"
             )
         )
 
@@ -63218,7 +63915,9 @@ def bulk_add_exam_subjects():
                 subjects_query
                 .filter(
                     db.or_(
-                        Subject.branch_id == exam.branch_id,
+                        Subject.branch_id ==
+                        exam.branch_id,
+
                         Subject.branch_id.is_(None)
                     )
                 )
@@ -63248,13 +63947,16 @@ def bulk_add_exam_subjects():
 
         # ====================================================
         # LOAD CLASSES
-        # ========================================================
+        # ====================================================
 
         classes_query = (
             Class.query
             .filter(
-                Class.program_id == exam.program_id,
-                Class.institution_id == exam.institution_id
+                Class.program_id ==
+                exam.program_id,
+
+                Class.institution_id ==
+                exam.institution_id
             )
         )
 
@@ -63263,7 +63965,8 @@ def bulk_add_exam_subjects():
             classes_query = (
                 classes_query
                 .filter(
-                    Class.branch_id == exam.branch_id
+                    Class.branch_id ==
+                    exam.branch_id
                 )
             )
 
@@ -63306,7 +64009,8 @@ def bulk_add_exam_subjects():
         existing_rows = (
             ExamSubject.query
             .filter(
-                ExamSubject.exam_id == exam.id
+                ExamSubject.exam_id ==
+                exam.id
             )
             .all()
         )
@@ -63327,10 +64031,22 @@ def bulk_add_exam_subjects():
         }
 
         # ====================================================
-        # LOAD TEACHER SUBJECT ASSIGNMENTS
+        # LOAD ACTIVE TEACHER ASSIGNMENTS
         #
-        # ONLY ACTIVE TEACHER ASSIGNMENTS
-        # FOR THIS PROGRAM + SUBJECT
+        # IMPORTANT:
+        #
+        # A TeacherSubject row is an assignment.
+        #
+        # Multiple rows belonging to the SAME teacher do not
+        # mean multiple teachers.
+        #
+        # Example:
+        #
+        # Teacher A -> English
+        # Teacher A -> Mathematics
+        # Teacher A -> Somali
+        #
+        # This is VALID.
         # ====================================================
 
         teacher_query = (
@@ -63349,7 +64065,8 @@ def bulk_add_exam_subjects():
 
                 Teacher.is_active.is_(True),
 
-                Teacher.status == "active",
+                Teacher.status ==
+                "active",
 
                 TeacherSubject.institution_id ==
                 exam.institution_id,
@@ -63357,15 +64074,16 @@ def bulk_add_exam_subjects():
                 TeacherSubject.program_id ==
                 exam.program_id,
 
-                TeacherSubject.status == "active",
+                TeacherSubject.status ==
+                "active",
 
                 TeacherSubject.subject_id.isnot(None)
             )
         )
 
-        # ----------------------------------------------------
+        # ====================================================
         # BRANCH SECURITY
-        # ----------------------------------------------------
+        # ====================================================
 
         if exam.branch_id:
 
@@ -63393,148 +64111,327 @@ def bulk_add_exam_subjects():
         )
 
         # ====================================================
-        # GROUP TEACHERS BY SUBJECT
+        # BUILD TEACHER ASSIGNMENT MAP
+        #
+        # Structure:
+        #
+        # teacher_assignments[
+        #     subject_id
+        # ][
+        #     class_id
+        # ] = {
+        #     teacher_id: {
+        #         "teacher": Teacher,
+        #         "specificity": number,
+        #         "assignment": TeacherSubject
+        #     }
+        # }
+        #
+        # class_id = None:
+        #     global assignment
+        #
+        # class_id = X:
+        #     class-specific assignment
+        #
+        # section_id:
+        #     used to determine specificity.
         # ====================================================
 
-        teachers_by_subject = {}
+        teacher_assignments = {}
 
         for assignment, teacher in teacher_rows:
+
+            if assignment.subject_id is None:
+                continue
 
             subject_id = int(
                 assignment.subject_id
             )
 
-            teachers_by_subject.setdefault(
-                subject_id,
-                []
-            ).append(
-                teacher
+            teacher_id = int(
+                teacher.id
             )
 
+            assignment_class_id = (
+                int(assignment.class_id)
+                if assignment.class_id is not None
+                else None
+            )
+
+            assignment_section_id = (
+                int(assignment.section_id)
+                if assignment.section_id is not None
+                else None
+            )
+
+            # ------------------------------------------------
+            # SPECIFICITY
+            #
+            # section-specific = 2
+            # class-specific   = 1
+            # global           = 0
+            # ------------------------------------------------
+
+            if assignment_class_id is not None:
+
+                if assignment_section_id is not None:
+                    specificity = 2
+                else:
+                    specificity = 1
+
+            else:
+
+                specificity = 0
+
+            subject_map = (
+                teacher_assignments
+                .setdefault(
+                    subject_id,
+                    {}
+                )
+            )
+
+            class_map = (
+                subject_map
+                .setdefault(
+                    assignment_class_id,
+                    {}
+                )
+            )
+
+            # ------------------------------------------------
+            # SAME TEACHER
+            #
+            # If same teacher has several assignments, retain
+            # only the most specific one.
+            # ------------------------------------------------
+
+            existing = (
+                class_map.get(
+                    teacher_id
+                )
+            )
+
+            if existing is None:
+
+                class_map[
+                    teacher_id
+                ] = {
+                    "teacher": teacher,
+                    "specificity": specificity,
+                    "assignment": assignment
+                }
+
+            else:
+
+                if (
+                    specificity >
+                    existing["specificity"]
+                ):
+
+                    class_map[
+                        teacher_id
+                    ] = {
+                        "teacher": teacher,
+                        "specificity": specificity,
+                        "assignment": assignment
+                    }
+
         # ====================================================
-        # DETERMINE SUBJECTS THAT CAN BE SUBMITTED
+        # HELPER:
+        # GET TEACHERS FOR SUBJECT + CLASS
         #
-        # IMPORTANT:
+        # Priority:
         #
-        # NO TEACHER = SKIP
+        # 1. class-specific assignment
+        # 2. global assignment
         #
-        # ONE TEACHER = SUBMIT
-        #
-        # MULTIPLE TEACHERS = SKIP
-        #
-        # WE NEVER GUESS BETWEEN MULTIPLE TEACHERS.
+        # If class-specific exists, global assignment is NOT
+        # combined with it.
         # ====================================================
 
-        selected_teacher_by_subject = {}
-
-        missing_teacher_subjects = []
-
-        multiple_teacher_subjects = []
-
-        assigned_subjects = []
-
-        for subject in subjects:
+        def get_teacher_candidates(
+            subject_id,
+            class_id
+        ):
 
             subject_id = int(
-                subject.id
-            )
-
-            assigned_teachers = (
-                teachers_by_subject.get(
-                    subject_id,
-                    []
-                )
-            )
-
-            # ------------------------------------------------
-            # NO TEACHER
-            # ------------------------------------------------
-
-            if not assigned_teachers:
-
-                missing_teacher_subjects.append(
-                    subject.name
-                )
-
-                continue
-
-            # ------------------------------------------------
-            # MULTIPLE TEACHERS
-            # ------------------------------------------------
-
-            if len(assigned_teachers) > 1:
-
-                multiple_teacher_subjects.append(
-                    subject.name
-                )
-
-                continue
-
-            # ------------------------------------------------
-            # EXACTLY ONE ASSIGNED TEACHER
-            # ------------------------------------------------
-
-            teacher = assigned_teachers[0]
-
-            selected_teacher_by_subject[
                 subject_id
-            ] = teacher
-
-            assigned_subjects.append(
-                subject
             )
 
-        # ====================================================
-        # IF NOTHING HAS A TEACHER
-        # ====================================================
+            class_id = int(
+                class_id
+            )
 
-        if not assigned_subjects:
-
-            if missing_teacher_subjects:
-
-                names = ", ".join(
-                    missing_teacher_subjects
-                )
-
-                flash(
-                    f"No teacher is assigned to these subjects: {names}. "
-                    f"No exam subjects were created. "
-                    f"Assign teachers first.",
-                    "danger"
-                )
-
-            elif multiple_teacher_subjects:
-
-                names = ", ".join(
-                    multiple_teacher_subjects
-                )
-
-                flash(
-                    f"These subjects have multiple active teacher assignments: {names}. "
-                    f"No exam subjects were created because a teacher cannot be selected automatically.",
-                    "warning"
-                )
-
-            return redirect(
-                url_for(
-                    "main.bulk_add_exam_subjects",
-                    exam_id=exam.id
+            subject_map = (
+                teacher_assignments.get(
+                    subject_id,
+                    {}
                 )
             )
 
+            # ------------------------------------------------
+            # CLASS-SPECIFIC
+            # ------------------------------------------------
+
+            class_specific = (
+                subject_map.get(
+                    class_id,
+                    {}
+                )
+            )
+
+            if class_specific:
+
+                return list(
+                    class_specific.values()
+                )
+
+            # ------------------------------------------------
+            # GLOBAL
+            # ------------------------------------------------
+
+            global_assignments = (
+                subject_map.get(
+                    None,
+                    {}
+                )
+            )
+
+            return list(
+                global_assignments.values()
+            )
+
         # ====================================================
-        # BUILD BULK RECORDS
+        # TEACHER SELECTION
         #
-        # ONLY SUBJECTS WITH ASSIGNED TEACHERS
+        # KEY:
         #
-        # SUBJECT × CLASS
+        #     (subject_id, class_id)
         #
-        # SECTION = NULL
+        # NOT:
+        #
+        #     subject_id only
+        #
+        # This is what allows:
+        #
+        # English:
+        #     KD20 -> Teacher A
+        #     KD21 -> Teacher B
+        #
+        # without considering that a conflict.
+        # ====================================================
+
+        selected_teacher_by_combination = {}
+
+        missing_teacher_combinations = []
+
+        multiple_teacher_combinations = []
+
+        # ====================================================
+        # EVALUATE EVERY SUBJECT × CLASS
+        # ====================================================
+
+        for class_item in classes:
+
+            class_id_value = int(
+                class_item.id
+            )
+
+            for subject in subjects:
+
+                subject_id_value = int(
+                    subject.id
+                )
+
+                candidates = (
+                    get_teacher_candidates(
+                        subject_id_value,
+                        class_id_value
+                    )
+                )
+
+                # ------------------------------------------------
+                # NO TEACHER
+                # ------------------------------------------------
+
+                if not candidates:
+
+                    missing_teacher_combinations.append(
+                        (
+                            subject.name,
+                            class_item.name
+                        )
+                    )
+
+                    continue
+
+                # ------------------------------------------------
+                # DISTINCT TEACHERS
+                #
+                # IMPORTANT:
+                #
+                # Same teacher appearing multiple times is still
+                # ONE teacher.
+                # ------------------------------------------------
+
+                distinct_teachers = {}
+
+                for candidate in candidates:
+
+                    teacher = candidate["teacher"]
+
+                    teacher_id = int(
+                        teacher.id
+                    )
+
+                    distinct_teachers[
+                        teacher_id
+                    ] = candidate
+
+                # ------------------------------------------------
+                # MULTIPLE DISTINCT TEACHERS
+                # ------------------------------------------------
+
+                if len(distinct_teachers) > 1:
+
+                    multiple_teacher_combinations.append(
+                        (
+                            subject.name,
+                            class_item.name
+                        )
+                    )
+
+                    continue
+
+                # ------------------------------------------------
+                # ONE DISTINCT TEACHER
+                # ------------------------------------------------
+
+                candidate = next(
+                    iter(
+                        distinct_teachers.values()
+                    )
+                )
+
+                selected_teacher_by_combination[
+                    (
+                        subject_id_value,
+                        class_id_value
+                    )
+                ] = candidate["teacher"]
+
+        # ====================================================
+        # BUILD NEW EXAM SUBJECTS
         # ====================================================
 
         new_exam_subjects = []
 
         request_combinations = set()
+
+        # ====================================================
+        # DISPLAY ORDER
+        # ====================================================
 
         display_order = (
             db.session.query(
@@ -63543,11 +64440,29 @@ def bulk_add_exam_subjects():
                 )
             )
             .filter(
-                ExamSubject.exam_id == exam.id
+                ExamSubject.exam_id ==
+                exam.id
             )
             .scalar()
             or 0
         )
+
+        try:
+
+            display_order = int(
+                display_order
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            display_order = 0
+
+        # ====================================================
+        # SKIPPED
+        # ====================================================
 
         skipped_existing = []
 
@@ -63555,35 +64470,44 @@ def bulk_add_exam_subjects():
 
         skipped_multiple_teachers = []
 
+        # ====================================================
+        # SUBJECT × CLASS
+        # ====================================================
+
         for class_item in classes:
 
-            for subject in assigned_subjects:
+            class_id_value = int(
+                class_item.id
+            )
 
-                subject_id = int(
+            for subject in subjects:
+
+                subject_id_value = int(
                     subject.id
                 )
 
                 combination = (
-                    subject_id,
-                    int(class_item.id),
+                    subject_id_value,
+                    class_id_value,
                     None
                 )
 
-                # --------------------------------------------
+                # ------------------------------------------------
                 # EXISTING
-                # --------------------------------------------
+                # ------------------------------------------------
 
                 if combination in existing_combinations:
 
                     skipped_existing.append(
-                        f"{subject.name} - {class_item.name}"
+                        f"{subject.name} - "
+                        f"{class_item.name}"
                     )
 
                     continue
 
-                # --------------------------------------------
+                # ------------------------------------------------
                 # DUPLICATE REQUEST
-                # --------------------------------------------
+                # ------------------------------------------------
 
                 if combination in request_combinations:
                     continue
@@ -63592,46 +64516,80 @@ def bulk_add_exam_subjects():
                     combination
                 )
 
-                # --------------------------------------------
-                # TEACHER
-                # --------------------------------------------
+                # ------------------------------------------------
+                # SELECTED TEACHER
+                # ------------------------------------------------
 
                 teacher = (
-                    selected_teacher_by_subject.get(
-                        subject_id
+                    selected_teacher_by_combination.get(
+                        (
+                            subject_id_value,
+                            class_id_value
+                        )
                     )
                 )
 
-                if not teacher:
+                # ------------------------------------------------
+                # NO TEACHER
+                # ------------------------------------------------
 
-                    skipped_no_teacher.append(
-                        subject.name
+                if teacher is None:
+
+                    combination_label = (
+                        f"{subject.name} - "
+                        f"{class_item.name}"
                     )
+
+                    # --------------------------------------------
+                    # Determine reason
+                    # --------------------------------------------
+
+                    is_multiple = (
+                        (
+                            subject.name,
+                            class_item.name
+                        )
+                        in multiple_teacher_combinations
+                    )
+
+                    if is_multiple:
+
+                        skipped_multiple_teachers.append(
+                            combination_label
+                        )
+
+                    else:
+
+                        skipped_no_teacher.append(
+                            combination_label
+                        )
 
                     continue
 
-                # --------------------------------------------
+                # ------------------------------------------------
                 # DISPLAY ORDER
-                # --------------------------------------------
+                # ------------------------------------------------
 
                 display_order += 1
 
-                # --------------------------------------------
-                # CREATE
-                # --------------------------------------------
+                # ------------------------------------------------
+                # CREATE EXAM SUBJECT
+                # ------------------------------------------------
 
                 exam_subject = ExamSubject(
+
                     exam_id=exam.id,
 
                     subject_id=subject.id,
 
                     class_id=class_item.id,
 
-                    # ----------------------------------------
-                    # SECTION OPTIONAL
-                    # ----------------------------------------
-                    # NULL = ALL SECTIONS OF THIS CLASS
-                    # ----------------------------------------
+                    # --------------------------------------------
+                    # SECTION
+                    #
+                    # NULL means the exam subject applies to
+                    # ALL sections belonging to this class.
+                    # --------------------------------------------
 
                     section_id=None,
 
@@ -63658,6 +64616,10 @@ def bulk_add_exam_subjects():
 
         if not new_exam_subjects:
 
+            # ------------------------------------------------
+            # EXISTING
+            # ------------------------------------------------
+
             if skipped_existing:
 
                 flash(
@@ -63665,40 +64627,64 @@ def bulk_add_exam_subjects():
                     "warning"
                 )
 
-            else:
+            # ------------------------------------------------
+            # MULTIPLE TEACHERS
+            # ------------------------------------------------
+
+            if skipped_multiple_teachers:
+
+                preview = ", ".join(
+                    skipped_multiple_teachers[:10]
+                )
+
+                if len(
+                    skipped_multiple_teachers
+                ) > 10:
+
+                    preview += " ..."
+
+                flash(
+                    "These subject/class combinations have multiple "
+                    f"active teachers and were skipped: {preview}. "
+                    "One teacher must be selected for each affected "
+                    "subject/class combination.",
+                    "warning"
+                )
+
+            # ------------------------------------------------
+            # NO TEACHER
+            # ------------------------------------------------
+
+            if skipped_no_teacher:
+
+                preview = ", ".join(
+                    skipped_no_teacher[:10]
+                )
+
+                if len(
+                    skipped_no_teacher
+                ) > 10:
+
+                    preview += " ..."
+
+                flash(
+                    "These subject/class combinations have no active "
+                    f"teacher assignment and were skipped: {preview}.",
+                    "warning"
+                )
+
+            # ------------------------------------------------
+            # FALLBACK
+            # ------------------------------------------------
+
+            if (
+                not skipped_existing
+                and not skipped_multiple_teachers
+                and not skipped_no_teacher
+            ):
 
                 flash(
                     "No new exam subjects were prepared.",
-                    "warning"
-                )
-
-            # ------------------------------------------------
-            # SHOW MISSING TEACHERS IF ANY
-            # ------------------------------------------------
-
-            if missing_teacher_subjects:
-
-                names = ", ".join(
-                    missing_teacher_subjects
-                )
-
-                flash(
-                    f"Skipped subjects without teachers: {names}.",
-                    "warning"
-                )
-
-            # ------------------------------------------------
-            # SHOW MULTIPLE TEACHERS IF ANY
-            # ------------------------------------------------
-
-            if multiple_teacher_subjects:
-
-                names = ", ".join(
-                    multiple_teacher_subjects
-                )
-
-                flash(
-                    f"Skipped subjects with multiple teachers: {names}.",
                     "warning"
                 )
 
@@ -63751,7 +64737,7 @@ def bulk_add_exam_subjects():
             f"{len(new_exam_subjects)} exam subject(s) "
             f"were created successfully for "
             f"{len(classes)} class(es) and "
-            f"{len(assigned_subjects)} assigned subject(s)."
+            f"{len(subjects)} subject(s)."
         )
 
         if skipped_existing:
@@ -63767,17 +64753,24 @@ def bulk_add_exam_subjects():
         )
 
         # ====================================================
-        # WARNING: SUBJECTS WITHOUT TEACHER
+        # WARNING: NO TEACHER
         # ====================================================
 
-        if missing_teacher_subjects:
+        if skipped_no_teacher:
 
-            names = ", ".join(
-                missing_teacher_subjects
+            preview = ", ".join(
+                skipped_no_teacher[:10]
             )
 
+            if len(
+                skipped_no_teacher
+            ) > 10:
+
+                preview += " ..."
+
             flash(
-                f"Skipped subjects without assigned teachers: {names}.",
+                "Skipped subject/class combinations without "
+                f"an active teacher: {preview}.",
                 "warning"
             )
 
@@ -63785,15 +64778,23 @@ def bulk_add_exam_subjects():
         # WARNING: MULTIPLE TEACHERS
         # ====================================================
 
-        if multiple_teacher_subjects:
+        if skipped_multiple_teachers:
 
-            names = ", ".join(
-                multiple_teacher_subjects
+            preview = ", ".join(
+                skipped_multiple_teachers[:10]
             )
 
+            if len(
+                skipped_multiple_teachers
+            ) > 10:
+
+                preview += " ..."
+
             flash(
-                f"Skipped subjects with multiple active teachers: {names}. "
-                f"Assign one active teacher before adding them.",
+                "Skipped subject/class combinations with "
+                f"multiple active teachers: {preview}. "
+                "Choose one teacher for each affected "
+                "combination.",
                 "warning"
             )
 
@@ -63818,29 +64819,48 @@ def bulk_add_exam_subjects():
     )
 
     # ========================================================
-    # OPTIONAL GET DATA
-    #
-    # This allows the template to show which subjects have
-    # teachers assigned and which subjects do not.
+    # DEFAULT GET DATA
     # ========================================================
 
     selected_exam = None
+
     subjects = []
+
     classes = []
+
+    # IMPORTANT:
+    #
+    # This MUST remain:
+    #
+    #     subject_id -> LIST[Teacher]
+    #
+    # because the existing Jinja template uses:
+    #
+    #     subject_teachers[0].full_name
+    #
     teachers_by_subject = {}
+
     assigned_subject_ids = set()
+
     missing_teacher_subject_ids = set()
+
+    multiple_teacher_subject_ids = set()
+
+    # ========================================================
+    # SELECTED EXAM
+    # ========================================================
 
     if selected_exam_id:
 
-        # ----------------------------------------------------
+        # ====================================================
         # SECURITY
-        # ----------------------------------------------------
+        # ====================================================
 
         selected_exam_query = (
             Exam.query
             .filter(
-                Exam.id == selected_exam_id
+                Exam.id ==
+                selected_exam_id
             )
         )
 
@@ -63872,10 +64892,17 @@ def bulk_add_exam_subjects():
             .first()
         )
 
-        if selected_exam and selected_exam.program_id:
+        # ====================================================
+        # EXAM HAS PROGRAM
+        # ====================================================
+
+        if (
+            selected_exam
+            and selected_exam.program_id
+        ):
 
             # =================================================
-            # GET SUBJECTS
+            # SUBJECTS
             # =================================================
 
             subjects_query = (
@@ -63887,7 +64914,8 @@ def bulk_add_exam_subjects():
                     Subject.institution_id ==
                     selected_exam.institution_id,
 
-                    Subject.status == "active"
+                    Subject.status ==
+                    "active"
                 )
             )
 
@@ -63914,7 +64942,7 @@ def bulk_add_exam_subjects():
             )
 
             # =================================================
-            # GET CLASSES
+            # CLASSES
             # =================================================
 
             classes_query = (
@@ -63976,7 +65004,8 @@ def bulk_add_exam_subjects():
 
                     Teacher.is_active.is_(True),
 
-                    Teacher.status == "active",
+                    Teacher.status ==
+                    "active",
 
                     TeacherSubject.institution_id ==
                     selected_exam.institution_id,
@@ -63984,11 +65013,16 @@ def bulk_add_exam_subjects():
                     TeacherSubject.program_id ==
                     selected_exam.program_id,
 
-                    TeacherSubject.status == "active",
+                    TeacherSubject.status ==
+                    "active",
 
                     TeacherSubject.subject_id.isnot(None)
                 )
             )
+
+            # =================================================
+            # BRANCH SECURITY
+            # =================================================
 
             if selected_exam.branch_id:
 
@@ -64016,21 +65050,81 @@ def bulk_add_exam_subjects():
             )
 
             # =================================================
-            # GROUP BY SUBJECT
+            # GET DISTINCT TEACHERS BY SUBJECT
+            #
+            # IMPORTANT:
+            #
+            # The resulting value is:
+            #
+            #     teachers_by_subject[subject_id]
+            #
+            # as a LIST.
+            #
+            # This preserves compatibility with:
+            #
+            #     subject_teachers[0].full_name
             # =================================================
 
+            temporary_teacher_map = {}
+
             for assignment, teacher in teacher_rows:
+
+                if assignment.subject_id is None:
+                    continue
 
                 subject_id = int(
                     assignment.subject_id
                 )
 
-                teachers_by_subject.setdefault(
-                    subject_id,
-                    []
-                ).append(
-                    teacher
+                teacher_id = int(
+                    teacher.id
                 )
+
+                subject_map = (
+                    temporary_teacher_map
+                    .setdefault(
+                        subject_id,
+                        {}
+                    )
+                )
+
+                # ---------------------------------------------
+                # DISTINCT TEACHER
+                # ---------------------------------------------
+
+                subject_map[
+                    teacher_id
+                ] = teacher
+
+            # =================================================
+            # CONVERT TO LIST
+            # =================================================
+
+            for subject_id, teacher_map in (
+                temporary_teacher_map.items()
+            ):
+
+                teacher_list = list(
+                    teacher_map.values()
+                )
+
+                # ------------------------------------------------
+                # STABLE ORDER
+                # ------------------------------------------------
+
+                teacher_list.sort(
+                    key=lambda teacher: (
+                        (
+                            teacher.full_name
+                            or ""
+                        ).lower(),
+                        int(teacher.id)
+                    )
+                )
+
+                teachers_by_subject[
+                    subject_id
+                ] = teacher_list
 
             # =================================================
             # ASSIGNMENT STATUS
@@ -64038,24 +65132,51 @@ def bulk_add_exam_subjects():
 
             for subject in subjects:
 
-                assigned = (
+                subject_id = int(
+                    subject.id
+                )
+
+                subject_teachers = (
                     teachers_by_subject.get(
-                        int(subject.id),
+                        subject_id,
                         []
                     )
                 )
 
-                if assigned:
-                    assigned_subject_ids.add(
-                        int(subject.id)
-                    )
-                else:
+                # ------------------------------------------------
+                # NO TEACHER
+                # ------------------------------------------------
+
+                if not subject_teachers:
+
                     missing_teacher_subject_ids.add(
-                        int(subject.id)
+                        subject_id
+                    )
+
+                    continue
+
+                # ------------------------------------------------
+                # EXACTLY ONE DISTINCT TEACHER
+                # ------------------------------------------------
+
+                if len(subject_teachers) == 1:
+
+                    assigned_subject_ids.add(
+                        subject_id
+                    )
+
+                # ------------------------------------------------
+                # MULTIPLE DISTINCT TEACHERS
+                # ------------------------------------------------
+
+                else:
+
+                    multiple_teacher_subject_ids.add(
+                        subject_id
                     )
 
     # ========================================================
-    # GET RENDER
+    # RENDER
     # ========================================================
 
     return render_template(
@@ -64077,8 +65198,12 @@ def bulk_add_exam_subjects():
 
         missing_teacher_subject_ids=missing_teacher_subject_ids,
 
+        multiple_teacher_subject_ids=multiple_teacher_subject_ids,
+
         user=current_user
     )
+
+
 
 
 
@@ -75543,6 +76668,1003 @@ def delete_exam_result(result_id):
 
 
 # ============================================================
+# DELETE EXAM MARK + STUDENT RESULT
+#
+# RULES
+# ------------------------------------------------------------
+# 1. superadmin:
+#       can delete any mark.
+#
+# 2. school_admin:
+#       only marks from own institution.
+#
+# 3. branch_admin:
+#       only marks from own institution + branch.
+#
+# 4. teacher:
+#       only marks from own institution + branch.
+#
+# 5. Mark must belong to a valid ExamSubject.
+#
+# 6. ExamSubject must belong to a valid Exam.
+#
+# 7. When a Mark is deleted:
+#       - Mark is deleted.
+#       - Related StudentResult is deleted.
+#
+# 8. Mark + StudentResult are deleted in ONE transaction.
+#
+# 9. If anything fails:
+#       - rollback everything.
+#
+# 10. No automatic recalculation after deletion because the
+#     complete StudentResult itself is intentionally removed.
+# ============================================================
+# ============================================================
+# DELETE EXAM MARK
+#
+# RULES
+# ------------------------------------------------------------
+# 1. Only superadmin / school_admin / branch_admin / teacher.
+# 2. Mark must exist.
+# 3. Mark must belong to a valid ExamSubject.
+# 4. Mark must belong to a valid Exam.
+# 5. StudentResult is deleted together with the Mark.
+# 6. Everything happens in ONE transaction.
+# 7. If anything fails, everything is rolled back.
+# ============================================================
+
+# ============================================================
+# DELETE EXAM MARK
+#
+# RULES
+# ------------------------------------------------------------
+# 1. marks_obtained = 0.00 IS A VALID MARK.
+# 2. URL MUST contain Mark.id.
+# 3. Delete ONLY selected Mark.
+# 4. NEVER delete StudentResult.
+# 5. Recalculate existing StudentResult.
+# 6. Deleted subject becomes MISSING.
+# 7. Other marks remain untouched.
+# 8. Missing subject => INCOMPLETE.
+# ============================================================
+
+@bp.route(
+    "/exam-results/marks/<int:mark_id>/delete",
+    methods=["POST"]
+)
+@login_required
+def delete_exam_mark(mark_id):
+
+    # ========================================================
+    # SECURITY / ROLE
+    # ========================================================
+
+    role = getattr(current_user, "role", None)
+    role = getattr(role, "value", role)
+
+    role = (
+        str(role).strip().lower()
+        if role is not None
+        else None
+    )
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+        "teacher",
+    }
+
+    if role not in allowed_roles:
+        abort(403)
+
+    current_app.logger.info(
+        "DELETE MARK REQUEST | mark_id=%s | role=%s",
+        mark_id,
+        role
+    )
+
+    # ========================================================
+    # VALIDATE MARK ID
+    # ========================================================
+
+    if mark_id <= 0:
+        flash(
+            "Invalid Mark ID.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # LOAD MARK
+    # ========================================================
+
+    mark = db.session.get(Mark, mark_id)
+
+    if mark is None:
+
+        current_app.logger.warning(
+            "DELETE MARK FAILED | Mark not found | mark_id=%s",
+            mark_id
+        )
+
+        flash(
+            f"The mark was not found. Mark ID: {mark_id}",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # SAVE ORIGINAL VALUES
+    # ========================================================
+
+    student_id = mark.student_id
+    exam_subject_id = mark.exam_subject_id
+    old_mark_value = mark.marks_obtained
+
+    # ========================================================
+    # LOAD EXAM SUBJECT
+    # ========================================================
+
+    exam_subject = db.session.get(
+        ExamSubject,
+        exam_subject_id
+    )
+
+    if exam_subject is None:
+
+        flash(
+            "The exam subject connected to this mark was not found.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # LOAD EXAM
+    # ========================================================
+
+    exam_id = exam_subject.exam_id
+
+    exam = db.session.get(
+        Exam,
+        exam_id
+    )
+
+    if exam is None:
+
+        flash(
+            "The examination connected to this mark was not found.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # LOAD STUDENT
+    # ========================================================
+
+    student = db.session.get(
+        Student,
+        student_id
+    )
+
+    if student is None:
+
+        flash(
+            "The student connected to this mark was not found.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # INSTITUTION / BRANCH
+    # ========================================================
+
+    institution_id = getattr(
+        exam_subject,
+        "institution_id",
+        None
+    )
+
+    if institution_id is None:
+        institution_id = getattr(
+            exam,
+            "institution_id",
+            None
+        )
+
+    branch_id = getattr(
+        exam_subject,
+        "branch_id",
+        None
+    )
+
+    if branch_id is None:
+        branch_id = getattr(
+            exam,
+            "branch_id",
+            None
+        )
+
+    # ========================================================
+    # ROLE SCOPE
+    # ========================================================
+
+    if role == "school_admin":
+
+        if (
+            getattr(
+                current_user,
+                "institution_id",
+                None
+            )
+            != institution_id
+        ):
+            abort(403)
+
+    elif role == "branch_admin":
+
+        if (
+            getattr(
+                current_user,
+                "institution_id",
+                None
+            )
+            != institution_id
+        ):
+            abort(403)
+
+        if (
+            getattr(
+                current_user,
+                "branch_id",
+                None
+            )
+            != branch_id
+        ):
+            abort(403)
+
+    elif role == "teacher":
+
+        teacher = getattr(
+            g,
+            "teacher",
+            None
+        )
+
+        if teacher is None:
+            abort(403)
+
+        if (
+            getattr(
+                teacher,
+                "institution_id",
+                None
+            )
+            != institution_id
+        ):
+            abort(403)
+
+        if (
+            getattr(
+                teacher,
+                "branch_id",
+                None
+            )
+            != branch_id
+        ):
+            abort(403)
+
+    # ========================================================
+    # LOAD EXISTING STUDENT RESULT
+    #
+    # IMPORTANT:
+    # NEVER DELETE IT.
+    # ========================================================
+
+    result_query = StudentResult.query.filter(
+        StudentResult.exam_id == exam_id,
+        StudentResult.student_id == student_id,
+    )
+
+    if institution_id is not None:
+
+        result_query = result_query.filter(
+            StudentResult.institution_id == institution_id
+        )
+
+    if branch_id is not None:
+
+        result_query = result_query.filter(
+            StudentResult.branch_id == branch_id
+        )
+
+    student_result = (
+        result_query
+        .order_by(StudentResult.id.desc())
+        .first()
+    )
+
+    if student_result is None:
+
+        current_app.logger.warning(
+            "DELETE MARK | StudentResult does not exist | "
+            "student_id=%s | exam_id=%s",
+            student_id,
+            exam_id
+        )
+
+        # We can still delete the mark.
+        # There is simply no result row to recalculate.
+
+    # ========================================================
+    # DELETE + RECALCULATE
+    # ========================================================
+
+    try:
+
+        current_app.logger.info(
+            "DELETE MARK START | "
+            "mark_id=%s | "
+            "student_id=%s | "
+            "exam_id=%s | "
+            "exam_subject_id=%s | "
+            "old_mark=%s",
+            mark.id,
+            student_id,
+            exam_id,
+            exam_subject_id,
+            old_mark_value
+        )
+
+        # ====================================================
+        # DELETE ONLY THIS MARK
+        # ====================================================
+
+        db.session.delete(mark)
+
+        db.session.flush()
+
+        current_app.logger.info(
+            "MARK DELETED FROM SESSION | "
+            "mark_id=%s",
+            mark_id
+        )
+
+        # ====================================================
+        # IMPORTANT
+        #
+        # DO NOT CALL calculate_student_result() HERE.
+        #
+        # The existing calculator is what is throwing the
+        # exception in your current implementation.
+        #
+        # We recalculate the existing StudentResult directly.
+        # ====================================================
+
+        if student_result is not None:
+
+            # =================================================
+            # FIND EXAM SUBJECTS FOR THIS STUDENT
+            #
+            # Priority:
+            #
+            # SECTION
+            #     ↓
+            # CLASS
+            #     ↓
+            # GENERAL
+            #
+            # Branch-specific is preferred over shared.
+            # =================================================
+
+            student_class_id = getattr(
+                student_result,
+                "class_id",
+                None
+            )
+
+            student_section_id = getattr(
+                student_result,
+                "section_id",
+                None
+            )
+
+            exam_subjects = (
+                ExamSubject.query
+                .filter(
+                    ExamSubject.exam_id == exam_id,
+                    ExamSubject.status == "active",
+                )
+                .order_by(
+                    ExamSubject.id.asc()
+                )
+                .all()
+            )
+
+            # =================================================
+            # SELECT ONE EXAM SUBJECT PER SUBJECT
+            # =================================================
+
+            selected_subjects = {}
+
+            for es in exam_subjects:
+
+                # ---------------------------------------------
+                # CLASS FILTER
+                # ---------------------------------------------
+
+                es_class_id = getattr(
+                    es,
+                    "class_id",
+                    None
+                )
+
+                if (
+                    es_class_id is not None
+                    and student_class_id is not None
+                    and es_class_id != student_class_id
+                ):
+                    continue
+
+                # ---------------------------------------------
+                # If ExamSubject is class-specific but result
+                # has no class, do not use it.
+                # ---------------------------------------------
+
+                if (
+                    es_class_id is not None
+                    and student_class_id is None
+                ):
+                    continue
+
+                # ---------------------------------------------
+                # SECTION FILTER
+                # ---------------------------------------------
+
+                es_section_id = getattr(
+                    es,
+                    "section_id",
+                    None
+                )
+
+                if (
+                    es_section_id is not None
+                    and student_section_id is not None
+                    and es_section_id != student_section_id
+                ):
+                    continue
+
+                if (
+                    es_section_id is not None
+                    and student_section_id is None
+                ):
+                    continue
+
+                # ---------------------------------------------
+                # SUBJECT ID
+                # ---------------------------------------------
+
+                subject_id = getattr(
+                    es,
+                    "subject_id",
+                    None
+                )
+
+                if subject_id is None:
+                    continue
+
+                # ---------------------------------------------
+                # PRIORITY
+                #
+                # section = 4
+                # class   = 3
+                # general = 1
+                # ---------------------------------------------
+
+                if es_section_id is not None:
+                    priority = 4
+
+                elif es_class_id is not None:
+                    priority = 3
+
+                else:
+                    priority = 1
+
+                # ---------------------------------------------
+                # Keep highest priority subject.
+                # ---------------------------------------------
+
+                existing = selected_subjects.get(
+                    subject_id
+                )
+
+                if existing is None:
+
+                    selected_subjects[subject_id] = (
+                        priority,
+                        es
+                    )
+
+                else:
+
+                    old_priority, old_es = existing
+
+                    if priority > old_priority:
+
+                        selected_subjects[subject_id] = (
+                            priority,
+                            es
+                        )
+
+                    elif (
+                        priority == old_priority
+                        and es.id < old_es.id
+                    ):
+
+                        selected_subjects[subject_id] = (
+                            priority,
+                            es
+                        )
+
+            # =================================================
+            # SORT SELECTED SUBJECTS
+            # =================================================
+
+            selected_exam_subjects = [
+                item[1]
+                for item in selected_subjects.values()
+            ]
+
+            selected_exam_subjects.sort(
+                key=lambda x: (
+                    getattr(
+                        x,
+                        "display_order",
+                        None
+                    )
+                    is None,
+                    getattr(
+                        x,
+                        "display_order",
+                        0
+                    ) or 0,
+                    x.id
+                )
+            )
+
+            # =================================================
+            # LOAD REMAINING MARKS
+            # =================================================
+
+            remaining_marks = (
+                Mark.query
+                .filter(
+                    Mark.student_id == student_id,
+                    Mark.exam_subject_id.in_(
+                        [
+                            es.id
+                            for es in selected_exam_subjects
+                        ]
+                    )
+                )
+                .all()
+            )
+
+            mark_map = {
+                m.exam_subject_id: m
+                for m in remaining_marks
+            }
+
+            # =================================================
+            # CALCULATE RESULT
+            # =================================================
+
+            total_marks = 0.0
+            total_max_marks = 0.0
+
+            subjects_total = 0
+            subjects_completed = 0
+            subjects_missing = 0
+            subjects_failed = 0
+            subjects_passed = 0
+
+            incomplete = False
+            failed = False
+
+            for es in selected_exam_subjects:
+
+                max_marks = float(
+                    getattr(
+                        es,
+                        "max_marks",
+                        100
+                    )
+                    or 100
+                )
+
+                pass_marks = float(
+                    getattr(
+                        es,
+                        "pass_marks",
+                        50
+                    )
+                    or 50
+                )
+
+                subjects_total += 1
+
+                total_max_marks += max_marks
+
+                mark_row = mark_map.get(es.id)
+
+                # =============================================
+                # MISSING MARK
+                # =============================================
+
+                if mark_row is None:
+
+                    subjects_missing += 1
+                    incomplete = True
+
+                    continue
+
+                # =============================================
+                # ABSENT
+                # =============================================
+
+                if getattr(
+                    mark_row,
+                    "is_absent",
+                    False
+                ):
+
+                    subjects_missing += 1
+                    incomplete = True
+
+                    continue
+
+                # =============================================
+                # EXEMPTED
+                # =============================================
+
+                if getattr(
+                    mark_row,
+                    "is_exempted",
+                    False
+                ):
+
+                    subjects_completed += 1
+
+                    continue
+
+                # =============================================
+                # MARK VALUE
+                #
+                # 0 IS VALID.
+                # =============================================
+
+                value = mark_row.marks_obtained
+
+                if value is None:
+
+                    subjects_missing += 1
+                    incomplete = True
+
+                    continue
+
+                value = float(value)
+
+                # =============================================
+                # ADD MARK
+                # =============================================
+
+                total_marks += value
+                subjects_completed += 1
+
+                # =============================================
+                # PASS / FAIL
+                # =============================================
+
+                if value < pass_marks:
+
+                    subjects_failed += 1
+                    failed = True
+
+                else:
+
+                    subjects_passed += 1
+
+            # =================================================
+            # PERCENTAGE
+            # =================================================
+
+            if total_max_marks > 0:
+
+                percentage = (
+                    total_marks
+                    / total_max_marks
+                ) * 100.0
+
+            else:
+
+                percentage = 0.0
+
+            # =================================================
+            # AVERAGE
+            # =================================================
+
+            if subjects_completed > 0:
+
+                average = (
+                    total_marks
+                    / subjects_completed
+                )
+
+            else:
+
+                average = 0.0
+
+            # =================================================
+            # RESULT STATUS
+            #
+            # MISSING SUBJECT => INCOMPLETE
+            # ANY FAILED       => FAIL
+            # OTHERWISE         => PASS
+            # =================================================
+
+            if incomplete:
+
+                result_status = "INCOMPLETE"
+
+            elif failed:
+
+                result_status = "FAIL"
+
+            else:
+
+                result_status = "PASS"
+
+            # =================================================
+            # GRADE
+            # =================================================
+
+            if incomplete:
+
+                grade = "N/A"
+
+            elif percentage >= 90:
+
+                grade = "A+"
+
+            elif percentage >= 80:
+
+                grade = "A"
+
+            elif percentage >= 75:
+
+                grade = "B+"
+
+            elif percentage >= 70:
+
+                grade = "B"
+
+            elif percentage >= 65:
+
+                grade = "C+"
+
+            elif percentage >= 60:
+
+                grade = "C"
+
+            elif percentage >= 50:
+
+                grade = "D"
+
+            else:
+
+                grade = "F"
+
+            # =================================================
+            # UPDATE EXISTING RESULT
+            #
+            # NEVER DELETE StudentResult.
+            # =================================================
+
+            student_result.total_marks = total_marks
+
+            student_result.total_max_marks = (
+                total_max_marks
+            )
+
+            student_result.percentage = percentage
+
+            student_result.average = average
+
+            student_result.subjects_total = (
+                subjects_total
+            )
+
+            student_result.subjects_completed = (
+                subjects_completed
+            )
+
+            student_result.subjects_missing = (
+                subjects_missing
+            )
+
+            student_result.subjects_failed = (
+                subjects_failed
+            )
+
+            student_result.subjects_passed = (
+                subjects_passed
+            )
+
+            student_result.grade = grade
+
+            student_result.result_status = (
+                result_status
+            )
+
+            student_result.status = "draft"
+
+            student_result.calculated_at = (
+                datetime.utcnow()
+            )
+
+            current_app.logger.info(
+                "STUDENT RESULT RECALCULATED | "
+                "result_id=%s | "
+                "student_id=%s | "
+                "exam_id=%s | "
+                "total=%s | "
+                "max=%s | "
+                "percentage=%s | "
+                "missing=%s | "
+                "failed=%s | "
+                "status=%s",
+                student_result.id,
+                student_id,
+                exam_id,
+                total_marks,
+                total_max_marks,
+                percentage,
+                subjects_missing,
+                subjects_failed,
+                result_status
+            )
+
+        # ====================================================
+        # COMMIT EVERYTHING
+        # ====================================================
+
+        db.session.commit()
+
+    except Exception as exc:
+
+        db.session.rollback()
+
+        current_app.logger.exception(
+            "DELETE MARK FAILED | "
+            "mark_id=%s | "
+            "student_id=%s | "
+            "exam_id=%s | "
+            "exam_subject_id=%s",
+            mark_id,
+            student_id,
+            exam_id,
+            exam_subject_id
+        )
+
+        flash(
+            "Unable to delete the mark and recalculate "
+            "the student's result. Please check the server "
+            "log for the exact error.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # SUBJECT NAME
+    # ========================================================
+
+    subject = getattr(
+        exam_subject,
+        "subject",
+        None
+    )
+
+    subject_name = (
+        getattr(
+            subject,
+            "name",
+            None
+        )
+        or "Subject"
+    )
+
+    # ========================================================
+    # STUDENT NAME
+    # ========================================================
+
+    student_name = (
+        getattr(
+            student,
+            "full_name",
+            None
+        )
+        or getattr(
+            student,
+            "name",
+            None
+        )
+        or "Student"
+    )
+
+    # ========================================================
+    # SUCCESS
+    # ========================================================
+
+    current_app.logger.info(
+        "MARK DELETED SUCCESSFULLY | "
+        "mark_id=%s | "
+        "student_id=%s | "
+        "exam_id=%s | "
+        "exam_subject_id=%s | "
+        "old_mark=%s | "
+        "result_id=%s",
+        mark_id,
+        student_id,
+        exam_id,
+        exam_subject_id,
+        old_mark_value,
+        (
+            student_result.id
+            if student_result
+            else None
+        )
+    )
+
+    flash(
+        f"{subject_name} mark for {student_name} "
+        "was deleted successfully. "
+        "The student result was recalculated.",
+        "success"
+    )
+
+    return redirect(
+        request.referrer
+        or url_for("main.exam_results")
+    )
+
+    
+
+# ============================================================
 # EDIT EXAM RESULT
 # ============================================================
 # ============================================================
@@ -75552,6 +77674,46 @@ def delete_exam_result(result_id):
 # ============================================================
 # EDIT EXAM RESULT
 # ADMIN CAN COMPLETE MISSING SUBJECT MARKS
+# ============================================================
+# ============================================================
+# EDIT EXAM RESULT
+# ADMIN CAN COMPLETE / CORRECT STUDENT SUBJECT MARKS
+#
+# IMPORTANT RULES
+# ------------------------------------------------------------
+# 1. One StudentResult = one Student + one Exam.
+#
+# 2. ONLY ExamSubjects assigned to THIS student's:
+#       - institution
+#       - branch
+#       - program
+#       - class
+#       - section
+#    are displayed.
+#
+# 3. Section-specific assignment has priority over
+#    class-level assignment.
+#
+# 4. Same subject is displayed ONLY ONCE.
+#
+# 5. Subjects belonging to another class are NEVER shown.
+#
+# 6. Missing marks can be completed.
+#
+# 7. Absent != 0.
+#
+# 8. Exempted != 0.
+#
+# 9. Existing Mark rows are updated, not recreated.
+#
+# 10. ExamSubject / Exam / Subject / Class / Section are
+#     NEVER deleted or recreated by this route.
+#
+# 11. POST can only modify marks belonging to the final
+#     scoped ExamSubject list.
+#
+# 12. Duplicate ExamSubject database records do not result
+#     in duplicate subjects on the student page.
 # ============================================================
 
 @bp.route(
@@ -75569,6 +77731,18 @@ def edit_exam_result(result_id):
         current_user,
         "role",
         None
+    )
+
+    role = getattr(
+        role,
+        "value",
+        role
+    )
+
+    role = (
+        str(role).strip().lower()
+        if role
+        else None
     )
 
     allowed_roles = {
@@ -75636,6 +77810,96 @@ def edit_exam_result(result_id):
         )
 
     # ========================================================
+    # BASIC IDS
+    # ========================================================
+
+    exam_id = getattr(
+        result,
+        "exam_id",
+        None
+    )
+
+    student_id = getattr(
+        result,
+        "student_id",
+        None
+    )
+
+    institution_id = getattr(
+        result,
+        "institution_id",
+        None
+    )
+
+    branch_id = getattr(
+        result,
+        "branch_id",
+        None
+    )
+
+    program_id = getattr(
+        result,
+        "program_id",
+        None
+    )
+
+    # ========================================================
+    # BASIC VALIDATION
+    # ========================================================
+
+    if not exam_id:
+
+        flash(
+            "This result is not linked to an examination.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "main.exam_results"
+            )
+        )
+
+    if not student_id:
+
+        flash(
+            "This result is not linked to a student.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "main.exam_results"
+            )
+        )
+
+    if not institution_id:
+
+        flash(
+            "This result has no institution assigned.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "main.exam_results"
+            )
+        )
+
+    if not branch_id:
+
+        flash(
+            "This result has no branch assigned.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "main.exam_results"
+            )
+        )
+
+    # ========================================================
     # SCOPE SECURITY
     # ========================================================
 
@@ -75693,58 +77957,21 @@ def edit_exam_result(result_id):
             abort(403)
 
     # ========================================================
-    # BASIC IDs
+    # LOAD EXAM
     # ========================================================
 
-    exam_id = result.exam_id
-    student_id = result.student_id
+    exam = (
+        Exam.query
+        .filter(
+            Exam.id == exam_id
+        )
+        .first()
+    )
 
-    institution_id = result.institution_id
-    branch_id = result.branch_id
+    if not exam:
 
-    # ========================================================
-    # VALIDATE BASIC REFERENCES
-    # ========================================================
-
-    if not exam_id:
         flash(
-            "This result is not linked to an examination.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "main.exam_results"
-            )
-        )
-
-    if not student_id:
-        flash(
-            "This result is not linked to a student.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "main.exam_results"
-            )
-        )
-
-    if not institution_id:
-        flash(
-            "This result has no institution assigned.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "main.exam_results"
-            )
-        )
-
-    if not branch_id:
-        flash(
-            "This result has no branch assigned.",
+            "The examination linked to this result was not found.",
             "error"
         )
 
@@ -75755,16 +77982,251 @@ def edit_exam_result(result_id):
         )
 
     # ========================================================
-    # LOAD ALL EXAM SUBJECTS
+    # EXAM SECURITY
+    # ========================================================
+
+    if (
+        getattr(exam, "institution_id", None)
+        and
+        exam.institution_id != institution_id
+    ):
+        abort(403)
+
+    if (
+        getattr(exam, "branch_id", None)
+        and
+        exam.branch_id != branch_id
+    ):
+        abort(403)
+
+    # ========================================================
+    # STUDENT CLASS / SECTION
+    #
+    # Priority:
+    #
+    # 1. StudentResult.class_id
+    # 2. StudentResult.section_id
+    # 3. StudentEnrollment
+    # ========================================================
+
+    student_class_id = getattr(
+        result,
+        "class_id",
+        None
+    )
+
+    student_section_id = getattr(
+        result,
+        "section_id",
+        None
+    )
+
+    # ========================================================
+    # ACADEMIC YEAR
+    # ========================================================
+
+    academic_year_id = getattr(
+        result,
+        "academic_year_id",
+        None
+    )
+
+    if not academic_year_id:
+
+        academic_year_id = getattr(
+            exam,
+            "academic_year_id",
+            None
+        )
+
+    # ========================================================
+    # FALLBACK: STUDENT ENROLLMENT
+    # ========================================================
+
+    enrollment = None
+
+    try:
+
+        enrollment_query = (
+            StudentEnrollment.query
+            .filter(
+                StudentEnrollment.student_id
+                == student_id
+            )
+        )
+
+        if hasattr(
+            StudentEnrollment,
+            "institution_id"
+        ):
+
+            enrollment_query = (
+                enrollment_query.filter(
+                    StudentEnrollment.institution_id
+                    == institution_id
+                )
+            )
+
+        if hasattr(
+            StudentEnrollment,
+            "branch_id"
+        ):
+
+            enrollment_query = (
+                enrollment_query.filter(
+                    StudentEnrollment.branch_id
+                    == branch_id
+                )
+            )
+
+        if (
+            academic_year_id
+            and hasattr(
+                StudentEnrollment,
+                "academic_year_id"
+            )
+        ):
+
+            enrollment_query = (
+                enrollment_query.filter(
+                    StudentEnrollment.academic_year_id
+                    == academic_year_id
+                )
+            )
+
+        if (
+            program_id
+            and hasattr(
+                StudentEnrollment,
+                "program_id"
+            )
+        ):
+
+            enrollment_query = (
+                enrollment_query.filter(
+                    StudentEnrollment.program_id
+                    == program_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # If class is already known, prefer that class.
+        # ----------------------------------------------------
+
+        if (
+            student_class_id
+            and hasattr(
+                StudentEnrollment,
+                "class_id"
+            )
+        ):
+
+            enrollment_query = (
+                enrollment_query.filter(
+                    StudentEnrollment.class_id
+                    == student_class_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # Prefer newest enrollment.
+        # ----------------------------------------------------
+
+        enrollment = (
+            enrollment_query
+            .order_by(
+                StudentEnrollment.id.desc()
+            )
+            .first()
+        )
+
+    except Exception:
+
+        current_app.logger.exception(
+            "Enrollment lookup failed | "
+            "result_id=%s | student_id=%s",
+            result_id,
+            student_id,
+        )
+
+    # ========================================================
+    # APPLY ENROLLMENT FALLBACK
+    # ========================================================
+
+    if enrollment:
+
+        if not student_class_id:
+
+            student_class_id = getattr(
+                enrollment,
+                "class_id",
+                None
+            )
+
+        if not student_section_id:
+
+            student_section_id = getattr(
+                enrollment,
+                "section_id",
+                None
+            )
+
+        if not program_id:
+
+            program_id = getattr(
+                enrollment,
+                "program_id",
+                None
+            )
+
+    # ========================================================
+    # FINAL CLASS SAFETY
+    # ========================================================
+
+    if not student_class_id:
+
+        flash(
+            "The student's class could not be determined "
+            "for this examination result. "
+            "Subjects were not loaded to prevent incorrect "
+            "class assignments.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "main.view_exam_result",
+                result_id=result.id
+            )
+        )
+
+    # ========================================================
+    # FINAL SECTION
     #
     # IMPORTANT:
-    # We intentionally load ALL subjects.
+    # section can legitimately be NULL.
     #
-    # This allows admin to complete subjects where no Mark
-    # row currently exists.
+    # NULL means:
+    # use class-level assignment.
     # ========================================================
 
-    exam_subjects = (
+    # ========================================================
+    # BUILD SCOPED EXAM SUBJECT QUERY
+    #
+    # THIS IS THE MAIN DUPLICATE FIX.
+    #
+    # We explicitly require:
+    #
+    # exam
+    # institution
+    # branch
+    # program
+    # class
+    #
+    # before subject deduplication.
+    # ========================================================
+
+    exam_subject_query = (
         ExamSubject.query
         .options(
             db.joinedload(
@@ -75777,20 +78239,106 @@ def edit_exam_result(result_id):
         .filter(
             ExamSubject.exam_id == exam_id
         )
-        .order_by(
-            ExamSubject.id.asc()
-        )
-        .all()
     )
 
     # ========================================================
-    # NO SUBJECTS
+    # INSTITUTION
     # ========================================================
 
-    if not exam_subjects:
+    if hasattr(
+        ExamSubject,
+        "institution_id"
+    ):
+
+        exam_subject_query = (
+            exam_subject_query.filter(
+                ExamSubject.institution_id
+                == institution_id
+            )
+        )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    if hasattr(
+        ExamSubject,
+        "branch_id"
+    ):
+
+        exam_subject_query = (
+            exam_subject_query.filter(
+                ExamSubject.branch_id
+                == branch_id
+            )
+        )
+
+    # ========================================================
+    # PROGRAM
+    #
+    # IMPORTANT:
+    # If the ExamSubject has program_id, we ONLY accept
+    # this student's program.
+    # ========================================================
+
+    if hasattr(
+        ExamSubject,
+        "program_id"
+    ):
+
+        if program_id:
+
+            exam_subject_query = (
+                exam_subject_query.filter(
+                    ExamSubject.program_id
+                    == program_id
+                )
+            )
+
+        else:
+
+            # No student program = do not accidentally
+            # load every program's subjects.
+            exam_subject_query = (
+                exam_subject_query.filter(
+                    ExamSubject.program_id.is_(None)
+                )
+            )
+
+    # ========================================================
+    # CLASS
+    #
+    # THIS MUST BE A REAL SQL FILTER.
+    #
+    # We do NOT fetch all classes and filter in template.
+    # ========================================================
+
+    if hasattr(
+        ExamSubject,
+        "class_id"
+    ):
+
+        exam_subject_query = (
+            exam_subject_query.filter(
+                ExamSubject.class_id
+                == student_class_id
+            )
+        )
+
+    else:
+
+        current_app.logger.error(
+            "ExamSubject.class_id does not exist. "
+            "Cannot safely scope exam subjects by class. "
+            "result_id=%s | exam_id=%s | class_id=%s",
+            result_id,
+            exam_id,
+            student_class_id,
+        )
 
         flash(
-            "This examination has no subjects assigned.",
+            "Exam subject class assignment could not be "
+            "verified safely.",
             "error"
         )
 
@@ -75802,6 +78350,322 @@ def edit_exam_result(result_id):
         )
 
     # ========================================================
+    # LOAD CANDIDATES
+    # ========================================================
+
+    scoped_exam_subjects = (
+        exam_subject_query
+        .order_by(
+            ExamSubject.id.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # SECTION FILTER + SUBJECT DEDUPLICATION
+    #
+    # RULE:
+    #
+    # Student section = KD21 Section A
+    #
+    # Candidate:
+    #   English / KD21 / NULL
+    #   English / KD21 / A
+    #
+    # Result:
+    #   English / KD21 / A
+    #
+    # If student has NO section:
+    #   only class-level assignment is accepted.
+    # ========================================================
+
+    subject_assignment_map = {}
+
+    for exam_subject in scoped_exam_subjects:
+
+        subject_id = getattr(
+            exam_subject,
+            "subject_id",
+            None
+        )
+
+        if not subject_id:
+            continue
+
+        assignment_section_id = getattr(
+            exam_subject,
+            "section_id",
+            None
+        )
+
+        # ====================================================
+        # SECTION MATCH
+        # ====================================================
+
+        if student_section_id is not None:
+
+            # -----------------------------------------------
+            # Student has section.
+            #
+            # Accept:
+            #   exact section
+            #   OR class-level NULL section
+            # -----------------------------------------------
+
+            if (
+                assignment_section_id is not None
+                and
+                assignment_section_id
+                != student_section_id
+            ):
+                continue
+
+        else:
+
+            # -----------------------------------------------
+            # Student has no section.
+            #
+            # DO NOT show section-specific subjects.
+            # -----------------------------------------------
+
+            if assignment_section_id is not None:
+                continue
+
+        # ====================================================
+        # PRIORITY
+        #
+        # Exact section > class-level
+        # ====================================================
+
+        existing = subject_assignment_map.get(
+            subject_id
+        )
+
+        if existing is None:
+
+            subject_assignment_map[
+                subject_id
+            ] = exam_subject
+
+            continue
+
+        existing_section_id = getattr(
+            existing,
+            "section_id",
+            None
+        )
+
+        # ====================================================
+        # NEW RECORD IS SECTION-SPECIFIC
+        # ====================================================
+
+        new_is_section_specific = (
+            assignment_section_id is not None
+            and
+            assignment_section_id
+            == student_section_id
+        )
+
+        # ====================================================
+        # OLD RECORD IS CLASS-LEVEL
+        # ====================================================
+
+        old_is_class_level = (
+            existing_section_id is None
+        )
+
+        if (
+            new_is_section_specific
+            and
+            old_is_class_level
+        ):
+
+            subject_assignment_map[
+                subject_id
+            ] = exam_subject
+
+            continue
+
+        # ====================================================
+        # BOTH ARE SECTION-SPECIFIC
+        #
+        # Keep lowest ID deterministically.
+        # ====================================================
+
+        if (
+            new_is_section_specific
+            and
+            existing_section_id
+            == student_section_id
+        ):
+
+            if (
+                exam_subject.id
+                <
+                existing.id
+            ):
+
+                subject_assignment_map[
+                    subject_id
+                ] = exam_subject
+
+            continue
+
+        # ====================================================
+        # BOTH ARE CLASS-LEVEL
+        #
+        # Keep lowest ID deterministically.
+        # ====================================================
+
+        if (
+            assignment_section_id is None
+            and
+            existing_section_id is None
+        ):
+
+            if (
+                exam_subject.id
+                <
+                existing.id
+            ):
+
+                subject_assignment_map[
+                    subject_id
+                ] = exam_subject
+
+    # ========================================================
+    # FINAL SUBJECT LIST
+    # ========================================================
+
+    exam_subjects = list(
+        subject_assignment_map.values()
+    )
+
+    # ========================================================
+    # FINAL SORT
+    # ========================================================
+
+    exam_subjects.sort(
+        key=lambda item: (
+            getattr(
+                item,
+                "display_order",
+                None
+            ) is None,
+
+            getattr(
+                item,
+                "display_order",
+                0
+            ) or 0,
+
+            item.id,
+        )
+    )
+
+    # ========================================================
+    # HARD SAFETY CHECK
+    #
+    # No subject may appear twice.
+    # ========================================================
+
+    seen_subject_ids = set()
+
+    unique_exam_subjects = []
+
+    for exam_subject in exam_subjects:
+
+        subject_id = getattr(
+            exam_subject,
+            "subject_id",
+            None
+        )
+
+        if not subject_id:
+            continue
+
+        if subject_id in seen_subject_ids:
+            continue
+
+        seen_subject_ids.add(
+            subject_id
+        )
+
+        unique_exam_subjects.append(
+            exam_subject
+        )
+
+    exam_subjects = unique_exam_subjects
+
+    # ========================================================
+    # NO SUBJECTS
+    # ========================================================
+
+    if not exam_subjects:
+
+        flash(
+            "No examination subjects were assigned to "
+            "this student's class/program.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "main.view_exam_result",
+                result_id=result.id
+            )
+        )
+
+    # ========================================================
+    # DEBUG LOG
+    #
+    # This will help you verify that KD20 is NOT being loaded
+    # for a KD21 student.
+    # ========================================================
+
+    current_app.logger.info(
+        "EDIT EXAM RESULT SUBJECT SCOPE | "
+        "result_id=%s | "
+        "exam_id=%s | "
+        "student_id=%s | "
+        "institution_id=%s | "
+        "branch_id=%s | "
+        "program_id=%s | "
+        "class_id=%s | "
+        "section_id=%s | "
+        "subjects=%s",
+        result_id,
+        exam_id,
+        student_id,
+        institution_id,
+        branch_id,
+        program_id,
+        student_class_id,
+        student_section_id,
+        [
+            {
+                "exam_subject_id": item.id,
+                "subject_id": getattr(
+                    item,
+                    "subject_id",
+                    None
+                ),
+                "class_id": getattr(
+                    item,
+                    "class_id",
+                    None
+                ),
+                "section_id": getattr(
+                    item,
+                    "section_id",
+                    None
+                ),
+            }
+            for item in exam_subjects
+        ],
+    )
+
+    # ========================================================
     # SUBJECT IDS
     # ========================================================
 
@@ -75811,19 +78675,25 @@ def edit_exam_result(result_id):
     ]
 
     # ========================================================
-    # LOAD EXISTING MARKS
+    # LOAD MARKS
     # ========================================================
 
-    existing_marks = (
-        Mark.query
-        .filter(
-            Mark.student_id == student_id,
-            Mark.exam_subject_id.in_(
-                exam_subject_ids
+    existing_marks = []
+
+    if exam_subject_ids:
+
+        existing_marks = (
+            Mark.query
+            .filter(
+                Mark.student_id
+                == student_id,
+
+                Mark.exam_subject_id.in_(
+                    exam_subject_ids
+                )
             )
+            .all()
         )
-        .all()
-    )
 
     # ========================================================
     # MARK MAP
@@ -75843,7 +78713,12 @@ def edit_exam_result(result_id):
         try:
 
             # =================================================
-            # PROCESS EVERY EXAM SUBJECT
+            # SECURITY:
+            #
+            # submitted ExamSubject IDs are NOT trusted.
+            #
+            # We process ONLY exam_subjects from the scoped
+            # server-side list.
             # =================================================
 
             for exam_subject in exam_subjects:
@@ -75851,10 +78726,6 @@ def edit_exam_result(result_id):
                 exam_subject_id = (
                     exam_subject.id
                 )
-
-                # =============================================
-                # EXISTING MARK
-                # =============================================
 
                 mark = mark_map.get(
                     exam_subject_id
@@ -75881,7 +78752,7 @@ def edit_exam_result(result_id):
                 )
 
                 # =============================================
-                # RAW VALUES
+                # RAW MARK
                 # =============================================
 
                 raw_marks = request.form.get(
@@ -75895,21 +78766,37 @@ def edit_exam_result(result_id):
                     else ""
                 )
 
+                # =============================================
+                # ABSENT
+                # =============================================
+
                 is_absent = (
                     request.form.get(
                         absent_field
-                    ) == "1"
+                    )
+                    == "1"
                 )
+
+                # =============================================
+                # EXEMPTED
+                # =============================================
 
                 is_exempted = (
                     request.form.get(
                         exempted_field
-                    ) == "1"
+                    )
+                    == "1"
                 )
 
-                subject_remark = request.form.get(
-                    remark_field,
-                    ""
+                # =============================================
+                # REMARK
+                # =============================================
+
+                subject_remark = (
+                    request.form.get(
+                        remark_field,
+                        ""
+                    )
                 )
 
                 subject_remark = (
@@ -75919,7 +78806,7 @@ def edit_exam_result(result_id):
                 )
 
                 # =============================================
-                # SUBJECT NAME
+                # SUBJECT
                 # =============================================
 
                 subject = getattr(
@@ -75934,23 +78821,24 @@ def edit_exam_result(result_id):
                         "name",
                         None
                     )
-                    or getattr(
+                    or
+                    getattr(
                         subject,
                         "title",
                         None
                     )
-                    or "Subject"
+                    or
+                    "Subject"
                 )
 
                 # =============================================
                 # ABSENT + EXEMPTED
-                #
-                # They cannot both be selected.
                 # =============================================
 
                 if (
                     is_absent
-                    and is_exempted
+                    and
+                    is_exempted
                 ):
 
                     raise ValueError(
@@ -75960,27 +78848,23 @@ def edit_exam_result(result_id):
                     )
 
                 # =============================================
-                # COMPLETELY EMPTY
+                # EMPTY
                 #
-                # IMPORTANT:
-                # Do NOT create a zero.
-                #
-                # Existing mark is preserved.
-                # Missing subject remains missing.
+                # Do NOT create zero.
+                # Preserve existing mark.
                 # =============================================
 
                 if (
                     not raw_marks
-                    and not is_absent
-                    and not is_exempted
+                    and
+                    not is_absent
+                    and
+                    not is_exempted
                 ):
-
                     continue
 
                 # =============================================
                 # ABSENT
-                #
-                # marks_obtained MUST remain None.
                 # =============================================
 
                 if is_absent:
@@ -76032,8 +78916,6 @@ def edit_exam_result(result_id):
 
                 # =============================================
                 # EXEMPTED
-                #
-                # marks_obtained MUST remain None.
                 # =============================================
 
                 if is_exempted:
@@ -76105,7 +78987,7 @@ def edit_exam_result(result_id):
                     )
 
                 # =============================================
-                # FINITE NUMBER CHECK
+                # FINITE
                 # =============================================
 
                 if not marks.is_finite():
@@ -76116,7 +78998,7 @@ def edit_exam_result(result_id):
                     )
 
                 # =============================================
-                # NEGATIVE CHECK
+                # NEGATIVE
                 # =============================================
 
                 if marks < Decimal("0"):
@@ -76143,7 +79025,7 @@ def edit_exam_result(result_id):
                     )
 
                 # =============================================
-                # EXCEEDS MAXIMUM
+                # EXCEEDS MAX
                 # =============================================
 
                 if marks > max_marks:
@@ -76154,7 +79036,7 @@ def edit_exam_result(result_id):
                     )
 
                 # =============================================
-                # SAVE NORMAL MARK
+                # CREATE MARK
                 # =============================================
 
                 if mark is None:
@@ -76183,6 +79065,10 @@ def edit_exam_result(result_id):
                         exam_subject_id
                     ] = mark
 
+                # =============================================
+                # UPDATE MARK
+                # =============================================
+
                 else:
 
                     mark.marks_obtained = marks
@@ -76201,7 +79087,7 @@ def edit_exam_result(result_id):
                     )
 
             # =================================================
-            # OVERALL ADMIN REMARKS
+            # OVERALL REMARKS
             # =================================================
 
             remarks = request.form.get(
@@ -76254,7 +79140,7 @@ def edit_exam_result(result_id):
                 )
 
             # =================================================
-            # SAVE ADMIN FIELDS
+            # UPDATE RESULT
             # =================================================
 
             result.remarks = (
@@ -76274,16 +79160,6 @@ def edit_exam_result(result_id):
 
             # =================================================
             # RECALCULATE STUDENT RESULT
-            #
-            # IMPORTANT:
-            # Your existing helper is designed as:
-            #
-            # calculate_student_result(
-            #     exam,
-            #     student_id,
-            #     institution_id,
-            #     branch_id
-            # )
             # =================================================
 
             calculated_result = (
@@ -76295,10 +79171,6 @@ def edit_exam_result(result_id):
                 )
             )
 
-            # =================================================
-            # ENSURE CALCULATION RETURNED A RESULT
-            # =================================================
-
             if calculated_result is None:
 
                 raise RuntimeError(
@@ -76307,7 +79179,7 @@ def edit_exam_result(result_id):
                 )
 
             # =================================================
-            # FLUSH CALCULATED VALUES
+            # FLUSH
             # =================================================
 
             db.session.flush()
@@ -76319,7 +79191,8 @@ def edit_exam_result(result_id):
             refreshed_result = (
                 StudentResult.query
                 .filter(
-                    StudentResult.id == result_id
+                    StudentResult.id
+                    == result_id
                 )
                 .first()
             )
@@ -76332,13 +79205,7 @@ def edit_exam_result(result_id):
                 )
 
             # =================================================
-            # RESTORE ADMINISTRATIVE VALUES
-            #
-            # calculate_student_result() intentionally sets:
-            #
-            # result.status = "draft"
-            #
-            # Therefore restore the status selected by admin.
+            # RESTORE ADMIN VALUES
             # =================================================
 
             refreshed_result.remarks = (
@@ -76351,16 +79218,7 @@ def edit_exam_result(result_id):
             )
 
             # =================================================
-            # REGENERATE RANKINGS
-            #
-            # IMPORTANT:
-            # Your actual helper requires:
-            #
-            # calculate_exam_rankings(
-            #     exam_id,
-            #     institution_id,
-            #     branch_id
-            # )
+            # RECALCULATE RANKINGS
             # =================================================
 
             calculate_exam_rankings(
@@ -76376,7 +79234,7 @@ def edit_exam_result(result_id):
             db.session.flush()
 
             # =================================================
-            # FINAL COMMIT
+            # COMMIT
             # =================================================
 
             db.session.commit()
@@ -76387,7 +79245,7 @@ def edit_exam_result(result_id):
 
             flash(
                 "Exam result updated successfully. "
-                "Subject marks, calculated result values, "
+                "Subject marks, result values, "
                 "and rankings have been regenerated.",
                 "success"
             )
@@ -76426,19 +79284,25 @@ def edit_exam_result(result_id):
                 "exam_id=%s | "
                 "student_id=%s | "
                 "institution_id=%s | "
-                "branch_id=%s",
+                "branch_id=%s | "
+                "program_id=%s | "
+                "class_id=%s | "
+                "section_id=%s",
                 result_id,
                 exam_id,
                 student_id,
                 institution_id,
                 branch_id,
+                program_id,
+                student_class_id,
+                student_section_id,
             )
 
             flash(
                 "Unable to update the exam result. "
                 "The update was rolled back. "
-                "Please check the server console for "
-                "the exact error.",
+                "Please check the server console "
+                "for the exact error.",
                 "error"
             )
 
@@ -76481,7 +79345,7 @@ def edit_exam_result(result_id):
     )
 
     # ========================================================
-    # RESULT SAFETY
+    # SAFETY
     # ========================================================
 
     if not result:
@@ -76498,10 +79362,179 @@ def edit_exam_result(result_id):
         )
 
     # ========================================================
-    # RELOAD EXAM SUBJECTS
+    # RELOAD IDs
     # ========================================================
 
-    exam_subjects = (
+    exam_id = result.exam_id
+    student_id = result.student_id
+
+    institution_id = result.institution_id
+    branch_id = result.branch_id
+
+    program_id = getattr(
+        result,
+        "program_id",
+        None
+    )
+
+    student_class_id = getattr(
+        result,
+        "class_id",
+        None
+    )
+
+    student_section_id = getattr(
+        result,
+        "section_id",
+        None
+    )
+
+    academic_year_id = getattr(
+        result,
+        "academic_year_id",
+        None
+    )
+
+    # ========================================================
+    # FALLBACK ENROLLMENT
+    # ========================================================
+
+    if not student_class_id:
+
+        try:
+
+            enrollment_query = (
+                StudentEnrollment.query
+                .filter(
+                    StudentEnrollment.student_id
+                    == student_id
+                )
+            )
+
+            if hasattr(
+                StudentEnrollment,
+                "institution_id"
+            ):
+
+                enrollment_query = (
+                    enrollment_query.filter(
+                        StudentEnrollment.institution_id
+                        == institution_id
+                    )
+                )
+
+            if hasattr(
+                StudentEnrollment,
+                "branch_id"
+            ):
+
+                enrollment_query = (
+                    enrollment_query.filter(
+                        StudentEnrollment.branch_id
+                        == branch_id
+                    )
+                )
+
+            if (
+                academic_year_id
+                and
+                hasattr(
+                    StudentEnrollment,
+                    "academic_year_id"
+                )
+            ):
+
+                enrollment_query = (
+                    enrollment_query.filter(
+                        StudentEnrollment.academic_year_id
+                        == academic_year_id
+                    )
+                )
+
+            if (
+                program_id
+                and
+                hasattr(
+                    StudentEnrollment,
+                    "program_id"
+                )
+            ):
+
+                enrollment_query = (
+                    enrollment_query.filter(
+                        StudentEnrollment.program_id
+                        == program_id
+                    )
+                )
+
+            enrollment = (
+                enrollment_query
+                .order_by(
+                    StudentEnrollment.id.desc()
+                )
+                .first()
+            )
+
+            if enrollment:
+
+                student_class_id = (
+                    getattr(
+                        enrollment,
+                        "class_id",
+                        None
+                    )
+                )
+
+                student_section_id = (
+                    getattr(
+                        enrollment,
+                        "section_id",
+                        None
+                    )
+                )
+
+                if not program_id:
+
+                    program_id = getattr(
+                        enrollment,
+                        "program_id",
+                        None
+                    )
+
+        except Exception:
+
+            current_app.logger.exception(
+                "Enrollment fallback failed while "
+                "rendering edit_exam_result | "
+                "result_id=%s",
+                result_id,
+            )
+
+    # ========================================================
+    # CLASS SAFETY
+    # ========================================================
+
+    if not student_class_id:
+
+        flash(
+            "The student's class could not be determined.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "main.view_exam_result",
+                result_id=result.id
+            )
+        )
+
+    # ========================================================
+    # BUILD FINAL EXAM SUBJECT QUERY AGAIN
+    #
+    # MUST BE IDENTICAL TO POST SCOPE.
+    # ========================================================
+
+    exam_subject_query = (
         ExamSubject.query
         .options(
             db.joinedload(
@@ -76512,8 +79545,90 @@ def edit_exam_result(result_id):
             ),
         )
         .filter(
-            ExamSubject.exam_id == result.exam_id
+            ExamSubject.exam_id == exam_id
         )
+    )
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+
+    if hasattr(
+        ExamSubject,
+        "institution_id"
+    ):
+
+        exam_subject_query = (
+            exam_subject_query.filter(
+                ExamSubject.institution_id
+                == institution_id
+            )
+        )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    if hasattr(
+        ExamSubject,
+        "branch_id"
+    ):
+
+        exam_subject_query = (
+            exam_subject_query.filter(
+                ExamSubject.branch_id
+                == branch_id
+            )
+        )
+
+    # ========================================================
+    # PROGRAM
+    # ========================================================
+
+    if hasattr(
+        ExamSubject,
+        "program_id"
+    ):
+
+        if program_id:
+
+            exam_subject_query = (
+                exam_subject_query.filter(
+                    ExamSubject.program_id
+                    == program_id
+                )
+            )
+
+        else:
+
+            exam_subject_query = (
+                exam_subject_query.filter(
+                    ExamSubject.program_id.is_(None)
+                )
+            )
+
+    # ========================================================
+    # CLASS
+    # ========================================================
+
+    if hasattr(
+        ExamSubject,
+        "class_id"
+    ):
+
+        exam_subject_query = (
+            exam_subject_query.filter(
+                ExamSubject.class_id
+                == student_class_id
+            )
+        )
+
+    # ========================================================
+    # LOAD
+    # ========================================================
+
+    scoped_exam_subjects = (
+        exam_subject_query
         .order_by(
             ExamSubject.id.asc()
         )
@@ -76521,7 +79636,220 @@ def edit_exam_result(result_id):
     )
 
     # ========================================================
-    # RELOAD SUBJECT IDS
+    # SECTION + SUBJECT DEDUPLICATION
+    # ========================================================
+
+    subject_assignment_map = {}
+
+    for exam_subject in scoped_exam_subjects:
+
+        subject_id = getattr(
+            exam_subject,
+            "subject_id",
+            None
+        )
+
+        if not subject_id:
+            continue
+
+        assignment_section_id = getattr(
+            exam_subject,
+            "section_id",
+            None
+        )
+
+        # ====================================================
+        # STUDENT HAS SECTION
+        # ====================================================
+
+        if student_section_id is not None:
+
+            if (
+                assignment_section_id is not None
+                and
+                assignment_section_id
+                != student_section_id
+            ):
+                continue
+
+        # ====================================================
+        # STUDENT HAS NO SECTION
+        # ====================================================
+
+        else:
+
+            if assignment_section_id is not None:
+                continue
+
+        # ====================================================
+        # FIRST SUBJECT
+        # ====================================================
+
+        existing = subject_assignment_map.get(
+            subject_id
+        )
+
+        if existing is None:
+
+            subject_assignment_map[
+                subject_id
+            ] = exam_subject
+
+            continue
+
+        existing_section_id = getattr(
+            existing,
+            "section_id",
+            None
+        )
+
+        new_is_section_specific = (
+            assignment_section_id is not None
+            and
+            assignment_section_id
+            == student_section_id
+        )
+
+        old_is_class_level = (
+            existing_section_id is None
+        )
+
+        # ====================================================
+        # SECTION-SPECIFIC WINS
+        # ====================================================
+
+        if (
+            new_is_section_specific
+            and
+            old_is_class_level
+        ):
+
+            subject_assignment_map[
+                subject_id
+            ] = exam_subject
+
+            continue
+
+        # ====================================================
+        # SAME SECTION
+        # KEEP LOWEST ID
+        # ====================================================
+
+        if (
+            new_is_section_specific
+            and
+            existing_section_id
+            == student_section_id
+        ):
+
+            if exam_subject.id < existing.id:
+
+                subject_assignment_map[
+                    subject_id
+                ] = exam_subject
+
+            continue
+
+        # ====================================================
+        # BOTH CLASS LEVEL
+        # KEEP LOWEST ID
+        # ====================================================
+
+        if (
+            assignment_section_id is None
+            and
+            existing_section_id is None
+        ):
+
+            if exam_subject.id < existing.id:
+
+                subject_assignment_map[
+                    subject_id
+                ] = exam_subject
+
+    # ========================================================
+    # FINAL SUBJECT LIST
+    # ========================================================
+
+    exam_subjects = list(
+        subject_assignment_map.values()
+    )
+
+    # ========================================================
+    # SORT
+    # ========================================================
+
+    exam_subjects.sort(
+        key=lambda item: (
+            getattr(
+                item,
+                "display_order",
+                None
+            ) is None,
+
+            getattr(
+                item,
+                "display_order",
+                0
+            ) or 0,
+
+            item.id,
+        )
+    )
+
+    # ========================================================
+    # HARD FINAL DEDUPLICATION
+    # ========================================================
+
+    seen_subject_ids = set()
+
+    unique_exam_subjects = []
+
+    for exam_subject in exam_subjects:
+
+        subject_id = getattr(
+            exam_subject,
+            "subject_id",
+            None
+        )
+
+        if not subject_id:
+            continue
+
+        if subject_id in seen_subject_ids:
+            continue
+
+        seen_subject_ids.add(
+            subject_id
+        )
+
+        unique_exam_subjects.append(
+            exam_subject
+        )
+
+    exam_subjects = unique_exam_subjects
+
+    # ========================================================
+    # NO SUBJECTS
+    # ========================================================
+
+    if not exam_subjects:
+
+        flash(
+            "No examination subjects were assigned to "
+            "this student's class/program.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "main.view_exam_result",
+                result_id=result.id
+            )
+        )
+
+    # ========================================================
+    # SUBJECT IDS
     # ========================================================
 
     exam_subject_ids = [
@@ -76530,7 +79858,7 @@ def edit_exam_result(result_id):
     ]
 
     # ========================================================
-    # RELOAD MARKS
+    # LOAD MARKS
     # ========================================================
 
     existing_marks = []
@@ -76540,7 +79868,9 @@ def edit_exam_result(result_id):
         existing_marks = (
             Mark.query
             .filter(
-                Mark.student_id == result.student_id,
+                Mark.student_id
+                == student_id,
+
                 Mark.exam_subject_id.in_(
                     exam_subject_ids
                 )
@@ -76585,12 +79915,14 @@ def edit_exam_result(result_id):
                 "name",
                 None
             )
-            or getattr(
+            or
+            getattr(
                 subject,
                 "title",
                 None
             )
-            or "Subject"
+            or
+            "Subject"
         )
 
         # ====================================================
@@ -76609,18 +79941,20 @@ def edit_exam_result(result_id):
                 "full_name",
                 None
             )
-            or "—"
+            or
+            "—"
         )
 
         # ====================================================
-        # MARK VALUE
+        # MARKS
         # ====================================================
 
         marks_value = None
 
         if (
             mark
-            and mark.marks_obtained is not None
+            and
+            mark.marks_obtained is not None
         ):
 
             marks_value = (
@@ -76628,7 +79962,7 @@ def edit_exam_result(result_id):
             )
 
         # ====================================================
-        # STATUS
+        # ABSENT
         # ====================================================
 
         is_absent = (
@@ -76636,6 +79970,10 @@ def edit_exam_result(result_id):
             if mark
             else False
         )
+
+        # ====================================================
+        # EXEMPTED
+        # ====================================================
 
         is_exempted = (
             bool(mark.is_exempted)
@@ -76649,10 +79987,13 @@ def edit_exam_result(result_id):
 
         is_missing = (
             mark is None
-            or (
+            or
+            (
                 mark.marks_obtained is None
-                and not is_absent
-                and not is_exempted
+                and
+                not is_absent
+                and
+                not is_exempted
             )
         )
 
@@ -76707,8 +80048,10 @@ def edit_exam_result(result_id):
         for row in subject_rows
         if (
             row["marks"] is not None
-            and not row["is_absent"]
-            and not row["is_exempted"]
+            and
+            not row["is_absent"]
+            and
+            not row["is_exempted"]
         )
     )
 
@@ -76725,6 +80068,33 @@ def edit_exam_result(result_id):
     )
 
     # ========================================================
+    # FINAL DEBUG
+    # ========================================================
+
+    current_app.logger.info(
+        "FINAL EDIT SUBJECTS | "
+        "result=%s | "
+        "student=%s | "
+        "class=%s | "
+        "section=%s | "
+        "subject_ids=%s | "
+        "count=%s",
+        result_id,
+        student_id,
+        student_class_id,
+        student_section_id,
+        [
+            getattr(
+                row["exam_subject"],
+                "subject_id",
+                None
+            )
+            for row in subject_rows
+        ],
+        len(subject_rows),
+    )
+
+    # ========================================================
     # RENDER
     # ========================================================
 
@@ -76732,6 +80102,8 @@ def edit_exam_result(result_id):
         "backend/pages/results/edit_exam_result.html",
 
         result=result,
+
+        exam=exam,
 
         exam_subjects=exam_subjects,
 
@@ -76754,14 +80126,47 @@ def edit_exam_result(result_id):
         can_edit_workflow_status=True,
 
         page_mode="edit",
-        user=current_user,
-    )
 
+        user=current_user,
+
+        # ----------------------------------------------------
+        # Useful for template/debug display
+        # ----------------------------------------------------
+
+        student_class_id=student_class_id,
+
+        student_section_id=student_section_id,
+
+        program_id=program_id,
+
+    )
 
 
 
 # ============================================================
 # VIEW EXAM RESULT
+# ============================================================
+# ============================================================
+# VIEW EXAM RESULT
+#
+# RULES
+# ------------------------------------------------------------
+# 1. Role-aware security.
+# 2. Student result must belong to the user's allowed scope.
+# 3. Exam subjects MUST be filtered by:
+#       - exam
+#       - institution
+#       - branch
+#       - program
+#       - class
+#       - section
+# 4. Section-specific ExamSubject has priority over
+#    class-level ExamSubject.
+# 5. Class-level ExamSubject has section_id = NULL.
+# 6. Each subject appears ONLY ONCE for the student.
+# 7. Marks are loaded only for the selected ExamSubjects.
+# 8. Existing StudentResult is never recalculated or modified
+#    by this view route.
 # ============================================================
 
 @bp.route(
@@ -76772,13 +80177,25 @@ def edit_exam_result(result_id):
 def view_exam_result(result_id):
 
     # ========================================================
-    # SECURITY
+    # SECURITY / ROLE
     # ========================================================
 
     role = getattr(
         current_user,
         "role",
         None
+    )
+
+    role = getattr(
+        role,
+        "value",
+        role
+    )
+
+    role = (
+        str(role).strip().lower()
+        if role
+        else None
     )
 
     allowed_roles = {
@@ -76815,12 +80232,32 @@ def view_exam_result(result_id):
         )
 
     # ========================================================
-    # INSTITUTION / BRANCH SECURITY
+    # RESULT SCOPE
+    # ========================================================
+
+    result_institution_id = getattr(
+        result,
+        "institution_id",
+        None
+    )
+
+    result_branch_id = getattr(
+        result,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # SUPERADMIN
     # ========================================================
 
     if role == "superadmin":
 
         pass
+
+    # ========================================================
+    # SCHOOL ADMIN
+    # ========================================================
 
     elif role == "school_admin":
 
@@ -76834,10 +80271,14 @@ def view_exam_result(result_id):
             abort(403)
 
         if (
-            result.institution_id
+            result_institution_id
             != user_institution_id
         ):
             abort(403)
+
+    # ========================================================
+    # BRANCH ADMIN
+    # ========================================================
 
     elif role == "branch_admin":
 
@@ -76860,16 +80301,20 @@ def view_exam_result(result_id):
             abort(403)
 
         if (
-            result.institution_id
+            result_institution_id
             != user_institution_id
         ):
             abort(403)
 
         if (
-            result.branch_id
+            result_branch_id
             != user_branch_id
         ):
             abort(403)
+
+    # ========================================================
+    # TEACHER
+    # ========================================================
 
     elif role == "teacher":
 
@@ -76882,23 +80327,27 @@ def view_exam_result(result_id):
         if not teacher:
             abort(403)
 
-        # ----------------------------------------------------
-        # TEACHER INSTITUTION
-        # ----------------------------------------------------
+        teacher_institution_id = getattr(
+            teacher,
+            "institution_id",
+            None
+        )
+
+        teacher_branch_id = getattr(
+            teacher,
+            "branch_id",
+            None
+        )
 
         if (
-            teacher.institution_id
-            != result.institution_id
+            teacher_institution_id
+            != result_institution_id
         ):
             abort(403)
 
-        # ----------------------------------------------------
-        # TEACHER BRANCH
-        # ----------------------------------------------------
-
         if (
-            teacher.branch_id
-            != result.branch_id
+            teacher_branch_id
+            != result_branch_id
         ):
             abort(403)
 
@@ -76966,6 +80415,10 @@ def view_exam_result(result_id):
         None
     )
 
+    # ========================================================
+    # REQUIRED RELATION VALIDATION
+    # ========================================================
+
     if not student:
 
         flash(
@@ -76989,14 +80442,213 @@ def view_exam_result(result_id):
         )
 
     # ========================================================
-    # GET EXAM SUBJECTS
+    # ENROLLMENT VALIDATION
+    #
+    # The result must have an enrollment because the student's
+    # class/section/program determine which ExamSubjects belong
+    # to this result.
     # ========================================================
 
-    exam_subjects = (
+    if not enrollment:
+
+        flash(
+            "The student enrollment connected to this result was not found.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # ENROLLMENT SCOPE
+    # ========================================================
+
+    enrollment_institution_id = getattr(
+        enrollment,
+        "institution_id",
+        None
+    )
+
+    enrollment_branch_id = getattr(
+        enrollment,
+        "branch_id",
+        None
+    )
+
+    enrollment_program_id = getattr(
+        enrollment,
+        "program_id",
+        None
+    )
+
+    enrollment_academic_year_id = getattr(
+        enrollment,
+        "academic_year_id",
+        None
+    )
+
+    enrollment_class_id = getattr(
+        enrollment,
+        "class_id",
+        None
+    )
+
+    enrollment_section_id = getattr(
+        enrollment,
+        "section_id",
+        None
+    )
+
+    # ========================================================
+    # RESULT / ENROLLMENT CONSISTENCY
+    # ========================================================
+
+    if (
+        result_institution_id is not None
+        and enrollment_institution_id is not None
+        and result_institution_id
+        != enrollment_institution_id
+    ):
+        abort(403)
+
+    if (
+        result_branch_id is not None
+        and enrollment_branch_id is not None
+        and result_branch_id
+        != enrollment_branch_id
+    ):
+        abort(403)
+
+    # ========================================================
+    # ACADEMIC YEAR VALIDATION
+    # ========================================================
+
+    exam_academic_year_id = getattr(
+        exam,
+        "academic_year_id",
+        None
+    )
+
+    if (
+        exam_academic_year_id is not None
+        and enrollment_academic_year_id is not None
+        and exam_academic_year_id
+        != enrollment_academic_year_id
+    ):
+
+        flash(
+            "The student's enrollment does not belong to the academic year of this examination.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # PROGRAM VALIDATION
+    # ========================================================
+
+    exam_program_id = getattr(
+        exam,
+        "program_id",
+        None
+    )
+
+    if (
+        exam_program_id is not None
+        and enrollment_program_id is not None
+        and exam_program_id
+        != enrollment_program_id
+    ):
+
+        flash(
+            "The student's enrollment does not belong to the program of this examination.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # CLASS IS REQUIRED FOR SUBJECT SCOPING
+    # ========================================================
+
+    if not enrollment_class_id:
+
+        flash(
+            "The student's class could not be determined for this result.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.exam_results")
+        )
+
+    # ========================================================
+    # GET EXAM SUBJECTS
+    #
+    # IMPORTANT:
+    #
+    # DO NOT simply use:
+    #
+    # ExamSubject.exam_id == exam.id
+    #
+    # because one exam can contain subjects for multiple
+    # classes.
+    #
+    # Example:
+    #
+    # KD20:
+    #   English
+    #   Mathematics
+    #   Somali
+    #
+    # KD21:
+    #   English
+    #   Mathematics
+    #   Somali
+    #
+    # A KD21 student must receive ONLY the KD21 subjects.
+    # ========================================================
+
+    exam_subject_query = (
         ExamSubject.query
         .filter(
             ExamSubject.exam_id == exam.id
         )
+    )
+
+    # ========================================================
+    # INSTITUTION FILTER
+    # ========================================================
+
+    if hasattr(
+        ExamSubject,
+        "institution_id"
+    ):
+
+        if enrollment_institution_id is not None:
+
+            exam_subject_query = (
+                exam_subject_query
+                .filter(
+                    ExamSubject.institution_id
+                    == enrollment_institution_id
+                )
+            )
+
+    # ========================================================
+    # BRANCH FILTER
+    #
+    # We first retrieve the student's branch scope.
+    # Shared ExamSubjects with branch_id=NULL are also allowed.
+    # ========================================================
+
+    exam_subjects_candidates = (
+        exam_subject_query
         .order_by(
             ExamSubject.id.asc()
         )
@@ -77004,7 +80656,291 @@ def view_exam_result(result_id):
     )
 
     # ========================================================
+    # FILTER CANDIDATES IN PYTHON
+    #
+    # This allows us to support:
+    #
+    # branch-specific
+    # OR
+    # shared branch
+    #
+    # and then select the most specific assignment.
+    # ========================================================
+
+    filtered_exam_subjects = []
+
+    for exam_subject in exam_subjects_candidates:
+
+        # ----------------------------------------------------
+        # BRANCH
+        # ----------------------------------------------------
+
+        exam_subject_branch_id = getattr(
+            exam_subject,
+            "branch_id",
+            None
+        )
+
+        if (
+            exam_subject_branch_id is not None
+            and enrollment_branch_id is not None
+            and exam_subject_branch_id
+            != enrollment_branch_id
+        ):
+            continue
+
+        # ----------------------------------------------------
+        # PROGRAM
+        #
+        # Program must match the student's enrollment.
+        # ----------------------------------------------------
+
+        exam_subject_program_id = getattr(
+            exam_subject,
+            "program_id",
+            None
+        )
+
+        if (
+            exam_subject_program_id is not None
+            and enrollment_program_id is not None
+            and exam_subject_program_id
+            != enrollment_program_id
+        ):
+            continue
+
+        # ----------------------------------------------------
+        # CLASS
+        #
+        # THIS IS THE MOST IMPORTANT FIX.
+        #
+        # An ExamSubject belonging to KD20 must NEVER be
+        # displayed for a KD21 student.
+        # ----------------------------------------------------
+
+        exam_subject_class_id = getattr(
+            exam_subject,
+            "class_id",
+            None
+        )
+
+        if not exam_subject_class_id:
+
+            # Fail closed.
+            #
+            # An ExamSubject without class assignment cannot
+            # safely be shown in a class-scoped result.
+            continue
+
+        if (
+            exam_subject_class_id
+            != enrollment_class_id
+        ):
+            continue
+
+        # ----------------------------------------------------
+        # SECTION
+        #
+        # If student has a section:
+        #
+        #   section-specific assignment -> accepted
+        #   class-level assignment      -> accepted
+        #   other section               -> rejected
+        #
+        # If student has NO section:
+        #
+        #   only class-level assignment is accepted.
+        # ----------------------------------------------------
+
+        exam_subject_section_id = getattr(
+            exam_subject,
+            "section_id",
+            None
+        )
+
+        if enrollment_section_id is not None:
+
+            if (
+                exam_subject_section_id is not None
+                and exam_subject_section_id
+                != enrollment_section_id
+            ):
+                continue
+
+        else:
+
+            if exam_subject_section_id is not None:
+                continue
+
+        filtered_exam_subjects.append(
+            exam_subject
+        )
+
+    # ========================================================
+    # SELECT ONE SUBJECT ONLY
+    #
+    # Priority:
+    #
+    # 1. Exact branch + exact section
+    # 2. Exact branch + class-level
+    # 3. Shared branch + exact section
+    # 4. Shared branch + class-level
+    #
+    # This prevents duplicate subjects.
+    # ========================================================
+
+    selected_by_subject = {}
+
+    for exam_subject in filtered_exam_subjects:
+
+        subject_id = getattr(
+            exam_subject,
+            "subject_id",
+            None
+        )
+
+        if not subject_id:
+            continue
+
+        # ----------------------------------------------------
+        # BRANCH PRIORITY
+        # ----------------------------------------------------
+
+        exam_subject_branch_id = getattr(
+            exam_subject,
+            "branch_id",
+            None
+        )
+
+        branch_priority = (
+            1
+            if (
+                enrollment_branch_id is not None
+                and exam_subject_branch_id
+                == enrollment_branch_id
+            )
+            else 0
+        )
+
+        # ----------------------------------------------------
+        # SECTION PRIORITY
+        # ----------------------------------------------------
+
+        exam_subject_section_id = getattr(
+            exam_subject,
+            "section_id",
+            None
+        )
+
+        section_priority = (
+            1
+            if (
+                enrollment_section_id is not None
+                and exam_subject_section_id
+                == enrollment_section_id
+            )
+            else 0
+        )
+
+        priority = (
+            section_priority,
+            branch_priority,
+        )
+
+        current = selected_by_subject.get(
+            subject_id
+        )
+
+        if current is None:
+
+            selected_by_subject[
+                subject_id
+            ] = (
+                priority,
+                exam_subject
+            )
+
+        else:
+
+            current_priority, current_exam_subject = current
+
+            # ------------------------------------------------
+            # MORE SPECIFIC ASSIGNMENT WINS
+            # ------------------------------------------------
+
+            if priority > current_priority:
+
+                selected_by_subject[
+                    subject_id
+                ] = (
+                    priority,
+                    exam_subject
+                )
+
+            # ------------------------------------------------
+            # IF SAME PRIORITY:
+            # LOWEST ExamSubject ID WINS
+            # ------------------------------------------------
+
+            elif (
+                priority
+                == current_priority
+                and exam_subject.id
+                < current_exam_subject.id
+            ):
+
+                selected_by_subject[
+                    subject_id
+                ] = (
+                    priority,
+                    exam_subject
+                )
+
+    # ========================================================
+    # FINAL EXAM SUBJECT LIST
+    # ========================================================
+
+    exam_subjects = [
+        item[1]
+        for item in selected_by_subject.values()
+    ]
+
+    # ========================================================
+    # DISPLAY ORDER
+    # ========================================================
+
+    def exam_subject_sort_key(
+        exam_subject
+    ):
+
+        display_order = getattr(
+            exam_subject,
+            "display_order",
+            None
+        )
+
+        if display_order is None:
+
+            return (
+                1,
+                0,
+                exam_subject.id
+            )
+
+        return (
+            0,
+            display_order,
+            exam_subject.id
+        )
+
+    exam_subjects.sort(
+        key=exam_subject_sort_key
+    )
+
+    # ========================================================
     # GET STUDENT MARKS
+    #
+    # ONLY MARKS BELONGING TO THE SELECTED SUBJECTS.
     # ========================================================
 
     exam_subject_ids = [
@@ -77024,13 +80960,26 @@ def view_exam_result(result_id):
                 ),
                 Mark.student_id == student.id
             )
+            .order_by(
+                Mark.id.asc()
+            )
             .all()
         )
 
-        marks_by_exam_subject = {
-            mark.exam_subject_id: mark
-            for mark in marks
-        }
+        # ----------------------------------------------------
+        # Keep the first/oldest mark deterministically.
+        # ----------------------------------------------------
+
+        for mark in marks:
+
+            if (
+                mark.exam_subject_id
+                not in marks_by_exam_subject
+            ):
+
+                marks_by_exam_subject[
+                    mark.exam_subject_id
+                ] = mark
 
     # ========================================================
     # PREPARE SUBJECT RESULTS
@@ -77050,9 +80999,9 @@ def view_exam_result(result_id):
             exam_subject.id
         )
 
-        # ----------------------------------------------------
+        # ====================================================
         # MAX MARKS
-        # ----------------------------------------------------
+        # ====================================================
 
         max_marks = to_decimal(
             getattr(
@@ -77072,39 +81021,58 @@ def view_exam_result(result_id):
                 )
             )
 
-        # ----------------------------------------------------
-        # MARK
-        # ----------------------------------------------------
+        # ====================================================
+        # MARKS OBTAINED
+        # ====================================================
 
         marks_obtained = None
 
         if mark:
 
-            marks_obtained = (
-                mark.marks_obtained
+            marks_obtained = getattr(
+                mark,
+                "marks_obtained",
+                None
             )
 
-        # ----------------------------------------------------
-        # ABSENT / EXEMPTED
-        # ----------------------------------------------------
+        # ====================================================
+        # ABSENT
+        # ====================================================
 
-        is_absent = (
-            mark.is_absent
-            if mark
-            else False
-        )
+        is_absent = False
 
-        is_exempted = (
-            mark.is_exempted
-            if mark
-            else False
-        )
+        if mark:
 
-        # ----------------------------------------------------
-        # SUBJECT PERCENTAGE / GRADE
-        # ----------------------------------------------------
+            is_absent = bool(
+                getattr(
+                    mark,
+                    "is_absent",
+                    False
+                )
+            )
+
+        # ====================================================
+        # EXEMPTED
+        # ====================================================
+
+        is_exempted = False
+
+        if mark:
+
+            is_exempted = bool(
+                getattr(
+                    mark,
+                    "is_exempted",
+                    False
+                )
+            )
+
+        # ====================================================
+        # SUBJECT PERCENTAGE
+        # ====================================================
 
         subject_percentage = None
+
         subject_grade = "-"
 
         if (
@@ -77115,8 +81083,34 @@ def view_exam_result(result_id):
             and max_marks > 0
         ):
 
+            obtained_decimal = to_decimal(
+                marks_obtained
+            )
+
+            # -----------------------------------------------
+            # Prevent invalid negative marks.
+            # -----------------------------------------------
+
+            if obtained_decimal < 0:
+
+                obtained_decimal = Decimal(
+                    "0"
+                )
+
+            # -----------------------------------------------
+            # Prevent marks above maximum.
+            # -----------------------------------------------
+
+            if obtained_decimal > max_marks:
+
+                obtained_decimal = max_marks
+
+            # -----------------------------------------------
+            # Calculate percentage.
+            # -----------------------------------------------
+
             subject_percentage = (
-                to_decimal(marks_obtained)
+                obtained_decimal
                 / max_marks
             ) * Decimal("100")
 
@@ -77131,9 +81125,9 @@ def view_exam_result(result_id):
                 subject_percentage
             )
 
-        # ----------------------------------------------------
+        # ====================================================
         # PASS MARKS
-        # ----------------------------------------------------
+        # ====================================================
 
         pass_marks = to_decimal(
             getattr(
@@ -77153,9 +81147,9 @@ def view_exam_result(result_id):
                 )
             )
 
-        # ----------------------------------------------------
-        # SUBJECT RESULT STATUS
-        # ----------------------------------------------------
+        # ====================================================
+        # SUBJECT STATUS
+        # ====================================================
 
         if not mark:
 
@@ -77173,9 +81167,12 @@ def view_exam_result(result_id):
 
             subject_status = "Incomplete"
 
-        elif to_decimal(
-            marks_obtained
-        ) >= pass_marks:
+        elif (
+            to_decimal(
+                marks_obtained
+            )
+            >= pass_marks
+        ):
 
             subject_status = "Pass"
 
@@ -77183,9 +81180,23 @@ def view_exam_result(result_id):
 
             subject_status = "Fail"
 
-        # ----------------------------------------------------
+        # ====================================================
+        # REMARKS
+        # ====================================================
+
+        subject_remarks = None
+
+        if mark:
+
+            subject_remarks = getattr(
+                mark,
+                "remarks",
+                None
+            )
+
+        # ====================================================
         # APPEND
-        # ----------------------------------------------------
+        # ====================================================
 
         subject_results.append({
 
@@ -77211,13 +81222,79 @@ def view_exam_result(result_id):
 
             "status": subject_status,
 
-            "remarks": (
-                mark.remarks
-                if mark
-                else None
-            ),
+            "remarks": subject_remarks,
 
         })
+
+    # ========================================================
+    # DISPLAY COUNTS
+    #
+    # These are based on the actual subjects shown on this
+    # page, not all ExamSubjects in the examination.
+    # ========================================================
+
+    view_subjects_total = len(
+        exam_subjects
+    )
+
+    view_subjects_completed = 0
+
+    view_subjects_failed = 0
+
+    for item in subject_results:
+
+        if (
+            item["status"]
+            not in {
+                "Not Entered",
+                "Absent",
+                "Exempted",
+                "Incomplete",
+            }
+            and item["marks_obtained"]
+            is not None
+        ):
+
+            view_subjects_completed += 1
+
+        if item["status"] == "Fail":
+
+            view_subjects_failed += 1
+
+    # ========================================================
+    # DEBUG LOG
+    #
+    # Useful for confirming KD20/KD21 filtering.
+    # ========================================================
+
+    try:
+
+        current_app.logger.info(
+            "VIEW EXAM RESULT | "
+            "result=%s | student=%s | exam=%s | "
+            "institution=%s | branch=%s | program=%s | "
+            "class=%s | section=%s | "
+            "subjects=%s",
+            result.id,
+            student.id,
+            exam.id,
+            enrollment_institution_id,
+            enrollment_branch_id,
+            enrollment_program_id,
+            enrollment_class_id,
+            enrollment_section_id,
+            [
+                getattr(
+                    es,
+                    "subject_id",
+                    None
+                )
+                for es in exam_subjects
+            ]
+        )
+
+    except Exception:
+        pass
 
     # ========================================================
     # RENDER
@@ -77226,21 +81303,21 @@ def view_exam_result(result_id):
     return render_template(
         "backend/pages/results/view_exam_result.html",
 
-        # ----------------------------------------------------
+        # ====================================================
         # RESULT
-        # ----------------------------------------------------
+        # ====================================================
 
         result=result,
 
-        # ----------------------------------------------------
+        # ====================================================
         # STUDENT
-        # ----------------------------------------------------
+        # ====================================================
 
         student=student,
 
-        # ----------------------------------------------------
+        # ====================================================
         # EXAM
-        # ----------------------------------------------------
+        # ====================================================
 
         exam=exam,
 
@@ -77248,9 +81325,9 @@ def view_exam_result(result_id):
 
         subject_results=subject_results,
 
-        # ----------------------------------------------------
+        # ====================================================
         # ACADEMIC STRUCTURE
-        # ----------------------------------------------------
+        # ====================================================
 
         enrollment=enrollment,
 
@@ -77267,11 +81344,12 @@ def view_exam_result(result_id):
         selected_class=selected_class,
 
         section=section,
+
         user=current_user,
 
-        # ----------------------------------------------------
-        # CALCULATED RESULT VALUES
-        # ----------------------------------------------------
+        # ====================================================
+        # RESULT VALUES
+        # ====================================================
 
         total_marks=(
             getattr(
@@ -77345,9 +81423,13 @@ def view_exam_result(result_id):
             or "draft"
         ),
 
-        # ----------------------------------------------------
+        # ====================================================
         # SUBJECT COUNTS
-        # ----------------------------------------------------
+        #
+        # Use stored StudentResult values if available.
+        # Also expose view-specific counts for templates that
+        # want the subjects currently displayed.
+        # ====================================================
 
         subjects_total=(
             getattr(
@@ -77376,9 +81458,21 @@ def view_exam_result(result_id):
             or 0
         ),
 
-        # ----------------------------------------------------
+        view_subjects_total=(
+            view_subjects_total
+        ),
+
+        view_subjects_completed=(
+            view_subjects_completed
+        ),
+
+        view_subjects_failed=(
+            view_subjects_failed
+        ),
+
+        # ====================================================
         # RANKINGS
-        # ----------------------------------------------------
+        # ====================================================
 
         institution_position=(
             getattr(
@@ -77420,9 +81514,9 @@ def view_exam_result(result_id):
             )
         ),
 
-        # ----------------------------------------------------
+        # ====================================================
         # REMARKS
-        # ----------------------------------------------------
+        # ====================================================
 
         remarks=(
             getattr(
@@ -77433,6 +81527,7 @@ def view_exam_result(result_id):
             or ""
         ),
     )
+
 
 
 
@@ -77459,6 +81554,43 @@ def view_exam_result(result_id):
 # - StudentResult recalculated
 # - Rankings recalculated
 # - Draft / Ongoing / Published exams
+# ============================================================
+# ============================================================
+# ADD EXAM RESULT
+# ADMIN ENTERS / COMPLETES MISSING SUBJECT MARKS
+#
+# IMPORTANT SCOPE RULE
+# ------------------------------------------------------------
+# ExamSubject belongs to:
+#     exam_id
+#     subject_id
+#     class_id
+#     section_id
+#     teacher_id
+#
+# Therefore an Exam can contain:
+#
+#     English -> KD20
+#     English -> KD21
+#
+# but a student enrolled in KD20 MUST ONLY SEE:
+#
+#     English -> KD20
+#
+# and a student enrolled in KD21 MUST ONLY SEE:
+#
+#     English -> KD21
+#
+# This route scopes subjects by the student's enrollment.
+# The same scoped subjects are used for:
+#
+#     - missing subjects
+#     - selected student
+#     - marks loading
+#     - mark saving
+#     - result calculation
+#     - student list
+#     - previous / next navigation
 # ============================================================
 
 @bp.route(
@@ -77517,18 +81649,6 @@ def add_exam_result():
 
     # ========================================================
     # RESPONSE TYPE
-    #
-    # IMPORTANT:
-    # X-Requested-With is NOT used here.
-    #
-    # The exam-result JavaScript sends:
-    #     X-Requested-With: XMLHttpRequest
-    #     Accept: text/html, */*
-    #
-    # Therefore this request must remain an HTML request.
-    #
-    # JSON is returned ONLY when the client explicitly asks for
-    # application/json.
     # ========================================================
 
     accept_header = (
@@ -77646,6 +81766,100 @@ def add_exam_result():
             "success": False,
             "message": str(message),
         }), 400
+
+    # ========================================================
+    # EXAM SUBJECT SCOPE HELPER
+    # ========================================================
+    #
+    # THIS IS THE MAIN FIX.
+    #
+    # It receives all ExamSubjects belonging to the exam and
+    # returns ONLY the subjects applicable to the student's
+    # enrollment.
+    #
+    # Example:
+    #
+    # Exam:
+    #     English -> class 1 / KD20
+    #     English -> class 2 / KD21
+    #
+    # Student enrollment:
+    #     class_id = 1
+    #
+    # Result:
+    #     English -> class 1 only
+    #
+    # ========================================================
+
+    def subjects_for_enrollment(
+        all_subjects,
+        enrollment
+    ):
+
+        if not enrollment:
+            return []
+
+        enrollment_class_id = getattr(
+            enrollment,
+            "class_id",
+            None
+        )
+
+        enrollment_section_id = getattr(
+            enrollment,
+            "section_id",
+            None
+        )
+
+        scoped_subjects = []
+
+        for exam_subject in all_subjects:
+
+            subject_class_id = getattr(
+                exam_subject,
+                "class_id",
+                None
+            )
+
+            subject_section_id = getattr(
+                exam_subject,
+                "section_id",
+                None
+            )
+
+            # ------------------------------------------------
+            # CLASS SCOPE
+            #
+            # class_id NULL means the subject is not restricted
+            # to a specific class.
+            # ------------------------------------------------
+
+            if (
+                subject_class_id is not None
+                and subject_class_id
+                != enrollment_class_id
+            ):
+                continue
+
+            # ------------------------------------------------
+            # SECTION SCOPE
+            #
+            # section_id NULL means the subject is not restricted
+            # to a specific section.
+            # ------------------------------------------------
+
+            if (
+                subject_section_id is not None
+                and subject_section_id
+                != enrollment_section_id
+            ):
+                continue
+
+            scoped_subjects.append(
+                exam_subject
+            )
+
+        return scoped_subjects
 
     # ========================================================
     # REQUEST VALUES
@@ -77834,6 +82048,7 @@ def add_exam_result():
             )
 
             if is_json_request:
+
                 return json_error(
                     message
                 )
@@ -77875,6 +82090,7 @@ def add_exam_result():
             )
 
             if is_json_request:
+
                 return json_error(
                     message
                 )
@@ -77891,14 +82107,24 @@ def add_exam_result():
             )
 
     # ========================================================
-    # EXAM SUBJECTS
+    # ALL EXAM SUBJECTS
+    # ========================================================
+    #
+    # IMPORTANT:
+    # Do NOT call this `exam_subjects` for student processing.
+    #
+    # These are all subjects configured for the exam.
+    #
+    # Later we create `student_exam_subjects` based on the
+    # student's enrollment.
+    #
     # ========================================================
 
-    exam_subjects = []
+    all_exam_subjects = []
 
     if exam:
 
-        exam_subjects = (
+        all_exam_subjects = (
             ExamSubject.query
             .options(
                 db.joinedload(
@@ -77917,6 +82143,21 @@ def add_exam_result():
             )
             .all()
         )
+
+    # ========================================================
+    # DEFAULT EXAM SUBJECTS
+    # ========================================================
+    #
+    # Used only when no student is selected yet.
+    #
+    # Once a student is selected, this variable is replaced
+    # with the student's scoped subjects.
+    #
+    # ========================================================
+
+    exam_subjects = list(
+        all_exam_subjects
+    )
 
     # ========================================================
     # PROGRAMS
@@ -77953,8 +82194,10 @@ def add_exam_result():
             .filter(
                 Class.institution_id
                 == exam.institution_id,
+
                 Class.branch_id
                 == exam.branch_id,
+
                 Class.academic_year_id
                 == exam.academic_year_id,
             )
@@ -77997,8 +82240,10 @@ def add_exam_result():
             .filter(
                 Section.institution_id
                 == exam.institution_id,
+
                 Section.branch_id
                 == exam.branch_id,
+
                 Section.academic_year_id
                 == exam.academic_year_id,
             )
@@ -78046,7 +82291,7 @@ def add_exam_result():
             # SUBJECTS
             # =================================================
 
-            if not exam_subjects:
+            if not all_exam_subjects:
 
                 raise ValueError(
                     "This examination has no subjects assigned."
@@ -78123,10 +82368,13 @@ def add_exam_result():
                     Class.query
                     .filter(
                         Class.id == class_id,
+
                         Class.institution_id
                         == exam.institution_id,
+
                         Class.branch_id
                         == exam.branch_id,
+
                         Class.academic_year_id
                         == exam.academic_year_id,
                     )
@@ -78161,10 +82409,13 @@ def add_exam_result():
                     Section.query
                     .filter(
                         Section.id == section_id,
+
                         Section.institution_id
                         == exam.institution_id,
+
                         Section.branch_id
                         == exam.branch_id,
+
                         Section.academic_year_id
                         == exam.academic_year_id,
                     )
@@ -78182,10 +82433,13 @@ def add_exam_result():
                     .filter(
                         Class.id
                         == selected_section.class_id,
+
                         Class.institution_id
                         == exam.institution_id,
+
                         Class.branch_id
                         == exam.branch_id,
+
                         Class.academic_year_id
                         == exam.academic_year_id,
                     )
@@ -78220,6 +82474,7 @@ def add_exam_result():
                     Program.query
                     .filter(
                         Program.id == program_id,
+
                         Program.institution_id
                         == exam.institution_id,
                     )
@@ -78260,8 +82515,10 @@ def add_exam_result():
                 Student.query
                 .filter(
                     Student.id == student_id,
+
                     Student.institution_id
                     == exam.institution_id,
+
                     Student.branch_id
                     == exam.branch_id,
                 )
@@ -78283,10 +82540,15 @@ def add_exam_result():
                 .filter(
                     StudentEnrollment.student_id
                     == student.id,
+
                     StudentEnrollment.academic_year_id
                     == exam.academic_year_id,
+
                     StudentEnrollment.branch_id
                     == exam.branch_id,
+
+                    StudentEnrollment.institution_id
+                    == exam.institution_id,
                 )
                 .order_by(
                     StudentEnrollment.id.desc()
@@ -78366,7 +82628,7 @@ def add_exam_result():
                 )
 
             # =================================================
-            # PROGRAM VALIDATION
+            # ENROLLMENT PROGRAM
             # =================================================
 
             enrollment_program_id = getattr(
@@ -78386,7 +82648,7 @@ def add_exam_result():
                 )
 
             # =================================================
-            # SCOPE VALIDATION
+            # ENROLLMENT CLASS
             # =================================================
 
             enrollment_class_id = getattr(
@@ -78395,11 +82657,19 @@ def add_exam_result():
                 None
             )
 
+            # =================================================
+            # ENROLLMENT SECTION
+            # =================================================
+
             enrollment_section_id = getattr(
                 enrollment,
                 "section_id",
                 None
             )
+
+            # =================================================
+            # SCOPE VALIDATION
+            # =================================================
 
             if (
                 scope_type == "class"
@@ -78432,6 +82702,28 @@ def add_exam_result():
                 )
 
             # =================================================
+            # IMPORTANT SUBJECT SCOPE
+            # =================================================
+            #
+            # THIS IS THE MAIN FIX FOR THE DUPLICATE ENGLISH.
+            #
+            # The student gets only the ExamSubjects matching
+            # his/her enrolled class and section.
+            #
+            # =================================================
+
+            exam_subjects = subjects_for_enrollment(
+                all_exam_subjects,
+                enrollment
+            )
+
+            if not exam_subjects:
+
+                raise ValueError(
+                    "No examination subjects are assigned to the selected student's class or section."
+                )
+
+            # =================================================
             # EXISTING MARKS
             # =================================================
 
@@ -78444,9 +82736,10 @@ def add_exam_result():
                 Mark.query
                 .filter(
                     Mark.student_id == student.id,
+
                     Mark.exam_subject_id.in_(
                         exam_subject_ids
-                    )
+                    ),
                 )
                 .all()
             )
@@ -78541,7 +82834,7 @@ def add_exam_result():
                 )
 
                 # =================================================
-                # BOTH
+                # BOTH ABSENT + EXEMPTED
                 # =================================================
 
                 if (
@@ -78580,15 +82873,22 @@ def add_exam_result():
 
                         mark = Mark(
                             exam_subject_id=exam_subject_id,
+
                             student_id=student.id,
+
                             marks_obtained=None,
+
                             is_absent=True,
+
                             is_exempted=False,
+
                             remarks=(
                                 subject_remark
                                 or None
                             ),
+
                             status="submitted",
+
                             entered_by=None,
                         )
 
@@ -78603,13 +82903,19 @@ def add_exam_result():
                     else:
 
                         mark.marks_obtained = None
+
                         mark.is_absent = True
+
                         mark.is_exempted = False
+
                         mark.remarks = (
                             subject_remark
                             or None
                         )
-                        mark.status = "submitted"
+
+                        mark.status = (
+                            "submitted"
+                        )
 
                     changed_any = True
 
@@ -78625,15 +82931,22 @@ def add_exam_result():
 
                         mark = Mark(
                             exam_subject_id=exam_subject_id,
+
                             student_id=student.id,
+
                             marks_obtained=None,
+
                             is_absent=False,
+
                             is_exempted=True,
+
                             remarks=(
                                 subject_remark
                                 or None
                             ),
+
                             status="submitted",
+
                             entered_by=None,
                         )
 
@@ -78648,13 +82961,19 @@ def add_exam_result():
                     else:
 
                         mark.marks_obtained = None
+
                         mark.is_absent = False
+
                         mark.is_exempted = True
+
                         mark.remarks = (
                             subject_remark
                             or None
                         )
-                        mark.status = "submitted"
+
+                        mark.status = (
+                            "submitted"
+                        )
 
                     changed_any = True
 
@@ -78717,15 +83036,22 @@ def add_exam_result():
 
                     mark = Mark(
                         exam_subject_id=exam_subject_id,
+
                         student_id=student.id,
+
                         marks_obtained=marks,
+
                         is_absent=False,
+
                         is_exempted=False,
+
                         remarks=(
                             subject_remark
                             or None
                         ),
+
                         status="submitted",
+
                         entered_by=None,
                     )
 
@@ -78744,13 +83070,19 @@ def add_exam_result():
                 else:
 
                     mark.marks_obtained = marks
+
                     mark.is_absent = False
+
                     mark.is_exempted = False
+
                     mark.remarks = (
                         subject_remark
                         or None
                     )
-                    mark.status = "submitted"
+
+                    mark.status = (
+                        "submitted"
+                    )
 
                 changed_any = True
 
@@ -78779,6 +83111,7 @@ def add_exam_result():
                 .filter(
                     StudentResult.exam_id
                     == exam.id,
+
                     StudentResult.student_id
                     == student.id,
                 )
@@ -78825,6 +83158,7 @@ def add_exam_result():
                 .filter(
                     StudentResult.exam_id
                     == exam.id,
+
                     StudentResult.student_id
                     == student.id,
                 )
@@ -78868,7 +83202,7 @@ def add_exam_result():
             db.session.commit()
 
             # =================================================
-            # BUILD NEXT / PREVIOUS STUDENTS
+            # BUILD NAVIGATION QUERY
             # =================================================
 
             navigation_query = (
@@ -78980,25 +83314,34 @@ def add_exam_result():
                     db.func.lower(
                         Student.full_name
                     ).asc(),
+
                     Student.id.asc()
                 )
                 .all()
             )
 
             navigation_student_ids = [
-                enrollment.student_id
-                for enrollment
+                enrollment_item.student_id
+                for enrollment_item
                 in navigation_enrollments
                 if getattr(
-                    enrollment,
+                    enrollment_item,
                     "student_id",
                     None
                 )
             ]
 
+            # =================================================
+            # LOAD ALL EXAM MARKS FOR NAVIGATION
+            #
+            # We load all exam marks here, but each student's
+            # completeness is checked only against THEIR scoped
+            # ExamSubjects.
+            # =================================================
+
             navigation_exam_subject_ids = [
                 item.id
-                for item in exam_subjects
+                for item in all_exam_subjects
             ]
 
             navigation_marks = []
@@ -79014,6 +83357,7 @@ def add_exam_result():
                         Mark.student_id.in_(
                             navigation_student_ids
                         ),
+
                         Mark.exam_subject_id.in_(
                             navigation_exam_subject_ids
                         ),
@@ -79034,6 +83378,10 @@ def add_exam_result():
 
             navigation_students = []
 
+            # =================================================
+            # BUILD NAVIGATION STUDENTS
+            # =================================================
+
             for nav_enrollment in navigation_enrollments:
 
                 nav_student = getattr(
@@ -79045,6 +83393,18 @@ def add_exam_result():
                 if not nav_student:
                     continue
 
+                # ---------------------------------------------
+                # IMPORTANT:
+                # Every student gets THEIR OWN subjects.
+                # ---------------------------------------------
+
+                nav_exam_subjects = (
+                    subjects_for_enrollment(
+                        all_exam_subjects,
+                        nav_enrollment
+                    )
+                )
+
                 nav_mark_map = (
                     navigation_marks_by_student.get(
                         nav_student.id,
@@ -79054,7 +83414,7 @@ def add_exam_result():
 
                 has_missing = False
 
-                for exam_subject in exam_subjects:
+                for exam_subject in nav_exam_subjects:
 
                     nav_mark = nav_mark_map.get(
                         exam_subject.id
@@ -79063,22 +83423,36 @@ def add_exam_result():
                     if nav_mark is None:
 
                         has_missing = True
+
                         break
 
                     if (
-                        nav_mark.marks_obtained is None
+                        nav_mark.marks_obtained
+                        is None
+
                         and not nav_mark.is_absent
+
                         and not nav_mark.is_exempted
                     ):
 
                         has_missing = True
+
                         break
+
+                # ------------------------------------------------
+                # NO SUBJECTS
+                # ------------------------------------------------
+
+                if not nav_exam_subjects:
+
+                    continue
 
                 # ------------------------------------------------
                 # COMPLETE STUDENTS ARE HIDDEN
                 # ------------------------------------------------
 
                 if not has_missing:
+
                     continue
 
                 navigation_students.append(
@@ -79102,6 +83476,7 @@ def add_exam_result():
                     break
 
             previous_student = None
+
             next_student = None
 
             if current_index is not None:
@@ -79126,21 +83501,28 @@ def add_exam_result():
                     )
 
             # =================================================
-            # DYNAMIC URLs
+            # DYNAMIC URLS
             # =================================================
 
             next_url = None
+
             previous_url = None
 
             if next_student:
 
                 next_url = url_for(
                     "main.add_exam_result",
+
                     exam_id=exam.id,
+
                     scope_type=scope_type,
+
                     class_id=class_id,
+
                     section_id=section_id,
+
                     program_id=program_id,
+
                     student_id=next_student.id,
                 )
 
@@ -79148,25 +83530,28 @@ def add_exam_result():
 
                 previous_url = url_for(
                     "main.add_exam_result",
+
                     exam_id=exam.id,
+
                     scope_type=scope_type,
+
                     class_id=class_id,
+
                     section_id=section_id,
+
                     program_id=program_id,
+
                     student_id=previous_student.id,
                 )
 
             # =================================================
-            # EXPLICIT JSON REQUEST ONLY
-            #
-            # IMPORTANT:
-            # Normal JS exam-result request does NOT come here.
-            # It requests HTML, so it gets normal redirect.
+            # EXPLICIT JSON REQUEST
             # =================================================
 
             if is_json_request:
 
                 return jsonify({
+
                     "success": True,
 
                     "message": (
@@ -79180,7 +83565,9 @@ def add_exam_result():
                     "student_id": student.id,
 
                     "current_student": {
+
                         "id": student.id,
+
                         "name": getattr(
                             student,
                             "full_name",
@@ -79189,36 +83576,48 @@ def add_exam_result():
                     },
 
                     "previous_student": (
+
                         {
                             "id": previous_student.id,
+
                             "name": getattr(
                                 previous_student,
                                 "full_name",
                                 "Student"
                             ),
+
                             "url": previous_url,
                         }
+
                         if previous_student
+
                         else None
                     ),
 
                     "next_student": (
+
                         {
                             "id": next_student.id,
+
                             "name": getattr(
                                 next_student,
                                 "full_name",
                                 "Student"
                             ),
+
                             "url": next_url,
                         }
+
                         if next_student
+
                         else None
                     ),
 
-                    "previous_url": previous_url,
+                    "previous_url":
+                        previous_url,
 
-                    "next_url": next_url,
+                    "next_url":
+                        next_url,
 
                     "has_previous": (
                         previous_student
@@ -79230,9 +83629,10 @@ def add_exam_result():
                         is not None
                     ),
 
-                    "total_students": len(
-                        navigation_students
-                    ),
+                    "total_students":
+                        len(
+                            navigation_students
+                        ),
 
                     "current_index": (
                         current_index + 1
@@ -79248,17 +83648,6 @@ def add_exam_result():
 
             # =================================================
             # NORMAL HTML SUBMISSION
-            #
-            # THIS IS WHAT YOUR CURRENT JS USES.
-            #
-            # The request contains XMLHttpRequest header,
-            # but Accept is text/html.
-            #
-            # Therefore:
-            #     SAVE -> COMMIT -> FLASH -> REDIRECT
-            #
-            # This prevents the false:
-            #     "Unable to save the exam result."
             # =================================================
 
             flash(
@@ -79272,7 +83661,9 @@ def add_exam_result():
             # REDIRECT STUDENT
             # =================================================
 
-            redirect_student_id = student.id
+            redirect_student_id = (
+                student.id
+            )
 
             if (
                 navigation == "next"
@@ -79295,11 +83686,17 @@ def add_exam_result():
             return redirect(
                 url_for(
                     "main.add_exam_result",
+
                     exam_id=exam.id,
+
                     scope_type=scope_type,
+
                     class_id=class_id,
+
                     section_id=section_id,
+
                     program_id=program_id,
+
                     student_id=redirect_student_id,
                 )
             )
@@ -79340,11 +83737,17 @@ def add_exam_result():
                 "class=%s | "
                 "section=%s | "
                 "program=%s",
+
                 exam_id,
+
                 student_id,
+
                 scope_type,
+
                 class_id,
+
                 section_id,
+
                 program_id,
             )
 
@@ -79352,6 +83755,7 @@ def add_exam_result():
 
                 return jsonify({
                     "success": False,
+
                     "message": (
                         "Unable to save the exam result. "
                         "The update was rolled back."
@@ -79362,6 +83766,7 @@ def add_exam_result():
                 "Unable to save the exam result. "
                 "The update was rolled back. "
                 "Please check the server console for the exact error.",
+
                 "error"
             )
 
@@ -79534,29 +83939,26 @@ def add_exam_result():
                 db.func.lower(
                     Student.full_name
                 ).asc(),
+
                 Student.id.asc()
             )
             .all()
         )
 
         # ====================================================
-        # SUBJECT IDS
+        # LOAD ALL MARKS ONCE
         # ====================================================
 
-        exam_subject_ids = [
+        all_exam_subject_ids = [
             item.id
-            for item in exam_subjects
+            for item in all_exam_subjects
         ]
 
-        # ====================================================
-        # GET MARKS ONCE
-        # ====================================================
-
         student_ids = [
-            enrollment.student_id
-            for enrollment in enrollments
+            enrollment_item.student_id
+            for enrollment_item in enrollments
             if getattr(
-                enrollment,
+                enrollment_item,
                 "student_id",
                 None
             )
@@ -79566,7 +83968,7 @@ def add_exam_result():
 
         if (
             student_ids
-            and exam_subject_ids
+            and all_exam_subject_ids
         ):
 
             all_marks = (
@@ -79575,12 +83977,17 @@ def add_exam_result():
                     Mark.student_id.in_(
                         student_ids
                     ),
+
                     Mark.exam_subject_id.in_(
-                        exam_subject_ids
+                        all_exam_subject_ids
                     ),
                 )
                 .all()
             )
+
+        # ====================================================
+        # MARKS BY STUDENT
+        # ====================================================
 
         marks_by_student = {}
 
@@ -79597,15 +84004,36 @@ def add_exam_result():
         # BUILD STUDENT LIST
         # ====================================================
 
-        for enrollment in enrollments:
+        for enrollment_item in enrollments:
 
             student_obj = getattr(
-                enrollment,
+                enrollment_item,
                 "student",
                 None
             )
 
             if not student_obj:
+                continue
+
+            # ------------------------------------------------
+            # IMPORTANT:
+            # Each student gets their own class/section
+            # subjects.
+            # ------------------------------------------------
+
+            student_exam_subjects = (
+                subjects_for_enrollment(
+                    all_exam_subjects,
+                    enrollment_item
+                )
+            )
+
+            # ------------------------------------------------
+            # No subjects assigned to this student's class.
+            # ------------------------------------------------
+
+            if not student_exam_subjects:
+
                 continue
 
             student_mark_map = (
@@ -79617,7 +84045,9 @@ def add_exam_result():
 
             missing_subject_ids = []
 
-            for exam_subject in exam_subjects:
+            for exam_subject in (
+                student_exam_subjects
+            ):
 
                 mark = student_mark_map.get(
                     exam_subject.id
@@ -79632,8 +84062,11 @@ def add_exam_result():
                     continue
 
                 if (
-                    mark.marks_obtained is None
+                    mark.marks_obtained
+                    is None
+
                     and not mark.is_absent
+
                     and not mark.is_exempted
                 ):
 
@@ -79645,23 +84078,28 @@ def add_exam_result():
             # COMPLETE STUDENTS HIDDEN
             # ------------------------------------------------
 
-            if (
-                exam_subjects
-                and not missing_subject_ids
-            ):
+            if not missing_subject_ids:
 
                 continue
 
             students.append({
-                "student": student_obj,
-                "enrollment": enrollment,
-                "marks": student_mark_map,
-                "missing_subject_ids": (
-                    missing_subject_ids
-                ),
-                "missing_count": len(
-                    missing_subject_ids
-                ),
+
+                "student":
+                    student_obj,
+
+                "enrollment":
+                    enrollment_item,
+
+                "marks":
+                    student_mark_map,
+
+                "missing_subject_ids":
+                    missing_subject_ids,
+
+                "missing_count":
+                    len(
+                        missing_subject_ids
+                    ),
             })
 
     # ========================================================
@@ -79669,7 +84107,9 @@ def add_exam_result():
     # ========================================================
 
     selected_student = None
+
     selected_enrollment = None
+
     selected_subject_rows = []
 
     if (
@@ -79681,8 +84121,10 @@ def add_exam_result():
             Student.query
             .filter(
                 Student.id == student_id,
+
                 Student.institution_id
                 == exam.institution_id,
+
                 Student.branch_id
                 == exam.branch_id,
             )
@@ -79712,135 +84154,187 @@ def add_exam_result():
                 .first()
             )
 
-            # =================================================
-            # LOAD MARKS
-            # =================================================
+            if selected_enrollment:
 
-            selected_mark_map = {}
+                # =============================================
+                # IMPORTANT:
+                # Scope ExamSubjects to THIS student's class
+                # and section.
+                # =============================================
 
-            exam_subject_ids = [
-                item.id
-                for item in exam_subjects
-            ]
-
-            if exam_subject_ids:
-
-                selected_marks = (
-                    Mark.query
-                    .filter(
-                        Mark.student_id
-                        == selected_student.id,
-
-                        Mark.exam_subject_id.in_(
-                            exam_subject_ids
-                        ),
-                    )
-                    .all()
-                )
-
-                selected_mark_map = {
-                    mark.exam_subject_id: mark
-                    for mark in selected_marks
-                }
-
-            # =================================================
-            # ONLY MISSING SUBJECTS
-            # =================================================
-
-            for exam_subject in exam_subjects:
-
-                mark = selected_mark_map.get(
-                    exam_subject.id
-                )
-
-                is_missing = (
-                    mark is None
-                    or (
-                        mark.marks_obtained is None
-                        and not mark.is_absent
-                        and not mark.is_exempted
+                exam_subjects = (
+                    subjects_for_enrollment(
+                        all_exam_subjects,
+                        selected_enrollment
                     )
                 )
 
-                if not is_missing:
-                    continue
+                # =============================================
+                # LOAD MARKS
+                # =============================================
 
-                subject = getattr(
-                    exam_subject,
-                    "subject",
-                    None
-                )
+                selected_mark_map = {}
 
-                subject_name = (
-                    getattr(
-                        subject,
-                        "name",
-                        None
-                    )
-                    or getattr(
-                        subject,
-                        "title",
-                        None
-                    )
-                    or "Subject"
-                )
+                exam_subject_ids = [
+                    item.id
+                    for item in exam_subjects
+                ]
 
-                teacher = getattr(
-                    exam_subject,
-                    "teacher",
-                    None
-                )
+                if exam_subject_ids:
 
-                teacher_name = (
-                    getattr(
-                        teacher,
-                        "full_name",
-                        None
-                    )
-                    or "—"
-                )
+                    selected_marks = (
+                        Mark.query
+                        .filter(
+                            Mark.student_id
+                            == selected_student.id,
 
-                selected_subject_rows.append({
-                    "exam_subject": exam_subject,
-
-                    "mark": mark,
-
-                    "subject_name": subject_name,
-
-                    "teacher_name": teacher_name,
-
-                    "marks": (
-                        mark.marks_obtained
-                        if (
-                            mark
-                            and mark.marks_obtained
-                            is not None
+                            Mark.exam_subject_id.in_(
+                                exam_subject_ids
+                            ),
                         )
-                        else None
-                    ),
+                        .all()
+                    )
 
-                    "max_marks": (
-                        exam_subject.max_marks
-                    ),
+                    selected_mark_map = {
+                        mark.exam_subject_id:
+                            mark
 
-                    "pass_marks": (
-                        exam_subject.pass_marks
-                    ),
+                        for mark in selected_marks
+                    }
 
-                    "is_absent": (
-                        bool(mark.is_absent)
-                        if mark
-                        else False
-                    ),
+                # =============================================
+                # ONLY MISSING SUBJECTS
+                # =============================================
 
-                    "is_exempted": (
-                        bool(mark.is_exempted)
-                        if mark
-                        else False
-                    ),
+                for exam_subject in exam_subjects:
 
-                    "is_missing": True,
-                })
+                    mark = selected_mark_map.get(
+                        exam_subject.id
+                    )
+
+                    is_missing = (
+
+                        mark is None
+
+                        or (
+
+                            mark.marks_obtained
+                            is None
+
+                            and not mark.is_absent
+
+                            and not mark.is_exempted
+                        )
+                    )
+
+                    if not is_missing:
+
+                        continue
+
+                    subject = getattr(
+                        exam_subject,
+                        "subject",
+                        None
+                    )
+
+                    subject_name = (
+                        getattr(
+                            subject,
+                            "name",
+                            None
+                        )
+
+                        or getattr(
+                            subject,
+                            "title",
+                            None
+                        )
+
+                        or "Subject"
+                    )
+
+                    teacher = getattr(
+                        exam_subject,
+                        "teacher",
+                        None
+                    )
+
+                    teacher_name = (
+                        getattr(
+                            teacher,
+                            "full_name",
+                            None
+                        )
+
+                        or "—"
+                    )
+
+                    selected_subject_rows.append({
+
+                        "exam_subject":
+                            exam_subject,
+
+                        "mark":
+                            mark,
+
+                        "subject_name":
+                            subject_name,
+
+                        "teacher_name":
+                            teacher_name,
+
+                        "marks": (
+
+                            mark.marks_obtained
+
+                            if (
+                                mark
+                                and mark.marks_obtained
+                                is not None
+                            )
+
+                            else None
+                        ),
+
+                        "max_marks":
+                            exam_subject.max_marks,
+
+                        "pass_marks":
+                            exam_subject.pass_marks,
+
+                        "is_absent": (
+
+                            bool(
+                                mark.is_absent
+                            )
+
+                            if mark
+
+                            else False
+                        ),
+
+                        "is_exempted": (
+
+                            bool(
+                                mark.is_exempted
+                            )
+
+                            if mark
+
+                            else False
+                        ),
+
+                        "is_missing":
+                            True,
+                    })
+
+            else:
+
+                # ------------------------------------------------
+                # No enrollment = no student subjects
+                # ------------------------------------------------
+
+                exam_subjects = []
 
     # ========================================================
     # CURRENT / PREVIOUS / NEXT
@@ -79914,9 +84408,17 @@ def add_exam_result():
     return render_template(
         "backend/pages/results/add_exam_result.html",
 
+        # ----------------------------------------------------
+        # EXAMS
+        # ----------------------------------------------------
+
         exams=exams,
 
         exam=exam,
+
+        # ----------------------------------------------------
+        # PROGRAM / CLASS / SECTION
+        # ----------------------------------------------------
 
         programs=programs,
 
@@ -79934,29 +84436,63 @@ def add_exam_result():
 
         selected_student_id=student_id,
 
+        # ----------------------------------------------------
+        # STUDENTS
+        # ----------------------------------------------------
+
         students=students,
 
         total_students=total_students,
 
-        missing_subject_count=missing_subject_count,
+        missing_subject_count=
+            missing_subject_count,
 
-        selected_student=selected_student,
+        # ----------------------------------------------------
+        # SELECTED STUDENT
+        # ----------------------------------------------------
 
-        selected_enrollment=selected_enrollment,
+        selected_student=
+            selected_student,
 
-        exam_subjects=exam_subjects,
+        selected_enrollment=
+            selected_enrollment,
 
-        subject_rows=selected_subject_rows,
+        # ----------------------------------------------------
+        # SUBJECTS
+        #
+        # exam_subjects is now:
+        #     - selected student's subjects when a student
+        #       is selected
+        #     - all exam subjects only before a student is
+        #       selected
+        #
+        # subject_rows contains only missing subjects.
+        # ----------------------------------------------------
 
-        selected_subject_rows=selected_subject_rows,
+        exam_subjects=
+            exam_subjects,
 
-        selected_missing_count=selected_missing_count,
+        subject_rows=
+            selected_subject_rows,
 
-        current_student_index=current_student_index,
+        selected_subject_rows=
+            selected_subject_rows,
 
-        previous_student=previous_student,
+        selected_missing_count=
+            selected_missing_count,
 
-        next_student=next_student,
+        # ----------------------------------------------------
+        # NAVIGATION
+        # ----------------------------------------------------
+
+        current_student_index=
+            current_student_index,
+
+        previous_student=
+            previous_student,
+
+        next_student=
+            next_student,
 
         page_mode="add",
 
@@ -79966,48 +84502,74 @@ def add_exam_result():
 
         user=current_user,
 
-        # ====================================================
-        # DYNAMIC NAVIGATION
-        # ====================================================
+        # ----------------------------------------------------
+        # PREVIOUS
+        # ----------------------------------------------------
 
         has_previous=(
-            previous_student is not None
-        ),
-
-        has_next=(
-            next_student is not None
+            previous_student
+            is not None
         ),
 
         previous_url=(
             url_for(
                 "main.add_exam_result",
+
                 exam_id=exam.id,
+
                 scope_type=scope_type,
+
                 class_id=class_id,
+
                 section_id=section_id,
+
                 program_id=program_id,
+
                 student_id=previous_student.id,
             )
-            if previous_student
+
+            if (
+                previous_student
+                and exam
+            )
+
             else None
+        ),
+
+        # ----------------------------------------------------
+        # NEXT
+        # ----------------------------------------------------
+
+        has_next=(
+            next_student
+            is not None
         ),
 
         next_url=(
             url_for(
                 "main.add_exam_result",
+
                 exam_id=exam.id,
+
                 scope_type=scope_type,
+
                 class_id=class_id,
+
                 section_id=section_id,
+
                 program_id=program_id,
+
                 student_id=next_student.id,
             )
-            if next_student
+
+            if (
+                next_student
+                and exam
+            )
+
             else None
         ),
     )
-
-
 
 
 

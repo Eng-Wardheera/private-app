@@ -9,8 +9,42 @@ Edit Exam Result
 <style>
 
 /* ============================================================
-   EDIT EXAM RESULT
-   ADMIN SUBJECT MARK MANAGEMENT
+   SOOYAAL - EDIT EXAM RESULT
+   PURE CSS
+   NO BOOTSTRAP
+============================================================ */
+
+:root {
+    --result-blue: #06245f;
+    --result-blue-dark: #041b48;
+    --result-green: #32b73a;
+    --result-green-dark: #24952d;
+    --result-purple: #33206f;
+
+    --result-red: #e5484d;
+    --result-red-dark: #c6383d;
+
+    --result-warning: #d79b16;
+    --result-warning-dark: #a87300;
+
+    --result-text: #293344;
+    --result-text-soft: #596273;
+    --result-muted: #8b94a3;
+
+    --result-border: #e7eaf0;
+    --result-border-soft: #edf0f4;
+
+    --result-bg: #f7f9fc;
+    --result-card: #ffffff;
+
+    --result-shadow:
+        0 2px 9px rgba(20, 30, 50, .025);
+
+    --result-radius: 14px;
+}
+
+/* ============================================================
+   PAGE
 ============================================================ */
 
 .edit-result-page {
@@ -18,6 +52,7 @@ Edit Exam Result
     max-width: 1500px;
     margin: 0 auto;
     padding: 4px 0 40px;
+    box-sizing: border-box;
 }
 
 /* ============================================================
@@ -36,39 +71,49 @@ Edit Exam Result
     display: flex;
     align-items: center;
     gap: 14px;
+    min-width: 0;
 }
 
 .edit-result-header-icon {
     width: 48px;
     height: 48px;
     border-radius: 13px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     background: rgba(6, 36, 95, .09);
-    color: #06245f;
+    color: var(--result-blue);
+
     font-size: 20px;
     flex-shrink: 0;
 }
 
 .edit-result-title {
     margin: 0;
+
+    color: #1c2434;
+
     font-size: 24px;
     font-weight: 700;
-    color: #1c2434;
     line-height: 1.2;
 }
 
 .edit-result-subtitle {
     margin: 5px 0 0;
+
     color: #7b8495;
+
     font-size: 13px;
+    line-height: 1.5;
 }
 
 .edit-result-header-actions {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0;
 }
 
 /* ============================================================
@@ -80,20 +125,26 @@ Edit Exam Result
     align-items: center;
     justify-content: center;
     gap: 8px;
+
     min-height: 40px;
     padding: 0 15px;
-    border-radius: 9px;
+
     border: 1px solid #e1e5eb;
+    border-radius: 9px;
+
     background: #fff;
     color: #4e5868;
+
     text-decoration: none;
+
     font-size: 13px;
     font-weight: 600;
+
     transition: .2s ease;
 }
 
 .result-header-btn:hover {
-    color: #06245f;
+    color: var(--result-blue);
     border-color: #cbd4e0;
     background: #f8fafc;
 }
@@ -105,7 +156,9 @@ Edit Exam Result
 .edit-result-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 340px;
+
     gap: 22px;
+
     align-items: start;
 }
 
@@ -120,11 +173,14 @@ Edit Exam Result
 
 .form-card,
 .sidebar-card {
-    background: #fff;
-    border: 1px solid #e7eaf0;
-    border-radius: 14px;
+    background: var(--result-card);
+
+    border: 1px solid var(--result-border);
+    border-radius: var(--result-radius);
+
     overflow: hidden;
-    box-shadow: 0 2px 9px rgba(20, 30, 50, .025);
+
+    box-shadow: var(--result-shadow);
 }
 
 .form-card {
@@ -139,36 +195,50 @@ Edit Exam Result
     margin-bottom: 0;
 }
 
+/* ============================================================
+   CARD HEADER
+============================================================ */
+
 .form-card-header {
     display: flex;
     align-items: center;
     gap: 12px;
+
     padding: 17px 20px;
-    border-bottom: 1px solid #edf0f4;
+
+    border-bottom: 1px solid var(--result-border-soft);
 }
 
 .form-card-header-icon {
     width: 38px;
     height: 38px;
+
     border-radius: 10px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     background: rgba(6, 36, 95, .08);
-    color: #06245f;
+    color: var(--result-blue);
+
     flex-shrink: 0;
 }
 
 .form-card-header h3 {
     margin: 0;
+
     color: #1d2636;
+
     font-size: 15px;
     font-weight: 700;
 }
 
 .form-card-header p {
     margin: 3px 0 0;
+
     color: #8a93a2;
+
     font-size: 12px;
 }
 
@@ -176,14 +246,21 @@ Edit Exam Result
     padding: 20px;
 }
 
+/* ============================================================
+   SIDEBAR HEADER
+============================================================ */
+
 .sidebar-card-header {
     padding: 16px 18px;
-    border-bottom: 1px solid #edf0f4;
+
+    border-bottom: 1px solid var(--result-border-soft);
 }
 
 .sidebar-card-header h3 {
     margin: 0;
+
     color: #1d2636;
+
     font-size: 14px;
     font-weight: 700;
 }
@@ -200,19 +277,25 @@ Edit Exam Result
     display: flex;
     align-items: flex-start;
     gap: 9px;
+
     padding: 11px 12px;
     margin-bottom: 18px;
+
     border: 1px solid rgba(6, 36, 95, .10);
     border-radius: 9px;
+
     background: rgba(6, 36, 95, .035);
     color: #687284;
+
     font-size: 11px;
-    line-height: 1.5;
+    line-height: 1.55;
 }
 
 .edit-notice i {
-    color: #06245f;
+    color: var(--result-blue);
+
     margin-top: 2px;
+
     flex-shrink: 0;
 }
 
@@ -222,7 +305,7 @@ Edit Exam Result
 }
 
 .edit-notice.warning i {
-    color: #b47c00;
+    color: var(--result-warning-dark);
 }
 
 .edit-notice.success {
@@ -231,7 +314,16 @@ Edit Exam Result
 }
 
 .edit-notice.success i {
-    color: #24952d;
+    color: var(--result-green-dark);
+}
+
+.edit-notice.danger {
+    border-color: rgba(229, 72, 77, .18);
+    background: rgba(229, 72, 77, .055);
+}
+
+.edit-notice.danger i {
+    color: var(--result-red-dark);
 }
 
 /* ============================================================
@@ -240,8 +332,10 @@ Edit Exam Result
 
 .context-box {
     padding: 14px;
-    border: 1px solid #e7eaf0;
+
+    border: 1px solid var(--result-border);
     border-radius: 11px;
+
     background: #fafbfd;
 }
 
@@ -249,101 +343,141 @@ Edit Exam Result
     display: flex;
     align-items: center;
     gap: 9px;
+
     margin-bottom: 14px;
 }
 
 .context-header-icon {
     width: 31px;
     height: 31px;
+
     border-radius: 8px;
+
     background: rgba(6, 36, 95, .08);
-    color: #06245f;
+    color: var(--result-blue);
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 12px;
 }
 
 .context-header strong {
     display: block;
+
     color: #303948;
+
     font-size: 12px;
 }
 
 .context-header span {
     display: block;
+
     margin-top: 2px;
+
     color: #9299a7;
+
     font-size: 10px;
 }
 
 .context-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
     gap: 9px;
 }
 
 .context-item {
     padding: 10px;
-    border: 1px solid #edf0f4;
+
+    border: 1px solid var(--result-border-soft);
     border-radius: 8px;
+
     background: #fff;
 }
 
 .context-item-label {
     display: block;
+
     margin-bottom: 3px;
+
     color: #949cab;
+
     font-size: 9px;
     font-weight: 700;
+
     text-transform: uppercase;
     letter-spacing: .3px;
 }
 
 .context-item-value {
     display: block;
+
     color: #394252;
+
     font-size: 11px;
     font-weight: 700;
+
     word-break: break-word;
 }
 
 /* ============================================================
-   SUBJECT MARKS TABLE
+   SUBJECT TABLE
 ============================================================ */
 
 .subject-table-wrapper {
     width: 100%;
+
     overflow-x: auto;
-    border: 1px solid #e7eaf0;
+
+    border: 1px solid var(--result-border);
     border-radius: 11px;
+
     background: #fff;
+
+    -webkit-overflow-scrolling: touch;
 }
 
 .subject-table {
     width: 100%;
-    min-width: 900px;
+
+    min-width: 980px;
+
     border-collapse: collapse;
 }
 
 .subject-table thead th {
     padding: 12px 11px;
+
     background: #f7f9fc;
-    border-bottom: 1px solid #e7eaf0;
+
+    border-bottom: 1px solid var(--result-border);
+
     color: #6f7888;
+
     font-size: 10px;
     font-weight: 800;
+
     text-transform: uppercase;
     letter-spacing: .35px;
+
     text-align: left;
+
     white-space: nowrap;
 }
 
 .subject-table tbody td {
     padding: 12px 11px;
-    border-bottom: 1px solid #edf0f4;
+
+    border-bottom: 1px solid var(--result-border-soft);
+
     color: #394252;
+
     font-size: 11px;
+
     vertical-align: middle;
 }
 
@@ -355,11 +489,29 @@ Edit Exam Result
     background: #fafbfd;
 }
 
+/* ============================================================
+   MISSING ROW
+============================================================ */
+
+.subject-table tbody tr.missing-row {
+    background: rgba(215, 155, 22, .035);
+}
+
+.subject-table tbody tr.missing-row:hover {
+    background: rgba(215, 155, 22, .06);
+}
+
 .subject-number {
     width: 35px;
+
     color: #9299a7 !important;
+
     font-weight: 700;
 }
+
+/* ============================================================
+   SUBJECT
+============================================================ */
 
 .subject-name {
     min-width: 180px;
@@ -367,44 +519,66 @@ Edit Exam Result
 
 .subject-name strong {
     display: block;
+
     color: #293344;
+
     font-size: 12px;
     font-weight: 750;
 }
 
 .subject-name span {
     display: block;
+
     margin-top: 3px;
+
     color: #959dab;
+
     font-size: 9px;
 }
 
+/* ============================================================
+   TEACHER
+============================================================ */
+
 .subject-teacher {
-    min-width: 130px;
+    min-width: 135px;
 }
 
 .subject-teacher strong {
     display: block;
+
     color: #4a5362;
+
     font-size: 10px;
 }
 
 .subject-teacher span {
     display: block;
+
     margin-top: 2px;
+
     color: #9aa1ae;
+
     font-size: 9px;
 }
 
+/* ============================================================
+   MARK LIMITS
+============================================================ */
+
 .max-mark {
     color: #596273;
+
     font-weight: 700;
+
     white-space: nowrap;
 }
 
 .pass-mark {
-    color: #24952d;
+    color: var(--result-green-dark);
+
     font-weight: 700;
+
     white-space: nowrap;
 }
 
@@ -414,100 +588,83 @@ Edit Exam Result
 
 .mark-input-wrapper {
     position: relative;
+
     width: 125px;
 }
 
 .mark-input {
     width: 100%;
     height: 38px;
+
     padding: 0 42px 0 11px;
+
     border: 1px solid #dfe4eb;
     border-radius: 8px;
+
     background: #fff;
     color: #263143;
+
     font-size: 12px;
     font-weight: 700;
+
     outline: none;
+
     box-sizing: border-box;
+
     transition: .2s ease;
 }
 
 .mark-input:focus {
-    border-color: #06245f;
-    box-shadow: 0 0 0 3px rgba(6,36,95,.08);
+    border-color: var(--result-blue);
+
+    box-shadow:
+        0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.mark-input:disabled {
+    background: #f1f3f6;
+
+    color: #9aa1ad;
+
+    cursor: not-allowed;
+
+    opacity: .8;
 }
 
 .mark-input.invalid {
-    border-color: #e5484d;
-    background: rgba(229,72,77,.035);
+    border-color: var(--result-red);
+
+    background: rgba(229, 72, 77, .035);
+
+    box-shadow:
+        0 0 0 2px rgba(229, 72, 77, .05);
 }
 
 .mark-unit {
     position: absolute;
+
     right: 0;
     top: 0;
+
     height: 38px;
     width: 38px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    border-left: 1px solid #edf0f4;
+
+    border-left: 1px solid var(--result-border-soft);
+
     color: #8d95a3;
+
     font-size: 9px;
     font-weight: 700;
+
     pointer-events: none;
 }
 
 /* ============================================================
-   MISSING MARK
-============================================================ */
-
-.missing-row {
-    background: rgba(215,155,22,.035) !important;
-}
-
-.missing-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    min-height: 25px;
-    padding: 0 8px;
-    border-radius: 999px;
-    background: rgba(215,155,22,.10);
-    color: #a87300;
-    font-size: 9px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-.missing-badge i {
-    font-size: 9px;
-}
-
-/* ============================================================
-   MARKED BADGE
-============================================================ */
-
-.marked-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    min-height: 25px;
-    padding: 0 8px;
-    border-radius: 999px;
-    background: rgba(50,183,58,.09);
-    color: #24952d;
-    font-size: 9px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-.marked-badge i {
-    font-size: 9px;
-}
-
-/* ============================================================
-   ABSENT / EXEMPTED
+   CHECKBOX
 ============================================================ */
 
 .check-group {
@@ -519,66 +676,93 @@ Edit Exam Result
 .check-box {
     width: 17px;
     height: 17px;
-    accent-color: #06245f;
+
+    accent-color: var(--result-blue);
+
     cursor: pointer;
 }
 
 .check-label {
     color: #657080;
+
     font-size: 10px;
     font-weight: 700;
+
     cursor: pointer;
+
     white-space: nowrap;
 }
 
+.check-label:hover {
+    color: var(--result-blue);
+}
+
 /* ============================================================
-   STATUS BADGES
+   BADGES
 ============================================================ */
 
-.subject-result-badge {
+.subject-result-badge,
+.missing-badge,
+.marked-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 65px;
+    gap: 5px;
+
     min-height: 25px;
+
     padding: 0 8px;
+
     border-radius: 999px;
+
     font-size: 9px;
     font-weight: 800;
+
+    white-space: nowrap;
 }
 
-.subject-result-pass {
-    background: rgba(50,183,58,.09);
-    color: #24952d;
+.subject-result-pass,
+.marked-badge {
+    background: rgba(50, 183, 58, .09);
+
+    color: var(--result-green-dark);
 }
 
 .subject-result-fail {
-    background: rgba(229,72,77,.08);
-    color: #c6383d;
+    background: rgba(229, 72, 77, .08);
+
+    color: var(--result-red-dark);
 }
 
 .subject-result-absent {
-    background: rgba(108,117,125,.10);
+    background: rgba(108, 117, 125, .10);
+
     color: #626b79;
 }
 
 .subject-result-exempted {
-    background: rgba(51,32,111,.09);
-    color: #33206f;
+    background: rgba(51, 32, 111, .09);
+
+    color: var(--result-purple);
 }
 
-.subject-result-missing {
-    background: rgba(215,155,22,.10);
-    color: #a87300;
+.subject-result-missing,
+.missing-badge {
+    background: rgba(215, 155, 22, .10);
+
+    color: var(--result-warning-dark);
 }
 
 /* ============================================================
-   READ ONLY CALCULATED FIELDS
+   CALCULATED FIELDS
 ============================================================ */
 
 .fields-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
     gap: 18px;
 }
 
@@ -592,75 +776,107 @@ Edit Exam Result
 
 .form-label {
     display: block;
+
     margin-bottom: 7px;
+
     color: #374151;
+
     font-size: 12px;
     font-weight: 700;
+}
+
+.required {
+    color: var(--result-red);
+
+    margin-left: 2px;
 }
 
 .form-control-custom,
 .form-textarea-custom {
     width: 100%;
+
     border: 1px solid #dfe4eb;
     border-radius: 9px;
+
     background: #fff;
     color: #252d3b;
+
     font-size: 13px;
+
     outline: none;
+
     transition: .2s ease;
+
     box-sizing: border-box;
 }
 
 .form-control-custom {
     height: 42px;
+
     padding: 0 12px;
 }
 
 .form-textarea-custom {
     min-height: 125px;
+
     padding: 12px;
+
     resize: vertical;
+
     line-height: 1.55;
 }
 
 .form-control-custom[readonly] {
     background: #f5f7fa;
+
     color: #6f7887;
+
     cursor: not-allowed;
 }
 
 .form-help {
     margin-top: 6px;
+
     color: #9299a7;
+
     font-size: 11px;
+
     line-height: 1.45;
 }
 
 /* ============================================================
-   CALCULATED VALUE BOX
+   CALCULATED BOX
 ============================================================ */
 
 .calculated-box {
     min-height: 42px;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 10px;
+
     padding: 0 12px;
+
     border: 1px solid #dfe4eb;
     border-radius: 9px;
+
     background: #f5f7fa;
+
     box-sizing: border-box;
 }
 
 .calculated-value {
     color: #283346;
+
     font-size: 13px;
     font-weight: 800;
 }
 
 .calculated-unit {
     color: #8c95a3;
+
     font-size: 10px;
     font-weight: 700;
 }
@@ -672,28 +888,39 @@ Edit Exam Result
 .result-status-box {
     display: flex;
     align-items: center;
+
     gap: 9px;
+
     min-height: 42px;
+
     padding: 0 12px;
+
     border: 1px solid #dfe4eb;
     border-radius: 9px;
+
     background: #f5f7fa;
 }
 
 .result-status-icon {
     width: 25px;
     height: 25px;
+
     border-radius: 7px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(6,36,95,.07);
-    color: #06245f;
+
+    background: rgba(6, 36, 95, .07);
+
+    color: var(--result-blue);
+
     font-size: 10px;
 }
 
 .result-status-text {
     color: #354052;
+
     font-size: 12px;
     font-weight: 800;
 }
@@ -704,7 +931,9 @@ Edit Exam Result
 
 .option-group {
     display: flex;
+
     flex-wrap: wrap;
+
     gap: 9px;
 }
 
@@ -714,23 +943,34 @@ Edit Exam Result
 
 .option-item input {
     position: absolute;
+
     opacity: 0;
+
     pointer-events: none;
 }
 
 .option-label {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+
     gap: 7px;
+
     min-height: 38px;
+
     padding: 0 12px;
+
     border: 1px solid #dfe4eb;
     border-radius: 8px;
+
     background: #fff;
     color: #596273;
+
     font-size: 12px;
     font-weight: 600;
+
     cursor: pointer;
+
     transition: .2s ease;
 }
 
@@ -739,21 +979,27 @@ Edit Exam Result
 }
 
 .option-item input:checked + .option-label {
-    border-color: #06245f;
-    background: rgba(6,36,95,.06);
-    color: #06245f;
+    border-color: var(--result-blue);
+
+    background: rgba(6, 36, 95, .06);
+
+    color: var(--result-blue);
 }
 
 .option-item input:checked + .option-label.approved-option {
-    border-color: #32b73a;
-    background: rgba(50,183,58,.08);
-    color: #24952d;
+    border-color: var(--result-green);
+
+    background: rgba(50, 183, 58, .08);
+
+    color: var(--result-green-dark);
 }
 
 .option-item input:checked + .option-label.published-option {
-    border-color: #33206f;
-    background: rgba(51,32,111,.08);
-    color: #33206f;
+    border-color: var(--result-purple);
+
+    background: rgba(51, 32, 111, .08);
+
+    color: var(--result-purple);
 }
 
 /* ============================================================
@@ -762,33 +1008,43 @@ Edit Exam Result
 
 .position-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+
+    grid-template-columns:
+        repeat(5, minmax(0, 1fr));
+
     gap: 12px;
 }
 
 .position-box {
     padding: 13px;
+
     border: 1px solid #e8ebf0;
     border-radius: 10px;
+
     background: #fafbfd;
 }
 
 .position-box-label {
     display: flex;
     align-items: center;
+
     gap: 7px;
+
     margin-bottom: 8px;
+
     color: #697384;
+
     font-size: 10px;
     font-weight: 700;
 }
 
 .position-box-label i {
-    color: #06245f;
+    color: var(--result-blue);
 }
 
 .position-box-value {
     color: #253044;
+
     font-size: 20px;
     font-weight: 800;
 }
@@ -800,42 +1056,56 @@ Edit Exam Result
 .result-preview {
     border: 1px solid #e5e9ef;
     border-radius: 11px;
+
     overflow: hidden;
+
     background: #fafbfd;
 }
 
 .result-preview-top {
     padding: 18px;
-    background: linear-gradient(
-        135deg,
-        #06245f,
-        #0a327d
-    );
+
+    background:
+        linear-gradient(
+            135deg,
+            #06245f,
+            #0a327d
+        );
+
     color: #fff;
 }
 
 .result-preview-icon {
     width: 42px;
     height: 42px;
+
     border-radius: 11px;
-    background: rgba(255,255,255,.13);
+
+    background: rgba(255, 255, 255, .13);
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     margin-bottom: 12px;
 }
 
 .result-preview-student {
     margin: 0;
+
     font-size: 16px;
     font-weight: 700;
+
     word-break: break-word;
 }
 
 .result-preview-exam {
     margin-top: 5px;
-    color: rgba(255,255,255,.72);
+
+    color: rgba(255, 255, 255, .72);
+
     font-size: 11px;
+
     word-break: break-word;
 }
 
@@ -846,9 +1116,12 @@ Edit Exam Result
 .preview-row {
     display: flex;
     align-items: flex-start;
+
     gap: 9px;
+
     padding: 8px 0;
-    border-bottom: 1px solid #edf0f4;
+
+    border-bottom: 1px solid var(--result-border-soft);
 }
 
 .preview-row:last-child {
@@ -858,13 +1131,19 @@ Edit Exam Result
 .preview-icon {
     width: 27px;
     height: 27px;
+
     border-radius: 7px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(6,36,95,.07);
-    color: #06245f;
+
+    background: rgba(6, 36, 95, .07);
+
+    color: var(--result-blue);
+
     font-size: 10px;
+
     flex-shrink: 0;
 }
 
@@ -874,36 +1153,47 @@ Edit Exam Result
 
 .preview-content strong {
     display: block;
+
     color: #424b5a;
+
     font-size: 10px;
+
     margin-bottom: 2px;
 }
 
 .preview-content span {
     display: block;
+
     color: #8a93a2;
+
     font-size: 10px;
+
     line-height: 1.4;
+
     word-break: break-word;
 }
 
 .preview-highlight {
-    color: #06245f !important;
+    color: var(--result-blue) !important;
+
     font-weight: 800 !important;
 }
 
 .preview-pass {
-    color: #24952d !important;
+    color: var(--result-green-dark) !important;
+
     font-weight: 800 !important;
 }
 
 .preview-fail {
-    color: #c6383d !important;
+    color: var(--result-red-dark) !important;
+
     font-weight: 800 !important;
 }
 
 .preview-incomplete {
-    color: #a87300 !important;
+    color: var(--result-warning-dark) !important;
+
     font-weight: 800 !important;
 }
 
@@ -913,46 +1203,60 @@ Edit Exam Result
 
 .summary-box {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
     gap: 9px;
 }
 
 .summary-item {
     padding: 12px;
-    border: 1px solid #edf0f4;
+
+    border: 1px solid var(--result-border-soft);
     border-radius: 9px;
+
     background: #fafbfd;
 }
 
 .summary-item-label {
     display: block;
+
     color: #8b94a3;
+
     font-size: 9px;
     font-weight: 700;
+
     margin-bottom: 4px;
 }
 
 .summary-item-value {
     display: block;
+
     color: #2e3849;
+
     font-size: 15px;
     font-weight: 800;
 }
 
 /* ============================================================
-   INFO
+   INFORMATION
 ============================================================ */
 
 .info-row {
     display: flex;
     align-items: flex-start;
+
     gap: 11px;
+
     padding: 10px 0;
+
     border-bottom: 1px solid #f0f2f5;
 }
 
 .info-row:last-child {
     border-bottom: 0;
+
     padding-bottom: 0;
 }
 
@@ -963,26 +1267,37 @@ Edit Exam Result
 .info-icon {
     width: 30px;
     height: 30px;
+
     border-radius: 8px;
-    background: rgba(6,36,95,.07);
-    color: #06245f;
+
+    background: rgba(6, 36, 95, .07);
+
+    color: var(--result-blue);
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 11px;
+
     flex-shrink: 0;
 }
 
 .info-content strong {
     display: block;
+
     color: #394252;
+
     font-size: 12px;
+
     margin-bottom: 2px;
 }
 
 .info-content span {
     color: #8a93a2;
+
     font-size: 11px;
+
     line-height: 1.4;
 }
 
@@ -992,7 +1307,9 @@ Edit Exam Result
 
 .result-meta {
     display: grid;
+
     grid-template-columns: 1fr;
+
     gap: 8px;
 }
 
@@ -1000,76 +1317,104 @@ Edit Exam Result
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 10px;
+
     padding: 9px 10px;
-    border: 1px solid #edf0f4;
+
+    border: 1px solid var(--result-border-soft);
     border-radius: 8px;
+
     background: #fafbfd;
 }
 
 .result-meta-label {
     color: #8a93a2;
+
     font-size: 10px;
     font-weight: 600;
 }
 
 .result-meta-value {
     color: #394252;
+
     font-size: 10px;
     font-weight: 700;
+
     text-align: right;
+
     word-break: break-word;
 }
 
 /* ============================================================
-   ACTIONS
+   ACTION BUTTONS
 ============================================================ */
 
 .update-result-btn {
     width: 100%;
+
     min-height: 45px;
+
     border: 0;
     border-radius: 9px;
-    background: #06245f;
+
+    background: var(--result-blue);
+
     color: #fff;
+
     font-size: 13px;
     font-weight: 700;
+
     cursor: pointer;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     gap: 8px;
+
     transition: .2s ease;
 }
 
 .update-result-btn:hover {
-    background: #041b48;
+    background: var(--result-blue-dark);
 }
 
 .update-result-btn:disabled {
     opacity: .65;
+
     cursor: not-allowed;
 }
 
 .cancel-result-btn {
     width: 100%;
+
     height: 43px;
+
     margin-top: 9px;
+
     border: 1px solid #dfe4eb;
     border-radius: 9px;
+
     background: #fff;
     color: #626b79;
+
     font-size: 13px;
     font-weight: 600;
+
     text-decoration: none;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
+    box-sizing: border-box;
 }
 
 .cancel-result-btn:hover {
     background: #f8fafc;
-    color: #06245f;
+
+    color: var(--result-blue);
 }
 
 /* ============================================================
@@ -1078,32 +1423,95 @@ Edit Exam Result
 
 .empty-subjects {
     padding: 45px 20px;
+
     text-align: center;
+
     color: #8b94a3;
 }
 
 .empty-subjects-icon {
     width: 50px;
     height: 50px;
+
     margin: 0 auto 12px;
+
     border-radius: 13px;
+
     background: #f3f5f8;
     color: #929aaa;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 20px;
 }
 
 .empty-subjects strong {
     display: block;
+
     color: #4d5666;
+
     font-size: 13px;
+
     margin-bottom: 5px;
 }
 
 .empty-subjects span {
     font-size: 11px;
+
+    line-height: 1.5;
+}
+
+/* ============================================================
+   LIVE VALIDATION MESSAGE
+============================================================ */
+
+.mark-validation-message {
+    display: none;
+
+    margin-top: 5px;
+
+    color: var(--result-red-dark);
+
+    font-size: 9px;
+    font-weight: 700;
+
+    line-height: 1.4;
+}
+
+.mark-validation-message.show {
+    display: block;
+}
+
+/* ============================================================
+   ROW STATE
+============================================================ */
+
+.subject-table tbody tr.row-absent {
+    background: rgba(108, 117, 125, .035);
+}
+
+.subject-table tbody tr.row-exempted {
+    background: rgba(51, 32, 111, .035);
+}
+
+.subject-table tbody tr.row-complete {
+    background: rgba(50, 183, 58, .025);
+}
+
+/* ============================================================
+   MOBILE TABLE
+============================================================ */
+
+.mobile-table-note {
+    display: none;
+
+    margin-bottom: 10px;
+
+    color: #8b94a3;
+
+    font-size: 10px;
 }
 
 /* ============================================================
@@ -1113,7 +1521,8 @@ Edit Exam Result
 @media (max-width: 1200px) {
 
     .position-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
     }
 }
 
@@ -1128,14 +1537,16 @@ Edit Exam Result
     }
 
     .position-grid {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(5, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 800px) {
 
     .position-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -1147,11 +1558,13 @@ Edit Exam Result
 
     .edit-result-header {
         align-items: flex-start;
+
         flex-direction: column;
     }
 
     .edit-result-header-actions {
         width: 100%;
+
         flex-wrap: wrap;
     }
 
@@ -1177,9 +1590,22 @@ Edit Exam Result
         width: 100%;
     }
 
+    .option-item {
+        width: 100%;
+    }
+
     .option-label {
         width: 100%;
+
         justify-content: center;
+    }
+
+    .mobile-table-note {
+        display: block;
+    }
+
+    .summary-box {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -1244,7 +1670,7 @@ Edit Exam Result
 
 
 <!-- ============================================================
-     FORM
+     MAIN FORM
 ============================================================ -->
 
 <form
@@ -1258,12 +1684,11 @@ Edit Exam Result
     novalidate
 >
 
-
 <div class="edit-result-grid">
 
 
 <!-- ============================================================
-     MAIN
+     MAIN COLUMN
 ============================================================ -->
 
 <div class="edit-result-main">
@@ -1314,6 +1739,7 @@ Edit Exam Result
 
 
         <div class="context-box">
+
 
             <div class="context-header">
 
@@ -1424,6 +1850,8 @@ Edit Exam Result
 
                         {% if result.program %}
                             {{ result.program.name }}
+                        {% elif result.exam and result.exam.program %}
+                            {{ result.exam.program.name }}
                         {% else %}
                             —
                         {% endif %}
@@ -1453,6 +1881,16 @@ Edit Exam Result
                                 —
                             {% endif %}
 
+                        {% elif result.exam and result.exam.academic_year %}
+
+                            {% if result.exam.academic_year.name is defined %}
+                                {{ result.exam.academic_year.name }}
+                            {% elif result.exam.academic_year.year is defined %}
+                                {{ result.exam.academic_year.year }}
+                            {% else %}
+                                —
+                            {% endif %}
+
                         {% else %}
                             —
                         {% endif %}
@@ -1473,9 +1911,9 @@ Edit Exam Result
                     <span class="context-item-value">
 
                         {% if result.term %}
-                            {{ result.term.name
-                               if result.term.name is defined
-                               else '—' }}
+                            {{ result.term.name or '—' }}
+                        {% elif result.exam and result.exam.term %}
+                            {{ result.exam.term.name or '—' }}
                         {% else %}
                             —
                         {% endif %}
@@ -1497,8 +1935,13 @@ Edit Exam Result
 
                         {% if result.class_ %}
                             {{ result.class_.name }}
+
                         {% elif result.classroom %}
                             {{ result.classroom.name }}
+
+                        {% elif result.class_id %}
+                            Class #{{ result.class_id }}
+
                         {% else %}
                             —
                         {% endif %}
@@ -1520,6 +1963,10 @@ Edit Exam Result
 
                         {% if result.section %}
                             {{ result.section.name }}
+
+                        {% elif result.section_id %}
+                            Section #{{ result.section_id }}
+
                         {% else %}
                             —
                         {% endif %}
@@ -1599,7 +2046,8 @@ Edit Exam Result
             </h3>
 
             <p>
-                Review marked subjects and complete any missing marks.
+                Only subjects assigned to this student's class and
+                section are displayed.
             </p>
 
         </div>
@@ -1615,10 +2063,24 @@ Edit Exam Result
             <i class="fas fa-user-shield"></i>
 
             <span>
-                Administrator can enter or correct marks for every subject
-                assigned to this examination. Missing subjects can be
-                completed here. Do not enter <strong>0</strong> for an absent
-                student; use the <strong>Absent</strong> option instead.
+                Administrator can enter or correct marks for every
+                subject assigned to this examination.
+                <strong>Missing</strong> marks can be completed here.
+                Do not enter <strong>0</strong> for an absent student;
+                use the <strong>Absent</strong> option instead.
+            </span>
+
+        </div>
+
+
+        <div class="edit-notice">
+
+            <i class="fas fa-filter"></i>
+
+            <span>
+                The subject list is restricted to the student's
+                examination, institution, branch, program, class and
+                section. A subject should appear only once.
             </span>
 
         </div>
@@ -1627,15 +2089,26 @@ Edit Exam Result
         {% if subject_rows is defined and subject_rows %}
 
 
+        <div class="mobile-table-note">
+            <i class="fas fa-arrows-left-right"></i>
+            Swipe horizontally to view all subject fields.
+        </div>
+
+
         <div class="subject-table-wrapper">
 
-            <table class="subject-table">
+            <table
+                class="subject-table"
+                id="subject-marks-table"
+            >
 
                 <thead>
 
                     <tr>
 
-                        <th>#</th>
+                        <th>
+                            #
+                        </th>
 
                         <th>
                             Subject
@@ -1730,9 +2203,22 @@ Edit Exam Result
 
 
                     <tr
-                        class="{% if not mark and not is_absent and not is_exempted %}missing-row{% endif %}"
                         data-subject-row
+                        data-exam-subject-id="{{ exam_subject.id }}"
                         data-max-marks="{{ max_marks or 0 }}"
+                        data-pass-marks="{{ pass_marks or 0 }}"
+
+                        class="
+                            {% if is_absent %}
+                                row-absent
+                            {% elif is_exempted %}
+                                row-exempted
+                            {% elif current_marks != '' %}
+                                row-complete
+                            {% else %}
+                                missing-row
+                            {% endif %}
+                        "
                     >
 
 
@@ -1755,7 +2241,8 @@ Edit Exam Result
 
                             {% if exam_subject.subject %}
 
-                                {% if exam_subject.subject.code is defined %}
+                                {% if exam_subject.subject.code is defined
+                                      and exam_subject.subject.code %}
 
                                     <span>
                                         Code:
@@ -1779,7 +2266,8 @@ Edit Exam Result
 
                             {% if exam_subject.teacher %}
 
-                                {% if exam_subject.teacher.username is defined %}
+                                {% if exam_subject.teacher.username is defined
+                                      and exam_subject.teacher.username %}
 
                                     <span>
                                         {{ exam_subject.teacher.username }}
@@ -1823,14 +2311,27 @@ Edit Exam Result
                                 <input
                                     type="number"
                                     class="mark-input"
+
                                     name="mark_{{ exam_subject.id }}"
+
                                     value="{{ current_marks }}"
+
                                     min="0"
+
                                     max="{{ max_marks }}"
+
                                     step="0.01"
+
                                     inputmode="decimal"
+
                                     data-mark-input
+
+                                    data-exam-subject-id="{{ exam_subject.id }}"
+
                                     data-max="{{ max_marks }}"
+
+                                    aria-label="Marks for {{ subject_name }}"
+
                                     {% if is_absent or is_exempted %}
                                         disabled
                                     {% endif %}
@@ -1842,6 +2343,12 @@ Edit Exam Result
 
                             </div>
 
+
+                            <div
+                                class="mark-validation-message"
+                                data-validation-message
+                            ></div>
+
                         </td>
 
 
@@ -1849,15 +2356,23 @@ Edit Exam Result
 
                         <td>
 
+                            <!-- ABSENT -->
+
                             <div class="check-group">
 
                                 <input
                                     type="checkbox"
+
                                     class="check-box"
+
                                     id="absent_{{ exam_subject.id }}"
+
                                     name="absent_{{ exam_subject.id }}"
+
                                     value="1"
+
                                     data-absent-checkbox
+
                                     {% if is_absent %}
                                         checked
                                     {% endif %}
@@ -1873,6 +2388,8 @@ Edit Exam Result
                             </div>
 
 
+                            <!-- EXEMPTED -->
+
                             <div
                                 class="check-group"
                                 style="margin-top:6px;"
@@ -1880,11 +2397,17 @@ Edit Exam Result
 
                                 <input
                                     type="checkbox"
+
                                     class="check-box"
+
                                     id="exempted_{{ exam_subject.id }}"
+
                                     name="exempted_{{ exam_subject.id }}"
+
                                     value="1"
+
                                     data-exempted-checkbox
+
                                     {% if is_exempted %}
                                         checked
                                     {% endif %}
@@ -1904,18 +2427,24 @@ Edit Exam Result
 
                         <!-- CURRENT STATUS -->
 
-                        <td>
+                        <td data-current-status>
 
                             {% if is_absent %}
 
-                                <span class="subject-result-badge subject-result-absent">
+                                <span
+                                    class="subject-result-badge
+                                           subject-result-absent"
+                                >
                                     <i class="fas fa-user-slash"></i>
                                     Absent
                                 </span>
 
                             {% elif is_exempted %}
 
-                                <span class="subject-result-badge subject-result-exempted">
+                                <span
+                                    class="subject-result-badge
+                                           subject-result-exempted"
+                                >
                                     <i class="fas fa-ban"></i>
                                     Exempted
                                 </span>
@@ -1924,14 +2453,20 @@ Edit Exam Result
 
                                 {% if current_marks|float >= pass_marks|float %}
 
-                                    <span class="subject-result-badge subject-result-pass">
+                                    <span
+                                        class="subject-result-badge
+                                               subject-result-pass"
+                                    >
                                         <i class="fas fa-check"></i>
                                         Passed
                                     </span>
 
                                 {% else %}
 
-                                    <span class="subject-result-badge subject-result-fail">
+                                    <span
+                                        class="subject-result-badge
+                                               subject-result-fail"
+                                    >
                                         <i class="fas fa-times"></i>
                                         Failed
                                     </span>
@@ -1940,7 +2475,10 @@ Edit Exam Result
 
                             {% else %}
 
-                                <span class="missing-badge">
+                                <span
+                                    class="subject-result-badge
+                                           subject-result-missing"
+                                >
                                     <i class="fas fa-hourglass-half"></i>
                                     Missing
                                 </span>
@@ -1978,8 +2516,8 @@ Edit Exam Result
             </strong>
 
             <span>
-                This examination result does not currently have
-                any assigned subjects available for mark entry.
+                No subjects assigned to this student's examination,
+                class and section were found.
             </span>
 
         </div>
@@ -1993,9 +2531,11 @@ Edit Exam Result
             style="margin-top:12px;"
         >
             <i class="fas fa-circle-info"></i>
+
             Enter marks only between 0 and the subject's maximum marks.
-            Missing marks remain incomplete until an administrator or
-            authorized user completes them.
+            Empty marks remain incomplete. Use
+            <strong>Absent</strong> or <strong>Exempted</strong>
+            when applicable.
         </div>
 
 
@@ -2039,9 +2579,9 @@ Edit Exam Result
             <i class="fas fa-lock"></i>
 
             <span>
-                These academic values are <strong>not editable</strong>.
-                They must be calculated from the individual subject marks.
-                Changing a subject mark will cause the backend to recalculate
+                These academic values are
+                <strong>not editable</strong>.
+                Changing subject marks causes the backend to recalculate
                 the result.
             </span>
 
@@ -2076,7 +2616,7 @@ Edit Exam Result
                 </div>
 
                 <div class="form-help">
-                    Automatically calculated from completed subject marks.
+                    Automatically calculated from counted subject marks.
                 </div>
 
             </div>
@@ -2107,7 +2647,7 @@ Edit Exam Result
                 </div>
 
                 <div class="form-help">
-                    Automatically calculated from counted examination subjects.
+                    Calculated from the applicable examination subjects.
                 </div>
 
             </div>
@@ -2126,7 +2666,9 @@ Edit Exam Result
                     <span class="calculated-value">
 
                         {% if result.percentage is not none %}
-                            {{ '%.2f'|format(result.percentage|float) }}%
+                            {{ '%.2f'|format(
+                                result.percentage|float
+                            ) }}%
                         {% else %}
                             —
                         {% endif %}
@@ -2159,7 +2701,9 @@ Edit Exam Result
                     <span class="calculated-value">
 
                         {% if result.average is not none %}
-                            {{ '%.2f'|format(result.average|float) }}%
+                            {{ '%.2f'|format(
+                                result.average|float
+                            ) }}%
                         {% else %}
                             —
                         {% endif %}
@@ -2190,9 +2734,7 @@ Edit Exam Result
                 <div class="calculated-box">
 
                     <span class="calculated-value">
-
                         {{ result.grade or '—' }}
-
                     </span>
 
                     <span class="calculated-unit">
@@ -2221,7 +2763,9 @@ Edit Exam Result
                     <span class="calculated-value">
 
                         {% if result.gpa is not none %}
-                            {{ '%.2f'|format(result.gpa|float) }}
+                            {{ '%.2f'|format(
+                                result.gpa|float
+                            ) }}
                         {% else %}
                             —
                         {% endif %}
@@ -2251,7 +2795,10 @@ Edit Exam Result
 
                 <div class="calculated-box">
 
-                    <span class="calculated-value">
+                    <span
+                        class="calculated-value"
+                        id="total-subjects-display"
+                    >
                         {{ result.subjects_total or 0 }}
                     </span>
 
@@ -2274,7 +2821,10 @@ Edit Exam Result
 
                 <div class="calculated-box">
 
-                    <span class="calculated-value">
+                    <span
+                        class="calculated-value"
+                        id="completed-subjects-display"
+                    >
                         {{ result.subjects_completed or 0 }}
                     </span>
 
@@ -2297,7 +2847,10 @@ Edit Exam Result
 
                 <div class="calculated-box">
 
-                    <span class="calculated-value">
+                    <span
+                        class="calculated-value"
+                        id="failed-subjects-display"
+                    >
                         {{ result.subjects_failed or 0 }}
                     </span>
 
@@ -2323,11 +2876,17 @@ Edit Exam Result
                     <div class="result-status-icon">
 
                         {% if result.result_status == 'PASS' %}
+
                             <i class="fas fa-check"></i>
+
                         {% elif result.result_status == 'FAIL' %}
+
                             <i class="fas fa-times"></i>
+
                         {% else %}
+
                             <i class="fas fa-hourglass-half"></i>
+
                         {% endif %}
 
                     </div>
@@ -2392,8 +2951,13 @@ Edit Exam Result
             <div class="form-group field-full">
 
                 <label class="form-label">
+
                     Record Status
-                    <span class="required">*</span>
+
+                    <span class="required">
+                        *
+                    </span>
+
                 </label>
 
 
@@ -2406,13 +2970,19 @@ Edit Exam Result
                 <div class="option-group">
 
 
+                    <!-- DRAFT -->
+
                     <div class="option-item">
 
                         <input
                             type="radio"
+
                             id="status_draft"
+
                             name="status"
+
                             value="draft"
+
                             {% if selected_status == 'draft' %}
                                 checked
                             {% endif %}
@@ -2422,20 +2992,29 @@ Edit Exam Result
                             for="status_draft"
                             class="option-label"
                         >
+
                             <i class="fas fa-file-alt"></i>
+
                             Draft
+
                         </label>
 
                     </div>
 
 
+                    <!-- SUBMITTED -->
+
                     <div class="option-item">
 
                         <input
                             type="radio"
+
                             id="status_submitted"
+
                             name="status"
+
                             value="submitted"
+
                             {% if selected_status == 'submitted' %}
                                 checked
                             {% endif %}
@@ -2445,20 +3024,29 @@ Edit Exam Result
                             for="status_submitted"
                             class="option-label"
                         >
+
                             <i class="fas fa-paper-plane"></i>
+
                             Submitted
+
                         </label>
 
                     </div>
 
 
+                    <!-- APPROVED -->
+
                     <div class="option-item">
 
                         <input
                             type="radio"
+
                             id="status_approved"
+
                             name="status"
+
                             value="approved"
+
                             {% if selected_status == 'approved' %}
                                 checked
                             {% endif %}
@@ -2468,20 +3056,29 @@ Edit Exam Result
                             for="status_approved"
                             class="option-label approved-option"
                         >
+
                             <i class="fas fa-check"></i>
+
                             Approved
+
                         </label>
 
                     </div>
 
 
+                    <!-- PUBLISHED -->
+
                     <div class="option-item">
 
                         <input
                             type="radio"
+
                             id="status_published"
+
                             name="status"
+
                             value="published"
+
                             {% if selected_status == 'published' %}
                                 checked
                             {% endif %}
@@ -2491,8 +3088,11 @@ Edit Exam Result
                             for="status_published"
                             class="option-label published-option"
                         >
+
                             <i class="fas fa-globe"></i>
+
                             Published
+
                         </label>
 
                     </div>
@@ -2505,7 +3105,8 @@ Edit Exam Result
 
                     Record status controls the administrative workflow.
                     It is different from the academic
-                    <strong>PASS / FAIL / INCOMPLETE</strong> result status.
+                    <strong>PASS / FAIL / INCOMPLETE</strong>
+                    result status.
 
                 </div>
 
@@ -2745,6 +3346,7 @@ Edit Exam Result
 
     <div class="sidebar-card-body">
 
+
         <div class="result-preview">
 
 
@@ -2774,10 +3376,13 @@ Edit Exam Result
 
                         {% if result.exam.name is defined %}
                             {{ result.exam.name }}
+
                         {% elif result.exam.title is defined %}
                             {{ result.exam.title }}
+
                         {% elif result.exam.code is defined %}
                             {{ result.exam.code }}
+
                         {% else %}
                             Exam
                         {% endif %}
@@ -2865,9 +3470,15 @@ Edit Exam Result
                         <span class="preview-highlight">
 
                             {% if result.percentage is not none %}
-                                {{ '%.2f'|format(result.percentage|float) }}%
+
+                                {{ '%.2f'|format(
+                                    result.percentage|float
+                                ) }}%
+
                             {% else %}
+
                                 —
+
                             {% endif %}
 
                         </span>
@@ -2919,9 +3530,15 @@ Edit Exam Result
                         <span>
 
                             {% if result.gpa is not none %}
-                                {{ '%.2f'|format(result.gpa|float) }}
+
+                                {{ '%.2f'|format(
+                                    result.gpa|float
+                                ) }}
+
                             {% else %}
+
                                 —
+
                             {% endif %}
 
                         </span>
@@ -3031,7 +3648,10 @@ Edit Exam Result
                     Total Subjects
                 </span>
 
-                <span class="summary-item-value">
+                <span
+                    class="summary-item-value"
+                    id="sidebar-total-count"
+                >
                     {{ result.subjects_total or 0 }}
                 </span>
 
@@ -3044,7 +3664,10 @@ Edit Exam Result
                     Completed
                 </span>
 
-                <span class="summary-item-value">
+                <span
+                    class="summary-item-value"
+                    id="sidebar-completed-count"
+                >
                     {{ result.subjects_completed or 0 }}
                 </span>
 
@@ -3057,7 +3680,10 @@ Edit Exam Result
                     Failed
                 </span>
 
-                <span class="summary-item-value">
+                <span
+                    class="summary-item-value"
+                    id="sidebar-failed-count"
+                >
                     {{ result.subjects_failed or 0 }}
                 </span>
 
@@ -3107,6 +3733,8 @@ Edit Exam Result
         <div class="result-meta">
 
 
+            <!-- RESULT ID -->
+
             <div class="result-meta-item">
 
                 <span class="result-meta-label">
@@ -3119,6 +3747,8 @@ Edit Exam Result
 
             </div>
 
+
+            <!-- STUDENT ID -->
 
             <div class="result-meta-item">
 
@@ -3133,6 +3763,8 @@ Edit Exam Result
             </div>
 
 
+            <!-- EXAM ID -->
+
             <div class="result-meta-item">
 
                 <span class="result-meta-label">
@@ -3146,6 +3778,8 @@ Edit Exam Result
             </div>
 
 
+            <!-- CREATED -->
+
             {% if result.created_at %}
 
             <div class="result-meta-item">
@@ -3155,13 +3789,17 @@ Edit Exam Result
                 </span>
 
                 <span class="result-meta-value">
+
                     {{ result.created_at.strftime('%Y-%m-%d') }}
+
                 </span>
 
             </div>
 
             {% endif %}
 
+
+            <!-- UPDATED -->
 
             {% if result.updated_at %}
 
@@ -3172,7 +3810,9 @@ Edit Exam Result
                 </span>
 
                 <span class="result-meta-value">
+
                     {{ result.updated_at.strftime('%Y-%m-%d') }}
+
                 </span>
 
             </div>
@@ -3205,6 +3845,8 @@ Edit Exam Result
     <div class="sidebar-card-body">
 
 
+        <!-- SUBJECT MARKS -->
+
         <div class="info-row">
 
             <div class="info-icon">
@@ -3218,14 +3860,16 @@ Edit Exam Result
                 </strong>
 
                 <span>
-                    Each subject has its own mark record. Administrators
-                    can complete or correct missing marks here.
+                    Each applicable subject has its own mark record.
+                    Administrators can complete or correct missing marks.
                 </span>
 
             </div>
 
         </div>
 
+
+        <!-- ABSENT -->
 
         <div class="info-row">
 
@@ -3249,6 +3893,32 @@ Edit Exam Result
         </div>
 
 
+        <!-- EXEMPTED -->
+
+        <div class="info-row">
+
+            <div class="info-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+
+            <div class="info-content">
+
+                <strong>
+                    Exempted
+                </strong>
+
+                <span>
+                    Exempted subjects are not treated as normal numeric
+                    marks.
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- AUTOMATIC -->
+
         <div class="info-row">
 
             <div class="info-icon">
@@ -3263,13 +3933,15 @@ Edit Exam Result
 
                 <span>
                     Total, percentage, average, grade, GPA and subject
-                    counts are generated from the subject marks.
+                    counts are generated by the result engine.
                 </span>
 
             </div>
 
         </div>
 
+
+        <!-- MISSING -->
 
         <div class="info-row">
 
@@ -3294,6 +3966,8 @@ Edit Exam Result
         </div>
 
 
+        <!-- RANKINGS -->
+
         <div class="info-row">
 
             <div class="info-icon">
@@ -3307,13 +3981,16 @@ Edit Exam Result
                 </strong>
 
                 <span>
-                    Rankings should be recalculated after marks are changed.
+                    Rankings are recalculated automatically after
+                    successful mark updates.
                 </span>
 
             </div>
 
         </div>
 
+
+        <!-- PROTECTED -->
 
         <div class="info-row">
 
@@ -3393,384 +4070,1154 @@ Edit Exam Result
 </div>
 
 
-<script>
+<!-- ============================================================
+     SWEETALERT2
+============================================================ -->
 
-/* ============================================================
-   EDIT EXAM RESULT
-   SUBJECT MARK VALIDATION
-============================================================ */
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<script>
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const form = document.getElementById("edit-result-form");
-    const submitButton = document.getElementById("update-result-btn");
-
-    if (!form) {
-        return;
-    }
+    "use strict";
 
 
     /* ========================================================
-       SUBJECT ROWS
+       ELEMENTS
     ======================================================== */
 
-    const rows = document.querySelectorAll("[data-subject-row]");
+    const form =
+        document.getElementById("edit-result-form");
+
+    const updateButton =
+        document.getElementById("update-result-btn");
+
+    const rows =
+        Array.from(
+            document.querySelectorAll("[data-subject-row]")
+        );
+
+    const markInputs =
+        Array.from(
+            document.querySelectorAll("[data-mark-input]")
+        );
+
+
+    const sidebarTotal =
+        document.getElementById("sidebar-total-count");
+
+    const sidebarCompleted =
+        document.getElementById("sidebar-completed-count");
+
+    const sidebarFailed =
+        document.getElementById("sidebar-failed-count");
+
+    const sidebarMissing =
+        document.getElementById("sidebar-missing-count");
 
 
     /* ========================================================
-       UPDATE SUBJECT INPUT STATE
+       SAFE SWEETALERT TOAST
     ======================================================== */
 
-    function updateRow(row) {
+    function showToast(
+        icon,
+        title
+    ) {
 
-        const markInput =
-            row.querySelector("[data-mark-input]");
-
-        const absentCheckbox =
-            row.querySelector("[data-absent-checkbox]");
-
-        const exemptedCheckbox =
-            row.querySelector("[data-exempted-checkbox]");
-
-
-        if (!markInput) {
+        if (
+            typeof Swal === "undefined"
+        ) {
             return;
         }
 
+        Swal.fire({
 
-        const absent =
-            absentCheckbox &&
-            absentCheckbox.checked;
+            toast: true,
 
-        const exempted =
-            exemptedCheckbox &&
-            exemptedCheckbox.checked;
+            position: "top-end",
 
+            icon: icon,
 
-        /*
-         * Absent and exempted cannot both be selected.
-         */
+            title: title,
 
-        if (absent && exempted) {
+            showConfirmButton: false,
 
-            if (document.activeElement === absentCheckbox) {
-                exemptedCheckbox.checked = false;
-            } else {
-                absentCheckbox.checked = false;
-            }
+            timer: 2600,
 
-        }
-
-
-        const finalAbsent =
-            absentCheckbox &&
-            absentCheckbox.checked;
-
-        const finalExempted =
-            exemptedCheckbox &&
-            exemptedCheckbox.checked;
-
-
-        /*
-         * Disable marks when absent or exempted.
-         */
-
-        if (finalAbsent || finalExempted) {
-
-            markInput.value = "";
-            markInput.disabled = true;
-            markInput.classList.remove("invalid");
-
-        } else {
-
-            markInput.disabled = false;
-
-        }
-
-    }
-
-
-    rows.forEach(function (row) {
-
-        const absentCheckbox =
-            row.querySelector("[data-absent-checkbox]");
-
-        const exemptedCheckbox =
-            row.querySelector("[data-exempted-checkbox]");
-
-        if (absentCheckbox) {
-
-            absentCheckbox.addEventListener(
-                "change",
-                function () {
-
-                    if (absentCheckbox.checked &&
-                        exemptedCheckbox) {
-
-                        exemptedCheckbox.checked = false;
-
-                    }
-
-                    updateRow(row);
-
-                }
-            );
-
-        }
-
-
-        if (exemptedCheckbox) {
-
-            exemptedCheckbox.addEventListener(
-                "change",
-                function () {
-
-                    if (exemptedCheckbox.checked &&
-                        absentCheckbox) {
-
-                        absentCheckbox.checked = false;
-
-                    }
-
-                    updateRow(row);
-
-                }
-            );
-
-        }
-
-
-        updateRow(row);
-
-    });
-
-
-    /* ========================================================
-       MARK VALIDATION
-    ======================================================== */
-
-    document
-        .querySelectorAll("[data-mark-input]")
-        .forEach(function (input) {
-
-            input.addEventListener(
-                "input",
-                function () {
-
-                    const max =
-                        parseFloat(
-                            input.dataset.max || "0"
-                        );
-
-                    const value =
-                        parseFloat(input.value);
-
-
-                    input.classList.remove("invalid");
-
-
-                    if (
-                        input.value !== "" &&
-                        (
-                            Number.isNaN(value) ||
-                            value < 0 ||
-                            value > max
-                        )
-                    ) {
-
-                        input.classList.add("invalid");
-
-                    }
-
-                }
-            );
+            timerProgressBar: true
 
         });
 
-
-    /* ========================================================
-       FORM SUBMIT VALIDATION
-    ======================================================== */
-
-    form.addEventListener(
-        "submit",
-        function (event) {
-
-            let hasError = false;
-
-            const invalidInputs = [];
-
-
-            document
-                .querySelectorAll("[data-mark-input]")
-                .forEach(function (input) {
-
-                    if (input.disabled) {
-                        return;
-                    }
-
-
-                    if (input.value === "") {
-                        return;
-                    }
-
-
-                    const max =
-                        parseFloat(
-                            input.dataset.max || "0"
-                        );
-
-                    const value =
-                        parseFloat(input.value);
-
-
-                    if (
-                        Number.isNaN(value) ||
-                        value < 0 ||
-                        value > max
-                    ) {
-
-                        hasError = true;
-
-                        invalidInputs.push(input);
-
-                    }
-
-                });
-
-
-            if (hasError) {
-
-                event.preventDefault();
-
-
-                invalidInputs.forEach(
-                    function (input) {
-                        input.classList.add("invalid");
-                    }
-                );
-
-
-                alert(
-                    "One or more subject marks are invalid. " +
-                    "Please enter marks between 0 and the subject maximum."
-                );
-
-
-                if (invalidInputs[0]) {
-                    invalidInputs[0].focus();
-                }
-
-
-                return;
-
-            }
-
-
-            /*
-             * Prevent double submission.
-             */
-
-            if (submitButton) {
-
-                submitButton.disabled = true;
-
-                submitButton.innerHTML =
-                    '<i class="fas fa-spinner fa-spin"></i>' +
-                    '<span>Saving Marks & Recalculating...</span>';
-
-            }
-
-        }
-    );
+    }
 
 
     /* ========================================================
-       MISSING SUBJECT COUNT
+       UPDATE ROW STATUS
     ======================================================== */
 
-    function updateMissingCount() {
+    function updateRowStatus(row) {
 
-        const missingElement =
-            document.getElementById(
-                "sidebar-missing-count"
-            );
-
-        if (!missingElement) {
+        if (!row) {
             return;
         }
 
+
+        const input =
+            row.querySelector("[data-mark-input]");
+
+        const absent =
+            row.querySelector("[data-absent-checkbox]");
+
+        const exempted =
+            row.querySelector("[data-exempted-checkbox]");
+
+        const status =
+            row.querySelector("[data-current-status]");
+
+        const validation =
+            row.querySelector("[data-validation-message]");
+
+
+        if (!input || !status) {
+            return;
+        }
+
+
+        const max =
+            parseFloat(
+                input.dataset.max || "0"
+            );
+
+        const pass =
+            parseFloat(
+                row.dataset.passMarks || "0"
+            );
+
+
+        row.classList.remove(
+            "missing-row",
+            "row-absent",
+            "row-exempted",
+            "row-complete"
+        );
+
+
+        if (
+            validation
+        ) {
+
+            validation.classList.remove(
+                "show"
+            );
+
+            validation.textContent = "";
+
+        }
+
+
+        /* ====================================================
+           ABSENT
+        ==================================================== */
+
+        if (
+            absent &&
+            absent.checked
+        ) {
+
+            row.classList.add(
+                "row-absent"
+            );
+
+            status.innerHTML = `
+                <span class="subject-result-badge subject-result-absent">
+                    <i class="fas fa-user-slash"></i>
+                    Absent
+                </span>
+            `;
+
+            return;
+        }
+
+
+        /* ====================================================
+           EXEMPTED
+        ==================================================== */
+
+        if (
+            exempted &&
+            exempted.checked
+        ) {
+
+            row.classList.add(
+                "row-exempted"
+            );
+
+            status.innerHTML = `
+                <span class="subject-result-badge subject-result-exempted">
+                    <i class="fas fa-ban"></i>
+                    Exempted
+                </span>
+            `;
+
+            return;
+        }
+
+
+        /* ====================================================
+           EMPTY
+        ==================================================== */
+
+        const rawValue =
+            String(
+                input.value || ""
+            ).trim();
+
+
+        if (
+            rawValue === ""
+        ) {
+
+            row.classList.add(
+                "missing-row"
+            );
+
+            status.innerHTML = `
+                <span class="subject-result-badge subject-result-missing">
+                    <i class="fas fa-hourglass-half"></i>
+                    Missing
+                </span>
+            `;
+
+            return;
+        }
+
+
+        /* ====================================================
+           INVALID
+        ==================================================== */
+
+        const value =
+            parseFloat(rawValue);
+
+
+        if (
+            !Number.isFinite(value) ||
+            value < 0 ||
+            value > max
+        ) {
+
+            input.classList.add(
+                "invalid"
+            );
+
+            if (validation) {
+
+                validation.textContent =
+                    `Enter a mark between 0 and ${max}.`;
+
+                validation.classList.add(
+                    "show"
+                );
+
+            }
+
+            return;
+        }
+
+
+        input.classList.remove(
+            "invalid"
+        );
+
+
+        /* ====================================================
+           PASSED
+        ==================================================== */
+
+        if (
+            value >= pass
+        ) {
+
+            row.classList.add(
+                "row-complete"
+            );
+
+            status.innerHTML = `
+                <span class="subject-result-badge subject-result-pass">
+                    <i class="fas fa-check"></i>
+                    Passed
+                </span>
+            `;
+
+        }
+
+        /* ====================================================
+           FAILED
+        ==================================================== */
+
+        else {
+
+            row.classList.add(
+                "row-complete"
+            );
+
+            status.innerHTML = `
+                <span class="subject-result-badge subject-result-fail">
+                    <i class="fas fa-times"></i>
+                    Failed
+                </span>
+            `;
+
+        }
+
+    }
+
+
+    /* ========================================================
+       UPDATE SUMMARY
+    ======================================================== */
+
+    function updateSummary() {
+
+        let total = rows.length;
+
+        let completed = 0;
+
+        let failed = 0;
 
         let missing = 0;
 
 
         rows.forEach(function (row) {
 
-            const markInput =
-                row.querySelector("[data-mark-input]");
+            const input =
+                row.querySelector(
+                    "[data-mark-input]"
+                );
 
-            const absentCheckbox =
-                row.querySelector("[data-absent-checkbox]");
+            const absent =
+                row.querySelector(
+                    "[data-absent-checkbox]"
+                );
 
-            const exemptedCheckbox =
-                row.querySelector("[data-exempted-checkbox]");
+            const exempted =
+                row.querySelector(
+                    "[data-exempted-checkbox]"
+                );
 
 
-            if (!markInput) {
+            if (!input) {
                 return;
             }
 
 
-            const absent =
-                absentCheckbox &&
-                absentCheckbox.checked;
+            if (
+                absent &&
+                absent.checked
+            ) {
 
-            const exempted =
-                exemptedCheckbox &&
-                exemptedCheckbox.checked;
+                completed++;
+
+                return;
+            }
 
 
             if (
-                !absent &&
-                !exempted &&
-                markInput.value.trim() === ""
+                exempted &&
+                exempted.checked
+            ) {
+
+                completed++;
+
+                return;
+            }
+
+
+            const rawValue =
+                String(
+                    input.value || ""
+                ).trim();
+
+
+            if (
+                rawValue === ""
             ) {
 
                 missing++;
+
+                return;
+            }
+
+
+            const value =
+                parseFloat(rawValue);
+
+            const pass =
+                parseFloat(
+                    row.dataset.passMarks || "0"
+                );
+
+            const max =
+                parseFloat(
+                    row.dataset.maxMarks || "0"
+                );
+
+
+            if (
+                !Number.isFinite(value) ||
+                value < 0 ||
+                value > max
+            ) {
+
+                missing++;
+
+                return;
+            }
+
+
+            completed++;
+
+
+            if (
+                value < pass
+            ) {
+
+                failed++;
 
             }
 
         });
 
 
-        missingElement.textContent =
-            String(missing);
+        if (sidebarTotal) {
+
+            sidebarTotal.textContent =
+                total;
+
+        }
+
+
+        if (sidebarCompleted) {
+
+            sidebarCompleted.textContent =
+                completed;
+
+        }
+
+
+        if (sidebarFailed) {
+
+            sidebarFailed.textContent =
+                failed;
+
+        }
+
+
+        if (sidebarMissing) {
+
+            sidebarMissing.textContent =
+                missing;
+
+        }
+
+
+        return {
+            total,
+            completed,
+            failed,
+            missing
+        };
 
     }
 
 
-    document
-        .querySelectorAll(
-            "[data-mark-input], " +
-            "[data-absent-checkbox], " +
-            "[data-exempted-checkbox]"
-        )
-        .forEach(function (element) {
+    /* ========================================================
+       ABSENT / EXEMPTED TOGGLE
+    ======================================================== */
 
-            element.addEventListener(
-                "input",
-                updateMissingCount
+    function setupAttendanceToggle(row) {
+
+        const input =
+            row.querySelector(
+                "[data-mark-input]"
             );
 
-            element.addEventListener(
-                "change",
-                updateMissingCount
+        const absent =
+            row.querySelector(
+                "[data-absent-checkbox]"
             );
 
-        });
+        const exempted =
+            row.querySelector(
+                "[data-exempted-checkbox]"
+            );
 
 
-    updateMissingCount();
+        if (
+            !input ||
+            !absent ||
+            !exempted
+        ) {
+            return;
+        }
+
+
+        /* ====================================================
+           ABSENT
+        ==================================================== */
+
+        absent.addEventListener(
+            "change",
+            function () {
+
+                if (
+                    absent.checked
+                ) {
+
+                    exempted.checked =
+                        false;
+
+                    input.value =
+                        "";
+
+                    input.disabled =
+                        true;
+
+                    input.classList.remove(
+                        "invalid"
+                    );
+
+                }
+
+                else {
+
+                    if (
+                        !exempted.checked
+                    ) {
+
+                        input.disabled =
+                            false;
+
+                    }
+
+                }
+
+
+                updateRowStatus(
+                    row
+                );
+
+                updateSummary();
+
+            }
+        );
+
+
+        /* ====================================================
+           EXEMPTED
+        ==================================================== */
+
+        exempted.addEventListener(
+            "change",
+            function () {
+
+                if (
+                    exempted.checked
+                ) {
+
+                    absent.checked =
+                        false;
+
+                    input.value =
+                        "";
+
+                    input.disabled =
+                        true;
+
+                    input.classList.remove(
+                        "invalid"
+                    );
+
+                }
+
+                else {
+
+                    if (
+                        !absent.checked
+                    ) {
+
+                        input.disabled =
+                            false;
+
+                    }
+
+                }
+
+
+                updateRowStatus(
+                    row
+                );
+
+                updateSummary();
+
+            }
+        );
+
+
+        /* ====================================================
+           MARK INPUT
+        ==================================================== */
+
+        input.addEventListener(
+            "input",
+            function () {
+
+                updateRowStatus(
+                    row
+                );
+
+                updateSummary();
+
+            }
+        );
+
+
+        input.addEventListener(
+            "blur",
+            function () {
+
+                updateRowStatus(
+                    row
+                );
+
+                updateSummary();
+
+            }
+        );
+
+
+        updateRowStatus(
+            row
+        );
+
+    }
+
+
+    /* ========================================================
+       INITIALIZE ALL ROWS
+    ======================================================== */
+
+    rows.forEach(function (row) {
+
+        setupAttendanceToggle(
+            row
+        );
+
+    });
+
+
+    updateSummary();
+
+
+    /* ========================================================
+       FORM SUBMIT
+    ======================================================== */
+
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+
+                /* ==============================================
+                   VALIDATE ATTENDANCE
+                ============================================== */
+
+                let attendanceConflict =
+                    false;
+
+
+                rows.forEach(
+                    function (row) {
+
+                        const absent =
+                            row.querySelector(
+                                "[data-absent-checkbox]"
+                            );
+
+                        const exempted =
+                            row.querySelector(
+                                "[data-exempted-checkbox]"
+                            );
+
+
+                        if (
+                            absent &&
+                            exempted &&
+                            absent.checked &&
+                            exempted.checked
+                        ) {
+
+                            attendanceConflict =
+                                true;
+
+                        }
+
+                    }
+                );
+
+
+                if (
+                    attendanceConflict
+                ) {
+
+                    showToast(
+                        "error",
+                        "A subject cannot be both Absent and Exempted."
+                    );
+
+                    return;
+
+                }
+
+
+                /* ==============================================
+                   VALIDATE MARKS
+                ============================================== */
+
+                let invalidCount =
+                    0;
+
+                let missingCount =
+                    0;
+
+
+                rows.forEach(
+                    function (row) {
+
+                        const input =
+                            row.querySelector(
+                                "[data-mark-input]"
+                            );
+
+                        const absent =
+                            row.querySelector(
+                                "[data-absent-checkbox]"
+                            );
+
+                        const exempted =
+                            row.querySelector(
+                                "[data-exempted-checkbox]"
+                            );
+
+                        const validation =
+                            row.querySelector(
+                                "[data-validation-message]"
+                            );
+
+
+                        if (!input) {
+                            return;
+                        }
+
+
+                        if (
+                            absent &&
+                            absent.checked
+                        ) {
+
+                            input.classList.remove(
+                                "invalid"
+                            );
+
+                            return;
+
+                        }
+
+
+                        if (
+                            exempted &&
+                            exempted.checked
+                        ) {
+
+                            input.classList.remove(
+                                "invalid"
+                            );
+
+                            return;
+
+                        }
+
+
+                        const rawValue =
+                            String(
+                                input.value || ""
+                            ).trim();
+
+
+                        /* EMPTY IS ALLOWED */
+
+                        if (
+                            rawValue === ""
+                        ) {
+
+                            missingCount++;
+
+                            return;
+
+                        }
+
+
+                        const value =
+                            parseFloat(
+                                rawValue
+                            );
+
+                        const max =
+                            parseFloat(
+                                input.dataset.max || "0"
+                            );
+
+
+                        if (
+                            !Number.isFinite(value) ||
+                            value < 0 ||
+                            value > max
+                        ) {
+
+                            invalidCount++;
+
+                            input.classList.add(
+                                "invalid"
+                            );
+
+
+                            if (validation) {
+
+                                validation.textContent =
+                                    `Enter a mark between 0 and ${max}.`;
+
+                                validation.classList.add(
+                                    "show"
+                                );
+
+                            }
+
+                        }
+
+                        else {
+
+                            input.classList.remove(
+                                "invalid"
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                /* ==============================================
+                   INVALID MARKS
+                ============================================== */
+
+                if (
+                    invalidCount > 0
+                ) {
+
+                    showToast(
+                        "error",
+                        `${invalidCount} subject mark${invalidCount > 1 ? "s" : ""} need correction.`
+                    );
+
+                    const firstInvalid =
+                        form.querySelector(
+                            ".mark-input.invalid"
+                        );
+
+                    if (
+                        firstInvalid
+                    ) {
+
+                        firstInvalid.focus();
+
+                        firstInvalid.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+
+                    }
+
+                    return;
+
+                }
+
+
+                /* ==============================================
+                   CONFIRMATION TEXT
+                ============================================== */
+
+                let confirmationText =
+                    "The result will be recalculated automatically.";
+
+                if (
+                    missingCount > 0
+                ) {
+
+                    confirmationText =
+                        `${missingCount} subject${missingCount > 1 ? "s" : ""} still have missing marks. They will remain incomplete.`;
+
+                }
+
+
+                /* ==============================================
+                   SWEETALERT CONFIRM
+                ============================================== */
+
+                if (
+                    typeof Swal !== "undefined"
+                ) {
+
+                    const confirmation =
+                        await Swal.fire({
+
+                            title:
+                                "Save Exam Result?",
+
+                            html:
+                                `
+                                <div style="
+                                    text-align:left;
+                                    line-height:1.7;
+                                    font-size:13px;
+                                ">
+                                    <p style="margin-top:0;">
+                                        You are about to update the
+                                        subject marks for this student.
+                                    </p>
+
+                                    <p style="
+                                        margin-bottom:0;
+                                        color:#687284;
+                                    ">
+                                        ${confirmationText}
+                                    </p>
+                                </div>
+                                `,
+
+                            icon:
+                                "question",
+
+                            showCancelButton:
+                                true,
+
+                            confirmButtonText:
+                                "Yes, Save Result",
+
+                            cancelButtonText:
+                                "Cancel",
+
+                            reverseButtons:
+                                true,
+
+                            focusCancel:
+                                true,
+
+                            confirmButtonColor:
+                                "#06245f"
+
+                        });
+
+
+                    if (
+                        !confirmation.isConfirmed
+                    ) {
+
+                        return;
+
+                    }
+
+                }
+
+
+                /* ==============================================
+                   DISABLE BUTTON
+                ============================================== */
+
+                if (
+                    updateButton
+                ) {
+
+                    updateButton.disabled =
+                        true;
+
+                    updateButton.innerHTML =
+                        `
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Saving Result...</span>
+                        `;
+
+                }
+
+
+                /* ==============================================
+                   SUBMIT
+                ============================================== */
+
+                if (
+                    typeof Swal !== "undefined"
+                ) {
+
+                    Swal.fire({
+
+                        title:
+                            "Saving Result",
+
+                        html:
+                            `
+                            <div style="
+                                color:#687284;
+                                font-size:13px;
+                                line-height:1.6;
+                            ">
+                                Please wait while subject marks,
+                                result totals and rankings are
+                                recalculated.
+                            </div>
+                            `,
+
+                        allowOutsideClick:
+                            false,
+
+                        allowEscapeKey:
+                            false,
+
+                        showConfirmButton:
+                            false,
+
+                        didOpen:
+                            function () {
+
+                                Swal.showLoading();
+
+                            }
+
+                    });
+
+                }
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * Do NOT manually change disabled mark inputs here.
+                 *
+                 * The Flask route reads:
+                 *   mark_<exam_subject_id>
+                 *   absent_<exam_subject_id>
+                 *   exempted_<exam_subject_id>
+                 *
+                 * Disabled marks are intentionally empty for
+                 * Absent / Exempted subjects.
+                 */
+
+                form.submit();
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       FLASH MESSAGES FROM FLASK
+    ======================================================== */
+
+    {% with messages = get_flashed_messages(
+        with_categories=true
+    ) %}
+
+        {% if messages %}
+
+            const flaskMessages = [
+
+                {% for category, message in messages %}
+
+                    {
+                        category:
+                            {{ category|tojson }},
+
+                        message:
+                            {{ message|tojson }}
+                    }
+
+                    {% if not loop.last %},{% endif %}
+
+                {% endfor %}
+
+            ];
+
+
+            flaskMessages.forEach(
+                function (item) {
+
+                    let icon =
+                        "info";
+
+
+                    const category =
+                        String(
+                            item.category || ""
+                        ).toLowerCase();
+
+
+                    if (
+                        category === "success"
+                    ) {
+
+                        icon =
+                            "success";
+
+                    }
+
+                    else if (
+                        category === "error" ||
+                        category === "danger"
+                    ) {
+
+                        icon =
+                            "error";
+
+                    }
+
+                    else if (
+                        category === "warning"
+                    ) {
+
+                        icon =
+                            "warning";
+
+                    }
+
+
+                    showToast(
+                        icon,
+                        item.message
+                    );
+
+                }
+            );
+
+        {% endif %}
+
+    {% endwith %}
+
 
 });
 

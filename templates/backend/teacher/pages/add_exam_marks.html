@@ -10,6 +10,38 @@ Enter Exam Marks
 <style>
 
 /* ============================================================
+   SOOYAAL - TEACHER ENTER EXAM MARKS
+   PURE CSS
+   NO BOOTSTRAP
+   SWEETALERT-STYLE UI
+============================================================ */
+
+:root {
+    --marks-blue: #06245f;
+    --marks-blue-dark: #041a46;
+    --marks-green: #32b73a;
+    --marks-green-dark: #26972e;
+    --marks-purple: #33206f;
+
+    --marks-text: #111827;
+    --marks-muted: #64748b;
+    --marks-border: #e5e7eb;
+    --marks-bg: #f8fafc;
+    --marks-white: #ffffff;
+
+    --marks-danger: #dc2626;
+    --marks-warning: #f59e0b;
+    --marks-success: #10b981;
+
+    --marks-shadow:
+        0 10px 35px rgba(15, 23, 42, .08);
+
+    --marks-modal-shadow:
+        0 25px 80px rgba(15, 23, 42, .25);
+}
+
+
+/* ============================================================
    GLOBAL PAGE
 ============================================================ */
 
@@ -20,6 +52,7 @@ Enter Exam Marks
     padding: 24px 28px 40px;
     box-sizing: border-box;
 }
+
 
 /* ============================================================
    HEADER
@@ -41,7 +74,7 @@ Enter Exam Marks
 
 .page-title h1 {
     margin: 0;
-    color: #06245f;
+    color: var(--marks-blue);
     font-size: 28px;
     font-weight: 800;
     line-height: 1.2;
@@ -49,7 +82,7 @@ Enter Exam Marks
 
 .page-title p {
     margin: 7px 0 0;
-    color: #64748b;
+    color: var(--marks-muted);
     font-size: 14px;
     line-height: 1.5;
 }
@@ -60,6 +93,7 @@ Enter Exam Marks
     gap: 9px;
     flex-wrap: wrap;
 }
+
 
 /* ============================================================
    BUTTONS
@@ -78,11 +112,13 @@ Enter Exam Marks
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
+
     transition:
         background .2s ease,
         color .2s ease,
         box-shadow .2s ease,
         transform .15s ease;
+
     box-sizing: border-box;
     white-space: nowrap;
 }
@@ -102,29 +138,23 @@ Enter Exam Marks
 }
 
 .btn-success {
-    background: #32b73a;
+    background: var(--marks-green);
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(50, 183, 58, .18);
+
+    box-shadow:
+        0 5px 15px rgba(50, 183, 58, .20);
 }
 
 .btn-success:hover {
-    background: #26972e;
-}
-
-.btn-warning {
-    background: #f59e0b;
-    color: #ffffff;
-}
-
-.btn-warning:hover {
-    background: #d97706;
+    background: var(--marks-green-dark);
 }
 
 .btn:disabled {
-    opacity: .6;
+    opacity: .65;
     cursor: not-allowed;
     transform: none;
 }
+
 
 /* ============================================================
    FLASH
@@ -136,8 +166,8 @@ Enter Exam Marks
 }
 
 .alert {
-    padding: 12px 15px;
-    border-radius: 9px;
+    padding: 13px 15px;
+    border-radius: 10px;
     margin-bottom: 8px;
     font-size: 13px;
     font-weight: 600;
@@ -167,6 +197,7 @@ Enter Exam Marks
     border: 1px solid #bfdbfe;
 }
 
+
 /* ============================================================
    SUBMISSION STATUS
 ============================================================ */
@@ -176,8 +207,10 @@ Enter Exam Marks
     display: flex;
     align-items: flex-start;
     gap: 13px;
+
     padding: 15px 17px;
     margin-bottom: 20px;
+
     border-radius: 12px;
     box-sizing: border-box;
 }
@@ -185,11 +218,15 @@ Enter Exam Marks
 .submission-status-icon {
     width: 36px;
     height: 36px;
+
     flex: 0 0 36px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     border-radius: 50%;
+
     font-size: 18px;
     font-weight: 900;
 }
@@ -210,8 +247,6 @@ Enter Exam Marks
     line-height: 1.5;
 }
 
-/* Submitted */
-
 .submission-status.submitted {
     background: #ecfdf5;
     border: 1px solid #a7f3d0;
@@ -222,8 +257,6 @@ Enter Exam Marks
     background: #10b981;
     color: #ffffff;
 }
-
-/* Pending */
 
 .submission-status.pending {
     background: #eff6ff;
@@ -236,19 +269,25 @@ Enter Exam Marks
     color: #ffffff;
 }
 
+
 /* ============================================================
-   EXAM STATUS BADGES
+   EXAM STATUS
 ============================================================ */
 
 .exam-status-badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+
     margin-top: 10px;
+
     padding: 6px 10px;
+
     border-radius: 999px;
+
     font-size: 10px;
     font-weight: 800;
+
     text-transform: uppercase;
     letter-spacing: .45px;
 }
@@ -265,6 +304,7 @@ Enter Exam Marks
     border: 1px solid rgba(255, 255, 255, .3);
 }
 
+
 /* ============================================================
    COMMON CARD
 ============================================================ */
@@ -272,13 +312,21 @@ Enter Exam Marks
 .exam-card,
 .marks-card {
     width: 100%;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+
+    background: var(--marks-white);
+
+    border: 1px solid var(--marks-border);
+
     border-radius: 15px;
+
     overflow: hidden;
-    box-shadow: 0 5px 18px rgba(15, 23, 42, .05);
+
+    box-shadow:
+        0 5px 18px rgba(15, 23, 42, .05);
+
     box-sizing: border-box;
 }
+
 
 /* ============================================================
    EXAM HEADER
@@ -289,43 +337,57 @@ Enter Exam Marks
 }
 
 .exam-card-header {
-    background: linear-gradient(
-        135deg,
-        #06245f 0%,
-        #33206f 100%
-    );
+    background:
+        linear-gradient(
+            135deg,
+            var(--marks-blue) 0%,
+            var(--marks-purple) 100%
+        );
+
     color: #ffffff;
+
     padding: 20px 24px;
 }
 
 .exam-card-header h2 {
     margin: 0;
+
     font-size: 21px;
     font-weight: 800;
+
     line-height: 1.3;
 }
 
 .exam-card-header p {
     margin: 6px 0 0;
+
     font-size: 13px;
+
     opacity: .88;
 }
 
+
 /* ============================================================
-   EXAM INFORMATION GRID
+   EXAM INFORMATION
 ============================================================ */
 
 .exam-info {
     width: 100%;
+
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
 }
 
 .info-item {
     min-width: 0;
+
     padding: 16px 18px;
-    border-right: 1px solid #e5e7eb;
-    border-bottom: 1px solid #e5e7eb;
+
+    border-right: 1px solid var(--marks-border);
+    border-bottom: 1px solid var(--marks-border);
+
     box-sizing: border-box;
 }
 
@@ -335,20 +397,27 @@ Enter Exam Marks
 
 .info-label {
     margin-bottom: 5px;
+
     color: #94a3b8;
+
     font-size: 10px;
     font-weight: 800;
+
     text-transform: uppercase;
     letter-spacing: .55px;
 }
 
 .info-value {
-    color: #111827;
+    color: var(--marks-text);
+
     font-size: 14px;
     font-weight: 750;
+
     line-height: 1.45;
+
     overflow-wrap: anywhere;
 }
+
 
 /* ============================================================
    SUMMARY
@@ -356,33 +425,49 @@ Enter Exam Marks
 
 .summary-grid {
     width: 100%;
+
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
     gap: 16px;
+
     margin-bottom: 20px;
 }
 
 .summary-card {
     min-width: 0;
+
     background: #ffffff;
-    border: 1px solid #e5e7eb;
+
+    border: 1px solid var(--marks-border);
+
     border-radius: 13px;
+
     padding: 17px 19px;
-    box-shadow: 0 3px 12px rgba(15, 23, 42, .04);
+
+    box-shadow:
+        0 3px 12px rgba(15, 23, 42, .04);
+
     box-sizing: border-box;
 }
 
 .summary-label {
-    color: #64748b;
+    color: var(--marks-muted);
+
     font-size: 11px;
     font-weight: 700;
+
     margin-bottom: 6px;
 }
 
 .summary-value {
-    color: #06245f;
+    color: var(--marks-blue);
+
     font-size: 24px;
     font-weight: 800;
+
     line-height: 1.2;
 }
 
@@ -394,6 +479,7 @@ Enter Exam Marks
     color: #d97706;
 }
 
+
 /* ============================================================
    MARKS CARD HEADER
 ============================================================ */
@@ -404,12 +490,17 @@ Enter Exam Marks
 
 .marks-card-header {
     width: 100%;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 18px;
+
     padding: 18px 22px;
-    border-bottom: 1px solid #e5e7eb;
+
+    border-bottom: 1px solid var(--marks-border);
+
     box-sizing: border-box;
 }
 
@@ -419,92 +510,132 @@ Enter Exam Marks
 
 .marks-card-title h3 {
     margin: 0;
-    color: #06245f;
+
+    color: var(--marks-blue);
+
     font-size: 18px;
     font-weight: 800;
 }
 
 .marks-card-title p {
     margin: 4px 0 0;
-    color: #64748b;
+
+    color: var(--marks-muted);
+
     font-size: 12px;
 }
 
 .limit-badge {
     flex-shrink: 0;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     white-space: nowrap;
+
     background: #eef4ff;
-    color: #06245f;
+
+    color: var(--marks-blue);
+
     border: 1px solid #d7e3ff;
+
     border-radius: 999px;
+
     padding: 7px 12px;
+
     font-size: 11px;
     font-weight: 800;
 }
 
+
 /* ============================================================
-   STUDENT TOOLBAR
+   TOOLBAR
 ============================================================ */
 
 .student-toolbar {
     width: 100%;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 18px;
+
     padding: 14px 20px;
-    border-bottom: 1px solid #e5e7eb;
+
+    border-bottom: 1px solid var(--marks-border);
+
     background: #fafbfc;
+
     box-sizing: border-box;
 }
 
 .student-search {
     position: relative;
+
     width: 340px;
     max-width: 100%;
 }
 
 .student-search input {
     width: 100%;
+
     height: 41px;
+
     padding: 0 13px 0 39px;
+
     border: 1px solid #d1d5db;
+
     border-radius: 9px;
+
     outline: none;
+
     background: #ffffff;
-    color: #111827;
+
+    color: var(--marks-text);
+
     font-size: 13px;
+
     box-sizing: border-box;
+
     transition: .2s ease;
 }
 
 .student-search input:focus {
-    border-color: #06245f;
-    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+    border-color: var(--marks-blue);
+
+    box-shadow:
+        0 0 0 3px rgba(6, 36, 95, .08);
 }
 
 .student-search-icon {
     position: absolute;
+
     left: 13px;
     top: 50%;
+
     transform: translateY(-50%);
+
     color: #94a3b8;
+
     font-size: 14px;
+
     pointer-events: none;
 }
 
 .student-count {
-    color: #64748b;
+    color: var(--marks-muted);
+
     font-size: 12px;
     font-weight: 700;
+
     white-space: nowrap;
 }
 
+
 /* ============================================================
-   LOCKED TABLE
+   LOCKED
 ============================================================ */
 
 .marks-locked .marks-table tbody tr {
@@ -520,48 +651,53 @@ Enter Exam Marks
     background: #f8fafc;
 }
 
+
 /* ============================================================
-   TABLE WRAPPER
+   TABLE
 ============================================================ */
 
 .table-wrapper {
     width: 100%;
+
     overflow-x: auto;
     overflow-y: hidden;
+
     -webkit-overflow-scrolling: touch;
 }
 
-/* ============================================================
-   MARKS TABLE
-============================================================ */
-
 .marks-table {
     width: 100%;
+
     min-width: 720px;
+
     border-collapse: collapse;
+
     table-layout: fixed;
 }
 
 .marks-table thead th {
     background: #f8fafc;
+
     color: #475569;
+
     padding: 13px 18px;
-    border-bottom: 1px solid #e5e7eb;
+
+    border-bottom: 1px solid var(--marks-border);
+
     font-size: 10px;
     font-weight: 800;
+
     text-transform: uppercase;
     letter-spacing: .5px;
+
     text-align: left;
+
     white-space: nowrap;
 }
 
 .marks-table thead th:first-child {
     width: 65px;
     text-align: center;
-}
-
-.marks-table thead th:nth-child(2) {
-    width: auto;
 }
 
 .marks-table thead th:nth-child(3) {
@@ -584,11 +720,16 @@ Enter Exam Marks
 
 .marks-table tbody td {
     padding: 14px 18px;
+
     border-bottom: 1px solid #eef2f7;
+
     color: #374151;
+
     font-size: 13px;
+
     vertical-align: middle;
 }
+
 
 /* ============================================================
    NUMBER
@@ -596,9 +737,12 @@ Enter Exam Marks
 
 .number-cell {
     text-align: center;
+
     color: #94a3b8 !important;
+
     font-weight: 800;
 }
+
 
 /* ============================================================
    STUDENT
@@ -606,22 +750,32 @@ Enter Exam Marks
 
 .student-info {
     display: flex;
+
     align-items: center;
+
     gap: 12px;
+
     min-width: 0;
 }
 
 .student-avatar {
     width: 40px;
     height: 40px;
+
     flex: 0 0 40px;
+
     border-radius: 50%;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     overflow: hidden;
+
     background: #e8eef9;
-    color: #06245f;
+
+    color: var(--marks-blue);
+
     font-size: 14px;
     font-weight: 800;
 }
@@ -629,18 +783,25 @@ Enter Exam Marks
 .student-avatar img {
     width: 100%;
     height: 100%;
+
     object-fit: cover;
 }
 
 .student-name {
     min-width: 0;
-    color: #111827;
+
+    color: var(--marks-text);
+
     font-size: 14px;
     font-weight: 800;
+
     overflow: hidden;
+
     text-overflow: ellipsis;
+
     white-space: nowrap;
 }
+
 
 /* ============================================================
    ABSENT
@@ -652,8 +813,10 @@ Enter Exam Marks
 
 .absent-toggle {
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
+
     cursor: pointer;
 }
 
@@ -664,28 +827,41 @@ Enter Exam Marks
 .absent-box {
     width: 19px;
     height: 19px;
+
     border: 2px solid #cbd5e1;
+
     border-radius: 5px;
+
     position: relative;
+
     transition: .2s ease;
+
     box-sizing: border-box;
 }
 
 .absent-toggle input:checked + .absent-box {
     background: #dc2626;
+
     border-color: #dc2626;
 }
 
 .absent-toggle input:checked + .absent-box::after {
     content: "✓";
+
     position: absolute;
+
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -54%);
+
+    transform:
+        translate(-50%, -54%);
+
     color: #ffffff;
+
     font-size: 12px;
     font-weight: 900;
 }
+
 
 /* ============================================================
    MARK INPUT
@@ -698,35 +874,48 @@ Enter Exam Marks
 .mark-input {
     width: 115px;
     height: 41px;
+
     padding: 0 10px;
+
     border: 1px solid #d1d5db;
+
     border-radius: 8px;
+
     outline: none;
-    color: #111827;
+
+    color: var(--marks-text);
+
     background: #ffffff;
+
     font-size: 14px;
     font-weight: 800;
+
     text-align: center;
+
     box-sizing: border-box;
+
     transition: .2s ease;
 }
 
 .mark-input:focus {
-    border-color: #06245f;
-    box-shadow: 0 0 0 3px rgba(6, 36, 95, .09);
+    border-color: var(--marks-blue);
+
+    box-shadow:
+        0 0 0 3px rgba(6, 36, 95, .09);
 }
 
 .mark-input:disabled {
     background: #f1f5f9;
+
     color: #94a3b8;
+
     cursor: not-allowed;
 }
-
-/* Remove number arrows */
 
 .mark-input::-webkit-outer-spin-button,
 .mark-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
+
     margin: 0;
 }
 
@@ -734,69 +923,94 @@ Enter Exam Marks
     -moz-appearance: textfield;
 }
 
+
 /* ============================================================
    PAGINATION
 ============================================================ */
 
 .pagination-area {
     display: flex;
+
     align-items: center;
     justify-content: space-between;
+
     gap: 15px;
+
     padding: 15px 20px;
-    border-top: 1px solid #e5e7eb;
+
+    border-top: 1px solid var(--marks-border);
+
     background: #fafbfc;
 }
 
 .pagination-info {
-    color: #64748b;
+    color: var(--marks-muted);
+
     font-size: 12px;
     font-weight: 600;
 }
 
 .pagination {
     display: flex;
+
     align-items: center;
     justify-content: flex-end;
+
     gap: 5px;
+
     flex-wrap: wrap;
 }
 
 .page-btn {
     min-width: 35px;
     height: 35px;
+
     padding: 0 9px;
+
     border: 1px solid #dbe2ea;
+
     border-radius: 7px;
+
     background: #ffffff;
+
     color: #475569;
+
     font-size: 12px;
     font-weight: 700;
+
     cursor: pointer;
+
     transition: .2s ease;
 }
 
 .page-btn:hover:not(:disabled) {
-    border-color: #06245f;
-    color: #06245f;
+    border-color: var(--marks-blue);
+
+    color: var(--marks-blue);
+
     background: #f8faff;
 }
 
 .page-btn.active {
-    background: #06245f;
-    border-color: #06245f;
+    background: var(--marks-blue);
+
+    border-color: var(--marks-blue);
+
     color: #ffffff;
 }
 
 .page-btn:disabled {
     opacity: .45;
+
     cursor: not-allowed;
 }
 
 .page-dots {
     color: #94a3b8;
+
     padding: 0 2px;
 }
+
 
 /* ============================================================
    FORM FOOTER
@@ -804,13 +1018,20 @@ Enter Exam Marks
 
 .form-footer {
     width: 100%;
+
     display: flex;
+
     align-items: center;
     justify-content: flex-end;
+
     gap: 9px;
+
     padding: 16px 20px;
-    border-top: 1px solid #e5e7eb;
+
+    border-top: 1px solid var(--marks-border);
+
     background: #ffffff;
+
     box-sizing: border-box;
 }
 
@@ -818,59 +1039,476 @@ Enter Exam Marks
     min-width: 130px;
 }
 
+
 /* ============================================================
-   ALREADY SUBMITTED BUTTON
+   ALREADY SUBMITTED
 ============================================================ */
 
 .already-submitted-btn {
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
+
     gap: 7px;
+
     min-height: 42px;
     min-width: 170px;
+
     padding: 10px 16px;
+
     border-radius: 9px;
+
     background: #ecfdf5;
+
     color: #047857;
+
     border: 1px solid #a7f3d0;
+
     font-size: 13px;
     font-weight: 800;
+
     box-sizing: border-box;
 }
 
+
 /* ============================================================
-   EMPTY STATE
+   EMPTY
 ============================================================ */
 
 .empty-state {
     padding: 60px 20px;
+
     text-align: center;
 }
 
 .empty-icon {
     width: 62px;
     height: 62px;
+
     margin: 0 auto 14px;
+
     border-radius: 50%;
+
     display: flex;
+
     align-items: center;
     justify-content: center;
+
     background: #eef2f7;
+
     font-size: 25px;
 }
 
 .empty-state h3 {
     margin: 0 0 7px;
+
     color: #1f2937;
+
     font-size: 17px;
 }
 
 .empty-state p {
     margin: 0;
-    color: #64748b;
+
+    color: var(--marks-muted);
+
     font-size: 13px;
 }
+
+
+/* ============================================================
+   SOOYAAL SWEETALERT-STYLE MODAL
+============================================================ */
+
+.swa-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 999999;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(2, 6, 23, .62);
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity .22s ease,
+        visibility .22s ease;
+}
+
+.swa-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.swa-modal {
+    width: 100%;
+    max-width: 430px;
+
+    background: #ffffff;
+
+    border-radius: 20px;
+
+    padding: 30px 28px 25px;
+
+    text-align: center;
+
+    box-shadow: var(--marks-modal-shadow);
+
+    transform:
+        translateY(15px)
+        scale(.96);
+
+    transition:
+        transform .25s ease;
+}
+
+.swa-overlay.show .swa-modal {
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+
+/* ============================================================
+   MODAL ICON
+============================================================ */
+
+.swa-icon {
+    width: 72px;
+    height: 72px;
+
+    margin: 0 auto 17px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    font-size: 31px;
+    font-weight: 900;
+}
+
+.swa-icon.warning {
+    background: #fff7ed;
+
+    color: #f59e0b;
+
+    box-shadow:
+        0 0 0 8px #fffaf3;
+}
+
+.swa-icon.loading {
+    background: #eff6ff;
+
+    color: var(--marks-blue);
+
+    box-shadow:
+        0 0 0 8px #f5f8ff;
+}
+
+.swa-icon.success {
+    background: #ecfdf5;
+
+    color: #059669;
+
+    box-shadow:
+        0 0 0 8px #f3fdf8;
+}
+
+.swa-icon.error {
+    background: #fef2f2;
+
+    color: #dc2626;
+
+    box-shadow:
+        0 0 0 8px #fff7f7;
+}
+
+
+/* ============================================================
+   SPINNER
+============================================================ */
+
+.swa-spinner {
+    width: 32px;
+    height: 32px;
+
+    border-radius: 50%;
+
+    border: 3px solid rgba(6, 36, 95, .14);
+
+    border-top-color: var(--marks-blue);
+
+    animation:
+        swaSpin .8s linear infinite;
+}
+
+@keyframes swaSpin {
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+
+/* ============================================================
+   MODAL TEXT
+============================================================ */
+
+.swa-title {
+    margin: 0 0 8px;
+
+    color: #111827;
+
+    font-size: 21px;
+    font-weight: 800;
+
+    line-height: 1.3;
+}
+
+.swa-text {
+    margin: 0 auto;
+
+    max-width: 350px;
+
+    color: #64748b;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+.swa-text strong {
+    color: #334155;
+}
+
+
+/* ============================================================
+   MODAL ACTIONS
+============================================================ */
+
+.swa-actions {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-top: 23px;
+}
+
+.swa-btn {
+    min-width: 120px;
+
+    min-height: 43px;
+
+    padding: 10px 17px;
+
+    border-radius: 9px;
+
+    border: 0;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+.swa-btn:hover {
+    transform: translateY(-1px);
+}
+
+.swa-btn-cancel {
+    background: #f1f5f9;
+
+    color: #475569;
+
+    border: 1px solid #e2e8f0;
+}
+
+.swa-btn-cancel:hover {
+    background: #e2e8f0;
+}
+
+.swa-btn-confirm {
+    background: var(--marks-green);
+
+    color: #ffffff;
+
+    box-shadow:
+        0 5px 14px rgba(50, 183, 58, .20);
+}
+
+.swa-btn-confirm:hover {
+    background: var(--marks-green-dark);
+}
+
+
+/* ============================================================
+   SUCCESS CHECK
+============================================================ */
+
+.swa-success-check {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    background: var(--marks-green);
+
+    color: #ffffff;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 21px;
+    font-weight: 900;
+
+    margin: auto;
+
+    animation:
+        swaPop .35s ease;
+}
+
+@keyframes swaPop {
+
+    0% {
+        transform: scale(.5);
+        opacity: 0;
+    }
+
+    70% {
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+}
+
+
+/* ============================================================
+   LOADING BAR
+============================================================ */
+
+.swa-loading-line {
+    width: 100%;
+    height: 4px;
+
+    margin-top: 21px;
+
+    overflow: hidden;
+
+    border-radius: 999px;
+
+    background: #eaf0f8;
+}
+
+.swa-loading-line::before {
+    content: "";
+
+    display: block;
+
+    width: 40%;
+    height: 100%;
+
+    border-radius: inherit;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--marks-blue),
+            var(--marks-green),
+            var(--marks-purple)
+        );
+
+    animation:
+        swaLoading 1.1s ease-in-out infinite;
+}
+
+@keyframes swaLoading {
+
+    0% {
+        transform: translateX(-120%);
+    }
+
+    50% {
+        transform: translateX(110%);
+    }
+
+    100% {
+        transform: translateX(280%);
+    }
+
+}
+
+
+/* ============================================================
+   MOBILE MODAL
+============================================================ */
+
+@media (max-width: 500px) {
+
+    .swa-overlay {
+        padding: 14px;
+    }
+
+    .swa-modal {
+        max-width: 100%;
+
+        padding:
+            26px
+            20px
+            21px;
+
+        border-radius: 17px;
+    }
+
+    .swa-icon {
+        width: 64px;
+        height: 64px;
+
+        font-size: 27px;
+    }
+
+    .swa-title {
+        font-size: 19px;
+    }
+
+    .swa-actions {
+        flex-direction: column-reverse;
+    }
+
+    .swa-btn {
+        width: 100%;
+    }
+
+}
+
 
 /* ============================================================
    LARGE DESKTOP
@@ -883,29 +1521,23 @@ Enter Exam Marks
         padding-right: 34px;
     }
 
-    .exam-info {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
     .marks-table thead th,
     .marks-table tbody td {
         padding-left: 22px;
         padding-right: 22px;
     }
+
 }
 
+
 /* ============================================================
-   DESKTOP / LAPTOP
+   DESKTOP
 ============================================================ */
 
 @media (max-width: 1200px) {
 
     .marks-page {
         padding: 22px;
-    }
-
-    .exam-info {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
     .info-item {
@@ -915,7 +1547,9 @@ Enter Exam Marks
     .marks-table {
         min-width: 680px;
     }
+
 }
+
 
 /* ============================================================
    TABLET
@@ -932,11 +1566,12 @@ Enter Exam Marks
     }
 
     .exam-info {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
 
     .info-item:nth-child(4n) {
-        border-right: 1px solid #e5e7eb;
+        border-right: 1px solid var(--marks-border);
     }
 
     .info-item:nth-child(2n) {
@@ -944,14 +1579,14 @@ Enter Exam Marks
     }
 
     .summary-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
         gap: 12px;
     }
 
-    .student-toolbar {
-        align-items: center;
-    }
 }
+
 
 /* ============================================================
    SMALL TABLET
@@ -997,7 +1632,9 @@ Enter Exam Marks
     .limit-badge {
         align-self: flex-start;
     }
+
 }
+
 
 /* ============================================================
    MOBILE
@@ -1030,10 +1667,6 @@ Enter Exam Marks
         padding: 13px;
     }
 
-    /* --------------------------------------------------------
-       EXAM
-    -------------------------------------------------------- */
-
     .exam-card-header {
         padding: 17px;
     }
@@ -1058,10 +1691,6 @@ Enter Exam Marks
         font-size: 12px;
     }
 
-    /* --------------------------------------------------------
-       SUMMARY
-    -------------------------------------------------------- */
-
     .summary-grid {
         grid-template-columns: 1fr;
         gap: 9px;
@@ -1075,10 +1704,6 @@ Enter Exam Marks
         font-size: 20px;
     }
 
-    /* --------------------------------------------------------
-       MARKS HEADER
-    -------------------------------------------------------- */
-
     .marks-card-header {
         padding: 14px;
     }
@@ -1090,10 +1715,6 @@ Enter Exam Marks
     .marks-card-title p {
         font-size: 11px;
     }
-
-    /* --------------------------------------------------------
-       TABLE AS MOBILE CARDS
-    -------------------------------------------------------- */
 
     .table-wrapper {
         width: 100%;
@@ -1124,11 +1745,17 @@ Enter Exam Marks
 
     .marks-table tbody tr {
         background: #ffffff;
-        border: 1px solid #e5e7eb;
+
+        border: 1px solid var(--marks-border);
+
         border-radius: 12px;
+
         margin-bottom: 10px;
+
         padding: 12px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, .03);
+
+        box-shadow:
+            0 2px 8px rgba(15, 23, 42, .03);
     }
 
     .marks-table tbody tr:hover {
@@ -1144,19 +1771,19 @@ Enter Exam Marks
         display: none !important;
     }
 
-    /* --------------------------------------------------------
-       STUDENT
-    -------------------------------------------------------- */
-
     .student-info {
         padding-bottom: 11px;
+
         margin-bottom: 10px;
-        border-bottom: 1px solid #eef2f7;
+
+        border-bottom:
+            1px solid #eef2f7;
     }
 
     .student-avatar {
         width: 42px;
         height: 42px;
+
         flex-basis: 42px;
     }
 
@@ -1164,39 +1791,41 @@ Enter Exam Marks
         font-size: 14px;
     }
 
-    /* --------------------------------------------------------
-       ABSENT
-    -------------------------------------------------------- */
-
     .absent-cell {
         display: flex !important;
+
         align-items: center;
         justify-content: space-between;
+
         padding: 9px 0 !important;
-        border-bottom: 1px solid #eef2f7 !important;
+
+        border-bottom:
+            1px solid #eef2f7 !important;
     }
 
     .absent-cell::before {
         content: "Absent";
-        color: #64748b;
+
+        color: var(--marks-muted);
+
         font-size: 12px;
         font-weight: 700;
     }
 
-    /* --------------------------------------------------------
-       MARK
-    -------------------------------------------------------- */
-
     .mark-cell {
         display: flex !important;
+
         align-items: center;
         justify-content: space-between;
+
         padding-top: 10px !important;
     }
 
     .mark-cell::before {
         content: "Mark";
-        color: #64748b;
+
+        color: var(--marks-muted);
+
         font-size: 12px;
         font-weight: 700;
     }
@@ -1206,13 +1835,11 @@ Enter Exam Marks
         height: 42px;
     }
 
-    /* --------------------------------------------------------
-       PAGINATION
-    -------------------------------------------------------- */
-
     .pagination-area {
         flex-direction: column;
+
         align-items: stretch;
+
         padding: 13px;
     }
 
@@ -1224,12 +1851,9 @@ Enter Exam Marks
         justify-content: center;
     }
 
-    /* --------------------------------------------------------
-       FOOTER
-    -------------------------------------------------------- */
-
     .form-footer {
         padding: 13px;
+
         flex-direction: column-reverse;
     }
 
@@ -1238,7 +1862,9 @@ Enter Exam Marks
         width: 100%;
         min-width: 0;
     }
+
 }
+
 
 /* ============================================================
    VERY SMALL MOBILE
@@ -1260,14 +1886,6 @@ Enter Exam Marks
         border-right: 0;
     }
 
-    .header-actions {
-        gap: 7px;
-    }
-
-    .student-toolbar {
-        padding: 12px;
-    }
-
     .marks-table tbody {
         padding: 8px;
     }
@@ -1279,13 +1897,17 @@ Enter Exam Marks
     .page-btn {
         min-width: 31px;
         height: 31px;
+
         padding: 0 7px;
+
         font-size: 11px;
     }
+
 }
 
+
 /* ============================================================
-   EXTRA SMALL DEVICES
+   EXTRA SMALL
 ============================================================ */
 
 @media (max-width: 330px) {
@@ -1305,6 +1927,7 @@ Enter Exam Marks
     .student-avatar {
         width: 38px;
         height: 38px;
+
         flex-basis: 38px;
     }
 
@@ -1315,9 +1938,82 @@ Enter Exam Marks
     .mark-input {
         width: 100px;
     }
+
 }
 
 </style>
+
+
+<!-- ============================================================
+     SWEETALERT-STYLE OVERLAY
+============================================================ -->
+
+<div
+    class="swa-overlay"
+    id="swaOverlay"
+    aria-hidden="true"
+>
+
+    <div
+        class="swa-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="swaTitle"
+    >
+
+        <div
+            class="swa-icon warning"
+            id="swaIcon"
+        >
+            !
+        </div>
+
+
+        <h2
+            class="swa-title"
+            id="swaTitle"
+        >
+            Submit Exam Marks?
+        </h2>
+
+
+        <p
+            class="swa-text"
+            id="swaText"
+        >
+            Are you sure you want to submit these marks?
+            <br>
+            <strong>Submitted marks cannot be edited again.</strong>
+        </p>
+
+
+        <div
+            class="swa-actions"
+            id="swaActions"
+        >
+
+            <button
+                type="button"
+                class="swa-btn swa-btn-cancel"
+                id="swaCancel"
+            >
+                Cancel
+            </button>
+
+
+            <button
+                type="button"
+                class="swa-btn swa-btn-confirm"
+                id="swaConfirm"
+            >
+                ✓ Yes, Submit
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 
 <div class="marks-page">
@@ -1378,7 +2074,9 @@ Enter Exam Marks
 
     <div class="flash-area">
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% with messages =
+            get_flashed_messages(with_categories=true)
+        %}
 
             {% if messages %}
 
@@ -1416,13 +2114,16 @@ Enter Exam Marks
                 </p>
 
                 <p class="submission-status-text">
+
                     Marks for
                     <strong>
                         {{ subject.name if subject else 'this subject' }}
                     </strong>
                     have already been submitted.
-                    You can view the marks, but you cannot edit or
-                    submit them again.
+
+                    You can view the marks, but you cannot edit
+                    or submit them again.
+
                 </p>
 
             </div>
@@ -1444,8 +2145,10 @@ Enter Exam Marks
                 </p>
 
                 <p class="submission-status-text">
+
                     Enter marks for all students and click
                     <strong>Save &amp; Submit Marks</strong>.
+
                 </p>
 
             </div>
@@ -1480,10 +2183,6 @@ Enter Exam Marks
             </p>
 
 
-            <!-- =================================================
-                 EXAM STATUS
-            ================================================== -->
-
             {% set current_exam_status =
                 (exam.status|string|lower|trim)
             %}
@@ -1507,8 +2206,6 @@ Enter Exam Marks
 
         <div class="exam-info">
 
-            <!-- SUBJECT -->
-
             <div class="info-item">
 
                 <div class="info-label">
@@ -1528,8 +2225,6 @@ Enter Exam Marks
             </div>
 
 
-            <!-- PROGRAM -->
-
             <div class="info-item">
 
                 <div class="info-label">
@@ -1542,8 +2237,6 @@ Enter Exam Marks
 
             </div>
 
-
-            <!-- CLASS -->
 
             <div class="info-item">
 
@@ -1564,8 +2257,6 @@ Enter Exam Marks
             </div>
 
 
-            <!-- SECTION -->
-
             <div class="info-item">
 
                 <div class="info-label">
@@ -1585,8 +2276,6 @@ Enter Exam Marks
             </div>
 
 
-            <!-- ACADEMIC YEAR -->
-
             <div class="info-item">
 
                 <div class="info-label">
@@ -1594,13 +2283,13 @@ Enter Exam Marks
                 </div>
 
                 <div class="info-value">
-                    {{ exam.academic_year.name if exam.academic_year else '—' }}
+                    {{ exam.academic_year.name
+                        if exam.academic_year
+                        else '—' }}
                 </div>
 
             </div>
 
-
-            <!-- TERM -->
 
             <div class="info-item">
 
@@ -1609,13 +2298,13 @@ Enter Exam Marks
                 </div>
 
                 <div class="info-value">
-                    {{ exam.term.name if exam.term else '—' }}
+                    {{ exam.term.name
+                        if exam.term
+                        else '—' }}
                 </div>
 
             </div>
 
-
-            <!-- MAXIMUM -->
 
             <div class="info-item">
 
@@ -1629,8 +2318,6 @@ Enter Exam Marks
 
             </div>
 
-
-            <!-- PASS -->
 
             <div class="info-item">
 
@@ -1655,8 +2342,6 @@ Enter Exam Marks
 
     <div class="summary-grid">
 
-        <!-- TOTAL STUDENTS -->
-
         <div class="summary-card">
 
             <div class="summary-label">
@@ -1672,8 +2357,6 @@ Enter Exam Marks
 
         </div>
 
-
-        <!-- SUBMITTED -->
 
         <div class="summary-card">
 
@@ -1691,8 +2374,6 @@ Enter Exam Marks
         </div>
 
 
-        <!-- MAXIMUM -->
-
         <div class="summary-card">
 
             <div class="summary-label">
@@ -1705,8 +2386,6 @@ Enter Exam Marks
 
         </div>
 
-
-        <!-- PASS -->
 
         <div class="summary-card">
 
@@ -1724,7 +2403,7 @@ Enter Exam Marks
 
 
     <!-- =====================================================
-         MARKS FORM
+         FORM
     ====================================================== -->
 
     <form
@@ -1738,12 +2417,9 @@ Enter Exam Marks
     >
 
         <div
-            class="marks-card {% if marks_locked %}marks-locked{% endif %}"
+            class="marks-card
+            {% if marks_locked %}marks-locked{% endif %}"
         >
-
-            <!-- =================================================
-                 MARKS HEADER
-            ================================================== -->
 
             <div class="marks-card-header">
 
@@ -1780,9 +2456,9 @@ Enter Exam Marks
 
             {% if students %}
 
-                <!-- =============================================
-                     SEARCH TOOLBAR
-                ============================================== -->
+                <!-- =================================================
+                     SEARCH
+                ================================================== -->
 
                 <div class="student-toolbar">
 
@@ -1821,9 +2497,9 @@ Enter Exam Marks
                 </div>
 
 
-                <!-- =============================================
+                <!-- =================================================
                      TABLE
-                ============================================== -->
+                ================================================== -->
 
                 <div class="table-wrapper">
 
@@ -1868,14 +2544,10 @@ Enter Exam Marks
                                     data-name="{{ student.full_name|lower }}"
                                 >
 
-                                    <!-- NUMBER -->
-
                                     <td class="number-cell">
                                         {{ loop.index }}
                                     </td>
 
-
-                                    <!-- STUDENT -->
 
                                     <td>
 
@@ -1910,17 +2582,13 @@ Enter Exam Marks
 
 
                                             <div class="student-name">
-
                                                 {{ student.full_name }}
-
                                             </div>
 
                                         </div>
 
                                     </td>
 
-
-                                    <!-- ABSENT -->
 
                                     <td class="absent-cell">
 
@@ -1951,13 +2619,12 @@ Enter Exam Marks
                                     </td>
 
 
-                                    <!-- MARK -->
-
                                     <td class="mark-cell">
 
                                         <input
                                             type="number"
                                             class="mark-input"
+
                                             name="marks_{{ student.id }}"
 
                                             value="{% if row.marks_obtained is not none %}{{ row.marks_obtained }}{% endif %}"
@@ -1967,9 +2634,11 @@ Enter Exam Marks
                                             step="0.01"
 
                                             placeholder="0 - {{ max_marks }}"
+
                                             inputmode="decimal"
 
-                                            {% if row.is_absent or row.is_exempted %}
+                                            {% if row.is_absent
+                                                or row.is_exempted %}
                                                 disabled
                                             {% endif %}
 
@@ -1991,9 +2660,9 @@ Enter Exam Marks
                 </div>
 
 
-                <!-- =============================================
+                <!-- =================================================
                      PAGINATION
-                ============================================== -->
+                ================================================== -->
 
                 <div class="pagination-area">
 
@@ -2013,9 +2682,9 @@ Enter Exam Marks
                 </div>
 
 
-                <!-- =============================================
-                     FORM FOOTER
-                ============================================== -->
+                <!-- =================================================
+                     FOOTER
+                ================================================== -->
 
                 <div class="form-footer">
 
@@ -2040,7 +2709,7 @@ Enter Exam Marks
                             class="btn btn-success"
                             id="saveMarksBtn"
                         >
-                            Save &amp; Submit Marks
+                            ✓ Save &amp; Submit Marks
                         </button>
 
                     {% endif %}
@@ -2048,10 +2717,6 @@ Enter Exam Marks
                 </div>
 
             {% else %}
-
-                <!-- =============================================
-                     EMPTY STATE
-                ============================================== -->
 
                 <div class="empty-state">
 
@@ -2087,6 +2752,7 @@ document.addEventListener(
 
         "use strict";
 
+
         /* =====================================================
            SERVER STATE
         ====================================================== */
@@ -2113,25 +2779,80 @@ document.addEventListener(
 
         const rows =
             Array.from(
-                document.querySelectorAll(".student-row")
+                document.querySelectorAll(
+                    ".student-row"
+                )
             );
 
         const pagination =
             document.getElementById("pagination");
 
         const paginationInfo =
-            document.getElementById("paginationInfo");
+            document.getElementById(
+                "paginationInfo"
+            );
 
         const visibleCount =
-            document.getElementById("visibleCount");
+            document.getElementById(
+                "visibleCount"
+            );
 
         const saveButton =
-            document.getElementById("saveMarksBtn");
+            document.getElementById(
+                "saveMarksBtn"
+            );
 
 
         const maxMarks =
             parseFloat(
                 "{{ max_marks }}"
+            );
+
+
+        /* =====================================================
+           SWEETALERT ELEMENTS
+        ====================================================== */
+
+        const swaOverlay =
+            document.getElementById(
+                "swaOverlay"
+            );
+
+        const swaModal =
+            swaOverlay
+                ? swaOverlay.querySelector(
+                    ".swa-modal"
+                )
+                : null;
+
+        const swaIcon =
+            document.getElementById(
+                "swaIcon"
+            );
+
+        const swaTitle =
+            document.getElementById(
+                "swaTitle"
+            );
+
+        const swaText =
+            document.getElementById(
+                "swaText"
+            );
+
+        const swaActions =
+            document.getElementById(
+                "swaActions"
+            );
+
+        const swaCancel =
+            document.getElementById(
+                "swaCancel"
+            );
+
+        const swaConfirm =
+            document.getElementById(
+                "swaConfirm"
             );
 
 
@@ -2145,9 +2866,225 @@ document.addEventListener(
 
         let filteredRows = [...rows];
 
+        let isSubmitting = false;
+
 
         /* =====================================================
-           UPDATE ABSENT / MARK
+           SWEETALERT OPEN
+        ====================================================== */
+
+        function openSweetAlert() {
+
+            if (!swaOverlay) {
+                return;
+            }
+
+            swaOverlay.classList.add(
+                "show"
+            );
+
+            swaOverlay.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+            document.body.style.overflow =
+                "hidden";
+
+        }
+
+
+        /* =====================================================
+           SWEETALERT CLOSE
+        ====================================================== */
+
+        function closeSweetAlert() {
+
+            if (!swaOverlay) {
+                return;
+            }
+
+            swaOverlay.classList.remove(
+                "show"
+            );
+
+            swaOverlay.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            document.body.style.overflow =
+                "";
+
+        }
+
+
+        /* =====================================================
+           CONFIRMATION MODAL
+        ====================================================== */
+
+        function showConfirmation() {
+
+            if (
+                !swaOverlay ||
+                !swaIcon ||
+                !swaTitle ||
+                !swaText ||
+                !swaActions
+            ) {
+
+                return Promise.resolve(
+                    window.confirm(
+                        "Are you sure you want to submit these marks?"
+                    )
+                );
+
+            }
+
+
+            swaIcon.className =
+                "swa-icon warning";
+
+            swaIcon.innerHTML =
+                "!";
+
+
+            swaTitle.textContent =
+                "Submit Exam Marks?";
+
+
+            swaText.innerHTML =
+                "Are you sure you want to submit these marks?" +
+                "<br>" +
+                "<strong>Submitted marks cannot be edited again.</strong>";
+
+
+            swaActions.innerHTML = "";
+
+
+            const cancelButton =
+                document.createElement(
+                    "button"
+                );
+
+            cancelButton.type =
+                "button";
+
+            cancelButton.className =
+                "swa-btn swa-btn-cancel";
+
+            cancelButton.textContent =
+                "Cancel";
+
+
+            const confirmButton =
+                document.createElement(
+                    "button"
+                );
+
+            confirmButton.type =
+                "button";
+
+            confirmButton.className =
+                "swa-btn swa-btn-confirm";
+
+            confirmButton.textContent =
+                "✓ Yes, Submit";
+
+
+            swaActions.appendChild(
+                cancelButton
+            );
+
+            swaActions.appendChild(
+                confirmButton
+            );
+
+
+            openSweetAlert();
+
+
+            return new Promise(
+                function (resolve) {
+
+                    cancelButton.focus();
+
+
+                    cancelButton.addEventListener(
+                        "click",
+                        function () {
+
+                            closeSweetAlert();
+
+                            resolve(false);
+
+                        },
+                        {
+                            once: true
+                        }
+                    );
+
+
+                    confirmButton.addEventListener(
+                        "click",
+                        function () {
+
+                            closeSweetAlert();
+
+                            resolve(true);
+
+                        },
+                        {
+                            once: true
+                        }
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           LOADING MODAL
+        ====================================================== */
+
+        function showLoading() {
+
+            if (!swaOverlay) {
+                return;
+            }
+
+
+            swaIcon.className =
+                "swa-icon loading";
+
+
+            swaIcon.innerHTML =
+                '<div class="swa-spinner"></div>';
+
+
+            swaTitle.textContent =
+                "Submitting Marks...";
+
+
+            swaText.innerHTML =
+                "Please wait while the student marks are being saved." +
+                "<br>" +
+                "<strong>Do not close or refresh this page.</strong>";
+
+
+            swaActions.innerHTML =
+                '<div class="swa-loading-line"></div>';
+
+
+            openSweetAlert();
+
+        }
+
+
+        /* =====================================================
+           UPDATE ROW
         ====================================================== */
 
         function updateRow(row) {
@@ -2171,16 +3108,13 @@ document.addEventListener(
             }
 
 
-            /*
-             * If the entire ExamSubject is already submitted,
-             * never allow JavaScript to unlock the inputs.
-             */
-
             if (marksLocked) {
 
-                markInput.disabled = true;
+                markInput.disabled =
+                    true;
 
-                absentCheckbox.disabled = true;
+                absentCheckbox.disabled =
+                    true;
 
                 return;
 
@@ -2189,13 +3123,15 @@ document.addEventListener(
 
             if (absentCheckbox.checked) {
 
-                markInput.disabled = true;
+                markInput.disabled =
+                    true;
 
                 markInput.value = "";
 
             } else {
 
-                markInput.disabled = false;
+                markInput.disabled =
+                    false;
 
             }
 
@@ -2236,7 +3172,7 @@ document.addEventListener(
 
 
         /* =====================================================
-           FILTER ROWS
+           FILTER
         ====================================================== */
 
         function filterRows() {
@@ -2254,7 +3190,8 @@ document.addEventListener(
                     function (row) {
 
                         const name =
-                            row.dataset.name || "";
+                            row.dataset.name ||
+                            "";
 
                         return name.includes(
                             search
@@ -2282,7 +3219,8 @@ document.addEventListener(
             rows.forEach(
                 function (row) {
 
-                    row.style.display = "none";
+                    row.style.display =
+                        "none";
 
                 }
             );
@@ -2307,15 +3245,12 @@ document.addEventListener(
             pageRows.forEach(
                 function (row) {
 
-                    row.style.display = "";
+                    row.style.display =
+                        "";
 
                 }
             );
 
-
-            /* -------------------------------------------------
-               COUNT
-            -------------------------------------------------- */
 
             if (visibleCount) {
 
@@ -2329,10 +3264,6 @@ document.addEventListener(
 
             }
 
-
-            /* -------------------------------------------------
-               PAGINATION INFO
-            -------------------------------------------------- */
 
             if (paginationInfo) {
 
@@ -2348,13 +3279,11 @@ document.addEventListener(
                     const first =
                         start + 1;
 
-
                     const last =
                         Math.min(
                             end,
                             filteredRows.length
                         );
-
 
                     paginationInfo.textContent =
                         `Showing ${first}–${last} of ${filteredRows.length}`;
@@ -2367,7 +3296,7 @@ document.addEventListener(
 
 
         /* =====================================================
-           CREATE PAGE BUTTON
+           PAGE BUTTON
         ====================================================== */
 
         function createPageButton(
@@ -2383,7 +3312,8 @@ document.addEventListener(
                 );
 
 
-            button.type = "button";
+            button.type =
+                "button";
 
             button.className =
                 "page-btn";
@@ -2408,7 +3338,8 @@ document.addEventListener(
                 "click",
                 function () {
 
-                    currentPage = page;
+                    currentPage =
+                        page;
 
                     renderPagination();
 
@@ -2440,7 +3371,8 @@ document.addEventListener(
             }
 
 
-            pagination.innerHTML = "";
+            pagination.innerHTML =
+                "";
 
 
             const totalPages =
@@ -2455,10 +3387,6 @@ document.addEventListener(
             }
 
 
-            /* -------------------------------------------------
-               PREVIOUS
-            -------------------------------------------------- */
-
             pagination.appendChild(
                 createPageButton(
                     "‹",
@@ -2467,10 +3395,6 @@ document.addEventListener(
                 )
             );
 
-
-            /* -------------------------------------------------
-               PAGE NUMBERS
-            -------------------------------------------------- */
 
             let pages = [];
 
@@ -2494,7 +3418,9 @@ document.addEventListener(
 
                 if (currentPage > 4) {
 
-                    pages.push("...");
+                    pages.push(
+                        "..."
+                    );
 
                 }
 
@@ -2529,7 +3455,9 @@ document.addEventListener(
                     totalPages - 3
                 ) {
 
-                    pages.push("...");
+                    pages.push(
+                        "..."
+                    );
 
                 }
 
@@ -2551,18 +3479,15 @@ document.addEventListener(
                                 "span"
                             );
 
-
                         dots.className =
                             "page-dots";
 
                         dots.textContent =
                             "…";
 
-
                         pagination.appendChild(
                             dots
                         );
-
 
                         return;
 
@@ -2581,10 +3506,6 @@ document.addEventListener(
                 }
             );
 
-
-            /* -------------------------------------------------
-               NEXT
-            -------------------------------------------------- */
 
             pagination.appendChild(
                 createPageButton(
@@ -2612,36 +3533,49 @@ document.addEventListener(
 
 
         /* =====================================================
-           FORM VALIDATION
+           FORM SUBMISSION
         ====================================================== */
 
         if (form) {
 
             form.addEventListener(
                 "submit",
-                function (event) {
+                async function (event) {
 
-                    /*
-                     * This is a second layer of protection.
-                     * Backend route is the real security.
-                     */
+                    event.preventDefault();
+
+
+                    /* -------------------------------------------
+                       DOUBLE SUBMISSION PROTECTION
+                    -------------------------------------------- */
+
+                    if (isSubmitting) {
+                        return false;
+                    }
+
+
+                    /* -------------------------------------------
+                       LOCKED
+                    -------------------------------------------- */
 
                     if (marksLocked) {
 
-                        event.preventDefault();
-
-                        alert(
-                            "Marks have already been submitted. They cannot be edited or submitted again."
-                        );
+                        showLockedAlert();
 
                         return false;
 
                     }
 
 
-                    let invalid = false;
+                    /* -------------------------------------------
+                       VALIDATION
+                    -------------------------------------------- */
 
-                    let firstInvalidInput = null;
+                    let invalid =
+                        false;
+
+                    let firstInvalidInput =
+                        null;
 
 
                     rows.forEach(
@@ -2666,20 +3600,12 @@ document.addEventListener(
                             }
 
 
-                            /* ---------------------------------
-                               ABSENT STUDENT
-                            ---------------------------------- */
-
                             if (
                                 absentCheckbox.checked
                             ) {
                                 return;
                             }
 
-
-                            /* ---------------------------------
-                               EMPTY MARK
-                            ---------------------------------- */
 
                             const value =
                                 markInput.value.trim();
@@ -2689,7 +3615,8 @@ document.addEventListener(
                                 value === ""
                             ) {
 
-                                invalid = true;
+                                invalid =
+                                    true;
 
                                 if (
                                     !firstInvalidInput
@@ -2705,10 +3632,6 @@ document.addEventListener(
                             }
 
 
-                            /* ---------------------------------
-                               NUMERIC VALIDATION
-                            ---------------------------------- */
-
                             const number =
                                 parseFloat(
                                     value
@@ -2721,7 +3644,8 @@ document.addEventListener(
                                 number > maxMarks
                             ) {
 
-                                invalid = true;
+                                invalid =
+                                    true;
 
                                 if (
                                     !firstInvalidInput
@@ -2738,20 +3662,18 @@ document.addEventListener(
                     );
 
 
-                    /* =================================================
+                    /* -------------------------------------------
                        INVALID
-                    ================================================== */
+                    -------------------------------------------- */
 
                     if (invalid) {
 
-                        event.preventDefault();
+                        showValidationAlert();
 
 
-                        /*
-                         * Find invalid row and show its page.
-                         */
-
-                        if (firstInvalidInput) {
+                        if (
+                            firstInvalidInput
+                        ) {
 
                             const invalidRow =
                                 firstInvalidInput.closest(
@@ -2775,7 +3697,6 @@ document.addEventListener(
                                             perPage
                                         ) + 1;
 
-
                                     renderPagination();
 
                                     renderRows();
@@ -2794,7 +3715,7 @@ document.addEventListener(
                                         });
 
                                     },
-                                    50
+                                    100
                                 );
 
                             }
@@ -2802,49 +3723,238 @@ document.addEventListener(
                         }
 
 
-                        alert(
-                            "Please enter valid marks for every student. " +
-                            "Marks must be between 0 and " +
-                            maxMarks +
-                            "."
-                        );
-
-
                         return false;
 
                     }
 
 
-                    /* =================================================
-                       CONFIRM SUBMISSION
-                    ================================================== */
+                    /* -------------------------------------------
+                       CONFIRM
+                    -------------------------------------------- */
 
                     const confirmed =
-                        window.confirm(
-                            "Are you sure you want to submit these marks?\n\n" +
-                            "After submission, the marks cannot be edited again."
-                        );
+                        await showConfirmation();
 
 
                     if (!confirmed) {
 
-                        event.preventDefault();
-
                         return false;
 
                     }
 
 
-                    /* =================================================
-                       SAVE BUTTON
-                    ================================================= */
+                    /* -------------------------------------------
+                       SUBMITTING
+                    -------------------------------------------- */
+
+                    isSubmitting =
+                        true;
+
 
                     if (saveButton) {
 
-                        saveButton.disabled = true;
+                        saveButton.disabled =
+                            true;
 
-                        saveButton.textContent =
-                            "Submitting Marks...";
+                        saveButton.innerHTML =
+                            '<span class="swa-spinner" style="width:15px;height:15px;border-width:2px;border-color:rgba(255,255,255,.35);border-top-color:#fff;"></span> Submitting...';
+
+                    }
+
+
+                    showLoading();
+
+
+                    /*
+                     * Give the loading modal enough time to paint
+                     * before submitting the actual POST request.
+                     */
+
+                    setTimeout(
+                        function () {
+
+                            form.submit();
+
+                        },
+                        180
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           LOCKED ALERT
+        ====================================================== */
+
+        function showLockedAlert() {
+
+            if (!swaOverlay) {
+
+                alert(
+                    "Marks have already been submitted."
+                );
+
+                return;
+
+            }
+
+
+            swaIcon.className =
+                "swa-icon success";
+
+            swaIcon.innerHTML =
+                '<div class="swa-success-check">✓</div>';
+
+
+            swaTitle.textContent =
+                "Already Submitted";
+
+
+            swaText.innerHTML =
+                "These marks have already been submitted." +
+                "<br>" +
+                "<strong>You can view them, but they cannot be edited.</strong>";
+
+
+            swaActions.innerHTML =
+                '<button type="button" class="swa-btn swa-btn-confirm" id="lockedCloseBtn">OK</button>';
+
+
+            openSweetAlert();
+
+
+            const closeButton =
+                document.getElementById(
+                    "lockedCloseBtn"
+                );
+
+
+            if (closeButton) {
+
+                closeButton.focus();
+
+                closeButton.addEventListener(
+                    "click",
+                    closeSweetAlert,
+                    {
+                        once: true
+                    }
+                );
+
+            }
+
+        }
+
+
+        /* =====================================================
+           VALIDATION ALERT
+        ====================================================== */
+
+        function showValidationAlert() {
+
+            if (!swaOverlay) {
+
+                alert(
+                    "Please enter valid marks for every student."
+                );
+
+                return;
+
+            }
+
+
+            swaIcon.className =
+                "swa-icon error";
+
+            swaIcon.innerHTML =
+                "×";
+
+
+            swaTitle.textContent =
+                "Marks Required";
+
+
+            swaText.innerHTML =
+                "Please enter valid marks for every student." +
+                "<br>" +
+                `<strong>Marks must be between 0 and ${maxMarks}.</strong>`;
+
+
+            swaActions.innerHTML =
+                '<button type="button" class="swa-btn swa-btn-confirm" id="validationCloseBtn">OK, I\'ll Check</button>';
+
+
+            openSweetAlert();
+
+
+            const closeButton =
+                document.getElementById(
+                    "validationCloseBtn"
+                );
+
+
+            if (closeButton) {
+
+                closeButton.focus();
+
+                closeButton.addEventListener(
+                    "click",
+                    closeSweetAlert,
+                    {
+                        once: true
+                    }
+                );
+
+            }
+
+        }
+
+
+        /* =====================================================
+           ESC KEY
+        ====================================================== */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape" &&
+                    swaOverlay &&
+                    swaOverlay.classList.contains(
+                        "show"
+                    ) &&
+                    !isSubmitting
+                ) {
+
+                    closeSweetAlert();
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           CLICK OUTSIDE MODAL
+        ====================================================== */
+
+        if (swaOverlay) {
+
+            swaOverlay.addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target ===
+                        swaOverlay &&
+                        !isSubmitting
+                    ) {
+
+                        closeSweetAlert();
 
                     }
 
