@@ -6,12 +6,13 @@
 {% endblock %}
 
 {% block content %}
+
 <style>
-    /* ============================================================
+
+/* ============================================================
    SOOYAAL TEACHER ATTENDANCE
+   RESPONSIVE + COMPACT TABLE
    PURE CSS
-   EXTRA COMPACT
-   RESPONSIVE
    NO BOOTSTRAP
 ============================================================ */
 
@@ -49,26 +50,17 @@
     box-sizing: border-box;
 }
 
-
-/* ============================================================
-   PAGE
-============================================================ */
-
 .attendance-page {
     width: 100%;
     min-width: 0;
-
     padding: 6px 8px;
-
     background: var(--attendance-bg);
 }
 
 .attendance-container {
     width: 100%;
     max-width: 1500px;
-
     margin: 0 auto;
-
     min-width: 0;
 }
 
@@ -85,8 +77,7 @@
     gap: 8px;
 
     width: 100%;
-
-    margin: 0 0 7px 0;
+    margin: 0 0 7px;
     padding: 9px 12px;
 
     background: var(--attendance-card);
@@ -99,7 +90,6 @@
 
 .attendance-header-left {
     flex: 1 1 auto;
-
     min-width: 0;
 }
 
@@ -160,7 +150,7 @@
 
     width: 100%;
 
-    margin: 0 0 7px 0;
+    margin: 0 0 7px;
     padding: 7px 9px;
 
     border-radius: 7px;
@@ -209,7 +199,7 @@
 .attendance-filter-card {
     width: 100%;
 
-    margin: 0 0 7px 0;
+    margin: 0 0 7px;
     padding: 9px 11px;
 
     background: var(--attendance-card);
@@ -221,7 +211,7 @@
 }
 
 .attendance-filter-title {
-    margin: 0 0 6px 0;
+    margin: 0 0 6px;
 
     color: var(--attendance-blue);
 
@@ -251,7 +241,7 @@
 .attendance-field label {
     display: block;
 
-    margin: 0 0 3px 0;
+    margin: 0 0 3px;
 
     color: var(--attendance-text);
 
@@ -270,7 +260,6 @@
     height: 34px;
 
     margin: 0;
-
     padding: 0 8px;
 
     border: 1px solid #d7dce5;
@@ -295,10 +284,10 @@
     cursor: pointer;
 }
 
-.attendance-field select:disabled {
+.attendance-field select:disabled,
+.attendance-field input:disabled {
     background: #f3f4f6;
     color: #6b7280;
-
     cursor: not-allowed;
 }
 
@@ -310,13 +299,6 @@
         0 0 0 2px rgba(6, 36, 95, .07);
 }
 
-.attendance-field input:disabled {
-    background: #f3f4f6;
-    color: #4b5563;
-
-    cursor: not-allowed;
-}
-
 
 /* ============================================================
    SUBJECT STATUS
@@ -325,7 +307,7 @@
 .subject-status {
     width: 100%;
 
-    margin: 6px 0 0 0;
+    margin: 6px 0 0;
     padding: 5px 8px;
 
     background: #f8fafc;
@@ -360,12 +342,11 @@
 
     width: 100%;
 
-    margin: 0 0 7px 0;
+    margin: 0 0 7px;
 }
 
 .attendance-stat {
     min-width: 0;
-
     min-height: 55px;
 
     display: flex;
@@ -408,7 +389,7 @@
 
 
 /* ============================================================
-   MAIN TABLE CARD
+   TABLE CARD
 ============================================================ */
 
 .attendance-table-card {
@@ -460,7 +441,6 @@
     height: 13px;
 
     border: 2px solid #dbe3ef;
-
     border-top-color: var(--attendance-blue);
 
     border-radius: 50%;
@@ -625,7 +605,7 @@
 
 
 /* ============================================================
-   TABLE
+   TABLE WRAPPER
 ============================================================ */
 
 .attendance-table-wrapper {
@@ -639,17 +619,90 @@
     scrollbar-width: thin;
 }
 
-.attendance-table {
-    width: 100%;
 
-    min-width: 620px;
+/* ============================================================
+   MAIN ATTENDANCE TABLE
+============================================================ */
+
+.attendance-table {
+
+    /*
+       IMPORTANT:
+
+       Previously:
+       min-width: 620px / 580px / 560px
+
+       That was causing the Student and Attendance
+       columns to become unnecessarily far apart.
+
+       Now the table is compact and responsive.
+    */
+
+    width: 100%;
+    max-width: 760px;
+
+    min-width: 0;
+
+    table-layout: fixed;
 
     border-collapse: collapse;
     border-spacing: 0;
 }
 
+
+/* ============================================================
+   COLUMN WIDTHS
+
+   #         = 45px
+   Student   = flexible
+   Attendance= 145px
+============================================================ */
+
+/*
+   IMPORTANT:
+   !important overrides your existing inline:
+
+   <th style="width:60px;">
+   <th style="width:180px;">
+*/
+
+.attendance-table th:nth-child(1),
+.attendance-table td:nth-child(1) {
+
+    width: 45px !important;
+    max-width: 45px;
+
+    text-align: center;
+}
+
+
+.attendance-table th:nth-child(2),
+.attendance-table td:nth-child(2) {
+
+    width: auto !important;
+
+    text-align: left;
+}
+
+
+.attendance-table th:nth-child(3),
+.attendance-table td:nth-child(3) {
+
+    width: 145px !important;
+    max-width: 145px;
+
+    text-align: left;
+}
+
+
+/* ============================================================
+   TABLE HEADER
+============================================================ */
+
 .attendance-table th {
-    padding: 8px 10px;
+    height: 34px;
+
+    padding: 7px 8px;
 
     background: #f8fafc;
 
@@ -657,7 +710,6 @@
 
     color: #475569;
 
-    text-align: left;
     vertical-align: middle;
 
     font-size: 9px;
@@ -667,20 +719,31 @@
     text-transform: uppercase;
 
     white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+
+/* ============================================================
+   TABLE BODY
+============================================================ */
+
 .attendance-table td {
-    padding: 7px 10px;
+    height: 43px;
+
+    padding: 6px 8px;
 
     border-bottom: 1px solid #edf0f4;
 
     color: var(--attendance-text);
 
-    text-align: left;
     vertical-align: middle;
 
     font-size: 11px;
     line-height: 1.25;
+
+    overflow: hidden;
 }
 
 .attendance-table tbody tr:last-child td {
@@ -693,26 +756,38 @@
 
 
 /* ============================================================
-   STUDENT
+   STUDENT CELL
 ============================================================ */
+
+.attendance-table td:nth-child(2) {
+    min-width: 0;
+}
 
 .student-info {
     display: flex;
 
     align-items: center;
 
-    gap: 7px;
+    gap: 6px;
 
+    width: 100%;
     min-width: 0;
+
+    overflow: hidden;
 }
 
-.student-photo {
+.student-photo,
+.student-photo-placeholder {
     flex: 0 0 29px;
 
     width: 29px;
     height: 29px;
 
     border-radius: 50%;
+}
+
+.student-photo {
+    display: block;
 
     object-fit: cover;
 
@@ -722,17 +797,10 @@
 }
 
 .student-photo-placeholder {
-    flex: 0 0 29px;
-
-    width: 29px;
-    height: 29px;
-
     display: flex;
 
     align-items: center;
     justify-content: center;
-
-    border-radius: 50%;
 
     background: #eef2f7;
 
@@ -742,7 +810,19 @@
     font-weight: 800;
 }
 
+.student-info > div:last-child {
+    min-width: 0;
+    max-width: 100%;
+
+    overflow: hidden;
+}
+
 .student-name {
+    display: block;
+
+    width: 100%;
+    max-width: 100%;
+
     min-width: 0;
 
     margin: 0;
@@ -754,10 +834,20 @@
     font-weight: 700;
 
     overflow: hidden;
+
     text-overflow: ellipsis;
+
+    white-space: nowrap;
 }
 
 .student-meta {
+    display: block;
+
+    width: 100%;
+    max-width: 100%;
+
+    min-width: 0;
+
     margin: 1px 0 0;
 
     color: var(--attendance-muted);
@@ -766,7 +856,22 @@
     line-height: 1.15;
 
     overflow: hidden;
+
     text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   ATTENDANCE CELL
+
+   Keeps attendance close to Student.
+============================================================ */
+
+.attendance-table td:nth-child(3) {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
 }
 
 
@@ -779,7 +884,9 @@
 
     align-items: center;
 
-    gap: 6px;
+    gap: 5px;
+
+    max-width: 100%;
 
     margin: 0;
 
@@ -800,7 +907,7 @@
 }
 
 .attendance-switch {
-    flex: 0 0 auto;
+    flex: 0 0 36px;
 
     width: 36px;
     height: 19px;
@@ -833,7 +940,8 @@
 
     border-radius: 50%;
 
-    box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, .15);
 
     transition: transform .15s ease;
 }
@@ -852,11 +960,18 @@
 }
 
 .attendance-status-text {
-    min-width: 45px;
+    min-width: 0;
+
+    max-width: 70px;
 
     font-size: 10px;
     line-height: 1.1;
     font-weight: 700;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .attendance-present {
@@ -869,7 +984,7 @@
 
 
 /* ============================================================
-   EMPTY
+   EMPTY STATE
 ============================================================ */
 
 .attendance-empty {
@@ -1046,7 +1161,6 @@
 
 .save-attendance-btn:hover {
     filter: brightness(.95);
-
     transform: translateY(-1px);
 }
 
@@ -1136,7 +1250,6 @@
     color: #475569;
 
     font-size: 11px;
-
     line-height: 1.5;
 
     overflow-y: auto;
@@ -1178,6 +1291,9 @@
             repeat(2, minmax(0, 1fr));
     }
 
+    .attendance-table {
+        max-width: 720px;
+    }
 }
 
 
@@ -1193,7 +1309,6 @@
 
     .attendance-toolbar {
         flex-direction: column;
-
         align-items: stretch;
     }
 
@@ -1207,6 +1322,10 @@
         justify-content: flex-start;
     }
 
+    .attendance-table {
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 
@@ -1255,7 +1374,6 @@
 
     .attendance-filter-card {
         margin-bottom: 5px;
-
         padding: 8px 9px;
     }
 
@@ -1265,7 +1383,6 @@
 
     .attendance-filter-grid {
         grid-template-columns: 1fr;
-
         gap: 6px;
     }
 
@@ -1305,7 +1422,6 @@
 
     .attendance-toolbar {
         gap: 5px;
-
         padding: 6px 7px;
     }
 
@@ -1331,22 +1447,124 @@
     }
 
 
-    /* TABLE */
+    /* ========================================================
+       MOBILE TABLE
+       
+       IMPORTANT:
+       NO 580px / 560px / 540px MIN WIDTH.
+       Table now fits the screen.
+    ======================================================== */
 
-    .attendance-table {
-        min-width: 580px;
+    .attendance-table-wrapper {
+        width: 100%;
+        overflow-x: hidden;
     }
 
+    .attendance-table {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        table-layout: fixed;
+    }
+
+
+    /* MOBILE COLUMN WIDTHS */
+
+    .attendance-table th:nth-child(1),
+    .attendance-table td:nth-child(1) {
+        width: 32px !important;
+        max-width: 32px;
+    }
+
+    .attendance-table th:nth-child(2),
+    .attendance-table td:nth-child(2) {
+        width: auto !important;
+    }
+
+    .attendance-table th:nth-child(3),
+    .attendance-table td:nth-child(3) {
+        width: 128px !important;
+        max-width: 128px;
+    }
+
+
+    /* MOBILE CELLS */
+
     .attendance-table th {
-        padding: 7px 8px;
+        height: 32px;
+
+        padding: 6px 5px;
 
         font-size: 8px;
     }
 
     .attendance-table td {
-        padding: 6px 8px;
+        height: 42px;
+
+        padding: 5px 5px;
 
         font-size: 10px;
+    }
+
+
+    /* STUDENT */
+
+    .student-info {
+        gap: 5px;
+    }
+
+    .student-photo,
+    .student-photo-placeholder {
+        flex: 0 0 27px;
+
+        width: 27px;
+        height: 27px;
+    }
+
+    .student-name {
+        font-size: 10px;
+    }
+
+    .student-meta {
+        font-size: 8px;
+    }
+
+
+    /* ATTENDANCE */
+
+    .attendance-table td:nth-child(3) {
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+    }
+
+    .attendance-toggle {
+        gap: 4px;
+    }
+
+    .attendance-switch {
+        flex: 0 0 33px;
+
+        width: 33px;
+        height: 18px;
+    }
+
+    .attendance-switch::after {
+        width: 12px;
+        height: 12px;
+
+        top: 3px;
+        left: 3px;
+    }
+
+    .attendance-toggle input:checked + .attendance-switch::after {
+        transform: translateX(15px);
+    }
+
+    .attendance-status-text {
+        max-width: 58px;
+
+        font-size: 9px;
     }
 
 
@@ -1382,7 +1600,6 @@
     .pagination-buttons {
         justify-content: center;
     }
-
 }
 
 
@@ -1430,30 +1647,87 @@
 
     .attendance-btn {
         min-height: 30px;
-
         font-size: 9px;
     }
 
+
+    /* ========================================================
+       SMALL PHONE TABLE
+    ======================================================== */
+
+    .attendance-table-wrapper {
+        overflow-x: hidden;
+    }
+
     .attendance-table {
-        min-width: 560px;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .attendance-table th:nth-child(1),
+    .attendance-table td:nth-child(1) {
+        width: 30px !important;
+        max-width: 30px;
+    }
+
+    .attendance-table th:nth-child(3),
+    .attendance-table td:nth-child(3) {
+        width: 118px !important;
+        max-width: 118px;
+    }
+
+    .attendance-table th {
+        padding: 6px 4px;
+        font-size: 7px;
+    }
+
+    .attendance-table td {
+        padding: 5px 4px;
     }
 
     .student-photo,
     .student-photo-placeholder {
-        width: 28px;
-        height: 28px;
+        width: 26px;
+        height: 26px;
 
-        flex-basis: 28px;
+        flex-basis: 26px;
     }
 
     .student-name {
-        max-width: 150px;
+        font-size: 9px;
+    }
+
+    .student-meta {
+        font-size: 7px;
+    }
+
+    .attendance-status-text {
+        max-width: 50px;
+        font-size: 8px;
+    }
+
+    .attendance-switch {
+        flex-basis: 31px;
+        width: 31px;
+        height: 17px;
+    }
+
+    .attendance-switch::after {
+        width: 11px;
+        height: 11px;
+
+        top: 3px;
+        left: 3px;
+    }
+
+    .attendance-toggle input:checked + .attendance-switch::after {
+        transform: translateX(14px);
     }
 
     .attendance-empty {
         padding: 30px 10px;
     }
-
 }
 
 
@@ -1497,10 +1771,67 @@
         margin-top: 0;
     }
 
+
+    /* VERY SMALL PHONE */
+
     .attendance-table {
-        min-width: 540px;
+        width: 100%;
+        min-width: 0;
     }
 
+    .attendance-table th:nth-child(1),
+    .attendance-table td:nth-child(1) {
+        width: 27px !important;
+        max-width: 27px;
+    }
+
+    .attendance-table th:nth-child(3),
+    .attendance-table td:nth-child(3) {
+        width: 108px !important;
+        max-width: 108px;
+    }
+
+    .attendance-table th {
+        padding: 5px 3px;
+        font-size: 7px;
+    }
+
+    .attendance-table td {
+        padding: 4px 3px;
+    }
+
+    .student-info {
+        gap: 4px;
+    }
+
+    .student-photo,
+    .student-photo-placeholder {
+        width: 24px;
+        height: 24px;
+
+        flex-basis: 24px;
+    }
+
+    .student-name {
+        font-size: 8px;
+    }
+
+    .student-meta {
+        font-size: 7px;
+    }
+
+    .attendance-toggle {
+        gap: 3px;
+    }
+
+    .attendance-status-text {
+        display: none;
+    }
+
+    .attendance-switch {
+        flex-basis: 30px;
+        width: 30px;
+    }
 }
 
 
@@ -1513,6 +1844,7 @@
     .attendance-page *,
     .attendance-page *::before,
     .attendance-page *::after {
+
         animation-duration: 0.01ms !important;
 
         animation-iteration-count: 1 !important;
@@ -1521,7 +1853,6 @@
 
         scroll-behavior: auto !important;
     }
-
 }
 
 
@@ -1533,7 +1864,6 @@
 
     .attendance-page {
         padding: 0;
-
         background: #fff;
     }
 
@@ -1552,12 +1882,19 @@
 
     .attendance-table-card {
         box-shadow: none;
-
         border: 1px solid #ddd;
     }
 
+    .attendance-table {
+        width: 100%;
+        max-width: 100%;
+    }
 }
+
 </style>
+
+
+
 
 <div class="attendance-page">
 
