@@ -3303,6 +3303,9 @@ def teacher_my_subjects():
 # TAKE ATTENDANCE
 # ============================================================
 
+# ============================================================
+# TEACHER TAKE ATTENDANCE
+# ============================================================
 
 @bp.route(
     "/teacher/attendance/take",
@@ -3325,7 +3328,9 @@ def teacher_take_attendance():
     teacher_id = teacher.id
 
     # ========================================================
-    # GET REQUEST
+    # ========================================================
+    # GET
+    # ========================================================
     # ========================================================
 
     if request.method == "GET":
@@ -3349,13 +3354,10 @@ def teacher_take_attendance():
             type=int
         )
 
-        selected_date = request.args.get(
-            "attendance_date"
+        selected_date = (
+            request.args.get("attendance_date")
+            or date.today().isoformat()
         )
-
-        if not selected_date:
-
-            selected_date = date.today().isoformat()
 
         # ====================================================
         # VALIDATE DATE
@@ -3371,38 +3373,28 @@ def teacher_take_attendance():
         except (TypeError, ValueError):
 
             attendance_date_obj = date.today()
-
-            selected_date = (
-                attendance_date_obj.isoformat()
-            )
+            selected_date = attendance_date_obj.isoformat()
 
         # ====================================================
-        # TEACHER ASSIGNED CLASSES
+        # TEACHER CLASSES
         # ====================================================
-
-        class_ids_query = (
-            db.session.query(
-                distinct(TeacherSubject.class_id)
-            )
-            .filter(
-                TeacherSubject.teacher_id == teacher_id,
-
-                TeacherSubject.institution_id ==
-                institution_id,
-
-                TeacherSubject.branch_id ==
-                branch_id,
-
-                TeacherSubject.class_id.isnot(None),
-
-                TeacherSubject.status ==
-                "active",
-            )
-        )
 
         class_ids = [
             row[0]
-            for row in class_ids_query.all()
+            for row in (
+                db.session.query(
+                    distinct(TeacherSubject.class_id)
+                )
+                .filter(
+                    TeacherSubject.teacher_id == teacher_id,
+                    TeacherSubject.institution_id == institution_id,
+                    TeacherSubject.branch_id == branch_id,
+                    TeacherSubject.class_id.isnot(None),
+                    TeacherSubject.status == "active",
+                    TeacherSubject.subject_id.isnot(None),
+                )
+                .all()
+            )
             if row[0] is not None
         ]
 
@@ -3414,12 +3406,8 @@ def teacher_take_attendance():
                 Class.query
                 .filter(
                     Class.id.in_(class_ids),
-
-                    Class.institution_id ==
-                    institution_id,
-
-                    Class.branch_id ==
-                    branch_id,
+                    Class.institution_id == institution_id,
+                    Class.branch_id == branch_id,
                 )
                 .order_by(
                     Class.name.asc()
@@ -3428,17 +3416,17 @@ def teacher_take_attendance():
             )
 
         # ====================================================
-        # DEFAULT EMPTY DATA
+        # DEFAULT DATA
         # ====================================================
 
         subjects = []
         sections = []
         students = []
 
-        selected_assignment = None
-        selected_program = None
         selected_class = None
         selected_section = None
+        selected_assignment = None
+        selected_program = None
 
         existing_session = None
 
@@ -3449,33 +3437,23 @@ def teacher_take_attendance():
         if selected_class_id:
 
             # ------------------------------------------------
-            # SECURITY:
-            # CLASS MUST BELONG TO TEACHER ASSIGNMENT
+            # VERIFY TEACHER CLASS ASSIGNMENT
             # ------------------------------------------------
 
             class_assignment_exists = (
                 TeacherSubject.query
                 .filter(
-                    TeacherSubject.teacher_id ==
-                    teacher_id,
-
-                    TeacherSubject.institution_id ==
-                    institution_id,
-
-                    TeacherSubject.branch_id ==
-                    branch_id,
-
-                    TeacherSubject.class_id ==
-                    selected_class_id,
-
-                    TeacherSubject.status ==
-                    "active",
+                    TeacherSubject.teacher_id == teacher_id,
+                    TeacherSubject.institution_id == institution_id,
+                    TeacherSubject.branch_id == branch_id,
+                    TeacherSubject.class_id == selected_class_id,
+                    TeacherSubject.status == "active",
+                    TeacherSubject.subject_id.isnot(None),
                 )
                 .first()
             )
 
             if not class_assignment_exists:
-
                 abort(403)
 
             # ------------------------------------------------
@@ -3485,71 +3463,123 @@ def teacher_take_attendance():
             selected_class = (
                 Class.query
                 .filter(
-                    Class.id ==
-                    selected_class_id,
-
-                    Class.institution_id ==
-                    institution_id,
-
-                    Class.branch_id ==
-                    branch_id,
+                    Class.id == selected_class_id,
+                    Class.institution_id == institution_id,
+                    Class.branch_id == branch_id,
                 )
                 .first()
             )
 
             if not selected_class:
-
                 abort(404)
 
-            # ------------------------------------------------
-            # TEACHER SUBJECTS FOR THIS CLASS
-            #
-            # IMPORTANT:
-            # Only assignments belonging to this teacher.
-            # ------------------------------------------------
+            # =================================================
+            # LOAD ALL TEACHER ASSIGNMENTS
+            # =================================================
 
             assignments = (
                 TeacherSubject.query
                 .filter(
-                    TeacherSubject.teacher_id ==
-                    teacher_id,
-
-                    TeacherSubject.institution_id ==
-                    institution_id,
-
-                    TeacherSubject.branch_id ==
-                    branch_id,
-
-                    TeacherSubject.class_id ==
-                    selected_class_id,
-
-                    TeacherSubject.status ==
-                    "active",
-
+                    TeacherSubject.teacher_id == teacher_id,
+                    TeacherSubject.institution_id == institution_id,
+                    TeacherSubject.branch_id == branch_id,
+                    TeacherSubject.class_id == selected_class_id,
+                    TeacherSubject.status == "active",
                     TeacherSubject.subject_id.isnot(None),
                 )
-                .join(
-                    Subject,
-                    Subject.id ==
-                    TeacherSubject.subject_id
-                )
                 .order_by(
-                    Subject.name.asc(),
                     TeacherSubject.id.asc()
                 )
                 .all()
             )
 
-            # ------------------------------------------------
-            # SUBJECTS
+            # =================================================
+            # SECTIONS
+            # =================================================
+
+            section_ids = []
+
+            for assignment in assignments:
+
+                if assignment.section_id:
+                    section_ids.append(
+                        assignment.section_id
+                    )
+
+            section_ids = list(
+                dict.fromkeys(section_ids)
+            )
+
+            if section_ids:
+
+                sections = (
+                    Section.query
+                    .filter(
+                        Section.id.in_(section_ids),
+                        Section.institution_id == institution_id,
+                        Section.branch_id == branch_id,
+                    )
+                    .order_by(
+                        Section.name.asc()
+                    )
+                    .all()
+                )
+
+            # =================================================
+            # SELECTED SECTION
+            # =================================================
+
+            if selected_section_id:
+
+                selected_section = (
+                    Section.query
+                    .filter(
+                        Section.id == selected_section_id,
+                        Section.institution_id == institution_id,
+                        Section.branch_id == branch_id,
+                    )
+                    .first()
+                )
+
+                if not selected_section:
+                    abort(404)
+
+                # ---------------------------------------------
+                # TEACHER MUST HAVE ACCESS TO THIS SECTION
+                # ---------------------------------------------
+
+                section_assignment_exists = (
+                    TeacherSubject.query
+                    .filter(
+                        TeacherSubject.teacher_id == teacher_id,
+                        TeacherSubject.institution_id == institution_id,
+                        TeacherSubject.branch_id == branch_id,
+                        TeacherSubject.class_id == selected_class_id,
+                        TeacherSubject.section_id == selected_section_id,
+                        TeacherSubject.status == "active",
+                    )
+                    .first()
+                )
+
+                if not section_assignment_exists:
+                    abort(403)
+
+            # =================================================
+            # BUILD SUBJECTS
             #
-            # Keep assignment information.
-            # Add Already Submitted information.
-            # ------------------------------------------------
+            # PRIORITY:
+            #
+            # 1. Section-specific assignment
+            # 2. Class-wide assignment
+            #
+            # If selected section exists:
+            #   exact section OR class-wide
+            #
+            # If no section:
+            #   class-wide only
+            # =================================================
 
-            subjects = []
-
-            seen_subject_ids = set()
+            subject_assignment_map = {}
 
             for assignment in assignments:
 
@@ -3558,12 +3588,87 @@ def teacher_take_attendance():
                 if not subject:
                     continue
 
-                # ------------------------------------------------
+                # ---------------------------------------------
+                # SECTION MATCH
+                # ---------------------------------------------
+
+                if selected_section_id:
+
+                    if (
+                        assignment.section_id is not None
+                        and
+                        assignment.section_id !=
+                        selected_section_id
+                    ):
+                        continue
+
+                    priority = (
+                        2
+                        if assignment.section_id ==
+                        selected_section_id
+                        else 1
+                    )
+
+                else:
+
+                    # -----------------------------------------
+                    # No section selected:
+                    # only class-wide assignments.
+                    # -----------------------------------------
+
+                    if assignment.section_id is not None:
+                        continue
+
+                    priority = 1
+
+                subject_id = subject.id
+
+                current = subject_assignment_map.get(
+                    subject_id
+                )
+
+                if current is None:
+
+                    subject_assignment_map[
+                        subject_id
+                    ] = (
+                        priority,
+                        assignment
+                    )
+
+                else:
+
+                    current_priority = current[0]
+
+                    if priority > current_priority:
+
+                        subject_assignment_map[
+                            subject_id
+                        ] = (
+                            priority,
+                            assignment
+                        )
+
+            # =================================================
+            # BUILD SUBJECT RESPONSE
+            # =================================================
+
+            for subject_id, value in sorted(
+                subject_assignment_map.items(),
+                key=lambda item: (
+                    (
+                        item[1][1].subject.name
+                        or ""
+                    ).lower()
+                )
+            ):
+
+                assignment = value[1]
+                subject = assignment.subject
+
+                # ---------------------------------------------
                 # PROGRAM
-                #
-                # TeacherSubject program first.
-                # Subject program second.
-                # ------------------------------------------------
+                # ---------------------------------------------
 
                 program = None
 
@@ -3579,12 +3684,9 @@ def teacher_take_attendance():
 
                     program = subject.program
 
-                # ------------------------------------------------
-                # FIND EXISTING SESSION
-                #
-                # Only completed / locked attendance counts
-                # as Already Submitted.
-                # ------------------------------------------------
+                # ---------------------------------------------
+                # SESSION FOR THIS EXACT ASSIGNMENT
+                # ---------------------------------------------
 
                 session_query = (
                     AttendanceSession.query
@@ -3610,43 +3712,28 @@ def teacher_take_attendance():
                         AttendanceSession.attendance_date ==
                         attendance_date_obj,
 
-                        AttendanceSession.status.in_(
-                            [
-                                "completed",
-                                "locked",
-                            ]
-                        ),
+                        AttendanceSession.status.in_([
+                            "completed",
+                            "locked",
+                        ]),
                     )
                 )
 
-                # ------------------------------------------------
+                # ---------------------------------------------
                 # SECTION
-                #
-                # If a section is selected, check that exact
-                # section.
-                #
-                # If no section is selected, check the assignment
-                # section / class-wide session.
-                # ------------------------------------------------
+                # ---------------------------------------------
 
                 if selected_section_id:
 
-                    session_query = (
-                        session_query
-                        .filter(
-                            AttendanceSession.section_id ==
-                            selected_section_id
-                        )
+                    session_query = session_query.filter(
+                        AttendanceSession.section_id ==
+                        selected_section_id
                     )
 
                 else:
 
-                    session_query = (
-                        session_query
-                        .filter(
-                            AttendanceSession.section_id ==
-                            assignment.section_id
-                        )
+                    session_query = session_query.filter(
+                        AttendanceSession.section_id.is_(None)
                     )
 
                 submitted_session = (
@@ -3657,18 +3744,13 @@ def teacher_take_attendance():
                     .first()
                 )
 
-                already_submitted = (
-                    submitted_session is not None
-                )
-
-                # ------------------------------------------------
-                # REMOVE DUPLICATE SUBJECTS
+                # ---------------------------------------------
+                # IMPORTANT:
                 #
-                # If the same subject exists in multiple
-                # assignments, keep one subject entry.
-                # ------------------------------------------------
+                # ALREADY SUBMITTED SUBJECT IS NOT INCLUDED
+                # ---------------------------------------------
 
-                if subject.id in seen_subject_ids:
+                if submitted_session:
 
                     continue
 
@@ -3724,143 +3806,31 @@ def teacher_take_attendance():
                         assignment.academic_year_id,
 
                     "already_submitted":
-                        already_submitted,
+                        False,
 
                     "attendance_submitted":
-                        already_submitted,
+                        False,
 
                     "attendance_session_id":
-                        (
-                            submitted_session.id
-                            if submitted_session
-                            else None
-                        ),
+                        None,
 
                     "attendance_status":
-                        (
-                            submitted_session.status
-                            if submitted_session
-                            else None
-                        ),
+                        None,
 
                     "attendance_date":
                         selected_date,
-
                 })
 
-                seen_subject_ids.add(
-                    subject.id
-                )
-
-            # ------------------------------------------------
-            # SECTIONS FOR THIS CLASS
-            #
-            # Sections come from teacher assignments.
-            # ------------------------------------------------
-
-            section_ids = []
-
-            seen_section_ids = set()
-
-            for assignment in assignments:
-
-                if not assignment.section_id:
-                    continue
-
-                if assignment.section_id in seen_section_ids:
-                    continue
-
-                section_ids.append(
-                    assignment.section_id
-                )
-
-                seen_section_ids.add(
-                    assignment.section_id
-                )
-
-            if section_ids:
-
-                sections = (
-                    Section.query
-                    .filter(
-                        Section.id.in_(section_ids),
-
-                        Section.institution_id ==
-                        institution_id,
-
-                        Section.branch_id ==
-                        branch_id,
-                    )
-                    .order_by(
-                        Section.name.asc()
-                    )
-                    .all()
-                )
-
-            # ------------------------------------------------
-            # SELECTED SECTION
-            # ------------------------------------------------
-
-            if selected_section_id:
-
-                selected_section = (
-                    Section.query
-                    .filter(
-                        Section.id ==
-                        selected_section_id,
-
-                        Section.institution_id ==
-                        institution_id,
-
-                        Section.branch_id ==
-                        branch_id,
-                    )
-                    .first()
-                )
-
-                if not selected_section:
-
-                    abort(404)
-
-                # ------------------------------------------------
-                # SECTION MUST BELONG TO THIS TEACHER
-                # ------------------------------------------------
-
-                section_assignment_exists = (
-                    TeacherSubject.query
-                    .filter(
-                        TeacherSubject.teacher_id ==
-                        teacher_id,
-
-                        TeacherSubject.institution_id ==
-                        institution_id,
-
-                        TeacherSubject.branch_id ==
-                        branch_id,
-
-                        TeacherSubject.class_id ==
-                        selected_class_id,
-
-                        TeacherSubject.section_id ==
-                        selected_section_id,
-
-                        TeacherSubject.status ==
-                        "active",
-                    )
-                    .first()
-                )
-
-                if not section_assignment_exists:
-
-                    abort(403)
-
-            # ------------------------------------------------
+            # =================================================
             # SELECTED ASSIGNMENT
-            # ------------------------------------------------
+            #
+            # Must be an assignment that is actually valid
+            # for the selected section.
+            # =================================================
 
             if selected_teacher_subject_id:
 
-                selected_assignment = (
+                candidate_assignment = (
                     TeacherSubject.query
                     .filter(
                         TeacherSubject.id ==
@@ -3886,44 +3856,40 @@ def teacher_take_attendance():
                     .first()
                 )
 
-                if not selected_assignment:
-
+                if not candidate_assignment:
                     abort(403)
 
-                # ------------------------------------------------
-                # SECTION SECURITY
-                # ------------------------------------------------
+                # ---------------------------------------------
+                # SECTION COMPATIBILITY
+                # ---------------------------------------------
 
-                if (
+                if selected_section_id:
 
-                    selected_assignment.section_id
+                    if (
+                        candidate_assignment.section_id
+                        not in (
+                            None,
+                            selected_section_id,
+                        )
+                    ):
+                        abort(403)
 
-                    and selected_section_id
+                else:
 
-                    and
+                    # Section-specific assignment requires
+                    # section selection.
+                    if candidate_assignment.section_id:
+                        abort(403)
 
-                    selected_assignment.section_id
-                    != selected_section_id
+                # ---------------------------------------------
+                # SELECTED ASSIGNMENT
+                # ---------------------------------------------
 
-                ):
+                selected_assignment = candidate_assignment
 
-                    abort(403)
-
-                # ------------------------------------------------
-                # SUBJECT
-                # ------------------------------------------------
-
-                selected_subject = (
-                    selected_assignment.subject
-                )
-
-                # ------------------------------------------------
+                # ---------------------------------------------
                 # PROGRAM
-                #
-                # Priority:
-                # TeacherSubject.program_id
-                # then Subject.program_id
-                # ------------------------------------------------
+                # ---------------------------------------------
 
                 if selected_assignment.program_id:
 
@@ -3932,26 +3898,26 @@ def teacher_take_attendance():
                     )
 
                 elif (
-
-                    selected_subject
-
-                    and getattr(
-                        selected_subject,
+                    selected_assignment.subject
+                    and
+                    getattr(
+                        selected_assignment.subject,
                         "program_id",
                         None
                     )
-
                 ):
 
                     selected_program = (
-                        selected_subject.program
+                        selected_assignment.subject.program
                     )
 
-                # ------------------------------------------------
-                # FIND EXISTING SESSION
-                # ------------------------------------------------
+                # ---------------------------------------------
+                # CHECK ALREADY SUBMITTED AGAIN
+                #
+                # Server-side protection.
+                # ---------------------------------------------
 
-                existing_session = (
+                selected_session_query = (
                     AttendanceSession.query
                     .filter(
                         AttendanceSession.institution_id ==
@@ -3972,26 +3938,121 @@ def teacher_take_attendance():
                         AttendanceSession.class_id ==
                         selected_class_id,
 
-                        AttendanceSession.section_id ==
-                        selected_section_id,
-
                         AttendanceSession.attendance_date ==
                         attendance_date_obj,
 
-                        AttendanceSession.status !=
-                        "cancelled",
+                        AttendanceSession.status.in_([
+                            "completed",
+                            "locked",
+                        ]),
                     )
+                )
+
+                if selected_section_id:
+
+                    selected_session_query = (
+                        selected_session_query
+                        .filter(
+                            AttendanceSession.section_id ==
+                            selected_section_id
+                        )
+                    )
+
+                else:
+
+                    selected_session_query = (
+                        selected_session_query
+                        .filter(
+                            AttendanceSession.section_id.is_(None)
+                        )
+                    )
+
+                submitted_session = (
+                    selected_session_query
                     .order_by(
                         AttendanceSession.id.desc()
                     )
                     .first()
                 )
 
-                # ------------------------------------------------
-                # ACTIVE STUDENTS
-                #
-                # StudentEnrollment is the source of truth.
-                # ------------------------------------------------
+                # ---------------------------------------------
+                # NEVER LOAD COMPLETED/LOCKED SESSION
+                # ---------------------------------------------
+
+                if submitted_session:
+
+                    return redirect(
+                        url_for(
+                            "main.teacher_take_attendance",
+                            class_id=selected_class_id,
+                            section_id=selected_section_id,
+                            attendance_date=selected_date,
+                        )
+                    )
+
+                # ---------------------------------------------
+                # FIND OPEN SESSION
+                # ---------------------------------------------
+
+                existing_session_query = (
+                    AttendanceSession.query
+                    .filter(
+                        AttendanceSession.institution_id ==
+                        institution_id,
+
+                        AttendanceSession.branch_id ==
+                        branch_id,
+
+                        AttendanceSession.teacher_id ==
+                        teacher_id,
+
+                        AttendanceSession.teacher_subject_id ==
+                        selected_assignment.id,
+
+                        AttendanceSession.academic_year_id ==
+                        selected_assignment.academic_year_id,
+
+                        AttendanceSession.class_id ==
+                        selected_class_id,
+
+                        AttendanceSession.attendance_date ==
+                        attendance_date_obj,
+
+                        AttendanceSession.status ==
+                        "open",
+                    )
+                )
+
+                if selected_section_id:
+
+                    existing_session_query = (
+                        existing_session_query
+                        .filter(
+                            AttendanceSession.section_id ==
+                            selected_section_id
+                        )
+                    )
+
+                else:
+
+                    existing_session_query = (
+                        existing_session_query
+                        .filter(
+                            AttendanceSession.section_id.is_(None)
+                        )
+                    )
+
+                existing_session = (
+                    existing_session_query
+                    .order_by(
+                        AttendanceSession.id.desc()
+                    )
+                    .first()
+                )
+
+                # =================================================
+                # ACTIVE ENROLLMENTS
+                # =================================================
 
                 enrollment_query = (
                     StudentEnrollment.query
@@ -4013,9 +4074,9 @@ def teacher_take_attendance():
                     )
                 )
 
-                # ------------------------------------------------
-                # SECTION FILTER
-                # ------------------------------------------------
+                # ---------------------------------------------
+                # SECTION
+                # ---------------------------------------------
 
                 if selected_section_id:
 
@@ -4027,11 +4088,9 @@ def teacher_take_attendance():
                         )
                     )
 
-                # ------------------------------------------------
-                # PROGRAM FILTER
-                #
-                # Use assignment program when available.
-                # ------------------------------------------------
+                # ---------------------------------------------
+                # PROGRAM
+                # ---------------------------------------------
 
                 if selected_assignment.program_id:
 
@@ -4056,11 +4115,9 @@ def teacher_take_attendance():
                     .all()
                 )
 
-                # ------------------------------------------------
-                # CREATE STUDENT LIST
-                # ------------------------------------------------
-
-                students = []
+                # =================================================
+                # EXISTING RECORDS
+                # =================================================
 
                 existing_records = {}
 
@@ -4071,12 +4128,15 @@ def teacher_take_attendance():
                         for record in existing_session.records
                     }
 
+                # =================================================
+                # STUDENTS
+                # =================================================
+
                 for enrollment in enrollments:
 
                     student = enrollment.student
 
                     if not student:
-
                         continue
 
                     record = existing_records.get(
@@ -4109,21 +4169,6 @@ def teacher_take_attendance():
                             ),
 
                     })
-
-        # ====================================================
-        # SELECTED ATTENDANCE STATUS
-        # ====================================================
-
-        selected_already_submitted = False
-
-        if existing_session:
-
-            selected_already_submitted = (
-                existing_session.status in {
-                    "completed",
-                    "locked",
-                }
-            )
 
         # ====================================================
         # RENDER
@@ -4160,13 +4205,15 @@ def teacher_take_attendance():
 
             existing_session=existing_session,
 
-            already_submitted=
-                selected_already_submitted,
+            already_submitted=False,
         )
 
     # ========================================================
+    # ========================================================
     # POST
+    # ========================================================
     # SAVE ATTENDANCE
+    # ========================================================
     # ========================================================
 
     class_id = request.form.get(
@@ -4184,8 +4231,10 @@ def teacher_take_attendance():
         type=int
     )
 
-    attendance_date_raw = request.form.get(
-        "attendance_date"
+    attendance_date_raw = (
+        request.form.get(
+            "attendance_date"
+        )
     )
 
     session_type = (
@@ -4204,7 +4253,7 @@ def teacher_take_attendance():
     )
 
     # ========================================================
-    # VALIDATION
+    # BASIC VALIDATION
     # ========================================================
 
     if not class_id:
@@ -4252,12 +4301,8 @@ def teacher_take_attendance():
             url_for(
                 "main.teacher_take_attendance",
                 class_id=class_id,
-
-                teacher_subject_id=
-                    teacher_subject_id,
-
-                section_id=
-                    section_id,
+                teacher_subject_id=teacher_subject_id,
+                section_id=section_id,
             )
         )
 
@@ -4291,29 +4336,71 @@ def teacher_take_attendance():
         .first()
     )
 
-    # ========================================================
-    # SECURITY
-    # ========================================================
-
     if not assignment:
-
         abort(403)
 
     # ========================================================
     # SECTION SECURITY
     # ========================================================
 
-    if (
+    if section_id:
 
-        assignment.section_id
+        # Section-specific assignment must match.
+        if (
+            assignment.section_id is not None
+            and
+            assignment.section_id != section_id
+        ):
+            abort(403)
 
-        and section_id
+        # Verify section belongs to teacher/class.
+        section_exists = (
+            TeacherSubject.query
+            .filter(
+                TeacherSubject.teacher_id == teacher_id,
+                TeacherSubject.institution_id == institution_id,
+                TeacherSubject.branch_id == branch_id,
+                TeacherSubject.class_id == class_id,
+                TeacherSubject.section_id == section_id,
+                TeacherSubject.status == "active",
+            )
+            .first()
+        )
 
-        and assignment.section_id != section_id
+        if not section_exists:
+            abort(403)
 
-    ):
+        section_obj = (
+            Section.query
+            .filter(
+                Section.id == section_id,
+                Section.institution_id == institution_id,
+                Section.branch_id == branch_id,
+            )
+            .first()
+        )
 
-        abort(403)
+        if not section_obj:
+            abort(404)
+
+    else:
+
+        # Section-specific assignment cannot be saved
+        # without selecting its section.
+        if assignment.section_id is not None:
+
+            flash(
+                "Please select the section for this subject.",
+                "warning"
+            )
+
+            return redirect(
+                url_for(
+                    "main.teacher_take_attendance",
+                    class_id=class_id,
+                    attendance_date=attendance_date.isoformat(),
+                )
+            )
 
     # ========================================================
     # CLASS
@@ -4322,20 +4409,14 @@ def teacher_take_attendance():
     selected_class = (
         Class.query
         .filter(
-            Class.id ==
-            class_id,
-
-            Class.institution_id ==
-            institution_id,
-
-            Class.branch_id ==
-            branch_id,
+            Class.id == class_id,
+            Class.institution_id == institution_id,
+            Class.branch_id == branch_id,
         )
         .first()
     )
 
     if not selected_class:
-
         abort(404)
 
     # ========================================================
@@ -4353,10 +4434,12 @@ def teacher_take_attendance():
         )
 
     # ========================================================
-    # EXISTING SESSION
+    # CHECK COMPLETED / LOCKED SESSION
+    #
+    # THIS IS THE FINAL SERVER-SIDE LOCK.
     # ========================================================
 
-    session = (
+    submitted_session_query = (
         AttendanceSession.query
         .filter(
             AttendanceSession.institution_id ==
@@ -4377,54 +4460,118 @@ def teacher_take_attendance():
             AttendanceSession.class_id ==
             class_id,
 
-            AttendanceSession.section_id ==
-            section_id,
-
             AttendanceSession.attendance_date ==
             attendance_date,
 
-            AttendanceSession.status !=
-            "cancelled",
+            AttendanceSession.status.in_([
+                "completed",
+                "locked",
+            ]),
         )
+    )
+
+    if section_id:
+
+        submitted_session_query = (
+            submitted_session_query
+            .filter(
+                AttendanceSession.section_id ==
+                section_id
+            )
+        )
+
+    else:
+
+        submitted_session_query = (
+            submitted_session_query
+            .filter(
+                AttendanceSession.section_id.is_(None)
+            )
+        )
+
+    submitted_session = (
+        submitted_session_query
         .order_by(
             AttendanceSession.id.desc()
         )
         .first()
     )
 
-    # ========================================================
-    # ALREADY SUBMITTED
-    #
-    # COMPLETED / LOCKED CANNOT BE SUBMITTED AGAIN.
-    # ========================================================
-
-    if session and session.status in {
-        "completed",
-        "locked",
-    }:
+    if submitted_session:
 
         flash(
-            "Attendance for this class, subject, section "
-            "and date has already been submitted.",
+            "Attendance for this subject, section and date "
+            "has already been submitted.",
             "warning"
         )
 
         return redirect(
             url_for(
                 "main.teacher_take_attendance",
-
                 class_id=class_id,
-
-                teacher_subject_id=
-                    assignment.id,
-
-                section_id=
-                    section_id,
-
-                attendance_date=
-                    attendance_date.isoformat(),
+                section_id=section_id,
+                attendance_date=attendance_date.isoformat(),
             )
         )
+
+    # ========================================================
+    # OPEN SESSION
+    # ========================================================
+
+    session_query = (
+        AttendanceSession.query
+        .filter(
+            AttendanceSession.institution_id ==
+            institution_id,
+
+            AttendanceSession.branch_id ==
+            branch_id,
+
+            AttendanceSession.teacher_id ==
+            teacher_id,
+
+            AttendanceSession.teacher_subject_id ==
+            assignment.id,
+
+            AttendanceSession.academic_year_id ==
+            assignment.academic_year_id,
+
+            AttendanceSession.class_id ==
+            class_id,
+
+            AttendanceSession.attendance_date ==
+            attendance_date,
+
+            AttendanceSession.status == "open",
+        )
+    )
+
+    if section_id:
+
+        session_query = (
+            session_query
+            .filter(
+                AttendanceSession.section_id ==
+                section_id
+            )
+        )
+
+    else:
+
+        session_query = (
+            session_query
+            .filter(
+                AttendanceSession.section_id.is_(None)
+            )
+        )
+
+    session = (
+        session_query
+        .order_by(
+            AttendanceSession.id.desc()
+        )
+        .first()
+    )
 
     # ========================================================
     # CREATE SESSION
@@ -4480,15 +4627,8 @@ def teacher_take_attendance():
 
     else:
 
-        # ----------------------------------------------------
-        # OPEN SESSION
-        # ----------------------------------------------------
-
         session.period = period
-
         session.notes = notes
-
-        session.status = "open"
 
     # ========================================================
     # ACTIVE ENROLLMENTS
@@ -4565,15 +4705,10 @@ def teacher_take_attendance():
         student_id = enrollment.student_id
 
         # ----------------------------------------------------
-        # FORM FIELD
+        # CHECKBOX
         #
-        # Checked checkbox:
-        # attendance_15 = present
-        #
-        # Unchecked checkbox:
-        # field does not exist.
-        #
-        # Missing checkbox = ABSENT.
+        # checked   = present
+        # unchecked = absent
         # ----------------------------------------------------
 
         status = request.form.get(
@@ -4581,19 +4716,13 @@ def teacher_take_attendance():
         )
 
         if not status:
-
             status = "absent"
 
-        # ----------------------------------------------------
-        # SECURITY
-        # ----------------------------------------------------
-
         if status not in allowed_statuses:
-
             status = "present"
 
         # ----------------------------------------------------
-        # NOTES
+        # NOTE
         # ----------------------------------------------------
 
         student_note = (
@@ -4620,7 +4749,7 @@ def teacher_take_attendance():
         )
 
         # ----------------------------------------------------
-        # CREATE RECORD
+        # CREATE
         # ----------------------------------------------------
 
         if not record:
@@ -4646,10 +4775,6 @@ def teacher_take_attendance():
                     student_note,
             )
 
-            # ------------------------------------------------
-            # CHECK-IN
-            # ------------------------------------------------
-
             if status in {
                 "present",
                 "late",
@@ -4660,7 +4785,7 @@ def teacher_take_attendance():
             db.session.add(record)
 
         # ----------------------------------------------------
-        # UPDATE RECORD
+        # UPDATE
         # ----------------------------------------------------
 
         else:
@@ -4675,13 +4800,7 @@ def teacher_take_attendance():
                 teacher_id
             )
 
-            record.notes = (
-                student_note
-            )
-
-            # ------------------------------------------------
-            # UPDATE CHECK-IN
-            # ------------------------------------------------
+            record.notes = student_note
 
             if status in {
                 "present",
@@ -4698,26 +4817,20 @@ def teacher_take_attendance():
 
                 record.check_in = None
 
-            # ------------------------------------------------
-            # RESET CHECK-OUT
-            # ------------------------------------------------
-
             if status != "present":
 
                 record.check_out = None
 
     # ========================================================
-    # COMPLETE SESSION
+    # COMPLETE
     # ========================================================
 
     session.status = "completed"
 
-    session.updated_at = (
-        datetime.utcnow()
-    )
+    session.updated_at = datetime.utcnow()
 
     # ========================================================
-    # SAVE
+    # COMMIT
     # ========================================================
 
     try:
@@ -4737,18 +4850,10 @@ def teacher_take_attendance():
         return redirect(
             url_for(
                 "main.teacher_take_attendance",
-
-                class_id=
-                    class_id,
-
-                teacher_subject_id=
-                    assignment.id,
-
-                section_id=
-                    section_id,
-
-                attendance_date=
-                    attendance_date.isoformat(),
+                class_id=class_id,
+                teacher_subject_id=assignment.id,
+                section_id=section_id,
+                attendance_date=attendance_date.isoformat(),
             )
         )
 
@@ -4764,18 +4869,8 @@ def teacher_take_attendance():
     return redirect(
         url_for(
             "main.teacher_take_attendance",
-
-            class_id=
-                class_id,
-
-            teacher_subject_id=
-                assignment.id,
-
-            section_id=
-                section_id,
-
-            attendance_date=
-                attendance_date.isoformat(),
+            class_id=class_id,
+            attendance_date=attendance_date.isoformat(),
         )
     )
 
@@ -4783,8 +4878,32 @@ def teacher_take_attendance():
 
 # ============================================================
 # AJAX:
-# GET SUBJECTS FOR SELECTED CLASS
+# GET SUBJECTS + SECTIONS FOR SELECTED CLASS
 # ============================================================
+# ============================================================
+# TEACHER ATTENDANCE - CLASS SUBJECTS
+#
+# RULES
+# ------------------------------------------------------------
+# 1. Teacher can only see own institution / branch.
+# 2. Attendance date is ALWAYS TODAY.
+# 3. Teacher cannot select or submit another date.
+# 4. Class -> subjects loads dynamically.
+# 5. Selected section-specific TeacherSubject has priority
+#    over class-wide TeacherSubject.
+# 6. Without section:
+#       only class-wide assignments are returned.
+# 7. With section:
+#       exact section assignment > class-wide assignment.
+# 8. completed / locked attendance is hidden.
+# 9. open attendance is NOT considered submitted.
+# 10. cancelled attendance is ignored.
+# 11. Same subject is returned only once.
+# 12. Active teacher assignment is required.
+# 13. Section access is restricted to teacher assignments.
+# 14. Response is JSON for dynamic frontend.
+# ============================================================
+
 @bp.route(
     "/teacher/attendance/class/<int:class_id>/subjects",
     methods=["GET"]
@@ -4806,18 +4925,69 @@ def teacher_attendance_class_subjects(class_id):
     teacher_id = teacher.id
 
     # ========================================================
-    # REQUEST FILTERS
+    # TODAY
+    #
+    # Teacher attendance is TODAY ONLY.
+    # The browser date cannot change this.
     # ========================================================
 
-    attendance_date = request.args.get(
-        "attendance_date",
-        type=str
-    )
+    today = datetime.utcnow().date()
+
+    # ========================================================
+    # REQUESTED SECTION
+    # ========================================================
 
     requested_section_id = request.args.get(
         "section_id",
         type=int
     )
+
+    # ========================================================
+    # IMPORTANT
+    #
+    # Ignore any attendance_date coming from browser.
+    #
+    # Even if browser sends:
+    #
+    # ?attendance_date=2026-01-01
+    #
+    # backend always uses TODAY.
+    # ========================================================
+
+    attendance_date = today
+
+    # ========================================================
+    # COMMON EMPTY RESPONSE
+    # ========================================================
+
+    def empty_response(
+        message,
+        status_code=200
+    ):
+
+        return jsonify({
+
+            "success": False,
+
+            "message":
+                message,
+
+            "class_id":
+                class_id,
+
+            "attendance_date":
+                attendance_date.isoformat(),
+
+            "requested_section_id":
+                requested_section_id,
+
+            "subjects":
+                [],
+
+            "sections":
+                [],
+
+        }), status_code
 
     # ========================================================
     # VERIFY CLASS
@@ -4839,50 +5009,15 @@ def teacher_attendance_class_subjects(class_id):
 
     if not class_obj:
 
-        return jsonify({
-            "success": False,
-            "message": "Class not found.",
-            "subjects": [],
-            "sections": [],
-        }), 404
-
-    # ========================================================
-    # VERIFY TEACHER HAS ASSIGNMENT IN THIS CLASS
-    # ========================================================
-
-    has_assignment = (
-        TeacherSubject.query
-        .filter(
-            TeacherSubject.teacher_id ==
-            teacher_id,
-
-            TeacherSubject.institution_id ==
-            institution_id,
-
-            TeacherSubject.branch_id ==
-            branch_id,
-
-            TeacherSubject.class_id ==
-            class_id,
-
-            TeacherSubject.status ==
-            "active",
+        return empty_response(
+            "Class not found.",
+            404
         )
-        .first()
-    )
-
-    if not has_assignment:
-
-        return jsonify({
-            "success": False,
-            "message":
-                "You are not assigned to this class.",
-            "subjects": [],
-            "sections": [],
-        }), 403
 
     # ========================================================
-    # GET TEACHER ASSIGNMENTS
+    # LOAD ALL ACTIVE SUBJECT ASSIGNMENTS
+    #
+    # Only assignments that actually have a subject.
     # ========================================================
 
     assignments = (
@@ -4912,94 +5047,167 @@ def teacher_attendance_class_subjects(class_id):
     )
 
     # ========================================================
-    # SUBJECTS
+    # NO ASSIGNMENT
     # ========================================================
 
-    subjects = []
+    if not assignments:
 
-    seen_subject_ids = set()
-
-    # ========================================================
-    # SECTIONS
-    # ========================================================
-
-    sections = []
-
-    seen_section_ids = set()
-
-    # ========================================================
-    # ALREADY SUBMITTED CACHE
-    #
-    # Haddii date la soo diray, hal mar ayaan sessions-ka
-    # teacher-kan/class-kan/date-kan soo qaadaneynaa.
-    # ========================================================
-
-    submitted_sessions = {}
-
-    if attendance_date:
-
-        try:
-
-            parsed_attendance_date = (
-                datetime.strptime(
-                    attendance_date,
-                    "%Y-%m-%d"
-                ).date()
-            )
-
-        except (TypeError, ValueError):
-
-            return jsonify({
-                "success": False,
-                "message":
-                    "Invalid attendance date.",
-                "subjects": [],
-                "sections": [],
-            }), 400
-
-        existing_sessions = (
-            AttendanceSession.query
-            .filter(
-                AttendanceSession.institution_id ==
-                institution_id,
-
-                AttendanceSession.branch_id ==
-                branch_id,
-
-                AttendanceSession.teacher_id ==
-                teacher_id,
-
-                AttendanceSession.class_id ==
-                class_id,
-
-                AttendanceSession.attendance_date ==
-                parsed_attendance_date,
-
-                AttendanceSession.status.in_([
-                    "open",
-                    "completed",
-                    "locked",
-                ]),
-            )
-            .all()
+        return empty_response(
+            "You are not assigned to any subject in this class.",
+            403
         )
 
-        # ----------------------------------------------------
-        # INDEX BY TEACHER SUBJECT + SECTION
-        # ----------------------------------------------------
+    # ========================================================
+    # VALIDATE REQUESTED SECTION
+    # ========================================================
 
-        for session in existing_sessions:
+    requested_section = None
 
-            key = (
-                session.teacher_subject_id,
-                session.section_id,
+    if requested_section_id:
+
+        requested_section = (
+            Section.query
+            .filter(
+                Section.id ==
+                requested_section_id,
+
+                Section.institution_id ==
+                institution_id,
+
+                Section.branch_id ==
+                branch_id,
+            )
+            .first()
+        )
+
+        if not requested_section:
+
+            return empty_response(
+                "Section not found.",
+                404
             )
 
-            submitted_sessions[key] = session
+        # ====================================================
+        # TEACHER SECTION ACCESS
+        #
+        # Teacher must have either:
+        #
+        # 1. exact section assignment
+        #
+        # OR
+        #
+        # 2. class-wide assignment
+        #
+        # Class-wide assignment means teacher can take
+        # attendance for a selected section.
+        # ====================================================
+
+        exact_section_access = any(
+
+            assignment.section_id ==
+            requested_section_id
+
+            for assignment in assignments
+
+        )
+
+        class_wide_access = any(
+
+            assignment.section_id is None
+
+            for assignment in assignments
+
+        )
+
+        if (
+            not exact_section_access
+            and
+            not class_wide_access
+        ):
+
+            return empty_response(
+                "You are not assigned to this section.",
+                403
+            )
 
     # ========================================================
-    # BUILD RESPONSE
+    # BUILD SECTIONS
+    #
+    # Only sections assigned to this teacher are shown.
     # ========================================================
+
+    section_map = {}
+
+    for assignment in assignments:
+
+        if not assignment.section_id:
+            continue
+
+        section = assignment.section
+
+        if not section:
+            continue
+
+        if section.id in section_map:
+            continue
+
+        section_map[section.id] = {
+
+            "id":
+                section.id,
+
+            "name":
+                section.name,
+
+            "teacher_subject_id":
+                assignment.id,
+
+            "already_submitted":
+                False,
+
+            "attendance_submitted":
+                False,
+
+            "attendance_session_id":
+                None,
+
+            "attendance_status":
+                None,
+        }
+
+    sections = list(
+        section_map.values()
+    )
+
+    sections.sort(
+        key=lambda item: (
+            item.get("name") or ""
+        ).lower()
+    )
+
+    # ========================================================
+    # FIND BEST ASSIGNMENT PER SUBJECT
+    #
+    # PRIORITY:
+    #
+    # --------------------------------------------------------
+    # If section selected:
+    #
+    #   1. exact section assignment
+    #   2. class-wide assignment
+    #
+    # If section NOT selected:
+    #
+    #   1. class-wide assignment only
+    #
+    # --------------------------------------------------------
+    # If multiple assignments have same priority:
+    #
+    #   1. is_primary=True
+    #   2. lowest assignment id
+    # ========================================================
+
+    best_assignments = {}
 
     for assignment in assignments:
 
@@ -5009,10 +5217,219 @@ def teacher_attendance_class_subjects(class_id):
             continue
 
         # ====================================================
+        # DETERMINE PRIORITY
+        # ====================================================
+
+        if requested_section_id:
+
+            # ----------------------------------------------
+            # Exact section assignment
+            # ----------------------------------------------
+
+            if (
+                assignment.section_id ==
+                requested_section_id
+            ):
+
+                priority = 2
+
+            # ----------------------------------------------
+            # Class-wide assignment
+            # ----------------------------------------------
+
+            elif assignment.section_id is None:
+
+                priority = 1
+
+            # ----------------------------------------------
+            # Assignment belongs to another section
+            # ----------------------------------------------
+
+            else:
+
+                continue
+
+        else:
+
+            # =================================================
+            # NO SECTION SELECTED
+            #
+            # Section-specific subjects cannot be selected
+            # until a section is selected.
+            # =================================================
+
+            if assignment.section_id is not None:
+
+                continue
+
+            priority = 1
+
+        # ====================================================
+        # SUBJECT ID
+        # ====================================================
+
+        subject_id = subject.id
+
+        current = best_assignments.get(
+            subject_id
+        )
+
+        # ====================================================
+        # FIRST ASSIGNMENT
+        # ====================================================
+
+        if current is None:
+
+            best_assignments[
+                subject_id
+            ] = (
+                priority,
+                assignment
+            )
+
+            continue
+
+        current_priority = current[0]
+        current_assignment = current[1]
+
+        # ====================================================
+        # BETTER PRIORITY
+        # ====================================================
+
+        if priority > current_priority:
+
+            best_assignments[
+                subject_id
+            ] = (
+                priority,
+                assignment
+            )
+
+            continue
+
+        # ====================================================
+        # SAME PRIORITY
+        #
+        # Prefer is_primary if available.
+        # ====================================================
+
+        current_primary = bool(
+            getattr(
+                current_assignment,
+                "is_primary",
+                False
+            )
+        )
+
+        new_primary = bool(
+            getattr(
+                assignment,
+                "is_primary",
+                False
+            )
+        )
+
+        if (
+            new_primary
+            and not current_primary
+        ):
+
+            best_assignments[
+                subject_id
+            ] = (
+                priority,
+                assignment
+            )
+
+            continue
+
+        # ====================================================
+        # SAME PRIMARY STATE
+        #
+        # Lowest ID wins for deterministic behaviour.
+        # ====================================================
+
+        if (
+            new_primary ==
+            current_primary
+            and assignment.id <
+            current_assignment.id
+        ):
+
+            best_assignments[
+                subject_id
+            ] = (
+                priority,
+                assignment
+            )
+
+    # ========================================================
+    # NO SUBJECTS
+    # ========================================================
+
+    if not best_assignments:
+
+        return jsonify({
+
+            "success":
+                True,
+
+            "message":
+                (
+                    "No subjects are available "
+                    "for the selected class/section."
+                ),
+
+            "class_id":
+                class_id,
+
+            "attendance_date":
+                attendance_date.isoformat(),
+
+            "requested_section_id":
+                requested_section_id,
+
+            "subjects":
+                [],
+
+            "sections":
+                sections,
+
+        })
+
+    # ========================================================
+    # BUILD SUBJECT RESPONSE
+    # ========================================================
+
+    subjects = []
+
+    for subject_id, value in sorted(
+
+        best_assignments.items(),
+
+        key=lambda item: (
+
+            (
+                item[1][1].subject.name
+                or ""
+            ).lower()
+
+        )
+
+    ):
+
+        assignment = value[1]
+
+        subject = assignment.subject
+
+        if not subject:
+            continue
+
+        # ====================================================
         # PROGRAM
         #
-        # TeacherSubject program first.
-        # Subject program second.
+        # Assignment program has priority.
+        # Otherwise use subject program.
         # ====================================================
 
         program = None
@@ -5030,264 +5447,425 @@ def teacher_attendance_class_subjects(class_id):
             program = subject.program
 
         # ====================================================
-        # ALREADY SUBMITTED
+        # FIND COMPLETED / LOCKED ATTENDANCE
+        #
+        # IMPORTANT:
+        #
+        # Only completed / locked means SUBMITTED.
+        #
+        # open      -> can continue
+        # completed -> hide
+        # locked    -> hide
+        # cancelled -> ignore
         # ====================================================
 
-        assignment_section_id = (
-            assignment.section_id
-        )
-
-        already_submitted = False
         submitted_session = None
 
-        # ----------------------------------------------------
-        # EXACT SECTION
-        # ----------------------------------------------------
+        session_query = (
+            AttendanceSession.query
+            .filter(
 
-        if attendance_date:
+                AttendanceSession.institution_id ==
+                institution_id,
 
-            exact_key = (
+                AttendanceSession.branch_id ==
+                branch_id,
+
+                AttendanceSession.teacher_id ==
+                teacher_id,
+
+                AttendanceSession.teacher_subject_id ==
                 assignment.id,
-                requested_section_id
-                if requested_section_id
-                else assignment_section_id,
+
+                AttendanceSession.academic_year_id ==
+                assignment.academic_year_id,
+
+                AttendanceSession.class_id ==
+                class_id,
+
+                AttendanceSession.attendance_date ==
+                attendance_date,
+
+                AttendanceSession.status.in_([
+                    "completed",
+                    "locked",
+                ]),
             )
+        )
+
+        # ====================================================
+        # SECTION-SPECIFIC ASSIGNMENT
+        # ====================================================
+
+        if assignment.section_id is not None:
+
+            session_query = (
+                session_query
+                .filter(
+                    AttendanceSession.section_id ==
+                    assignment.section_id
+                )
+            )
+
+        # ====================================================
+        # CLASS-WIDE ASSIGNMENT
+        #
+        # If a section was selected:
+        #
+        # 1. exact section session
+        # 2. class-wide session
+        #
+        # Exact section has priority.
+        # ====================================================
+
+        elif requested_section_id:
+
+            exact_session = (
+                session_query
+                .filter(
+                    AttendanceSession.section_id ==
+                    requested_section_id
+                )
+                .order_by(
+                    AttendanceSession.id.desc()
+                )
+                .first()
+            )
+
+            if exact_session:
+
+                submitted_session = (
+                    exact_session
+                )
+
+            else:
+
+                class_wide_session = (
+                    session_query
+                    .filter(
+                        AttendanceSession.section_id.is_(None)
+                    )
+                    .order_by(
+                        AttendanceSession.id.desc()
+                    )
+                    .first()
+                )
+
+                if class_wide_session:
+
+                    submitted_session = (
+                        class_wide_session
+                    )
+
+        # ====================================================
+        # NO SECTION
+        #
+        # Only class-wide attendance session applies.
+        # ====================================================
+
+        else:
 
             submitted_session = (
-                submitted_sessions.get(
-                    exact_key
+                session_query
+                .filter(
+                    AttendanceSession.section_id.is_(None)
                 )
+                .order_by(
+                    AttendanceSession.id.desc()
+                )
+                .first()
             )
 
-            # ------------------------------------------------
-            # IF REQUESTED SECTION IS EMPTY
-            #
-            # Also check class-wide attendance session.
-            # ------------------------------------------------
-
-            if (
-                not submitted_session
-                and requested_section_id is None
-            ):
-
-                submitted_session = (
-                    submitted_sessions.get(
-                        (
-                            assignment.id,
-                            None,
-                        )
-                    )
-                )
-
-            # ------------------------------------------------
-            # IF ASSIGNMENT IS SECTION-SPECIFIC
-            # ------------------------------------------------
-
-            if (
-                not submitted_session
-                and assignment_section_id
-            ):
-
-                submitted_session = (
-                    submitted_sessions.get(
-                        (
-                            assignment.id,
-                            assignment_section_id,
-                        )
-                    )
-                )
-
-        # ----------------------------------------------------
-        # MARK SUBMITTED
-        # ----------------------------------------------------
+        # ====================================================
+        # ALREADY SUBMITTED
+        #
+        # DO NOT RETURN SUBJECT.
+        #
+        # Frontend will therefore completely hide it.
+        # ====================================================
 
         if submitted_session:
 
-            already_submitted = True
+            continue
 
         # ====================================================
-        # SUBJECT
+        # SUBJECT RESPONSE
         # ====================================================
 
-        if subject.id not in seen_subject_ids:
+        subjects.append({
 
-            subjects.append({
+            "teacher_subject_id":
+                assignment.id,
 
-                "teacher_subject_id":
-                    assignment.id,
+            "subject_id":
+                subject.id,
 
-                "subject_id":
-                    subject.id,
+            "name":
+                subject.name,
 
-                "name":
-                    subject.name,
+            "code":
+                getattr(
+                    subject,
+                    "code",
+                    None
+                ),
 
-                "code":
-                    getattr(
-                        subject,
-                        "code",
-                        None
-                    ),
+            "short_name":
+                getattr(
+                    subject,
+                    "short_name",
+                    None
+                ),
 
-                "short_name":
-                    getattr(
-                        subject,
-                        "short_name",
-                        None
-                    ),
+            "program_id":
+                (
+                    program.id
+                    if program
+                    else None
+                ),
 
-                "program_id":
-                    (
-                        program.id
-                        if program
-                        else None
-                    ),
+            "program_name":
+                (
+                    program.name
+                    if program
+                    else None
+                ),
 
-                "program_name":
-                    (
-                        program.name
-                        if program
-                        else None
-                    ),
+            # ----------------------------------------------
+            # For a class-wide assignment this is None.
+            # ----------------------------------------------
 
-                "section_id":
-                    assignment.section_id,
+            "section_id":
+                assignment.section_id,
 
-                "academic_year_id":
-                    assignment.academic_year_id,
+            "academic_year_id":
+                assignment.academic_year_id,
 
-                # ------------------------------------------------
-                # ALREADY SUBMITTED
-                # ------------------------------------------------
+            # ----------------------------------------------
+            # This subject is available for attendance.
+            # ----------------------------------------------
 
-                "already_submitted":
-                    already_submitted,
+            "already_submitted":
+                False,
 
-                "attendance_submitted":
-                    already_submitted,
+            "attendance_submitted":
+                False,
 
-                "attendance_session_id":
-                    (
-                        submitted_session.id
-                        if submitted_session
-                        else None
-                    ),
+            "attendance_session_id":
+                None,
 
-                "attendance_status":
-                    (
-                        submitted_session.status
-                        if submitted_session
-                        else None
-                    ),
+            "attendance_status":
+                None,
 
-                "attendance_date":
-                    (
-                        submitted_session.attendance_date.isoformat()
-                        if (
-                            submitted_session
-                            and submitted_session.attendance_date
-                        )
-                        else None
-                    ),
+            # ----------------------------------------------
+            # ALWAYS TODAY
+            # ----------------------------------------------
 
-            })
-
-            seen_subject_ids.add(
-                subject.id
-            )
-
-        # ====================================================
-        # SECTION
-        # ====================================================
-
-        if assignment.section_id:
-
-            if (
-                assignment.section_id
-                not in seen_section_ids
-            ):
-
-                section = assignment.section
-
-                if section:
-
-                    # ----------------------------------------
-                    # SECTION SUBMITTED STATUS
-                    # ----------------------------------------
-
-                    section_submitted = False
-
-                    section_session = None
-
-                    if attendance_date:
-
-                        section_session = (
-                            submitted_sessions.get(
-                                (
-                                    assignment.id,
-                                    assignment.section_id,
-                                )
-                            )
-                        )
-
-                        if section_session:
-
-                            section_submitted = True
-
-                    # ----------------------------------------
-                    # SECTION RESPONSE
-                    # ----------------------------------------
-
-                    sections.append({
-
-                        "id":
-                            section.id,
-
-                        "name":
-                            section.name,
-
-                        "teacher_subject_id":
-                            assignment.id,
-
-                        "already_submitted":
-                            section_submitted,
-
-                        "attendance_submitted":
-                            section_submitted,
-
-                        "attendance_session_id":
-                            (
-                                section_session.id
-                                if section_session
-                                else None
-                            ),
-
-                        "attendance_status":
-                            (
-                                section_session.status
-                                if section_session
-                                else None
-                            ),
-
-                    })
-
-                    seen_section_ids.add(
-                        section.id
-                    )
+            "attendance_date":
+                attendance_date.isoformat(),
+        })
 
     # ========================================================
-    # RESPONSE
+    # SECTION ATTENDANCE STATUS
+    #
+    # IMPORTANT:
+    #
+    # We do NOT mark a whole section as submitted merely
+    # because ONE subject has been submitted.
+    #
+    # Therefore section status is only populated when the
+    # currently requested subject assignment can be identified.
+    #
+    # The frontend should use SUBJECT status as the real
+    # submitted indicator.
+    # ========================================================
+
+    if requested_section_id:
+
+        # ====================================================
+        # Find exact section assignments.
+        # ====================================================
+
+        exact_section_assignments = [
+
+            assignment
+
+            for assignment in assignments
+
+            if (
+                assignment.section_id ==
+                requested_section_id
+            )
+
+        ]
+
+        # ====================================================
+        # Find class-wide assignments.
+        # ====================================================
+
+        class_wide_assignments = [
+
+            assignment
+
+            for assignment in assignments
+
+            if assignment.section_id is None
+
+        ]
+
+        # ====================================================
+        # Determine if ANY valid assignment for this
+        # selected section has a completed/locked session.
+        #
+        # Informational only.
+        # ====================================================
+
+        applicable_assignments = (
+            exact_section_assignments
+            if exact_section_assignments
+            else class_wide_assignments
+        )
+
+        section_submitted_session = None
+
+        for assignment in applicable_assignments:
+
+            query = (
+                AttendanceSession.query
+                .filter(
+
+                    AttendanceSession.institution_id ==
+                    institution_id,
+
+                    AttendanceSession.branch_id ==
+                    branch_id,
+
+                    AttendanceSession.teacher_id ==
+                    teacher_id,
+
+                    AttendanceSession.teacher_subject_id ==
+                    assignment.id,
+
+                    AttendanceSession.academic_year_id ==
+                    assignment.academic_year_id,
+
+                    AttendanceSession.class_id ==
+                    class_id,
+
+                    AttendanceSession.attendance_date ==
+                    attendance_date,
+
+                    AttendanceSession.status.in_([
+                        "completed",
+                        "locked",
+                    ]),
+                )
+            )
+
+            # ----------------------------------------------
+            # Exact section assignment
+            # ----------------------------------------------
+
+            if assignment.section_id is not None:
+
+                query = query.filter(
+                    AttendanceSession.section_id ==
+                    requested_section_id
+                )
+
+            # ----------------------------------------------
+            # Class-wide assignment
+            # ----------------------------------------------
+
+            else:
+
+                query = query.filter(
+                    db.or_(
+                        AttendanceSession.section_id ==
+                        requested_section_id,
+
+                        AttendanceSession.section_id.is_(None)
+                    )
+                )
+
+            found_session = (
+                query
+                .order_by(
+                    AttendanceSession.id.desc()
+                )
+                .first()
+            )
+
+            if found_session:
+
+                section_submitted_session = (
+                    found_session
+                )
+
+                break
+
+        # ====================================================
+        # Update selected section only.
+        # ====================================================
+
+        if section_submitted_session:
+
+            for section_data in sections:
+
+                if (
+                    section_data["id"] ==
+                    requested_section_id
+                ):
+
+                    section_data[
+                        "already_submitted"
+                    ] = True
+
+                    section_data[
+                        "attendance_submitted"
+                    ] = True
+
+                    section_data[
+                        "attendance_session_id"
+                    ] = (
+                        section_submitted_session.id
+                    )
+
+                    section_data[
+                        "attendance_status"
+                    ] = (
+                        section_submitted_session.status
+                    )
+
+                    break
+
+    # ========================================================
+    # FINAL RESPONSE
     # ========================================================
 
     return jsonify({
 
-        "success": True,
+        "success":
+            True,
+
+        "message":
+            (
+                "Subjects loaded."
+                if subjects
+                else
+                "No available subjects. "
+                "Already submitted subjects are hidden."
+            ),
 
         "class_id":
             class_id,
 
+        # ====================================================
+        # ALWAYS CURRENT DATE
+        # ====================================================
+
         "attendance_date":
-            attendance_date,
+            attendance_date.isoformat(),
 
         "requested_section_id":
             requested_section_id,
@@ -5298,12 +5876,64 @@ def teacher_attendance_class_subjects(class_id):
         "sections":
             sections,
 
+        # ====================================================
+        # HELPFUL FRONTEND FLAGS
+        # ====================================================
+
+        "today_only":
+            True,
+
+        "can_change_date":
+            False,
+
+        "hidden_submitted_subjects":
+            True,
+
     })
+
+
+
+
 
 
 # ============================================================
 # AJAX:
 # GET STUDENTS FOR ATTENDANCE
+# ============================================================
+
+# ============================================================
+# TEACHER ATTENDANCE - LOAD STUDENTS
+#
+# URL:
+#     /teacher/attendance/students
+#
+# PURPOSE:
+#     Load only the students who are valid for the selected:
+#         institution
+#         branch
+#         teacher
+#         class
+#         teacher subject assignment
+#         section
+#         academic year
+#         program
+#
+# IMPORTANT RULES
+# ------------------------------------------------------------
+# 1. Teacher can only access his/her own assignments.
+# 2. Assignment must belong to same institution + branch.
+# 3. Assignment must be active.
+# 4. Assignment must have a subject.
+# 5. Section-specific assignment has priority over class-wide.
+# 6. A section-specific assignment MUST use its own section.
+# 7. A class-wide assignment may be used with a selected section.
+# 8. Students come ONLY from active enrollments.
+# 9. Enrollment must match institution + branch + class +
+#    academic year.
+# 10. Program is taken from assignment first, then subject.
+# 11. No duplicate students/enrollments are returned.
+# 12. Student records are read-only here.
+#
 # ============================================================
 
 @bp.route(
@@ -5317,14 +5947,31 @@ def teacher_attendance_students():
     # SECURITY
     # ========================================================
 
-    teacher = g.teacher
+    teacher = getattr(g, "teacher", None)
 
     if not teacher:
         abort(403)
 
-    institution_id = teacher.institution_id
-    branch_id = teacher.branch_id
-    teacher_id = teacher.id
+    institution_id = getattr(
+        teacher,
+        "institution_id",
+        None
+    )
+
+    branch_id = getattr(
+        teacher,
+        "branch_id",
+        None
+    )
+
+    teacher_id = getattr(
+        teacher,
+        "id",
+        None
+    )
+
+    if not institution_id or not teacher_id:
+        abort(403)
 
     # ========================================================
     # PARAMETERS
@@ -5346,19 +5993,58 @@ def teacher_attendance_students():
     )
 
     # ========================================================
-    # VALIDATION
+    # BASIC VALIDATION
     # ========================================================
 
-    if not class_id or not teacher_subject_id:
+    if not class_id:
 
         return jsonify({
             "success": False,
-            "message": "Class and subject are required.",
+            "message": "Class is required.",
+            "students": [],
+        }), 400
+
+    if not teacher_subject_id:
+
+        return jsonify({
+            "success": False,
+            "message": "Teacher subject assignment is required.",
             "students": [],
         }), 400
 
     # ========================================================
-    # ASSIGNMENT
+    # LOAD CLASS
+    #
+    # Never trust class_id from browser without validating
+    # institution + branch.
+    # ========================================================
+
+    selected_class = (
+        Class.query
+        .filter(
+            Class.id == class_id,
+
+            Class.institution_id ==
+            institution_id,
+
+            Class.branch_id ==
+            branch_id,
+        )
+        .first()
+    )
+
+    if not selected_class:
+
+        return jsonify({
+            "success": False,
+            "message": "Invalid class.",
+            "students": [],
+        }), 403
+
+    # ========================================================
+    # LOAD TEACHER ASSIGNMENT
+    #
+    # The assignment MUST belong to this teacher.
     # ========================================================
 
     assignment = (
@@ -5381,6 +6067,9 @@ def teacher_attendance_students():
 
             TeacherSubject.status ==
             "active",
+
+            # Attendance is subject-based.
+            TeacherSubject.subject_id.isnot(None),
         )
         .first()
     )
@@ -5389,129 +6078,496 @@ def teacher_attendance_students():
 
         return jsonify({
             "success": False,
-            "message": "Invalid teacher assignment.",
+            "message": (
+                "Invalid or unauthorized teacher "
+                "subject assignment."
+            ),
             "students": [],
         }), 403
 
     # ========================================================
     # SECTION SECURITY
+    #
+    # RULE:
+    #
+    #   section-specific assignment:
+    #       MUST use the same section.
+    #
+    #   class-wide assignment:
+    #       assignment.section_id == None
+    #       may be used with a selected section.
+    #
     # ========================================================
 
-    if (
-        assignment.section_id
-        and section_id
-        and assignment.section_id != section_id
-    ):
+    assignment_section_id = getattr(
+        assignment,
+        "section_id",
+        None
+    )
+
+    # --------------------------------------------------------
+    # Assignment belongs to a specific section
+    # --------------------------------------------------------
+
+    if assignment_section_id is not None:
+
+        if section_id is None:
+
+            return jsonify({
+                "success": False,
+                "message": (
+                    "A section is required for "
+                    "this teacher assignment."
+                ),
+                "students": [],
+            }), 400
+
+        if assignment_section_id != section_id:
+
+            return jsonify({
+                "success": False,
+                "message": (
+                    "The selected section does not "
+                    "belong to this teacher assignment."
+                ),
+                "students": [],
+            }), 403
+
+    # ========================================================
+    # SECTION VALIDATION
+    #
+    # If browser supplied section_id, verify that the section
+    # belongs to the selected class and teacher scope.
+    #
+    # We use TeacherSubject assignments to determine which
+    # sections this teacher is allowed to access.
+    # ========================================================
+
+    if section_id is not None:
+
+        # ----------------------------------------------------
+        # Verify section exists inside same institution/branch
+        # ----------------------------------------------------
+
+        selected_section = (
+            Section.query
+            .filter(
+                Section.id == section_id,
+
+                Section.institution_id ==
+                institution_id,
+
+                Section.branch_id ==
+                branch_id,
+            )
+            .first()
+        )
+
+        if not selected_section:
+
+            return jsonify({
+                "success": False,
+                "message": "Invalid section.",
+                "students": [],
+            }), 403
+
+        # ----------------------------------------------------
+        # If Section has class_id, make sure it belongs to
+        # selected class.
+        #
+        # getattr() keeps this safe if the model implementation
+        # uses a different relationship structure.
+        # ----------------------------------------------------
+
+        selected_section_class_id = getattr(
+            selected_section,
+            "class_id",
+            None
+        )
+
+        if (
+            selected_section_class_id is not None
+            and selected_section_class_id != class_id
+        ):
+
+            return jsonify({
+                "success": False,
+                "message": (
+                    "The selected section does not "
+                    "belong to this class."
+                ),
+                "students": [],
+            }), 403
+
+        # ----------------------------------------------------
+        # Teacher section authorization
+        #
+        # If assignment is section-specific, the previous
+        # validation already guarantees access.
+        #
+        # If assignment is class-wide, verify that the teacher
+        # has a valid assignment for this class/section OR
+        # a class-wide assignment.
+        # ----------------------------------------------------
+
+        if assignment_section_id is None:
+
+            section_teacher_assignment = (
+                TeacherSubject.query
+                .filter(
+                    TeacherSubject.teacher_id ==
+                    teacher_id,
+
+                    TeacherSubject.institution_id ==
+                    institution_id,
+
+                    TeacherSubject.branch_id ==
+                    branch_id,
+
+                    TeacherSubject.class_id ==
+                    class_id,
+
+                    TeacherSubject.status ==
+                    "active",
+
+                    TeacherSubject.subject_id ==
+                    assignment.subject_id,
+
+                    TeacherSubject.section_id ==
+                    section_id,
+                )
+                .first()
+            )
+
+            # ------------------------------------------------
+            # If there is no section-specific assignment,
+            # class-wide assignment itself is sufficient.
+            #
+            # Therefore we do NOT reject here simply because
+            # no section-specific assignment exists.
+            # ------------------------------------------------
+
+            if not section_teacher_assignment:
+
+                class_wide_assignment = (
+                    TeacherSubject.query
+                    .filter(
+                        TeacherSubject.id ==
+                        assignment.id,
+
+                        TeacherSubject.section_id.is_(None),
+                    )
+                    .first()
+                )
+
+                if not class_wide_assignment:
+
+                    return jsonify({
+                        "success": False,
+                        "message": (
+                            "You are not assigned to "
+                            "this section."
+                        ),
+                        "students": [],
+                    }), 403
+
+    # ========================================================
+    # SUBJECT
+    # ========================================================
+
+    subject = getattr(
+        assignment,
+        "subject",
+        None
+    )
+
+    if not subject:
 
         return jsonify({
             "success": False,
-            "message": "Invalid section for this assignment.",
+            "message": (
+                "This teacher assignment has "
+                "no valid subject."
+            ),
             "students": [],
-        }), 403
+        }), 400
 
     # ========================================================
     # PROGRAM
+    #
+    # Priority:
+    #
+    #   1. TeacherSubject.program_id
+    #   2. Subject.program_id
+    #
     # ========================================================
 
-    program_id = assignment.program_id
+    program_id = getattr(
+        assignment,
+        "program_id",
+        None
+    )
 
-    if not program_id and assignment.subject:
+    if not program_id:
 
         program_id = getattr(
-            assignment.subject,
+            subject,
             "program_id",
             None
         )
 
     # ========================================================
-    # ENROLLMENTS
+    # ACADEMIC YEAR
     # ========================================================
 
-    query = (
+    academic_year_id = getattr(
+        assignment,
+        "academic_year_id",
+        None
+    )
+
+    if not academic_year_id:
+
+        return jsonify({
+            "success": False,
+            "message": (
+                "This teacher assignment has "
+                "no academic year."
+            ),
+            "students": [],
+        }), 400
+
+    # ========================================================
+    # STUDENT ENROLLMENTS
+    #
+    # ACTIVE ENROLLMENT IS THE SOURCE OF TRUTH.
+    #
+    # We do NOT load students directly from Student.
+    # We load StudentEnrollment first and then join Student.
+    # ========================================================
+
+    enrollment_query = (
         StudentEnrollment.query
+        .join(
+            Student,
+            Student.id ==
+            StudentEnrollment.student_id
+        )
         .filter(
+
+            # ------------------------------------------------
+            # Institution scope
+            # ------------------------------------------------
+
             StudentEnrollment.institution_id ==
             institution_id,
+
+            # ------------------------------------------------
+            # Branch scope
+            # ------------------------------------------------
 
             StudentEnrollment.branch_id ==
             branch_id,
 
+            # ------------------------------------------------
+            # Selected class
+            # ------------------------------------------------
+
             StudentEnrollment.class_id ==
             class_id,
 
+            # ------------------------------------------------
+            # Same academic year as assignment
+            # ------------------------------------------------
+
             StudentEnrollment.academic_year_id ==
-            assignment.academic_year_id,
+            academic_year_id,
+
+            # ------------------------------------------------
+            # Only active enrollment
+            # ------------------------------------------------
 
             StudentEnrollment.status ==
             "active",
         )
     )
 
-    if section_id:
+    # ========================================================
+    # SECTION FILTER
+    # ========================================================
 
-        query = query.filter(
+    if section_id is not None:
+
+        enrollment_query = enrollment_query.filter(
             StudentEnrollment.section_id ==
             section_id
         )
 
-    if program_id:
+    # ========================================================
+    # PROGRAM FILTER
+    # ========================================================
 
-        query = query.filter(
+    if program_id is not None:
+
+        enrollment_query = enrollment_query.filter(
             StudentEnrollment.program_id ==
             program_id
         )
 
+    # ========================================================
+    # LOAD ENROLLMENTS
+    # ========================================================
+
     enrollments = (
-        query
-        .join(
-            Student,
-            Student.id ==
-            StudentEnrollment.student_id
-        )
+        enrollment_query
         .order_by(
-            Student.full_name.asc()
+            Student.full_name.asc(),
+            Student.id.asc(),
+            StudentEnrollment.id.asc(),
         )
         .all()
     )
 
     # ========================================================
-    # RESPONSE
+    # BUILD STUDENT RESPONSE
     # ========================================================
 
     students = []
 
+    # --------------------------------------------------------
+    # Prevent duplicate enrollment/student rows.
+    #
+    # Normally enrollment_id should already be unique, but
+    # this protects the API response from accidental duplicates.
+    # --------------------------------------------------------
+
+    seen_enrollment_ids = set()
+    seen_student_ids = set()
+
     for enrollment in enrollments:
 
-        student = enrollment.student
-
-        if not student:
+        if not enrollment:
             continue
+
+        enrollment_id = getattr(
+            enrollment,
+            "id",
+            None
+        )
+
+        student = getattr(
+            enrollment,
+            "student",
+            None
+        )
+
+        if not enrollment_id or not student:
+            continue
+
+        student_id = getattr(
+            student,
+            "id",
+            None
+        )
+
+        if not student_id:
+            continue
+
+        # ----------------------------------------------------
+        # Duplicate protection
+        # ----------------------------------------------------
+
+        if enrollment_id in seen_enrollment_ids:
+            continue
+
+        if student_id in seen_student_ids:
+            continue
+
+        seen_enrollment_ids.add(
+            enrollment_id
+        )
+
+        seen_student_ids.add(
+            student_id
+        )
+
+        # ----------------------------------------------------
+        # Student information
+        # ----------------------------------------------------
 
         students.append({
 
             "student_id":
-                student.id,
+                student_id,
 
             "enrollment_id":
-                enrollment.id,
+                enrollment_id,
 
             "admission_no":
-                student.admission_no,
+                getattr(
+                    student,
+                    "admission_no",
+                    None
+                ),
 
             "roll_no":
-                student.roll_no,
+                getattr(
+                    student,
+                    "roll_no",
+                    None
+                ),
 
             "full_name":
-                student.full_name,
+                getattr(
+                    student,
+                    "full_name",
+                    ""
+                ),
 
             "photo":
-                student.photo,
+                getattr(
+                    student,
+                    "photo",
+                    None
+                ),
 
+            "section_id":
+                getattr(
+                    enrollment,
+                    "section_id",
+                    None
+                ),
+
+            "class_id":
+                getattr(
+                    enrollment,
+                    "class_id",
+                    None
+                ),
+
+            "program_id":
+                getattr(
+                    enrollment,
+                    "program_id",
+                    None
+                ),
+
+            "academic_year_id":
+                getattr(
+                    enrollment,
+                    "academic_year_id",
+                    None
+                ),
         })
+
+    # ========================================================
+    # RESPONSE
+    # ========================================================
 
     return jsonify({
 
-        "success": True,
+        "success":
+            True,
 
         "class_id":
             class_id,
@@ -5519,12 +6575,46 @@ def teacher_attendance_students():
         "teacher_subject_id":
             teacher_subject_id,
 
+        "teacher_id":
+            teacher_id,
+
+        "institution_id":
+            institution_id,
+
+        "branch_id":
+            branch_id,
+
+        "section_id":
+            section_id,
+
+        "assignment_section_id":
+            assignment_section_id,
+
+        "academic_year_id":
+            academic_year_id,
+
         "program_id":
             program_id,
 
+        "subject_id":
+            getattr(
+                assignment,
+                "subject_id",
+                None
+            ),
+
+        "subject_name":
+            getattr(
+                subject,
+                "name",
+                None
+            ),
+
+        "student_count":
+            len(students),
+
         "students":
             students,
-
     })
 
 
@@ -69809,6 +70899,493 @@ def update_attendance_record_status(record_id):
 
 
 
+# ============================================================
+# DELETE ATTENDANCE RECORD
+# ============================================================
+
+@bp.route(
+    "/attendance-record/<int:record_id>/delete",
+    methods=["POST"]
+)
+@login_required
+def delete_attendance_record(record_id):
+
+    # ========================================================
+    # GET CURRENT USER ROLE
+    # ========================================================
+
+    role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    role = getattr(
+        role,
+        "value",
+        role
+    )
+
+    role = (
+        str(role).strip().lower()
+        if role
+        else None
+    )
+
+    # ========================================================
+    # ALLOWED ROLES
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+        "teacher",
+    }
+
+    if role not in allowed_roles:
+
+        flash(
+            "You are not authorized to delete attendance.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.attendance_reports")
+        )
+
+    # ========================================================
+    # FIND ATTENDANCE RECORD
+    # ========================================================
+    #
+    # The button sends record.id.
+    #
+    # We use the record to locate the AttendanceSession.
+    #
+    # ========================================================
+
+    record = (
+        AttendanceRecord.query
+        .filter(
+            AttendanceRecord.id == record_id
+        )
+        .first()
+    )
+
+    if not record:
+
+        flash(
+            "Attendance record was not found.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.attendance_reports")
+        )
+
+    # ========================================================
+    # GET ATTENDANCE SESSION
+    # ========================================================
+
+    attendance_session = record.session
+
+    if not attendance_session:
+
+        flash(
+            "The attendance session associated with this record "
+            "could not be found.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.attendance_reports")
+        )
+
+    # ========================================================
+    # SESSION STATUS
+    # ========================================================
+
+    session_status = (
+        str(
+            attendance_session.status
+        ).strip().lower()
+        if attendance_session.status
+        else None
+    )
+
+    # ========================================================
+    # LOCKED SESSION
+    # ========================================================
+    #
+    # Locked attendance must never be deleted.
+    #
+    # ========================================================
+
+    if session_status == "locked":
+
+        flash(
+            "This attendance session is locked "
+            "and cannot be deleted.",
+            "warning"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.attendance_reports")
+        )
+
+    # ========================================================
+    # CANCELLED SESSION
+    # ========================================================
+
+    if session_status == "cancelled":
+
+        flash(
+            "This attendance session is cancelled "
+            "and cannot be deleted.",
+            "warning"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.attendance_reports")
+        )
+
+    # ========================================================
+    # SESSION INFORMATION
+    # ========================================================
+    #
+    # Save these before deleting the session.
+    #
+    # ========================================================
+
+    session_id = attendance_session.id
+
+    institution_id = attendance_session.institution_id
+
+    branch_id = attendance_session.branch_id
+
+    teacher_id = attendance_session.teacher_id
+
+    class_id = attendance_session.class_id
+
+    section_id = attendance_session.section_id
+
+    subject_id = attendance_session.subject_id
+
+    attendance_date = attendance_session.attendance_date
+
+    # ========================================================
+    # STUDENT COUNT
+    # ========================================================
+    #
+    # Used for success message.
+    #
+    # ========================================================
+
+    record_count = (
+        AttendanceRecord.query
+        .filter(
+            AttendanceRecord.attendance_session_id
+            == session_id
+        )
+        .count()
+    )
+
+    # ========================================================
+    # ROLE: SUPERADMIN
+    # ========================================================
+
+    if role == "superadmin":
+
+        # Global access.
+        pass
+
+    # ========================================================
+    # ROLE: SCHOOL ADMIN
+    # ========================================================
+
+    elif role == "school_admin":
+
+        current_institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        if not current_institution_id:
+
+            flash(
+                "Your account is not assigned to an institution.",
+                "danger"
+            )
+
+            return redirect(
+                request.referrer
+                or url_for("main.attendance_reports")
+            )
+
+        # ----------------------------------------------------
+        # Institution scope
+        # ----------------------------------------------------
+
+        if institution_id != current_institution_id:
+
+            flash(
+                "You are not authorized to delete "
+                "this attendance session.",
+                "danger"
+            )
+
+            return redirect(
+                request.referrer
+                or url_for("main.attendance_reports")
+            )
+
+    # ========================================================
+    # ROLE: BRANCH ADMIN
+    # ========================================================
+
+    elif role == "branch_admin":
+
+        current_institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        current_branch_id = getattr(
+            current_user,
+            "branch_id",
+            None
+        )
+
+        if (
+            not current_institution_id
+            or not current_branch_id
+        ):
+
+            flash(
+                "Your account is not assigned to "
+                "an institution and branch.",
+                "danger"
+            )
+
+            return redirect(
+                request.referrer
+                or url_for("main.attendance_reports")
+            )
+
+        # ----------------------------------------------------
+        # Institution + Branch scope
+        # ----------------------------------------------------
+
+        if (
+            institution_id
+            != current_institution_id
+            or
+            branch_id
+            != current_branch_id
+        ):
+
+            flash(
+                "You are not authorized to delete "
+                "this attendance session.",
+                "danger"
+            )
+
+            return redirect(
+                request.referrer
+                or url_for("main.attendance_reports")
+            )
+
+    # ========================================================
+    # ROLE: TEACHER
+    # ========================================================
+
+    elif role == "teacher":
+
+        teacher = getattr(
+            g,
+            "teacher",
+            None
+        )
+
+        if not teacher:
+
+            flash(
+                "Teacher account could not be verified.",
+                "danger"
+            )
+
+            return redirect(
+                request.referrer
+                or url_for("main.attendance_reports")
+            )
+
+        # ----------------------------------------------------
+        # Institution protection
+        # ----------------------------------------------------
+
+        if (
+            institution_id
+            != teacher.institution_id
+        ):
+
+            flash(
+                "You are not authorized to delete "
+                "this attendance session.",
+                "danger"
+            )
+
+            return redirect(
+                request.referrer
+                or url_for("main.attendance_reports")
+            )
+
+        # ----------------------------------------------------
+        # Branch protection
+        # ----------------------------------------------------
+
+        if (
+            branch_id
+            != teacher.branch_id
+        ):
+
+            flash(
+                "You are not authorized to delete "
+                "this attendance session.",
+                "danger"
+            )
+
+            return redirect(
+                request.referrer
+                or url_for("main.attendance_reports")
+            )
+
+        # ----------------------------------------------------
+        # Teacher ownership
+        # ----------------------------------------------------
+
+        if (
+            teacher_id
+            != teacher.id
+        ):
+
+            flash(
+                "You can only delete attendance sessions "
+                "created by you.",
+                "danger"
+            )
+
+            return redirect(
+                request.referrer
+                or url_for("main.attendance_reports")
+            )
+
+    # ========================================================
+    # FINAL SESSION EXISTENCE CHECK
+    # ========================================================
+
+    session_exists = (
+        AttendanceSession.query
+        .filter(
+            AttendanceSession.id == session_id
+        )
+        .first()
+    )
+
+    if not session_exists:
+
+        flash(
+            "Attendance session no longer exists.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.attendance_reports")
+        )
+
+    # ========================================================
+    # DELETE
+    # ========================================================
+    #
+    # IMPORTANT:
+    #
+    # We delete AttendanceSession.
+    #
+    # Because AttendanceRecord has:
+    #
+    #     ForeignKey(
+    #         "attendance_sessions.id",
+    #         ondelete="CASCADE"
+    #     )
+    #
+    # all related AttendanceRecords are deleted.
+    #
+    # SQLAlchemy relationship also has:
+    #
+    #     cascade="all, delete-orphan"
+    #
+    # ========================================================
+
+    try:
+
+        db.session.delete(
+            attendance_session
+        )
+
+        db.session.commit()
+
+    except Exception as exc:
+
+        db.session.rollback()
+
+        current_app.logger.exception(
+            "Failed to delete attendance session %s "
+            "and its records: %s",
+            session_id,
+            exc
+        )
+
+        flash(
+            "Unable to delete the attendance session "
+            "and its records. Please try again.",
+            "danger"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for("main.attendance_reports")
+        )
+
+    # ========================================================
+    # SUCCESS
+    # ========================================================
+
+    flash(
+        f"Attendance session deleted successfully. "
+        f"{record_count} student attendance record(s) "
+        f"were also deleted.",
+        "success"
+    )
+
+    # ========================================================
+    # RETURN
+    # ========================================================
+
+    return redirect(
+        request.referrer
+        or url_for("main.attendance_reports")
+    )
+
+
+
+
 
 # ============================================================
 # ATTENDANCE REPORTS
@@ -77916,54 +79493,6 @@ def delete_exam_mark(mark_id):
 # ============================================================
 # EDIT EXAM RESULT
 # ============================================================
-# ============================================================
-# EDIT EXAM RESULT
-# ADMIN CAN COMPLETE MISSING SUBJECT MARKS
-# ============================================================
-# ============================================================
-# EDIT EXAM RESULT
-# ADMIN CAN COMPLETE MISSING SUBJECT MARKS
-# ============================================================
-# ============================================================
-# EDIT EXAM RESULT
-# ADMIN CAN COMPLETE / CORRECT STUDENT SUBJECT MARKS
-#
-# IMPORTANT RULES
-# ------------------------------------------------------------
-# 1. One StudentResult = one Student + one Exam.
-#
-# 2. ONLY ExamSubjects assigned to THIS student's:
-#       - institution
-#       - branch
-#       - program
-#       - class
-#       - section
-#    are displayed.
-#
-# 3. Section-specific assignment has priority over
-#    class-level assignment.
-#
-# 4. Same subject is displayed ONLY ONCE.
-#
-# 5. Subjects belonging to another class are NEVER shown.
-#
-# 6. Missing marks can be completed.
-#
-# 7. Absent != 0.
-#
-# 8. Exempted != 0.
-#
-# 9. Existing Mark rows are updated, not recreated.
-#
-# 10. ExamSubject / Exam / Subject / Class / Section are
-#     NEVER deleted or recreated by this route.
-#
-# 11. POST can only modify marks belonging to the final
-#     scoped ExamSubject list.
-#
-# 12. Duplicate ExamSubject database records do not result
-#     in duplicate subjects on the student page.
-# ============================================================
 
 @bp.route(
     "/exam-results/<int:result_id>/edit",
@@ -80395,28 +81924,6 @@ def edit_exam_result(result_id):
 # ============================================================
 # VIEW EXAM RESULT
 # ============================================================
-# ============================================================
-# VIEW EXAM RESULT
-#
-# RULES
-# ------------------------------------------------------------
-# 1. Role-aware security.
-# 2. Student result must belong to the user's allowed scope.
-# 3. Exam subjects MUST be filtered by:
-#       - exam
-#       - institution
-#       - branch
-#       - program
-#       - class
-#       - section
-# 4. Section-specific ExamSubject has priority over
-#    class-level ExamSubject.
-# 5. Class-level ExamSubject has section_id = NULL.
-# 6. Each subject appears ONLY ONCE for the student.
-# 7. Marks are loaded only for the selected ExamSubjects.
-# 8. Existing StudentResult is never recalculated or modified
-#    by this view route.
-# ============================================================
 
 @bp.route(
     "/exam-results/<int:result_id>/view",
@@ -81782,64 +83289,6 @@ def view_exam_result(result_id):
 
 # ============================================================
 # ADD / ENTER EXAM RESULT MARKS
-# ADMIN ONLY
-#
-# FEATURES
-# ------------------------------------------------------------
-# - Dynamic exam selection
-# - Dynamic scope
-# - Class
-# - Section
-# - All Students
-# - All Program
-# - Dynamic student list
-# - Only incomplete students
-# - Student name sorted ASC
-# - Missing subjects only
-# - Mark / Absent / Exempted / Remark
-# - Same student after Save
-# - Dynamic Previous / Next student
-# - No redirect to exam-results list
-# - StudentResult recalculated
-# - Rankings recalculated
-# - Draft / Ongoing / Published exams
-# ============================================================
-# ============================================================
-# ADD EXAM RESULT
-# ADMIN ENTERS / COMPLETES MISSING SUBJECT MARKS
-#
-# IMPORTANT SCOPE RULE
-# ------------------------------------------------------------
-# ExamSubject belongs to:
-#     exam_id
-#     subject_id
-#     class_id
-#     section_id
-#     teacher_id
-#
-# Therefore an Exam can contain:
-#
-#     English -> KD20
-#     English -> KD21
-#
-# but a student enrolled in KD20 MUST ONLY SEE:
-#
-#     English -> KD20
-#
-# and a student enrolled in KD21 MUST ONLY SEE:
-#
-#     English -> KD21
-#
-# This route scopes subjects by the student's enrollment.
-# The same scoped subjects are used for:
-#
-#     - missing subjects
-#     - selected student
-#     - marks loading
-#     - mark saving
-#     - result calculation
-#     - student list
-#     - previous / next navigation
 # ============================================================
 
 @bp.route(
@@ -84819,6 +86268,7 @@ def add_exam_result():
             else None
         ),
     )
+
 
 
 
