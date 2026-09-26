@@ -20085,10 +20085,6 @@ def all_institutions():
 
 # ============================================================
 # ADD INSTITUTION
-# ============================================================
-# ============================================================
-# ADD INSTITUTION
-# CLOUDINARY IMAGE UPLOAD
 # PostgreSQL / Neon
 # ============================================================
 
@@ -20621,28 +20617,6 @@ def add_institution():
 # VIEW INSTITUTION
 # ============================================================
 
-# ============================================================
-# VIEW INSTITUTION
-# ============================================================
-# SUPERADMIN ONLY
-#
-# FEATURES
-# ------------------------------------------------------------
-# 1. View institution details
-# 2. View Cloudinary branding images
-# 3. Count branches
-# 4. Count users
-# 5. Count programs
-# 6. Count teachers
-# 7. Count students
-# 8. Count classes
-# 9. Count subjects
-# 10. Count exams
-# 11. Show institution status
-# 12. Show academic year
-# ============================================================
-
-
 @bp.route(
     "/view-institution/<int:institution_id>",
     methods=["GET"]
@@ -20889,29 +20863,6 @@ def view_institution(institution_id):
 # ============================================================
 # EDIT INSTITUTION
 # ============================================================
-# ============================================================
-# EDIT INSTITUTION
-# ============================================================
-# SUPERADMIN ONLY
-#
-# FEATURES
-# ------------------------------------------------------------
-# 1. Edit institution information
-# 2. Validate duplicate institution name
-# 3. Validate duplicate institution code
-# 4. Edit contact/location information
-# 5. Edit branding information
-# 6. Edit academic year
-# 7. Edit institution colors
-# 8. Upload main logo to Cloudinary
-# 9. Upload sub logo to Cloudinary
-# 10. Upload signature photo to Cloudinary
-# 11. Upload favicon to Cloudinary
-# 12. Keep existing image when no new image is uploaded
-# 13. Save Cloudinary secure_url into database
-# 14. Rollback database on errors
-# ============================================================
-
 
 @bp.route(
     "/edit-institution/<int:institution_id>",
@@ -22546,10 +22497,6 @@ def view_branch(branch_id):
     )
 
 
-
-# ============================================================
-# EDIT BRANCH
-# ============================================================
 
 # ============================================================
 # EDIT BRANCH
@@ -27163,7 +27110,6 @@ def delete_term(term_id):
 
 # ============================================================
 # PROGRAM ROUTES
-# PostgreSQL / Neon
 # ============================================================
 
 # ============================================================
@@ -32543,9 +32489,7 @@ def add_assessment_plan():
 # ============================================================
 # 3. VIEW ASSESSMENT PLAN
 # ============================================================
-# ============================================================
-# VIEW ASSESSMENT PLAN
-# ============================================================
+
 @bp.route(
     "/assessment-plans/<int:assessment_plan_id>",
     methods=["GET"]
@@ -32783,9 +32727,6 @@ def view_assessment_plan(assessment_plan_id):
 
 # ============================================================
 # 4. EDIT ASSESSMENT PLAN
-# ============================================================
-# ============================================================
-# EDIT ASSESSMENT PLAN
 # ============================================================
 
 @bp.route(
@@ -36232,10 +36173,6 @@ def delete_class(class_id):
 # PostgreSQL / Neon
 # ============================================================
 
-# ============================================================
-# SECTION CODE GENERATOR
-# ============================================================
-
 def generate_section_code(name):
     """
     Generate automatic section code.
@@ -39611,43 +39548,6 @@ def _subject_allowed_programs(
         .order_by(Program.name.asc())
         .all()
     )
-
-
-# ============================================================
-# SUBJECT FORM CONTEXT
-# ============================================================
-
-def _subject_form_context(
-    institution_id=None
-):
-    """
-    Common context used by add/edit templates.
-    """
-
-    institutions = (
-        _subject_allowed_institutions()
-    )
-
-    branches = (
-        _subject_allowed_branches(
-            institution_id=institution_id
-        )
-    )
-
-    programs = (
-        _subject_allowed_programs(
-            institution_id=institution_id
-        )
-    )
-
-    return {
-        "institutions": institutions,
-        "branches": branches,
-        "programs": programs,
-        "subject_types": SUBJECT_TYPES,
-        "subject_statuses": SUBJECT_STATUSES,
-        "user": current_user,
-    }
 
 
 # ============================================================
@@ -43352,42 +43252,6 @@ def _teacher_can_manage():
     )
 
 
-def _teacher_scope_query(query):
-    """
-    Apply institution / branch security.
-    """
-
-    if _teacher_is_global_user():
-        return query
-
-    institution_id = _teacher_get_user_institution_id()
-
-    if institution_id is None:
-        return query.filter(
-            db.literal(False)
-        )
-
-    query = query.filter(
-        Teacher.institution_id == institution_id
-    )
-
-    # Branch admins are restricted to their branch.
-    if getattr(current_user, "role", None) == "branch_admin":
-
-        branch_id = _teacher_get_user_branch_id()
-
-        if branch_id is None:
-            return query.filter(
-                db.literal(False)
-            )
-
-        query = query.filter(
-            Teacher.branch_id == branch_id
-        )
-
-    return query
-
-
 # ============================================================
 # ALLOWED INSTITUTIONS
 # ============================================================
@@ -43666,9 +43530,6 @@ def _teacher_can_access(teacher):
 
 # ============================================================
 # 1. ALL TEACHERS
-# ============================================================
-# ============================================================
-# ALL TEACHERS
 # ============================================================
 
 @bp.route(
@@ -44307,9 +44168,6 @@ def all_teachers():
 
 
 
-# ============================================================
-# ADD TEACHER
-# ============================================================
 # ============================================================
 # ADD TEACHER
 # ============================================================
@@ -45020,9 +44878,6 @@ def add_teacher():
 # ============================================================
 # 3. VIEW TEACHER
 # ============================================================
-# ============================================================
-# VIEW TEACHER
-# ============================================================
 
 @bp.route("/teachers/<int:teacher_id>", methods=["GET"])
 @login_required
@@ -45126,9 +44981,6 @@ def view_teacher(teacher_id):
 
 # ============================================================
 # 4. EDIT TEACHER
-# ============================================================
-# ============================================================
-# EDIT TEACHER
 # ============================================================
 
 @bp.route("/teachers/<int:teacher_id>/edit", methods=["GET", "POST"])
@@ -46087,9 +45939,6 @@ def _teacher_subject_allowed_branches(institution_id=None):
 # ============================================================
 # ALL TEACHER SUBJECTS
 # ============================================================
-# ============================================================
-# ALL TEACHER SUBJECTS
-# ============================================================
 
 @bp.route("/teacher-subjects", methods=["GET"])
 @login_required
@@ -46498,21 +46347,6 @@ def all_teacher_subjects():
 
 # ============================================================
 # ADD TEACHER SUBJECT
-# ============================================================
-
-
-# ============================================================
-# ADD TEACHER SUBJECT ASSIGNMENTS
-# ============================================================
-# ============================================================
-# TEACHER SUBJECT / ASSIGNMENT
-# ADD MULTIPLE TEACHER ASSIGNMENTS
-#
-# ROLE SCOPE
-# ------------------------------------------------------------
-# superadmin   -> all institutions + all branches
-# school_admin -> own institution + all its branches
-# branch_admin -> own institution + ONLY own branch
 # ============================================================
 
 @bp.route("/teacher-subjects/options", methods=["GET"])
@@ -49080,9 +48914,6 @@ def view_teacher_subject(teacher_subject_id):
 # ============================================================
 # EDIT TEACHER SUBJECT
 # ============================================================
-# ============================================================
-# EDIT TEACHER SUBJECT / ASSIGNMENT
-# ============================================================
 
 @bp.route(
     "/teacher-subjects/<int:teacher_subject_id>/edit",
@@ -51011,10 +50842,6 @@ def toggle_teacher_subject_primary(
 # ============================================================
 
 
-# ============================================================
-# CONSTANTS
-# ============================================================
-
 STUDENT_STATUSES = [
     "active",
     "inactive",
@@ -51061,9 +50888,6 @@ def _student_can_manage():
     }
 
 
-def _student_is_superadmin():
-    return getattr(current_user, "role", None) == "superadmin"
-
 
 def _student_user_institution_id():
     return getattr(current_user, "institution_id", None)
@@ -51103,33 +50927,6 @@ def _student_has_access(student):
         )
 
     return False
-
-
-# ============================================================
-# IMAGE VALIDATION
-# ============================================================
-
-def _allowed_student_photo(file):
-
-    if not file or not file.filename:
-        return False
-
-    filename = file.filename.lower().strip()
-
-    if "." not in filename:
-        return False
-
-    extension = filename.rsplit(".", 1)[1]
-
-    if extension not in ALLOWED_IMAGE_EXTENSIONS:
-        return False
-
-    content_type = getattr(file, "mimetype", None)
-
-    if content_type and content_type not in ALLOWED_IMAGE_MIMETYPES:
-        return False
-
-    return True
 
 
 # ============================================================
@@ -51874,9 +51671,6 @@ def all_students():
 
 # ============================================================
 # ADD STUDENT
-# ============================================================
-# ============================================================
-# ADD STUDENT
 # Student + Multiple Enrollments + Multiple Charges
 # ============================================================
 
@@ -51936,79 +51730,6 @@ def _institution_prefix(institution):
     )
 
     return value or "STU"
-
-
-def _first_name(full_name):
-    """
-    Extract first name.
-    """
-    full_name = _clean(full_name)
-
-    if not full_name:
-        return "STUDENT"
-
-    return full_name.split()[0].upper()
-
-
-def _next_sequence(institution_id):
-    """
-    Generate next 6-digit student sequence.
-
-    This checks existing admission numbers / roll numbers
-    belonging to the institution.
-    """
-
-    institution = db.session.get(
-        Institution,
-        institution_id
-    )
-
-    prefix = _institution_prefix(institution)
-
-    students = (
-        Student.query
-        .filter(
-            Student.institution_id == institution_id
-        )
-        .all()
-    )
-
-    highest = 0
-
-    for student in students:
-
-        candidates = [
-            getattr(student, "admission_no", None),
-            getattr(student, "roll_no", None),
-        ]
-
-        for value in candidates:
-
-            if not value:
-                continue
-
-            value = str(value).strip()
-
-            parts = value.split("-")
-
-            for part in reversed(parts):
-
-                if (
-                    part.isdigit()
-                    and len(part) <= 6
-                ):
-                    try:
-                        number = int(part)
-
-                        if number > highest:
-                            highest = number
-
-                    except ValueError:
-                        pass
-
-                    break
-
-    return prefix, highest + 1
 
 
 # ============================================================
@@ -52549,18 +52270,8 @@ def student_parent_search():
 
 
 
-
-
-
-# ============================================================
-# ROUTE
-# ============================================================
 # ============================================================
 # ADD STUDENT
-# Compatible with:
-#   Student
-#   StudentEnrollment
-#   StudentCharge
 # ============================================================
 
 @bp.route("/add-student", methods=["GET", "POST"])
@@ -55218,6 +54929,7 @@ def add_student():
 # ============================================================
 # VIEW STUDENT
 # ============================================================
+
 @bp.route("/students/<int:student_id>", methods=["GET"])
 @login_required
 def view_student(student_id):
@@ -55620,6 +55332,7 @@ def view_student(student_id):
 # ============================================================
 # EDIT STUDENT
 # ============================================================
+
 @bp.route("/edit-student/<int:student_id>", methods=["GET", "POST"])
 @login_required
 def edit_student(student_id):
@@ -59514,10 +59227,6 @@ def export_student_import_sample():
 # IMPORT STUDENTS
 # ============================================================
 
-# ============================================================
-# IMPORT STUDENTS FULL CSV
-# Student + Enrollment + StudentCharge
-# ============================================================
 @bp.route(
     "/students/import",
     methods=["POST"]
@@ -62628,9 +62337,6 @@ def all_exams():
 # ============================================================
 # ADD EXAM
 # ============================================================
-# ============================================================
-# ADD EXAM
-# ============================================================
 
 @bp.route(
     "/exams/add",
@@ -64312,9 +64018,6 @@ def view_exam(exam_id):
 # ============================================================
 # EDIT EXAM
 # ============================================================
-# ============================================================
-# EDIT EXAM
-# ============================================================
 
 @bp.route(
     "/exams/<int:exam_id>/edit",
@@ -65640,10 +65343,6 @@ def delete_exam(exam_id):
 
 # ============================================================
 # EXAM SUBJECT ROUTES
-# ============================================================
-
-# ============================================================
-# ROLE PERMISSION
 # ============================================================
 
 def _exam_subject_can_manage():
@@ -71589,7 +71288,6 @@ def delete_exam_subject(exam_subject_id):
 
 # ============================================================
 # DELETE ENTIRE EXAM
-# DELETE EXAM + ALL EXAM SUBJECTS
 # ============================================================
 
 @bp.route(
@@ -79043,7 +78741,6 @@ def print_absent_reports():
 
 # ============================================================
 # STUDENT FULL REPORT
-# SEARCH STUDENT + ATTENDANCE + EXAMS + MARKS + RESULTS
 # PostgreSQL / Neon
 # ============================================================
 
@@ -82909,8 +82606,6 @@ def student_absent_report():
 
 # ============================================================
 # EXAM RESULTS
-# ADMIN / SCHOOL / BRANCH / SUPERADMIN
-# PostgreSQL / Neon
 # ============================================================
 
 @bp.route(
@@ -83837,7 +83532,6 @@ def exam_results():
 
 # ============================================================
 # DELETE EXAM RESULT
-# ============================================================
 # PostgreSQL / Neon
 # ============================================================
 
@@ -102448,9 +102142,9 @@ def export_exam_result():
 
 
 
-#---------------------------------------
-#---- Route: Ending |  Logout Sections ----
-#---------------------------------------
+#-------------------------------------------
+#---- Route: Ending |  Logout Sections -----
+#-------------------------------------------
 @bp.route("/logout")
 def logout():
 
