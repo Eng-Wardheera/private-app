@@ -1,673 +1,736 @@
 {% extends "backend/home/base.html" %}
 
-{% block title %}Add Institution{% endblock %}
-
 {% block content %}
 
 <style>
-/* ============================================================
+
+/* =========================================================
    ADD INSTITUTION PAGE
-   ============================================================ */
+   ========================================================= */
 
 .add-institution-page {
     width: 100%;
-    box-sizing: border-box;
+    max-width: 1150px;
+    margin: 0 auto;
+    padding: 10px 0 40px;
 }
 
-/* ============================================================
-   HEADER
-   ============================================================ */
 
-.add-inst-header {
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.institution-page-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 18px;
     margin-bottom: 24px;
     flex-wrap: wrap;
 }
 
-.add-inst-header-left {
-    min-width: 0;
+.institution-page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
-.add-inst-title {
+.institution-header-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.institution-page-header h1 {
     margin: 0;
     color: #06245f;
-    font-size: 28px;
+    font-size: 27px;
     font-weight: 800;
-    letter-spacing: -.5px;
+    line-height: 1.2;
 }
 
-.add-inst-subtitle {
-    margin: 7px 0 0;
+.institution-page-header p {
+    margin: 6px 0 0;
     color: #718096;
     font-size: 13px;
-    line-height: 1.5;
 }
 
-.add-inst-header-actions {
-    display: flex;
-    gap: 9px;
-    align-items: center;
-}
-
-/* ============================================================
-   BUTTONS
-   ============================================================ */
-
-.add-inst-btn {
-    min-height: 42px;
-    padding: 0 16px;
-    border-radius: 10px;
-    border: 1px solid #dce3ed;
-    background: #ffffff;
-    color: #445166;
+.back-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 7px;
+    min-height: 41px;
+    padding: 0 15px;
+    border: 1px solid #dce3ee;
+    border-radius: 9px;
+    background: #fff;
+    color: #475467;
     text-decoration: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
-    transition: all .18s ease;
-    box-sizing: border-box;
+    transition: .2s ease;
 }
 
-.add-inst-btn:hover {
-    transform: translateY(-1px);
-}
-
-.add-inst-btn-primary {
-    color: #ffffff;
-    background: #06245f;
+.back-button:hover {
     border-color: #06245f;
-    box-shadow: 0 5px 15px rgba(6, 36, 95, .16);
+    color: #06245f;
+    background: #f8faff;
 }
 
-.add-inst-btn-primary:hover {
-    background: #041c4d;
-    color: #ffffff;
-}
 
-.add-inst-btn-light:hover {
-    background: #f6f8fb;
-    border-color: #ccd5e2;
-}
+/* =========================================================
+   FORM CARD
+   ========================================================= */
 
-/* ============================================================
-   LAYOUT
-   ============================================================ */
-
-.add-inst-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 22px;
-    align-items: start;
-}
-
-/* ============================================================
-   CARD
-   ============================================================ */
-
-.add-inst-card {
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
+.institution-form-card {
+    background: #fff;
+    border: 1px solid #e6ebf2;
     border-radius: 16px;
-    box-shadow: 0 5px 18px rgba(18, 38, 63, .055);
+    box-shadow: 0 5px 22px rgba(6, 36, 95, .055);
     overflow: hidden;
 }
 
-.add-inst-card-header {
-    padding: 19px 21px;
-    border-bottom: 1px solid #edf0f5;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+
+/* =========================================================
+   SECTION
+   ========================================================= */
+
+.institution-section {
+    padding: 25px;
+    border-bottom: 1px solid #edf1f6;
 }
 
-.add-inst-card-icon {
+.institution-section:last-of-type {
+    border-bottom: 0;
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin-bottom: 22px;
+}
+
+.section-heading-icon {
     width: 39px;
     height: 39px;
-    flex: 0 0 39px;
     border-radius: 10px;
-    background: #eef4ff;
+    background: #eef3fb;
     color: #06245f;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
-.add-inst-card-title {
+.section-heading h2 {
     margin: 0;
-    color: #1d2a40;
-    font-size: 15px;
+    color: #1a202c;
+    font-size: 16px;
     font-weight: 800;
 }
 
-.add-inst-card-description {
-    margin: 3px 0 0;
-    color: #8994a5;
+.section-heading p {
+    margin: 4px 0 0;
+    color: #98a2b3;
     font-size: 11px;
 }
 
-/* ============================================================
-   FORM
-   ============================================================ */
 
-.add-inst-form {
-    padding: 22px;
-}
+/* =========================================================
+   FORM GRID
+   ========================================================= */
 
-.add-inst-section {
-    margin-bottom: 26px;
-}
-
-.add-inst-section:last-child {
-    margin-bottom: 0;
-}
-
-.add-inst-section-title {
-    margin: 0 0 15px;
-    padding-bottom: 9px;
-    border-bottom: 1px solid #edf0f5;
-    color: #334155;
-    font-size: 12px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .45px;
-}
-
-.add-inst-grid {
+.institution-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: 18px;
 }
 
-.add-inst-grid.three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.add-inst-field {
+.form-field {
     min-width: 0;
 }
 
-.add-inst-field.full {
+.form-field.full-width {
     grid-column: 1 / -1;
 }
 
-.add-inst-label {
+.form-field label {
     display: block;
-    margin-bottom: 7px;
-    color: #4a576b;
-    font-size: 11px;
-    font-weight: 800;
+    margin: 0 0 7px;
+    color: #344054;
+    font-size: 12px;
+    font-weight: 700;
 }
 
-.add-inst-required {
-    color: #d64545;
+.required {
+    color: #d92d20;
     margin-left: 2px;
 }
 
-.add-inst-input-wrap {
-    position: relative;
-}
-
-.add-inst-input-icon {
-    position: absolute;
-    left: 13px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #97a3b4;
-    font-size: 13px;
-    pointer-events: none;
-}
-
-.add-inst-input,
-.add-inst-select,
-.add-inst-textarea {
+.form-control {
     width: 100%;
-    border: 1px solid #dce3ec;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #dce3ee;
     border-radius: 9px;
-    background: #ffffff;
-    color: #263348;
-    outline: none;
+    background: #fff;
+    color: #1a202c;
     font-family: inherit;
     font-size: 13px;
+    outline: none;
     box-sizing: border-box;
     transition:
-        border-color .18s ease,
-        box-shadow .18s ease,
-        background .18s ease;
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
 }
 
-.add-inst-input,
-.add-inst-select {
-    height: 43px;
-    padding: 0 13px;
+.form-control:hover {
+    border-color: #c8d2e0;
 }
 
-.add-inst-input.with-icon {
-    padding-left: 38px;
-}
-
-.add-inst-textarea {
-    min-height: 110px;
-    resize: vertical;
-    padding: 12px 13px;
-    line-height: 1.55;
-}
-
-.add-inst-input:focus,
-.add-inst-select:focus,
-.add-inst-textarea:focus {
-    border-color: #6684bb;
+.form-control:focus {
+    border-color: #06245f;
     box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
 }
 
-.add-inst-input::placeholder,
-.add-inst-textarea::placeholder {
-    color: #a2acba;
+.form-control::placeholder {
+    color: #a0aec0;
 }
 
-.add-inst-help {
+textarea.form-control {
+    min-height: 125px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+.form-help {
+    display: block;
     margin-top: 6px;
-    color: #929cab;
-    font-size: 10px;
-    line-height: 1.45;
+    color: #98a2b3;
+    font-size: 11px;
+    line-height: 1.5;
 }
 
-/* ============================================================
+
+/* =========================================================
    STATUS
-   ============================================================ */
+   ========================================================= */
 
-.add-inst-status-options {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
+.status-options {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
 }
 
-.add-inst-status-option {
+.status-option {
     position: relative;
 }
 
-.add-inst-status-option input {
+.status-option input {
     position: absolute;
     opacity: 0;
     pointer-events: none;
 }
 
-.add-inst-status-label {
-    min-height: 52px;
-    padding: 8px 11px;
-    border: 1px solid #dfe5ed;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    cursor: pointer;
-    box-sizing: border-box;
-    transition: all .18s ease;
-}
-
-.add-inst-status-label:hover {
-    background: #fafcff;
-    border-color: #cbd6e5;
-}
-
-.add-inst-status-option input:checked + .add-inst-status-label {
-    border-color: #06245f;
-    background: #f3f7ff;
-    box-shadow: 0 0 0 2px rgba(6, 36, 95, .05);
-}
-
-.add-inst-status-radio {
-    width: 13px;
-    height: 13px;
-    border: 2px solid #b7c1cf;
-    border-radius: 50%;
-    flex: 0 0 13px;
-    box-sizing: border-box;
-}
-
-.add-inst-status-option input:checked
-+ .add-inst-status-label
-.add-inst-status-radio {
-    border: 4px solid #06245f;
-}
-
-.add-inst-status-content {
-    min-width: 0;
-}
-
-.add-inst-status-name {
-    color: #344054;
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.add-inst-status-description {
-    margin-top: 2px;
-    color: #909aaa;
-    font-size: 9px;
-}
-
-/* ============================================================
-   FORM FOOTER
-   ============================================================ */
-
-.add-inst-form-footer {
-    margin-top: 25px;
-    padding-top: 17px;
-    border-top: 1px solid #edf0f5;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 9px;
-}
-
-/* ============================================================
-   SIDE PREVIEW
-   ============================================================ */
-
-.add-inst-side {
-    position: sticky;
-    top: 20px;
-}
-
-.add-inst-preview {
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
-    border-radius: 16px;
-    box-shadow: 0 5px 18px rgba(18, 38, 63, .055);
-    overflow: hidden;
-}
-
-.add-inst-preview-top {
-    padding: 24px 20px;
-    background: linear-gradient(
-        145deg,
-        #06245f,
-        #173c78
-    );
-    text-align: center;
-}
-
-.add-inst-preview-logo {
-    width: 76px;
-    height: 76px;
-    margin: 0 auto 13px;
-    border-radius: 17px;
-    border: 3px solid rgba(255,255,255,.18);
-    background: rgba(255,255,255,.12);
-    color: #ffffff;
-    display: flex;
+.status-option label {
+    min-width: 105px;
+    height: 42px;
+    margin: 0;
+    padding: 0 14px;
+    border: 1px solid #dce3ee;
+    border-radius: 9px;
+    background: #fff;
+    color: #475467;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
-    font-weight: 800;
-    overflow: hidden;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: .2s ease;
+    box-sizing: border-box;
 }
 
-.add-inst-preview-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.status-option label:hover {
+    border-color: #b8c4d5;
 }
 
-.add-inst-preview-name {
-    margin: 0;
-    color: #ffffff;
-    font-size: 17px;
-    font-weight: 800;
-    word-break: break-word;
+.status-option input:checked + label {
+    border-color: #06245f;
+    background: #eef3fb;
+    color: #06245f;
+    box-shadow: 0 0 0 2px rgba(6, 36, 95, .04);
 }
 
-.add-inst-preview-code {
-    margin-top: 5px;
-    color: rgba(255,255,255,.68);
-    font-size: 10px;
+
+/* =========================================================
+   BRANDING GRID
+   ========================================================= */
+
+.branding-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px;
 }
 
-.add-inst-preview-body {
-    padding: 18px;
+.branding-card {
+    border: 1px solid #e3e8ef;
+    border-radius: 12px;
+    background: #fbfcfe;
+    padding: 15px;
 }
 
-.add-inst-preview-item {
+.branding-card-title {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 11px 0;
-    border-bottom: 1px solid #eef1f5;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
-.add-inst-preview-item:last-child {
-    border-bottom: 0;
-}
-
-.add-inst-preview-item-icon {
+.branding-card-title-icon {
     width: 30px;
     height: 30px;
     border-radius: 8px;
-    background: #f4f6fa;
-    color: #68768a;
+    background: #eef3fb;
+    color: #06245f;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 30px;
-    font-size: 11px;
 }
 
-.add-inst-preview-item-content {
-    min-width: 0;
-}
-
-.add-inst-preview-item-label {
-    color: #8a95a5;
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .3px;
-}
-
-.add-inst-preview-item-value {
-    margin-top: 3px;
-    color: #354258;
-    font-size: 11px;
-    font-weight: 700;
-    word-break: break-word;
-}
-
-.add-inst-preview-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 8px;
-    border-radius: 15px;
-    background: #edf9ef;
-    color: #23752b;
-    font-size: 9px;
+.branding-card-title h3 {
+    margin: 0;
+    color: #344054;
+    font-size: 12px;
     font-weight: 800;
 }
 
-.add-inst-preview-status-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #32b73a;
-}
 
-/* ============================================================
-   INFO CARD
-   ============================================================ */
+/* =========================================================
+   FILE UPLOAD AREA
+   ========================================================= */
 
-.add-inst-info {
-    margin-top: 15px;
-    padding: 15px;
-    border: 1px solid #e2e8f1;
-    border-radius: 13px;
-    background: #f8fafd;
-}
-
-.add-inst-info-title {
+.file-upload-box {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
     display: flex;
     align-items: center;
-    gap: 7px;
-    color: #334155;
+    justify-content: center;
+    margin-bottom: 11px;
+    transition:
+        border-color .2s ease,
+        background .2s ease;
+}
+
+.file-upload-box:hover {
+    border-color: #06245f;
+    background: #f8faff;
+}
+
+.file-upload-box.dragover {
+    border-color: #06245f;
+    background: #eef3fb;
+}
+
+.file-upload-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.file-upload-content {
+    text-align: center;
+    color: #98a2b3;
+    padding: 15px;
+    pointer-events: none;
+}
+
+.file-upload-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+}
+
+.file-upload-title {
+    display: block;
+    color: #475467;
     font-size: 11px;
     font-weight: 800;
 }
 
-.add-inst-info-title i {
-    color: #06245f;
+.file-upload-subtitle {
+    display: block;
+    margin-top: 4px;
+    color: #98a2b3;
+    font-size: 9px;
 }
 
-.add-inst-info-text {
-    margin: 8px 0 0;
-    color: #7d899a;
+.image-preview {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.image-preview-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 7px;
+    background: rgba(255,255,255,.95);
+    color: #b42318;
+    box-shadow: 0 2px 8px rgba(0,0,0,.10);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.image-preview-remove:hover {
+    background: #fef3f2;
+}
+
+.file-name {
+    display: block;
+    margin-top: 7px;
+    color: #667085;
     font-size: 10px;
-    line-height: 1.55;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* ============================================================
+.file-help {
+    display: block;
+    margin-top: 5px;
+    color: #98a2b3;
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   WEBSITE
+   ========================================================= */
+
+.website-wrapper {
+    position: relative;
+}
+
+.website-prefix {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #98a2b3;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.website-input {
+    padding-left: 46px;
+}
+
+
+/* =========================================================
+   FORM FOOTER
+   ========================================================= */
+
+.form-footer {
+    padding: 20px 25px;
+    background: #fbfcfe;
+    border-top: 1px solid #edf1f6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.footer-note {
+    color: #98a2b3;
+    font-size: 11px;
+}
+
+.footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.btn {
+    min-height: 43px;
+    padding: 0 18px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: .2s ease;
+}
+
+.btn-cancel {
+    border: 1px solid #dce3ee;
+    background: #fff;
+    color: #475467;
+}
+
+.btn-cancel:hover {
+    border-color: #b8c4d5;
+    background: #f8fafc;
+}
+
+.btn-save {
+    border: 1px solid #06245f;
+    background: #06245f;
+    color: #fff;
+}
+
+.btn-save:hover {
+    background: #041b49;
+    border-color: #041b49;
+    transform: translateY(-1px);
+}
+
+.btn-save:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.form-error {
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    border-radius: 9px;
+    border: 1px solid #fecdca;
+    background: #fef3f2;
+    color: #b42318;
+    font-size: 12px;
+}
+
+
+/* =========================================================
    RESPONSIVE
-   ============================================================ */
+   ========================================================= */
 
-@media (max-width: 1050px) {
+@media (max-width: 900px) {
 
-    .add-inst-layout {
+    .branding-grid {
         grid-template-columns: 1fr;
     }
 
-    .add-inst-side {
-        position: static;
-    }
-
-    .add-inst-preview {
-        max-width: none;
-    }
 }
 
-@media (max-width: 750px) {
+@media (max-width: 720px) {
 
-    .add-inst-grid,
-    .add-inst-grid.three {
+    .institution-form-grid {
         grid-template-columns: 1fr;
     }
 
-    .add-inst-field.full {
+    .form-field.full-width {
         grid-column: auto;
     }
 
-    .add-inst-status-options {
-        grid-template-columns: 1fr;
+    .institution-section {
+        padding: 20px;
     }
 
-    .add-inst-header {
+    .form-footer {
+        padding: 18px 20px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .footer-actions {
+        width: 100%;
+    }
+
+    .footer-actions .btn {
+        flex: 1;
+    }
+
+}
+
+@media (max-width: 520px) {
+
+    .institution-page-header {
+        align-items: stretch;
+    }
+
+    .institution-page-header-left {
         align-items: flex-start;
     }
 
-    .add-inst-header-actions {
-        width: 100%;
-    }
-
-    .add-inst-header-actions .add-inst-btn {
-        flex: 1;
-    }
-}
-
-@media (max-width: 500px) {
-
-    .add-inst-title {
+    .institution-page-header h1 {
         font-size: 23px;
     }
 
-    .add-inst-form {
-        padding: 16px;
-    }
-
-    .add-inst-card-header {
-        padding: 16px;
-    }
-
-    .add-inst-form-footer {
-        flex-direction: column-reverse;
-    }
-
-    .add-inst-form-footer .add-inst-btn {
+    .back-button {
         width: 100%;
     }
+
+    .status-options {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .status-option,
+    .status-option label {
+        width: 100%;
+    }
+
+    .footer-actions {
+        flex-direction: column;
+    }
+
+    .footer-actions .btn {
+        width: 100%;
+    }
+
 }
+
 </style>
 
 
 <div class="add-institution-page">
 
-    <!-- ========================================================
+
+    <!-- =====================================================
          PAGE HEADER
-    ========================================================= -->
+         ====================================================== -->
 
-    <div class="add-inst-header">
+    <div class="institution-page-header">
 
-        <div class="add-inst-header-left">
+        <div class="institution-page-header-left">
 
-            <h1 class="add-inst-title">
-                Add Institution
-            </h1>
+            <div class="institution-header-icon">
+                <i data-feather="home"></i>
+            </div>
 
-            <p class="add-inst-subtitle">
-                Create a new institution and configure its basic
-                information, contact details and status.
-            </p>
+            <div>
 
-        </div>
+                <h1>
+                    Add Institution
+                </h1>
 
+                <p>
+                    Create a new institution and upload its branding.
+                </p>
 
-        <div class="add-inst-header-actions">
-
-            <a
-                href="{{ url_for('main.all_institutions') }}"
-                class="add-inst-btn add-inst-btn-light"
-            >
-                <i class="fas fa-arrow-left"></i>
-                All Institutions
-            </a>
+            </div>
 
         </div>
+
+
+        <a
+            href="{{ url_for('main.all_institutions') }}"
+            class="back-button"
+        >
+            <i data-feather="arrow-left"></i>
+            Back to Institutions
+        </a>
 
     </div>
 
 
-    <!-- ========================================================
-         MAIN LAYOUT
-    ========================================================= -->
+    <!-- =====================================================
+         FORM
+         ====================================================== -->
 
-    <div class="add-inst-layout">
+    <form
+        method="POST"
+        action="{{ url_for('main.add_institution') }}"
+        class="institution-form-card"
+        enctype="multipart/form-data"
+        autocomplete="off"
+        id="addInstitutionForm"
+    >
+
+        {% if csrf_token is defined %}
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+        {% endif %}
 
 
-        <!-- ====================================================
-             FORM CARD
-        ===================================================== -->
+        <!-- =================================================
+             BASIC INFORMATION
+             ================================================== -->
 
-        <div class="add-inst-card">
+        <div class="institution-section">
 
-            <div class="add-inst-card-header">
+            <div class="section-heading">
 
-                <div class="add-inst-card-icon">
-                    <i class="fas fa-building"></i>
+                <div class="section-heading-icon">
+                    <i data-feather="info"></i>
                 </div>
 
                 <div>
 
-                    <h2 class="add-inst-card-title">
-                        Institution Information
+                    <h2>
+                        Basic Information
                     </h2>
 
-                    <p class="add-inst-card-description">
-                        Enter the information required to register
-                        this institution.
+                    <p>
+                        Institution identity and general information
                     </p>
 
                 </div>
@@ -675,1187 +738,1363 @@
             </div>
 
 
-            <!-- =================================================
-                 FORM
-            ================================================== -->
-
-            <form
-                method="POST"
-                action="{{ url_for('main.add_institution') }}"
-                class="add-inst-form"
-                id="addInstitutionForm"
-            >
-
-                <!-- =================================================
-                     BASIC INFORMATION
-                ================================================== -->
-
-                <div class="add-inst-section">
-
-                    <h3 class="add-inst-section-title">
-                        <i class="fas fa-building"></i>
-                        &nbsp; Basic Information
-                    </h3>
+            <div class="institution-form-grid">
 
 
-                    <div class="add-inst-grid">
+                <!-- Institution Name -->
 
+                <div class="form-field">
 
-                        <!-- NAME -->
+                    <label for="name">
 
-                        <div class="add-inst-field">
+                        Institution Name
 
-                            <label
-                                for="name"
-                                class="add-inst-label"
-                            >
-                                Institution Name
-                                <span class="add-inst-required">*</span>
-                            </label>
+                        <span class="required">
+                            *
+                        </span>
 
-                            <div class="add-inst-input-wrap">
+                    </label>
 
-                                <i
-                                    class="fas fa-building add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    class="add-inst-input with-icon"
-                                    placeholder="Enter institution name"
-                                    value="{{ request.form.get('name', '') }}"
-                                    maxlength="255"
-                                    required
-                                    autocomplete="organization"
-                                >
-
-                            </div>
-
-                            <div class="add-inst-help">
-                                The official name of the institution.
-                            </div>
-
-                        </div>
-
-
-                        <!-- SHORT NAME -->
-
-                        <div class="add-inst-field">
-
-                            <label
-                                for="short_name"
-                                class="add-inst-label"
-                            >
-                                Short Name
-                            </label>
-
-                            <div class="add-inst-input-wrap">
-
-                                <i
-                                    class="fas fa-tag add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="text"
-                                    id="short_name"
-                                    name="short_name"
-                                    class="add-inst-input with-icon"
-                                    placeholder="e.g. SOOYAAL"
-                                    value="{{ request.form.get('short_name', '') }}"
-                                    maxlength="100"
-                                    autocomplete="organization"
-                                >
-
-                            </div>
-
-                            <div class="add-inst-help">
-                                Optional abbreviation or short name.
-                            </div>
-
-                        </div>
-
-
-                        <!-- CODE -->
-
-                        <div class="add-inst-field">
-
-                            <label
-                                for="code"
-                                class="add-inst-label"
-                            >
-                                Institution Code
-                            </label>
-
-                            <div class="add-inst-input-wrap">
-
-                                <i
-                                    class="fas fa-hashtag add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="text"
-                                    id="code"
-                                    name="code"
-                                    class="add-inst-input with-icon"
-                                    placeholder="e.g. INST001"
-                                    value="{{ request.form.get('code', '') }}"
-                                    maxlength="100"
-                                    autocomplete="off"
-                                >
-
-                            </div>
-
-                            <div class="add-inst-help">
-                                A unique code used to identify the institution.
-                            </div>
-
-                        </div>
-
-
-                        <!-- WEBSITE -->
-
-                        <div class="add-inst-field">
-
-                            <label
-                                for="website"
-                                class="add-inst-label"
-                            >
-                                Website
-                            </label>
-
-                            <div class="add-inst-input-wrap">
-
-                                <i
-                                    class="fas fa-globe add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="url"
-                                    id="website"
-                                    name="website"
-                                    class="add-inst-input with-icon"
-                                    placeholder="https://example.com"
-                                    value="{{ request.form.get('website', '') }}"
-                                    maxlength="255"
-                                    autocomplete="url"
-                                >
-
-                            </div>
-
-                            <div class="add-inst-help">
-                                Optional official institution website.
-                            </div>
-
-                        </div>
-
-                    </div>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        class="form-control"
+                        maxlength="200"
+                        placeholder="e.g. Sooyaal Educational Institute"
+                        value="{{ form_data.name if form_data else '' }}"
+                        required
+                    >
 
                 </div>
 
 
-                <!-- =================================================
-                     CONTACT INFORMATION
-                ================================================== -->
+                <!-- Short Name -->
 
-                <div class="add-inst-section">
+                <div class="form-field">
 
-                    <h3 class="add-inst-section-title">
-                        <i class="fas fa-address-book"></i>
-                        &nbsp; Contact Information
-                    </h3>
+                    <label for="short_name">
+                        Short Name
+                    </label>
 
+                    <input
+                        type="text"
+                        id="short_name"
+                        name="short_name"
+                        class="form-control"
+                        maxlength="100"
+                        placeholder="e.g. SOOYAAL"
+                        value="{{ form_data.short_name if form_data else '' }}"
+                    >
 
-                    <div class="add-inst-grid">
-
-
-                        <!-- EMAIL -->
-
-                        <div class="add-inst-field">
-
-                            <label
-                                for="email"
-                                class="add-inst-label"
-                            >
-                                Email Address
-                            </label>
-
-                            <div class="add-inst-input-wrap">
-
-                                <i
-                                    class="fas fa-envelope add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    class="add-inst-input with-icon"
-                                    placeholder="institution@example.com"
-                                    value="{{ request.form.get('email', '') }}"
-                                    maxlength="255"
-                                    autocomplete="email"
-                                >
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- PHONE -->
-
-                        <div class="add-inst-field">
-
-                            <label
-                                for="phone"
-                                class="add-inst-label"
-                            >
-                                Phone Number
-                            </label>
-
-                            <div class="add-inst-input-wrap">
-
-                                <i
-                                    class="fas fa-phone add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="tel"
-                                    id="phone"
-                                    name="phone"
-                                    class="add-inst-input with-icon"
-                                    placeholder="+252 61 XXX XXXX"
-                                    value="{{ request.form.get('phone', '') }}"
-                                    maxlength="50"
-                                    autocomplete="tel"
-                                >
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- COUNTRY -->
-
-                        <div class="add-inst-field">
-
-                            <label
-                                for="country"
-                                class="add-inst-label"
-                            >
-                                Country
-                            </label>
-
-                            <div class="add-inst-input-wrap">
-
-                                <i
-                                    class="fas fa-earth-africa add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="text"
-                                    id="country"
-                                    name="country"
-                                    class="add-inst-input with-icon"
-                                    placeholder="Somalia"
-                                    value="{{ request.form.get('country', '') }}"
-                                    maxlength="100"
-                                    autocomplete="country-name"
-                                >
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- STATE -->
-
-                        <div class="add-inst-field">
-
-                            <label
-                                for="state"
-                                class="add-inst-label"
-                            >
-                                State / Region
-                            </label>
-
-                            <div class="add-inst-input-wrap">
-
-                                <i
-                                    class="fas fa-map add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="text"
-                                    id="state"
-                                    name="state"
-                                    class="add-inst-input with-icon"
-                                    placeholder="State or region"
-                                    value="{{ request.form.get('state', '') }}"
-                                    maxlength="100"
-                                    autocomplete="address-level1"
-                                >
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- CITY -->
-
-                        <div class="add-inst-field">
-
-                            <label
-                                for="city"
-                                class="add-inst-label"
-                            >
-                                City
-                            </label>
-
-                            <div class="add-inst-input-wrap">
-
-                                <i
-                                    class="fas fa-city add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="text"
-                                    id="city"
-                                    name="city"
-                                    class="add-inst-input with-icon"
-                                    placeholder="Mogadishu"
-                                    value="{{ request.form.get('city', '') }}"
-                                    maxlength="100"
-                                    autocomplete="address-level2"
-                                >
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- ADDRESS -->
-
-                        <div class="add-inst-field">
-
-                            <label
-                                for="address"
-                                class="add-inst-label"
-                            >
-                                Address
-                            </label>
-
-                            <div class="add-inst-input-wrap">
-
-                                <i
-                                    class="fas fa-location-dot add-inst-input-icon"
-                                ></i>
-
-                                <input
-                                    type="text"
-                                    id="address"
-                                    name="address"
-                                    class="add-inst-input with-icon"
-                                    placeholder="Street, district or building"
-                                    value="{{ request.form.get('address', '') }}"
-                                    maxlength="255"
-                                    autocomplete="street-address"
-                                >
-
-                            </div>
-
-                        </div>
-
-                    </div>
+                    <small class="form-help">
+                        Short name used in dashboards and compact areas.
+                    </small>
 
                 </div>
 
 
-                <!-- =================================================
-                     DESCRIPTION
-                ================================================== -->
+                <!-- Code -->
 
-                <div class="add-inst-section">
+                <div class="form-field">
 
-                    <h3 class="add-inst-section-title">
-                        <i class="fas fa-align-left"></i>
-                        &nbsp; Description
-                    </h3>
+                    <label for="code">
+                        Institution Code
+                    </label>
 
+                    <input
+                        type="text"
+                        id="code"
+                        name="code"
+                        class="form-control"
+                        maxlength="50"
+                        placeholder="e.g. SOOYAAL001"
+                        value="{{ form_data.code if form_data else '' }}"
+                    >
 
-                    <div class="add-inst-field">
-
-                        <label
-                            for="description"
-                            class="add-inst-label"
-                        >
-                            About Institution
-                        </label>
-
-                        <textarea
-                            id="description"
-                            name="description"
-                            class="add-inst-textarea"
-                            maxlength="2000"
-                            placeholder="Write a short description about this institution..."
-                        >{{ request.form.get('description', '') }}</textarea>
-
-                        <div
-                            class="add-inst-help"
-                            id="descriptionCounter"
-                        >
-                            0 / 2000 characters
-                        </div>
-
-                    </div>
+                    <small class="form-help">
+                        Institution code must be unique.
+                    </small>
 
                 </div>
 
 
-                <!-- =================================================
-                     STATUS
-                ================================================== -->
+                <!-- Academic Year -->
 
-                <div class="add-inst-section">
+                <div class="form-field">
 
-                    <h3 class="add-inst-section-title">
-                        <i class="fas fa-toggle-on"></i>
-                        &nbsp; Institution Status
-                    </h3>
+                    <label for="academic_year">
+                        Academic Year
+                    </label>
+
+                    <input
+                        type="text"
+                        id="academic_year"
+                        name="academic_year"
+                        class="form-control"
+                        maxlength="50"
+                        placeholder="e.g. 2026-2027"
+                        value="{{ form_data.academic_year if form_data else '' }}"
+                    >
+
+                    <small class="form-help">
+                        Current displayed academic year for this institution.
+                    </small>
+
+                </div>
 
 
-                    <div class="add-inst-status-options">
+                <!-- Tagline -->
+
+                <div class="form-field full-width">
+
+                    <label for="tagline">
+                        Tagline
+                    </label>
+
+                    <input
+                        type="text"
+                        id="tagline"
+                        name="tagline"
+                        class="form-control"
+                        maxlength="255"
+                        placeholder="e.g. Education Management System"
+                        value="{{ form_data.tagline if form_data else '' }}"
+                    >
+
+                </div>
 
 
-                        <!-- ACTIVE -->
+                <!-- Status -->
 
-                        <div class="add-inst-status-option">
+                <div class="form-field full-width">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <div class="status-options">
+
+
+                        <div class="status-option">
 
                             <input
                                 type="radio"
-                                id="statusActive"
+                                id="status_active"
                                 name="status"
                                 value="active"
-                                {% if request.form.get('status', 'active') == 'active' %}
+                                {% if not form_data or form_data.status == 'active' %}
                                     checked
                                 {% endif %}
                             >
 
-                            <label
-                                for="statusActive"
-                                class="add-inst-status-label"
-                            >
-
-                                <span class="add-inst-status-radio"></span>
-
-                                <span class="add-inst-status-content">
-
-                                    <span class="add-inst-status-name">
-                                        Active
-                                    </span>
-
-                                    <span class="add-inst-status-description">
-                                        Institution is fully operational.
-                                    </span>
-
-                                </span>
-
+                            <label for="status_active">
+                                Active
                             </label>
 
                         </div>
 
 
-                        <!-- INACTIVE -->
-
-                        <div class="add-inst-status-option">
+                        <div class="status-option">
 
                             <input
                                 type="radio"
-                                id="statusInactive"
+                                id="status_inactive"
                                 name="status"
                                 value="inactive"
-                                {% if request.form.get('status') == 'inactive' %}
+                                {% if form_data and form_data.status == 'inactive' %}
                                     checked
                                 {% endif %}
                             >
 
-                            <label
-                                for="statusInactive"
-                                class="add-inst-status-label"
-                            >
-
-                                <span class="add-inst-status-radio"></span>
-
-                                <span class="add-inst-status-content">
-
-                                    <span class="add-inst-status-name">
-                                        Inactive
-                                    </span>
-
-                                    <span class="add-inst-status-description">
-                                        Institution is temporarily inactive.
-                                    </span>
-
-                                </span>
-
+                            <label for="status_inactive">
+                                Inactive
                             </label>
 
                         </div>
 
 
-                        <!-- SUSPENDED -->
-
-                        <div class="add-inst-status-option">
+                        <div class="status-option">
 
                             <input
                                 type="radio"
-                                id="statusSuspended"
+                                id="status_suspended"
                                 name="status"
                                 value="suspended"
-                                {% if request.form.get('status') == 'suspended' %}
+                                {% if form_data and form_data.status == 'suspended' %}
                                     checked
                                 {% endif %}
                             >
 
-                            <label
-                                for="statusSuspended"
-                                class="add-inst-status-label"
-                            >
-
-                                <span class="add-inst-status-radio"></span>
-
-                                <span class="add-inst-status-content">
-
-                                    <span class="add-inst-status-name">
-                                        Suspended
-                                    </span>
-
-                                    <span class="add-inst-status-description">
-                                        Access to the institution is suspended.
-                                    </span>
-
-                                </span>
-
+                            <label for="status_suspended">
+                                Suspended
                             </label>
 
                         </div>
 
                     </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CONTACT INFORMATION
+             ================================================== -->
+
+        <div class="institution-section">
+
+            <div class="section-heading">
+
+                <div class="section-heading-icon">
+                    <i data-feather="phone"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Contact Information
+                    </h2>
+
+                    <p>
+                        Institution contact details and website
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="institution-form-grid">
+
+
+                <!-- Phone -->
+
+                <div class="form-field">
+
+                    <label for="phone">
+                        Phone
+                    </label>
+
+                    <input
+                        type="text"
+                        id="phone"
+                        name="phone"
+                        class="form-control"
+                        maxlength="30"
+                        placeholder="+252 61 XXX XXXX"
+                        value="{{ form_data.phone if form_data else '' }}"
+                    >
+
+                </div>
+
+
+                <!-- Email -->
+
+                <div class="form-field">
+
+                    <label for="email">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-control"
+                        maxlength="150"
+                        placeholder="info@example.com"
+                        value="{{ form_data.email if form_data else '' }}"
+                    >
+
+                </div>
+
+
+                <!-- Website -->
+
+                <div class="form-field full-width">
+
+                    <label for="website">
+                        Website
+                    </label>
+
+                    <div class="website-wrapper">
+
+                        <span class="website-prefix">
+                            https://
+                        </span>
+
+                        <input
+                            type="text"
+                            id="website"
+                            name="website"
+                            class="form-control website-input"
+                            maxlength="255"
+                            placeholder="example.com"
+                            value="{{ form_data.website if form_data else '' }}"
+                        >
+
+                    </div>
+
+                    <small class="form-help">
+                        Enter the institution website address.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             LOCATION
+             ================================================== -->
+
+        <div class="institution-section">
+
+            <div class="section-heading">
+
+                <div class="section-heading-icon">
+                    <i data-feather="map-pin"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Location
+                    </h2>
+
+                    <p>
+                        Institution country, state, city and address
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="institution-form-grid">
+
+
+                <!-- Country -->
+
+                <div class="form-field">
+
+                    <label for="country">
+                        Country
+                    </label>
+
+                    <input
+                        type="text"
+                        id="country"
+                        name="country"
+                        class="form-control"
+                        maxlength="100"
+                        placeholder="Somalia"
+                        value="{{ form_data.country if form_data else '' }}"
+                    >
+
+                </div>
+
+
+                <!-- State -->
+
+                <div class="form-field">
+
+                    <label for="state">
+                        State / Region
+                    </label>
+
+                    <input
+                        type="text"
+                        id="state"
+                        name="state"
+                        class="form-control"
+                        maxlength="100"
+                        placeholder="Banaadir"
+                        value="{{ form_data.state if form_data else '' }}"
+                    >
+
+                </div>
+
+
+                <!-- City -->
+
+                <div class="form-field">
+
+                    <label for="city">
+                        City
+                    </label>
+
+                    <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        class="form-control"
+                        maxlength="100"
+                        placeholder="Mogadishu"
+                        value="{{ form_data.city if form_data else '' }}"
+                    >
+
+                </div>
+
+
+                <!-- Address -->
+
+                <div class="form-field">
+
+                    <label for="address">
+                        Address
+                    </label>
+
+                    <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        class="form-control"
+                        maxlength="255"
+                        placeholder="Street / building / district"
+                        value="{{ form_data.address if form_data else '' }}"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CLOUDINARY BRANDING
+             ================================================== -->
+
+        <div class="institution-section">
+
+            <div class="section-heading">
+
+                <div class="section-heading-icon">
+                    <i data-feather="cloud"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Institution Branding
+                    </h2>
+
+                    <p>
+                        Upload institution logos, signature and favicon.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="branding-grid">
+
+
+                <!-- =================================================
+                     MAIN LOGO
+                     ================================================== -->
+
+                <div class="branding-card">
+
+                    <div class="branding-card-title">
+
+                        <div class="branding-card-title-icon">
+                            <i data-feather="image"></i>
+                        </div>
+
+                        <h3>
+                            Main Logo
+                        </h3>
+
+                    </div>
+
+
+                    <div
+                        class="file-upload-box"
+                        id="mainLogoDropZone"
+                    >
+
+                        <input
+                            type="file"
+                            id="main_logo"
+                            name="main_logo"
+                            class="file-upload-input"
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                            onchange="previewInstitutionFile(
+                                this,
+                                'mainLogoPreview',
+                                'mainLogoUploadContent',
+                                'mainLogoFileName',
+                                'mainLogoRemove'
+                            )"
+                        >
+
+
+                        <div
+                            class="file-upload-content"
+                            id="mainLogoUploadContent"
+                        >
+
+                            <div class="file-upload-icon">
+                                <i data-feather="upload-cloud"></i>
+                            </div>
+
+                            <span class="file-upload-title">
+                                Click to upload main logo
+                            </span>
+
+                            <span class="file-upload-subtitle">
+                                PNG, JPG, WEBP or GIF
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="image-preview"
+                            id="mainLogoPreview"
+                        >
+
+                            <img
+                                alt="Main Logo Preview"
+                            >
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="image-preview-remove"
+                            id="mainLogoRemove"
+                            onclick="removeInstitutionFile(
+                                'main_logo',
+                                'mainLogoPreview',
+                                'mainLogoUploadContent',
+                                'mainLogoFileName',
+                                'mainLogoRemove'
+                            )"
+                            aria-label="Remove main logo"
+                        >
+                            <i data-feather="x"></i>
+                        </button>
+
+                    </div>
+
+
+                    <span
+                        class="file-name"
+                        id="mainLogoFileName"
+                    >
+                        No file selected
+                    </span>
+
+                    <small class="file-help">
+                        Recommended: transparent PNG logo.
+                    </small>
 
                 </div>
 
 
                 <!-- =================================================
-                     FORM FOOTER
-                ================================================== -->
+                     SUB LOGO
+                     ================================================== -->
 
-                <div class="add-inst-form-footer">
+                <div class="branding-card">
 
-                    <a
-                        href="{{ url_for('main.all_institutions') }}"
-                        class="add-inst-btn add-inst-btn-light"
+                    <div class="branding-card-title">
+
+                        <div class="branding-card-title-icon">
+                            <i data-feather="layers"></i>
+                        </div>
+
+                        <h3>
+                            Sub Logo
+                        </h3>
+
+                    </div>
+
+
+                    <div
+                        class="file-upload-box"
+                        id="subLogoDropZone"
                     >
-                        <i class="fas fa-xmark"></i>
-                        Cancel
-                    </a>
+
+                        <input
+                            type="file"
+                            id="sub_logo"
+                            name="sub_logo"
+                            class="file-upload-input"
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                            onchange="previewInstitutionFile(
+                                this,
+                                'subLogoPreview',
+                                'subLogoUploadContent',
+                                'subLogoFileName',
+                                'subLogoRemove'
+                            )"
+                        >
 
 
-                    <button
-                        type="submit"
-                        class="add-inst-btn add-inst-btn-primary"
-                        id="submitInstitutionBtn"
+                        <div
+                            class="file-upload-content"
+                            id="subLogoUploadContent"
+                        >
+
+                            <div class="file-upload-icon">
+                                <i data-feather="upload-cloud"></i>
+                            </div>
+
+                            <span class="file-upload-title">
+                                Click to upload sub logo
+                            </span>
+
+                            <span class="file-upload-subtitle">
+                                PNG, JPG, WEBP or GIF
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="image-preview"
+                            id="subLogoPreview"
+                        >
+
+                            <img
+                                alt="Sub Logo Preview"
+                            >
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="image-preview-remove"
+                            id="subLogoRemove"
+                            onclick="removeInstitutionFile(
+                                'sub_logo',
+                                'subLogoPreview',
+                                'subLogoUploadContent',
+                                'subLogoFileName',
+                                'subLogoRemove'
+                            )"
+                            aria-label="Remove sub logo"
+                        >
+                            <i data-feather="x"></i>
+                        </button>
+
+                    </div>
+
+
+                    <span
+                        class="file-name"
+                        id="subLogoFileName"
                     >
-                        <i class="fas fa-plus"></i>
-                        Create Institution
-                    </button>
+                        No file selected
+                    </span>
+
+                    <small class="file-help">
+                        Recommended: PNG or WEBP.
+                    </small>
 
                 </div>
 
-            </form>
+
+                <!-- =================================================
+                     SIGNATURE
+                     ================================================== -->
+
+                <div class="branding-card">
+
+                    <div class="branding-card-title">
+
+                        <div class="branding-card-title-icon">
+                            <i data-feather="edit-3"></i>
+                        </div>
+
+                        <h3>
+                            Signature Photo
+                        </h3>
+
+                    </div>
+
+
+                    <div
+                        class="file-upload-box"
+                        id="signatureDropZone"
+                    >
+
+                        <input
+                            type="file"
+                            id="signature_photo"
+                            name="signature_photo"
+                            class="file-upload-input"
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                            onchange="previewInstitutionFile(
+                                this,
+                                'signaturePreview',
+                                'signatureUploadContent',
+                                'signatureFileName',
+                                'signatureRemove'
+                            )"
+                        >
+
+
+                        <div
+                            class="file-upload-content"
+                            id="signatureUploadContent"
+                        >
+
+                            <div class="file-upload-icon">
+                                <i data-feather="upload-cloud"></i>
+                            </div>
+
+                            <span class="file-upload-title">
+                                Click to upload signature
+                            </span>
+
+                            <span class="file-upload-subtitle">
+                                PNG, JPG, WEBP or GIF
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="image-preview"
+                            id="signaturePreview"
+                        >
+
+                            <img
+                                alt="Signature Preview"
+                            >
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="image-preview-remove"
+                            id="signatureRemove"
+                            onclick="removeInstitutionFile(
+                                'signature_photo',
+                                'signaturePreview',
+                                'signatureUploadContent',
+                                'signatureFileName',
+                                'signatureRemove'
+                            )"
+                            aria-label="Remove signature"
+                        >
+                            <i data-feather="x"></i>
+                        </button>
+
+                    </div>
+
+
+                    <span
+                        class="file-name"
+                        id="signatureFileName"
+                    >
+                        No file selected
+                    </span>
+
+                    <small class="file-help">
+                        Transparent PNG is recommended for signatures.
+                    </small>
+
+                </div>
+
+
+                <!-- =================================================
+                     FAVICON
+                     ================================================== -->
+
+                <div class="branding-card">
+
+                    <div class="branding-card-title">
+
+                        <div class="branding-card-title-icon">
+                            <i data-feather="globe"></i>
+                        </div>
+
+                        <h3>
+                            Favicon
+                        </h3>
+
+                    </div>
+
+
+                    <div
+                        class="file-upload-box"
+                        id="faviconDropZone"
+                    >
+
+                        <input
+                            type="file"
+                            id="favicon"
+                            name="favicon"
+                            class="file-upload-input"
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/x-icon"
+                            onchange="previewInstitutionFile(
+                                this,
+                                'faviconPreview',
+                                'faviconUploadContent',
+                                'faviconFileName',
+                                'faviconRemove'
+                            )"
+                        >
+
+
+                        <div
+                            class="file-upload-content"
+                            id="faviconUploadContent"
+                        >
+
+                            <div class="file-upload-icon">
+                                <i data-feather="upload-cloud"></i>
+                            </div>
+
+                            <span class="file-upload-title">
+                                Click to upload favicon
+                            </span>
+
+                            <span class="file-upload-subtitle">
+                                PNG, JPG, WEBP, GIF or ICO
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="image-preview"
+                            id="faviconPreview"
+                        >
+
+                            <img
+                                alt="Favicon Preview"
+                            >
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="image-preview-remove"
+                            id="faviconRemove"
+                            onclick="removeInstitutionFile(
+                                'favicon',
+                                'faviconPreview',
+                                'faviconUploadContent',
+                                'faviconFileName',
+                                'faviconRemove'
+                            )"
+                            aria-label="Remove favicon"
+                        >
+                            <i data-feather="x"></i>
+                        </button>
+
+                    </div>
+
+
+                    <span
+                        class="file-name"
+                        id="faviconFileName"
+                    >
+                        No file selected
+                    </span>
+
+                    <small class="file-help">
+                        Recommended: square 32×32 or 64×64 image.
+                    </small>
+
+                </div>
+
+            </div>
 
         </div>
 
 
-        <!-- ====================================================
-             SIDE PANEL
-        ===================================================== -->
+        <!-- =================================================
+             DESCRIPTION
+             ================================================== -->
 
-        <div class="add-inst-side">
+        <div class="institution-section">
 
-            <!-- =================================================
-                 PREVIEW
-            ================================================== -->
+            <div class="section-heading">
 
-            <div class="add-inst-preview">
-
-                <div class="add-inst-preview-top">
-
-                    <div
-                        class="add-inst-preview-logo"
-                        id="previewLogo"
-                    >
-                        <i class="fas fa-building"></i>
-                    </div>
-
-
-                    <h3
-                        class="add-inst-preview-name"
-                        id="previewName"
-                    >
-                        New Institution
-                    </h3>
-
-
-                    <div
-                        class="add-inst-preview-code"
-                        id="previewCode"
-                    >
-                        Institution Preview
-                    </div>
-
+                <div class="section-heading-icon">
+                    <i data-feather="file-text"></i>
                 </div>
 
+                <div>
 
-                <div class="add-inst-preview-body">
+                    <h2>
+                        Description
+                    </h2>
 
-
-                    <!-- EMAIL -->
-
-                    <div class="add-inst-preview-item">
-
-                        <div class="add-inst-preview-item-icon">
-
-                            <i class="fas fa-envelope"></i>
-
-                        </div>
-
-                        <div class="add-inst-preview-item-content">
-
-                            <div class="add-inst-preview-item-label">
-                                Email
-                            </div>
-
-                            <div
-                                class="add-inst-preview-item-value"
-                                id="previewEmail"
-                            >
-                                —
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- PHONE -->
-
-                    <div class="add-inst-preview-item">
-
-                        <div class="add-inst-preview-item-icon">
-
-                            <i class="fas fa-phone"></i>
-
-                        </div>
-
-                        <div class="add-inst-preview-item-content">
-
-                            <div class="add-inst-preview-item-label">
-                                Phone
-                            </div>
-
-                            <div
-                                class="add-inst-preview-item-value"
-                                id="previewPhone"
-                            >
-                                —
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- LOCATION -->
-
-                    <div class="add-inst-preview-item">
-
-                        <div class="add-inst-preview-item-icon">
-
-                            <i class="fas fa-location-dot"></i>
-
-                        </div>
-
-                        <div class="add-inst-preview-item-content">
-
-                            <div class="add-inst-preview-item-label">
-                                Location
-                            </div>
-
-                            <div
-                                class="add-inst-preview-item-value"
-                                id="previewLocation"
-                            >
-                                —
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- STATUS -->
-
-                    <div class="add-inst-preview-item">
-
-                        <div class="add-inst-preview-item-icon">
-
-                            <i class="fas fa-circle-check"></i>
-
-                        </div>
-
-                        <div class="add-inst-preview-item-content">
-
-                            <div class="add-inst-preview-item-label">
-                                Status
-                            </div>
-
-                            <div
-                                class="add-inst-preview-item-value"
-                                id="previewStatus"
-                            >
-
-                                <span class="add-inst-preview-status">
-
-                                    <span
-                                        class="add-inst-preview-status-dot"
-                                    ></span>
-
-                                    Active
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
+                    <p>
+                        Additional information about the institution
+                    </p>
 
                 </div>
 
             </div>
 
 
-            <!-- =================================================
-                 INFORMATION
-            ================================================== -->
+            <div class="institution-form-grid">
 
-            <div class="add-inst-info">
+                <div class="form-field full-width">
 
-                <div class="add-inst-info-title">
+                    <label for="description">
+                        Description
+                    </label>
 
-                    <i class="fas fa-circle-info"></i>
+                    <textarea
+                        id="description"
+                        name="description"
+                        class="form-control"
+                        maxlength="5000"
+                        placeholder="Write additional information about this institution..."
+                    >{{ form_data.description if form_data else '' }}</textarea>
 
-                    Institution Management
+                    <small class="form-help">
+                        Maximum 5000 characters.
+                    </small>
 
                 </div>
-
-
-                <p class="add-inst-info-text">
-                    After creating the institution, you can add
-                    branches, courses, classes, teachers, students
-                    and other institution-specific records from
-                    the management pages.
-                </p>
 
             </div>
 
         </div>
 
-    </div>
+
+        <!-- =================================================
+             FOOTER
+             ================================================== -->
+
+        <div class="form-footer">
+
+            <div class="footer-note">
+
+                Fields marked with
+                <span class="required">*</span>
+                are required.
+
+            </div>
+
+
+            <div class="footer-actions">
+
+                <a
+                    href="{{ url_for('main.all_institutions') }}"
+                    class="btn btn-cancel"
+                >
+                    <i data-feather="x"></i>
+                    Cancel
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-save"
+                    id="createInstitutionButton"
+                >
+                    <i data-feather="save"></i>
+                    Create Institution
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
 
 </div>
 
 
-<!-- ============================================================
-     JAVASCRIPT
-     ============================================================ -->
-
 <script>
+
+/* =========================================================
+   FILE PREVIEW
+   ========================================================= */
+
+function previewInstitutionFile(
+    input,
+    previewId,
+    contentId,
+    fileNameId,
+    removeButtonId
+) {
+
+    const preview = document.getElementById(previewId);
+    const content = document.getElementById(contentId);
+    const fileName = document.getElementById(fileNameId);
+    const removeButton = document.getElementById(removeButtonId);
+
+    if (
+        !input ||
+        !preview ||
+        !content ||
+        !fileName ||
+        !removeButton
+    ) {
+        return;
+    }
+
+
+    const file = input.files && input.files[0];
+
+
+    if (!file) {
+
+        preview.style.display = "none";
+        content.style.display = "block";
+        removeButton.style.display = "none";
+
+        fileName.textContent = "No file selected";
+
+        return;
+    }
+
+
+    /* -----------------------------------------------------
+       Validate image
+       ----------------------------------------------------- */
+
+    if (!file.type.startsWith("image/")) {
+
+        alert(
+            "Please select a valid image file."
+        );
+
+        input.value = "";
+
+        preview.style.display = "none";
+        content.style.display = "block";
+        removeButton.style.display = "none";
+
+        fileName.textContent = "No file selected";
+
+        return;
+    }
+
+
+    /* -----------------------------------------------------
+       Validate size
+       Maximum 5 MB
+       ----------------------------------------------------- */
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+
+        alert(
+            "Image size must not exceed 5 MB."
+        );
+
+        input.value = "";
+
+        preview.style.display = "none";
+        content.style.display = "block";
+        removeButton.style.display = "none";
+
+        fileName.textContent = "No file selected";
+
+        return;
+    }
+
+
+    /* -----------------------------------------------------
+       File name
+       ----------------------------------------------------- */
+
+    fileName.textContent = file.name;
+
+
+    /* -----------------------------------------------------
+       Preview
+       ----------------------------------------------------- */
+
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+
+        const image = preview.querySelector("img");
+
+        if (!image) {
+            return;
+        }
+
+        image.src = event.target.result;
+
+        content.style.display = "none";
+        preview.style.display = "flex";
+        removeButton.style.display = "flex";
+
+    };
+
+    reader.readAsDataURL(file);
+
+}
+
+
+/* =========================================================
+   REMOVE SELECTED FILE
+   ========================================================= */
+
+function removeInstitutionFile(
+    inputId,
+    previewId,
+    contentId,
+    fileNameId,
+    removeButtonId
+) {
+
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const content = document.getElementById(contentId);
+    const fileName = document.getElementById(fileNameId);
+    const removeButton = document.getElementById(removeButtonId);
+
+
+    if (input) {
+        input.value = "";
+    }
+
+
+    if (preview) {
+
+        const image = preview.querySelector("img");
+
+        if (image) {
+            image.removeAttribute("src");
+        }
+
+        preview.style.display = "none";
+    }
+
+
+    if (content) {
+        content.style.display = "block";
+    }
+
+
+    if (removeButton) {
+        removeButton.style.display = "none";
+    }
+
+
+    if (fileName) {
+        fileName.textContent = "No file selected";
+    }
+
+}
+
+
+/* =========================================================
+   DRAG & DROP
+   ========================================================= */
+
+function setupInstitutionDropZone(
+    zoneId,
+    inputId,
+    previewId,
+    contentId,
+    fileNameId,
+    removeButtonId
+) {
+
+    const zone = document.getElementById(zoneId);
+    const input = document.getElementById(inputId);
+
+    if (!zone || !input) {
+        return;
+    }
+
+
+    zone.addEventListener(
+        "dragover",
+        function (event) {
+
+            event.preventDefault();
+
+            zone.classList.add("dragover");
+
+        }
+    );
+
+
+    zone.addEventListener(
+        "dragleave",
+        function () {
+
+            zone.classList.remove("dragover");
+
+        }
+    );
+
+
+    zone.addEventListener(
+        "drop",
+        function (event) {
+
+            event.preventDefault();
+
+            zone.classList.remove("dragover");
+
+
+            const files = event.dataTransfer.files;
+
+            if (
+                !files ||
+                !files.length
+            ) {
+                return;
+            }
+
+
+            try {
+
+                const dataTransfer =
+                    new DataTransfer();
+
+                dataTransfer.items.add(
+                    files[0]
+                );
+
+                input.files =
+                    dataTransfer.files;
+
+
+                previewInstitutionFile(
+                    input,
+                    previewId,
+                    contentId,
+                    fileNameId,
+                    removeButtonId
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Unable to process dropped file:",
+                    error
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   FORM SUBMIT PROTECTION
+   ========================================================= */
+
 document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-        /* ======================================================
-           ELEMENTS
-        ====================================================== */
+
+        /* -------------------------------------------------
+           MAIN LOGO
+           ------------------------------------------------- */
+
+        setupInstitutionDropZone(
+            "mainLogoDropZone",
+            "main_logo",
+            "mainLogoPreview",
+            "mainLogoUploadContent",
+            "mainLogoFileName",
+            "mainLogoRemove"
+        );
+
+
+        /* -------------------------------------------------
+           SUB LOGO
+           ------------------------------------------------- */
+
+        setupInstitutionDropZone(
+            "subLogoDropZone",
+            "sub_logo",
+            "subLogoPreview",
+            "subLogoUploadContent",
+            "subLogoFileName",
+            "subLogoRemove"
+        );
+
+
+        /* -------------------------------------------------
+           SIGNATURE
+           ------------------------------------------------- */
+
+        setupInstitutionDropZone(
+            "signatureDropZone",
+            "signature_photo",
+            "signaturePreview",
+            "signatureUploadContent",
+            "signatureFileName",
+            "signatureRemove"
+        );
+
+
+        /* -------------------------------------------------
+           FAVICON
+           ------------------------------------------------- */
+
+        setupInstitutionDropZone(
+            "faviconDropZone",
+            "favicon",
+            "faviconPreview",
+            "faviconUploadContent",
+            "faviconFileName",
+            "faviconRemove"
+        );
+
+
+        /* -------------------------------------------------
+           FORM
+           ------------------------------------------------- */
 
         const form =
             document.getElementById(
                 "addInstitutionForm"
             );
 
-        const nameInput =
+        const button =
             document.getElementById(
-                "name"
-            );
-
-        const shortNameInput =
-            document.getElementById(
-                "short_name"
-            );
-
-        const codeInput =
-            document.getElementById(
-                "code"
-            );
-
-        const emailInput =
-            document.getElementById(
-                "email"
-            );
-
-        const phoneInput =
-            document.getElementById(
-                "phone"
-            );
-
-        const countryInput =
-            document.getElementById(
-                "country"
-            );
-
-        const stateInput =
-            document.getElementById(
-                "state"
-            );
-
-        const cityInput =
-            document.getElementById(
-                "city"
-            );
-
-        const previewName =
-            document.getElementById(
-                "previewName"
-            );
-
-        const previewCode =
-            document.getElementById(
-                "previewCode"
-            );
-
-        const previewEmail =
-            document.getElementById(
-                "previewEmail"
-            );
-
-        const previewPhone =
-            document.getElementById(
-                "previewPhone"
-            );
-
-        const previewLocation =
-            document.getElementById(
-                "previewLocation"
-            );
-
-        const previewStatus =
-            document.getElementById(
-                "previewStatus"
-            );
-
-        const description =
-            document.getElementById(
-                "description"
-            );
-
-        const descriptionCounter =
-            document.getElementById(
-                "descriptionCounter"
-            );
-
-        const submitButton =
-            document.getElementById(
-                "submitInstitutionBtn"
+                "createInstitutionButton"
             );
 
 
-        /* ======================================================
-           SAFE VALUE
-        ====================================================== */
-
-        function safeValue(
-            value,
-            fallback = "—"
-        ) {
-
-            if (
-                value === null ||
-                value === undefined ||
-                value.trim() === ""
-            ) {
-
-                return fallback;
-
-            }
-
-            return value.trim();
-
-        }
-
-
-        /* ======================================================
-           UPDATE PREVIEW
-        ====================================================== */
-
-        function updatePreview() {
-
-            const name =
-                safeValue(
-                    nameInput.value,
-                    "New Institution"
-                );
-
-            const code =
-                safeValue(
-                    codeInput.value,
-                    "Institution Preview"
-                );
-
-            const email =
-                safeValue(
-                    emailInput.value
-                );
-
-            const phone =
-                safeValue(
-                    phoneInput.value
-                );
-
-            const country =
-                safeValue(
-                    countryInput.value,
-                    ""
-                );
-
-            const state =
-                safeValue(
-                    stateInput.value,
-                    ""
-                );
-
-            const city =
-                safeValue(
-                    cityInput.value,
-                    ""
-                );
-
-
-            previewName.textContent =
-                name;
-
-            previewCode.textContent =
-                code;
-
-            previewEmail.textContent =
-                email;
-
-            previewPhone.textContent =
-                phone;
-
-
-            const locationParts = [];
-
-            if (city !== "") {
-                locationParts.push(city);
-            }
-
-            if (state !== "") {
-                locationParts.push(state);
-            }
-
-            if (country !== "") {
-                locationParts.push(country);
-            }
-
-
-            previewLocation.textContent =
-                locationParts.length
-                    ? locationParts.join(", ")
-                    : "—";
-        }
-
-
-        /* ======================================================
-           STATUS PREVIEW
-        ====================================================== */
-
-        function updateStatusPreview() {
-
-            const selected =
-                document.querySelector(
-                    'input[name="status"]:checked'
-                );
-
-            if (!selected) {
-                return;
-            }
-
-            let statusText =
-                "Active";
-
-            if (
-                selected.value ===
-                "inactive"
-            ) {
-
-                statusText =
-                    "Inactive";
-
-            } else if (
-                selected.value ===
-                "suspended"
-            ) {
-
-                statusText =
-                    "Suspended";
-            }
-
-
-            previewStatus.innerHTML =
-                '<span class="add-inst-preview-status">' +
-                    '<span class="add-inst-preview-status-dot"></span>' +
-                    statusText +
-                '</span>';
-        }
-
-
-        /* ======================================================
-           DESCRIPTION COUNTER
-        ====================================================== */
-
-        function updateDescriptionCounter() {
-
-            if (!description) {
-                return;
-            }
-
-            const length =
-                description.value.length;
-
-            descriptionCounter.textContent =
-                length + " / 2000 characters";
-        }
-
-
-        /* ======================================================
-           EVENT LISTENERS
-        ====================================================== */
-
-        [
-            nameInput,
-            shortNameInput,
-            codeInput,
-            emailInput,
-            phoneInput,
-            countryInput,
-            stateInput,
-            cityInput
-        ].forEach(
-            function (element) {
-
-                if (!element) {
-                    return;
-                }
-
-                element.addEventListener(
-                    "input",
-                    updatePreview
-                );
-
-            }
-        );
-
-
-        document
-            .querySelectorAll(
-                'input[name="status"]'
-            )
-            .forEach(
-                function (radio) {
-
-                    radio.addEventListener(
-                        "change",
-                        updateStatusPreview
-                    );
-
-                }
-            );
-
-
-        if (description) {
-
-            description.addEventListener(
-                "input",
-                updateDescriptionCounter
-            );
-
-        }
-
-
-        /* ======================================================
-           FORM SUBMIT
-        ====================================================== */
-
-        if (form) {
+        if (form && button) {
 
             form.addEventListener(
                 "submit",
-                function (event) {
+                function () {
 
-                    const name =
-                        nameInput.value.trim();
+                    button.disabled = true;
 
-
-                    if (!name) {
-
-                        event.preventDefault();
-
-                        nameInput.focus();
-
-                        alert(
-                            "Institution name is required."
-                        );
-
-                        return;
-                    }
+                    button.innerHTML = `
+                        <i data-feather="loader"></i>
+                        Creating Institution...
+                    `;
 
 
-                    const confirmed =
-                        confirm(
-                            "Create institution \"" +
-                            name +
-                            "\"?"
-                        );
-
-
-                    if (!confirmed) {
-
-                        event.preventDefault();
-
-                        return;
-                    }
-
-
-                    if (submitButton) {
-
-                        submitButton.disabled =
-                            true;
-
-                        submitButton.innerHTML =
-                            '<i class="fas fa-spinner fa-spin"></i>' +
-                            ' Creating...';
+                    if (
+                        typeof feather !== "undefined"
+                    ) {
+                        feather.replace();
                     }
 
                 }
@@ -1864,18 +2103,19 @@ document.addEventListener(
         }
 
 
-        /* ======================================================
-           INITIAL PREVIEW
-        ====================================================== */
+        /* -------------------------------------------------
+           FEATHER ICONS
+           ------------------------------------------------- */
 
-        updatePreview();
-
-        updateStatusPreview();
-
-        updateDescriptionCounter();
+        if (
+            typeof feather !== "undefined"
+        ) {
+            feather.replace();
+        }
 
     }
 );
+
 </script>
 
 {% endblock %}

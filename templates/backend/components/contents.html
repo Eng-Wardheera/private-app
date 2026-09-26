@@ -1,103 +1,1286 @@
+{# ============================================================
+   DASHBOARD ROLE
+   ------------------------------------------------------------
+   1. superadmin
+   2. school_admin = Institution Admin
+   3. branch_admin  = Branch Admin
+   ============================================================ #}
+
+{% set dashboard_role = role|string|lower|trim %}
+
+
+{# ============================================================
+   SUPERADMIN DASHBOARD
+   ============================================================ #}
+
+{% if dashboard_role == "superadmin" %}
+
+<div
+  class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4"
+>
+  <div>
+    <h3 class="fw-bold mb-3">
+      Superadmin Dashboard
+    </h3>
+
+    <h6 class="op-7 mb-2">
+      Manage all institutions, branches, users and academic operations
+    </h6>
+  </div>
+
+  <div class="ms-md-auto py-2 py-md-0">
+
+    <a
+      href="{{ url_for('main.all_institutions') }}"
+      class="btn btn-label-info btn-round me-2"
+    >
+      Manage Institutions
+    </a>
+
+    <a
+      href="{{ url_for('main.add_institution') }}"
+      class="btn btn-primary btn-round"
+    >
+      Add Institution
+    </a>
+
+  </div>
+</div>
+
+
+<div class="row">
+
+  {# TOTAL INSTITUTIONS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-primary bubble-shadow-small"
+            >
+              <i class="fas fa-school"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Institutions
+              </p>
+
+              <h4 class="card-title">
+                {{ total_institutions|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  {# ACTIVE INSTITUTIONS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-info bubble-shadow-small"
+            >
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Active Institutions
+              </p>
+
+              <h4 class="card-title">
+                {{ active_institutions|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  {# TOTAL BRANCHES #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-success bubble-shadow-small"
+            >
+              <i class="fas fa-code-branch"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Total Branches
+              </p>
+
+              <h4 class="card-title">
+                {{ total_branches|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  {# TOTAL USERS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-secondary bubble-shadow-small"
+            >
+              <i class="fas fa-users"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Total Users
+              </p>
+
+              <h4 class="card-title">
+                {{ total_users|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+{# ============================================================
+   SCHOOL / INSTITUTION ADMIN DASHBOARD
+   ============================================================ #}
+
+{% elif dashboard_role == "school_admin" %}
+
+<div
+  class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4"
+>
+  <div>
+
+    <h3 class="fw-bold mb-3">
+      Institution Dashboard
+    </h3>
+
+    <h6 class="op-7 mb-2">
+      Manage your institution, branches, staff, students and academics
+    </h6>
+
+  </div>
+
+  <div class="ms-md-auto py-2 py-md-0">
+
+    <a
+      href="{{ url_for('main.branches') }}"
+      class="btn btn-label-info btn-round me-2"
+    >
+      Manage Branches
+    </a>
+
+    <a
+      href="{{ url_for('main.add_user') }}"
+      class="btn btn-primary btn-round"
+    >
+      Add User
+    </a>
+
+  </div>
+</div>
+
+
+<div class="row">
+
+  {# BRANCHES #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-primary bubble-shadow-small"
+            >
+              <i class="fas fa-code-branch"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Branches
+              </p>
+
+              <h4 class="card-title">
+                {{ total_branches|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  {# TEACHERS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-info bubble-shadow-small"
+            >
+              <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Teachers
+              </p>
+
+              <h4 class="card-title">
+                {{ total_teachers|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  {# STUDENTS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-success bubble-shadow-small"
+            >
+              <i class="fas fa-user-graduate"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Students
+              </p>
+
+              <h4 class="card-title">
+                {{ total_students|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  {# EXAMS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-secondary bubble-shadow-small"
+            >
+              <i class="fas fa-file-alt"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Exams
+              </p>
+
+              <h4 class="card-title">
+                {{ total_exams|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+{% elif dashboard_role == "branch_admin" %}
+
+<div
+  class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4"
+>
+  <div>
+
+    <h3 class="fw-bold mb-3">
+      Branch Dashboard
+    </h3>
+
+    <h6 class="op-7 mb-2">
+      Manage your assigned branch, staff, students and academic activities
+    </h6>
+
+  </div>
+
+  <div class="ms-md-auto py-2 py-md-0">
+
+    <a
+      href="{{ url_for('main.all_students') }}"
+      class="btn btn-label-info btn-round me-2"
+    >
+      Manage Students
+    </a>
+
+    <a
+      href="{{ url_for('main.add_teacher') }}"
+      class="btn btn-primary btn-round"
+    >
+      Add New Teacher
+    </a>
+
+  </div>
+</div>
+
+
+<div class="row">
+
+  {# USERS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-primary bubble-shadow-small"
+            >
+              <i class="fas fa-users"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Branch Users
+              </p>
+
+              <h4 class="card-title">
+                {{ total_users|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  {# TEACHERS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-info bubble-shadow-small"
+            >
+              <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Teachers
+              </p>
+
+              <h4 class="card-title">
+                {{ total_teachers|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  {# STUDENTS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-success bubble-shadow-small"
+            >
+              <i class="fas fa-user-graduate"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Students
+              </p>
+
+              <h4 class="card-title">
+                {{ total_students|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  {# EXAMS #}
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+
+      <div class="card-body">
+
+        <div class="row align-items-center">
+
+          <div class="col-icon">
+            <div
+              class="icon-big text-center icon-secondary bubble-shadow-small"
+            >
+              <i class="fas fa-file-alt"></i>
+            </div>
+          </div>
+
+          <div class="col col-stats ms-3 ms-sm-0">
+
+            <div class="numbers">
+
+              <p class="card-category">
+                Exams
+              </p>
+
+              <h4 class="card-title">
+                {{ total_exams|default(0) }}
+              </h4>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+ <div class="row">
+           <!-- ============================================================
+     TOP 10 STUDENTS WITH MOST ABSENCES
+     ============================================================ -->
+
+<div class="col-md-4">
+
+  <div class="card card-round">
+
+    <div class="card-body">
+
+      <!-- ======================================================
+           CARD HEADER
+           ====================================================== -->
+
+      <div class="card-head-row card-tools-still-right">
+
+        <div class="card-title">
+          Most Absent Students
+        </div>
+
+        <div class="card-tools">
+
+          <div class="dropdown">
+
+            <button
+              class="btn btn-icon btn-clean me-0"
+              type="button"
+              id="absentStudentsDropdown"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <i class="fas fa-ellipsis-h"></i>
+            </button>
 
             <div
-              class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4"
+              class="dropdown-menu"
+              aria-labelledby="absentStudentsDropdown"
             >
-              <div>
-                <h3 class="fw-bold mb-3">Dashboard</h3>
-                <h6 class="op-7 mb-2">Free Bootstrap 5 Admin Dashboard</h6>
-              </div>
-              <div class="ms-md-auto py-2 py-md-0">
-                <a href="#" class="btn btn-label-info btn-round me-2">Manage</a>
-                <a href="#" class="btn btn-primary btn-round">Add Customer</a>
-              </div>
+
+              <a
+                class="dropdown-item"
+                href="{{ url_for('main.attendance_reports') }}"
+              >
+                Attendance Reports
+              </a>
+
+              <a
+                class="dropdown-item"
+                href="{{ url_for('main.attendance_reports') }}"
+              >
+                View Attendance
+              </a>
+
             </div>
-            <div class="row">
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-icon">
-                        <div
-                          class="icon-big text-center icon-primary bubble-shadow-small"
-                        >
-                          <i class="fas fa-users"></i>
-                        </div>
-                      </div>
-                      <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                          <p class="card-category">Visitors</p>
-                          <h4 class="card-title">1,294</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ======================================================
+           STUDENT LIST
+           ====================================================== -->
+
+      <div class="card-list py-4">
+
+        {% if top_absent_students %}
+
+          {% for student in top_absent_students %}
+
+            <div class="item-list">
+
+              <!-- ==============================================
+                   AVATAR
+                   ============================================== -->
+
+              <div class="avatar">
+
+                <span
+                  class="avatar-title rounded-circle border border-white bg-danger"
+                >
+                  {{ student.student_name[:1]|upper }}
+                </span>
+
               </div>
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-icon">
-                        <div
-                          class="icon-big text-center icon-info bubble-shadow-small"
-                        >
-                          <i class="fas fa-user-check"></i>
-                        </div>
-                      </div>
-                      <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                          <p class="card-category">Subscribers</p>
-                          <h4 class="card-title">1303</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+
+
+              <!-- ==============================================
+                   STUDENT INFORMATION
+                   ============================================== -->
+
+              <div class="info-user ms-3">
+
+                <div class="username">
+
+                  {{ student.student_name }}
+
                 </div>
-              </div>
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-icon">
-                        <div
-                          class="icon-big text-center icon-success bubble-shadow-small"
-                        >
-                          <i class="fas fa-luggage-cart"></i>
-                        </div>
-                      </div>
-                      <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                          <p class="card-category">Sales</p>
-                          <h4 class="card-title">$ 1,345</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+
+                <div class="status">
+
+                  {{ student.class_name }}
+
+                  ·
+
+                  {{ student.absent_count }}
+                  absent
+
                 </div>
+
               </div>
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-icon">
-                        <div
-                          class="icon-big text-center icon-secondary bubble-shadow-small"
-                        >
-                          <i class="far fa-check-circle"></i>
-                        </div>
-                      </div>
-                      <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                          <p class="card-category">Order</p>
-                          <h4 class="card-title">576</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+
+
+              <!-- ==============================================
+                   ABSENCE RATE
+                   ============================================== -->
+
+              <div class="ms-auto text-end">
+
+                <div
+                  class="fw-bold text-danger"
+                  style="font-size: 14px;"
+                >
+                  {{ student.absence_rate }}%
                 </div>
+
+                <div
+                  class="text-muted"
+                  style="font-size: 11px;"
+                >
+                  Absence Rate
+                </div>
+
               </div>
+
             </div>
-            <div class="row">
+
+          {% endfor %}
+
+        {% else %}
+
+          <!-- ==================================================
+               NO ABSENCE DATA
+               ================================================== -->
+
+          <div class="text-center py-5">
+
+            <div class="mb-3">
+
+              <i
+                class="fas fa-user-check"
+                style="
+                  font-size: 42px;
+                  opacity: .35;
+                "
+              ></i>
+
+            </div>
+
+            <h6 class="mb-1">
+              No Absence Records
+            </h6>
+
+            <p class="text-muted mb-0">
+              No student absence records are available.
+            </p>
+
+          </div>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+            <div class="col-md-8">
+
+
+<div class="card card-round">
+
+    <!-- =====================================================
+         CARD HEADER
+    ====================================================== -->
+
+    <div class="card-header">
+
+        <div class="card-head-row card-tools-still-right">
+
+            <div>
+
+                <div class="card-title">
+                    Latest Exam - Top 10 Students
+                </div>
+
+                {% if latest_exam %}
+
+                    <div class="text-muted small mt-1">
+
+                        <i class="fas fa-file-alt me-1"></i>
+
+                        Latest Exam:
+                        <strong>
+                            {{ latest_exam.code or latest_exam.name or ('Exam #' ~ latest_exam.id) }}
+                        </strong>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="text-muted small mt-1">
+                        No exam results available
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- =================================================
+                 CARD TOOLS
+            ================================================== -->
+
+            <div class="card-tools">
+
+                <div class="dropdown">
+
+                    <button
+                        class="btn btn-icon btn-clean me-0"
+                        type="button"
+                        id="latestExamDropdown"
+                        data-bs-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                    >
+
+                        <i class="fas fa-ellipsis-h"></i>
+
+                    </button>
+
+
+                    <div
+                        class="dropdown-menu dropdown-menu-end"
+                        aria-labelledby="latestExamDropdown"
+                    >
+
+                        <a
+                            class="dropdown-item"
+                            href="{{ url_for('main.exam_results') }}"
+                        >
+                            <i class="fas fa-chart-line me-2"></i>
+                            View Results
+                        </a>
+
+                        <a
+                            class="dropdown-item"
+                            href="{{ url_for('main.exam_results') }}"
+                        >
+                            <i class="fas fa-file-alt me-2"></i>
+                            View Exams
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CARD BODY
+    ====================================================== -->
+
+    <div class="card-body p-0">
+
+        {% if latest_exam_top_students %}
+
+            <div class="table-responsive">
+
+                <table class="table align-items-center mb-0">
+
+                    <thead class="thead-light">
+
+                        <tr>
+
+                            <th scope="col">
+                                Rank
+                            </th>
+
+                            <th scope="col">
+                                Student
+                            </th>
+
+                            <th scope="col">
+                                Branch
+                            </th>
+
+                            <th scope="col">
+                                Class
+                            </th>
+
+                            <th
+                                scope="col"
+                                class="text-end"
+                            >
+                                Average
+                            </th>
+
+                            <th
+                                scope="col"
+                                class="text-center"
+                            >
+                                Grade
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for student in latest_exam_top_students %}
+
+                            <tr>
+
+                                <!-- =================================
+                                     RANK
+                                ================================== -->
+
+                                <td>
+
+                                    {% if student.rank == 1 %}
+
+                                        <span
+                                            class="badge"
+                                            style="
+                                                background:#f5c542;
+                                                color:#212529;
+                                                min-width:36px;
+                                                font-size:13px;
+                                            "
+                                        >
+                                            <i class="fas fa-trophy"></i>
+                                            1
+                                        </span>
+
+                                    {% elif student.rank == 2 %}
+
+                                        <span
+                                            class="badge"
+                                            style="
+                                                background:#c0c0c0;
+                                                color:#212529;
+                                                min-width:36px;
+                                                font-size:13px;
+                                            "
+                                        >
+                                            <i class="fas fa-medal"></i>
+                                            2
+                                        </span>
+
+                                    {% elif student.rank == 3 %}
+
+                                        <span
+                                            class="badge"
+                                            style="
+                                                background:#cd7f32;
+                                                color:#fff;
+                                                min-width:36px;
+                                                font-size:13px;
+                                            "
+                                        >
+                                            <i class="fas fa-medal"></i>
+                                            3
+                                        </span>
+
+                                    {% else %}
+
+                                        <span
+                                            class="badge bg-light text-dark"
+                                            style="
+                                                min-width:36px;
+                                                font-size:13px;
+                                            "
+                                        >
+                                            {{ student.rank }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- =================================
+                                     STUDENT
+                                ================================== -->
+
+                                <td>
+
+                                    <div
+                                        class="d-flex align-items-center"
+                                    >
+
+                                        <div
+                                            class="avatar avatar-sm me-3"
+                                        >
+
+                                            <span
+                                                class="avatar-title rounded-circle"
+                                                style="
+                                                    background:#06245f;
+                                                    color:#fff;
+                                                    font-weight:600;
+                                                "
+                                            >
+                                                {{ student.student_name[:1]|upper }}
+                                            </span>
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <div
+                                                class="fw-bold"
+                                                style="
+                                                    color:#06245f;
+                                                    font-size:14px;
+                                                "
+                                            >
+                                                {{ student.student_name }}
+                                            </div>
+
+                                            <div
+                                                class="text-muted"
+                                                style="
+                                                    font-size:11px;
+                                                "
+                                            >
+                                                {{ student.percentage }}%
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     BRANCH
+                                ================================== -->
+
+                                <td>
+
+                                    <span
+                                        class="text-dark"
+                                        style="font-size:13px;"
+                                    >
+                                        {{ student.branch_name }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     CLASS
+                                ================================== -->
+
+                                <td>
+
+                                    <span
+                                        class="text-dark"
+                                        style="font-size:13px;"
+                                    >
+                                        {{ student.class_name }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     AVERAGE
+                                ================================== -->
+
+                                <td
+                                    class="text-end"
+                                >
+
+                                    <strong
+                                        style="
+                                            color:#06245f;
+                                            font-size:14px;
+                                        "
+                                    >
+                                        {{ "%.2f"|format(student.average) }}
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     GRADE
+                                ================================== -->
+
+                                <td
+                                    class="text-center"
+                                >
+
+                                    {% if student.grade == "A+" %}
+
+                                        <span
+                                            class="badge badge-success"
+                                        >
+                                            A+
+                                        </span>
+
+                                    {% elif student.grade == "A" %}
+
+                                        <span
+                                            class="badge badge-success"
+                                        >
+                                            A
+                                        </span>
+
+                                    {% elif student.grade == "B+" %}
+
+                                        <span
+                                            class="badge badge-primary"
+                                        >
+                                            B+
+                                        </span>
+
+                                    {% elif student.grade == "B" %}
+
+                                        <span
+                                            class="badge badge-primary"
+                                        >
+                                            B
+                                        </span>
+
+                                    {% elif student.grade == "C+" %}
+
+                                        <span
+                                            class="badge badge-info"
+                                        >
+                                            C+
+                                        </span>
+
+                                    {% elif student.grade == "C" %}
+
+                                        <span
+                                            class="badge badge-info"
+                                        >
+                                            C
+                                        </span>
+
+                                    {% elif student.grade == "D" %}
+
+                                        <span
+                                            class="badge badge-warning"
+                                        >
+                                            D
+                                        </span>
+
+                                    {% elif student.grade == "F" %}
+
+                                        <span
+                                            class="badge badge-danger"
+                                        >
+                                            F
+                                        </span>
+
+                                    {% else %}
+
+                                        <span
+                                            class="badge badge-secondary"
+                                        >
+                                            {{ student.grade }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <!-- =================================================
+                 NO RESULTS
+            ================================================== -->
+
+            <div class="text-center py-5">
+
+                <div
+                    class="mb-3"
+                    style="font-size:42px;"
+                >
+                    <i
+                        class="fas fa-chart-line"
+                        style="color:#06245f;"
+                    ></i>
+                </div>
+
+                <h6 class="fw-bold mb-1">
+                    No Exam Results
+                </h6>
+
+                <p
+                    class="text-muted mb-0"
+                    style="font-size:13px;"
+                >
+                    No completed student results are available
+                    for the latest exam.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+</div>
+
+            </div>
+
+
+
+
+{% else %}
+
+<div class="alert alert-danger mt-3">
+  <strong>Access Denied.</strong>
+  Your account does not have an admin dashboard role.
+</div>
+
+{% endif %}
+
+
+
+            <!-- <div class="row">
               <div class="col-md-8">
                 <div class="card card-round">
                   <div class="card-header">
@@ -182,8 +1365,9 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="row">
+            </div> -->
+
+            <!-- <div class="row">
               <div class="col-md-12">
                 <div class="card card-round">
                   <div class="card-header">
@@ -312,308 +1496,8 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col-md-4">
-                <div class="card card-round">
-                  <div class="card-body">
-                    <div class="card-head-row card-tools-still-right">
-                      <div class="card-title">New Customers</div>
-                      <div class="card-tools">
-                        <div class="dropdown">
-                          <button
-                            class="btn btn-icon btn-clean me-0"
-                            type="button"
-                            id="dropdownMenuButton"
-                            data-bs-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                          >
-                            <i class="fas fa-ellipsis-h"></i>
-                          </button>
-                          <div
-                            class="dropdown-menu"
-                            aria-labelledby="dropdownMenuButton"
-                          >
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <a class="dropdown-item" href="#"
-                              >Something else here</a
-                            >
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card-list py-4">
-                      <div class="item-list">
-                        <div class="avatar">
-                          <img
-                            src="assets/img/jm_denis.jpg"
-                            alt="..."
-                            class="avatar-img rounded-circle"
-                          />
-                        </div>
-                        <div class="info-user ms-3">
-                          <div class="username">Jimmy Denis</div>
-                          <div class="status">Graphic Designer</div>
-                        </div>
-                        <button class="btn btn-icon btn-link op-8 me-1">
-                          <i class="far fa-envelope"></i>
-                        </button>
-                        <button class="btn btn-icon btn-link btn-danger op-8">
-                          <i class="fas fa-ban"></i>
-                        </button>
-                      </div>
-                      <div class="item-list">
-                        <div class="avatar">
-                          <span
-                            class="avatar-title rounded-circle border border-white"
-                            >CF</span
-                          >
-                        </div>
-                        <div class="info-user ms-3">
-                          <div class="username">Chandra Felix</div>
-                          <div class="status">Sales Promotion</div>
-                        </div>
-                        <button class="btn btn-icon btn-link op-8 me-1">
-                          <i class="far fa-envelope"></i>
-                        </button>
-                        <button class="btn btn-icon btn-link btn-danger op-8">
-                          <i class="fas fa-ban"></i>
-                        </button>
-                      </div>
-                      <div class="item-list">
-                        <div class="avatar">
-                          <img
-                            src="assets/img/talha.jpg"
-                            alt="..."
-                            class="avatar-img rounded-circle"
-                          />
-                        </div>
-                        <div class="info-user ms-3">
-                          <div class="username">Talha</div>
-                          <div class="status">Front End Designer</div>
-                        </div>
-                        <button class="btn btn-icon btn-link op-8 me-1">
-                          <i class="far fa-envelope"></i>
-                        </button>
-                        <button class="btn btn-icon btn-link btn-danger op-8">
-                          <i class="fas fa-ban"></i>
-                        </button>
-                      </div>
-                      <div class="item-list">
-                        <div class="avatar">
-                          <img
-                            src="assets/img/chadengle.jpg"
-                            alt="..."
-                            class="avatar-img rounded-circle"
-                          />
-                        </div>
-                        <div class="info-user ms-3">
-                          <div class="username">Chad</div>
-                          <div class="status">CEO Zeleaf</div>
-                        </div>
-                        <button class="btn btn-icon btn-link op-8 me-1">
-                          <i class="far fa-envelope"></i>
-                        </button>
-                        <button class="btn btn-icon btn-link btn-danger op-8">
-                          <i class="fas fa-ban"></i>
-                        </button>
-                      </div>
-                      <div class="item-list">
-                        <div class="avatar">
-                          <span
-                            class="avatar-title rounded-circle border border-white bg-primary"
-                            >H</span
-                          >
-                        </div>
-                        <div class="info-user ms-3">
-                          <div class="username">Hizrian</div>
-                          <div class="status">Web Designer</div>
-                        </div>
-                        <button class="btn btn-icon btn-link op-8 me-1">
-                          <i class="far fa-envelope"></i>
-                        </button>
-                        <button class="btn btn-icon btn-link btn-danger op-8">
-                          <i class="fas fa-ban"></i>
-                        </button>
-                      </div>
-                      <div class="item-list">
-                        <div class="avatar">
-                          <span
-                            class="avatar-title rounded-circle border border-white bg-secondary"
-                            >F</span
-                          >
-                        </div>
-                        <div class="info-user ms-3">
-                          <div class="username">Farrah</div>
-                          <div class="status">Marketing</div>
-                        </div>
-                        <button class="btn btn-icon btn-link op-8 me-1">
-                          <i class="far fa-envelope"></i>
-                        </button>
-                        <button class="btn btn-icon btn-link btn-danger op-8">
-                          <i class="fas fa-ban"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-8">
-                <div class="card card-round">
-                  <div class="card-header">
-                    <div class="card-head-row card-tools-still-right">
-                      <div class="card-title">Transaction History</div>
-                      <div class="card-tools">
-                        <div class="dropdown">
-                          <button
-                            class="btn btn-icon btn-clean me-0"
-                            type="button"
-                            id="dropdownMenuButton"
-                            data-bs-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                          >
-                            <i class="fas fa-ellipsis-h"></i>
-                          </button>
-                          <div
-                            class="dropdown-menu"
-                            aria-labelledby="dropdownMenuButton"
-                          >
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <a class="dropdown-item" href="#"
-                              >Something else here</a
-                            >
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card-body p-0">
-                    <div class="table-responsive">
-                      <!-- Projects table -->
-                      <table class="table align-items-center mb-0">
-                        <thead class="thead-light">
-                          <tr>
-                            <th scope="col">Payment Number</th>
-                            <th scope="col" class="text-end">Date & Time</th>
-                            <th scope="col" class="text-end">Amount</th>
-                            <th scope="col" class="text-end">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <th scope="row">
-                              <button
-                                class="btn btn-icon btn-round btn-success btn-sm me-2"
-                              >
-                                <i class="fa fa-check"></i>
-                              </button>
-                              Payment from #10231
-                            </th>
-                            <td class="text-end">Mar 19, 2020, 2.45pm</td>
-                            <td class="text-end">$250.00</td>
-                            <td class="text-end">
-                              <span class="badge badge-success">Completed</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <th scope="row">
-                              <button
-                                class="btn btn-icon btn-round btn-success btn-sm me-2"
-                              >
-                                <i class="fa fa-check"></i>
-                              </button>
-                              Payment from #10231
-                            </th>
-                            <td class="text-end">Mar 19, 2020, 2.45pm</td>
-                            <td class="text-end">$250.00</td>
-                            <td class="text-end">
-                              <span class="badge badge-success">Completed</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <th scope="row">
-                              <button
-                                class="btn btn-icon btn-round btn-success btn-sm me-2"
-                              >
-                                <i class="fa fa-check"></i>
-                              </button>
-                              Payment from #10231
-                            </th>
-                            <td class="text-end">Mar 19, 2020, 2.45pm</td>
-                            <td class="text-end">$250.00</td>
-                            <td class="text-end">
-                              <span class="badge badge-success">Completed</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <th scope="row">
-                              <button
-                                class="btn btn-icon btn-round btn-success btn-sm me-2"
-                              >
-                                <i class="fa fa-check"></i>
-                              </button>
-                              Payment from #10231
-                            </th>
-                            <td class="text-end">Mar 19, 2020, 2.45pm</td>
-                            <td class="text-end">$250.00</td>
-                            <td class="text-end">
-                              <span class="badge badge-success">Completed</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <th scope="row">
-                              <button
-                                class="btn btn-icon btn-round btn-success btn-sm me-2"
-                              >
-                                <i class="fa fa-check"></i>
-                              </button>
-                              Payment from #10231
-                            </th>
-                            <td class="text-end">Mar 19, 2020, 2.45pm</td>
-                            <td class="text-end">$250.00</td>
-                            <td class="text-end">
-                              <span class="badge badge-success">Completed</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <th scope="row">
-                              <button
-                                class="btn btn-icon btn-round btn-success btn-sm me-2"
-                              >
-                                <i class="fa fa-check"></i>
-                              </button>
-                              Payment from #10231
-                            </th>
-                            <td class="text-end">Mar 19, 2020, 2.45pm</td>
-                            <td class="text-end">$250.00</td>
-                            <td class="text-end">
-                              <span class="badge badge-success">Completed</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <th scope="row">
-                              <button
-                                class="btn btn-icon btn-round btn-success btn-sm me-2"
-                              >
-                                <i class="fa fa-check"></i>
-                              </button>
-                              Payment from #10231
-                            </th>
-                            <td class="text-end">Mar 19, 2020, 2.45pm</td>
-                            <td class="text-end">$250.00</td>
-                            <td class="text-end">
-                              <span class="badge badge-success">Completed</span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            </div> -->
+
+           
+          
       

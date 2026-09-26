@@ -1,27 +1,59 @@
-  <footer class="footer">
-          <div class="container-fluid d-flex justify-content-between">
-            <nav class="pull-left">
-              <ul class="nav">
-                <li class="nav-item">
-                  <a class="nav-link" href="http://www.themekita.com">
-                    ThemeKita
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#"> Help </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#"> Licenses </a>
-                </li>
-              </ul>
-            </nav>
-            <div class="copyright">
-              2024, made with <i class="fa fa-heart heart text-danger"></i> by
-              <a href="http://www.themekita.com">ThemeKita</a>
-            </div>
-            <div>
-              Distributed by
-              <a target="_blank" href="https://themewagon.com/">ThemeWagon</a>.
-            </div>
-          </div>
-        </footer>
+<!-- ============================================================
+     DYNAMIC SOOYAAL FOOTER
+     ============================================================ -->
+
+<footer class="footer">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+
+    <!-- LEFT -->
+    <nav class="pull-left">
+      <ul class="nav">
+
+        <li class="nav-item">
+          <span class="nav-link">
+            {{ institution_name }}
+          </span>
+        </li>
+
+        {% if branch_name %}
+        <li class="nav-item">
+          <span class="nav-link">
+            {{ branch_name }}
+          </span>
+        </li>
+        {% endif %}
+
+      </ul>
+    </nav>
+
+
+    <!-- CENTER -->
+    <div class="copyright text-center">
+
+      © {{ current_year or 2026 }}
+
+      <span class="mx-1">•</span>
+
+      <strong>
+        {{ institution_name }}
+      </strong>
+
+      {% if branch_name %}
+        <span class="mx-1">•</span>
+        {{ branch_name }}
+      {% endif %}
+
+    </div>
+
+
+    <!-- RIGHT -->
+    <div class="text-end">
+
+      <span>
+        Education Management System
+      </span>
+
+    </div>
+
+  </div>
+</footer>

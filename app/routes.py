@@ -6327,40 +6327,6 @@ def teacher_attendance_class_subjects(class_id):
 # AJAX:
 # GET STUDENTS FOR ATTENDANCE
 # ============================================================
-#
-# URL:
-#     /teacher/attendance/students
-#
-# PURPOSE:
-#     Load students valid for the selected:
-#         institution
-#         branch
-#         teacher
-#         class
-#         teacher subject
-#         section
-#         academic year
-#         program
-#
-# IMPORTANT RULES
-# ------------------------------------------------------------
-# 1. Teacher can only access own assignments.
-# 2. Assignment must belong to same institution + branch.
-# 3. Assignment must be active.
-# 4. Assignment must have a subject.
-# 5. Section-specific assignment has priority.
-# 6. Section-specific assignment MUST use its own section.
-# 7. Class-wide assignment can be used with a selected section.
-# 8. Students come ONLY from active enrollments.
-# 9. Enrollment must match institution + branch + class +
-#    academic year.
-# 10. Program comes from assignment first, then subject.
-# 11. Duplicate students/enrollments are prevented.
-# 12. Completed/locked attendance cannot load students.
-# 13. Open attendance can load students.
-# 14. Cancelled attendance is ignored.
-# 15. Attendance date is ALWAYS TODAY.
-# ============================================================
 
 @bp.route(
     "/teacher/attendance/students",
@@ -8729,28 +8695,6 @@ def teacher_enter_marks(exam_subject_id):
 
 # ============================================================
 # GET STUDENT EXAM SUBJECTS
-#
-# IMPORTANT
-# ------------------------------------------------------------
-# A student must ONLY receive ExamSubjects matching:
-#
-#   Institution
-#   Branch
-#   Program
-#   Class
-#   Section
-#
-# RULES
-# ------------------------------------------------------------
-# 1. KD21 student MUST NOT receive KD20 ExamSubjects.
-# 2. If student has a section:
-#       section-specific assignment has priority.
-# 3. If no section-specific assignment exists:
-#       class-level assignment is used.
-# 4. One subject is returned only ONCE.
-# 5. Existing ExamSubject rows are NEVER deleted.
-# 6. Duplicate ExamSubject rows are handled by selecting
-#    one canonical assignment.
 # ============================================================
 
 def get_student_exam_subjects(
@@ -10029,26 +9973,6 @@ def calculate_student_result(
 
 # ============================================================
 # CALCULATE EXAM RANKINGS
-#
-# RANKING LEVELS
-# ------------------------------------------------------------
-# 1. Institution
-# 2. Branch
-# 3. Program
-# 4. Class
-# 5. Section
-#
-# RULE
-# ------------------------------------------------------------
-# Same percentage + same GPA = SAME POSITION
-#
-# Example:
-#
-# 1st = 95%
-# 2nd = 90%
-# 2nd = 90%
-# 4th = 85%
-#
 # ============================================================
 
 def calculate_exam_rankings(
@@ -11495,16 +11419,1371 @@ def register():
     )
 
 
+# ============================================================
+# DASHBOARD
+# ============================================================
+# ROLES:
+#   1. superadmin
+#   2. school_admin  -> Institution Admin
+#   3. branch_admin  -> Branch Admin
+#
+# Dashboard template:
+#   backend/home/dashboard.html
+# ============================================================
+
 @bp.route("/dashboard")
 @login_required
 def dashboard():
 
+    # ========================================================
+    # ROLE
+    # ========================================================
+
+    role = getattr(current_user, "role", None)
+
+    # Enum -> value
+    if hasattr(role, "value"):
+        role = role.value
+
+    role = (
+        str(role).strip().lower()
+        if role
+        else ""
+    )
+    # ========================================================
+    # INSTITUTION / BRANCH CONTEXT
+    # ========================================================
+
+    institution = None
+    branch = None
+
+    if role == "school_admin":
+        if current_user.institution_id:
+            institution = Institution.query.get(
+                current_user.institution_id
+            )
+
+    elif role == "branch_admin":
+        if current_user.institution_id:
+            institution = Institution.query.get(
+                current_user.institution_id
+            )
+
+        if current_user.branch_id:
+            branch = Branch.query.get(
+                current_user.branch_id
+            )
+
+    elif role == "superadmin":
+        # Superadmin ma laha institution gaar ah.
+        # Haddii current_user uu leeyahay institution_id,
+        # isticmaal context-kaas.
+        if getattr(current_user, "institution_id", None):
+            institution = Institution.query.get(
+                current_user.institution_id
+            )
+
+        if getattr(current_user, "branch_id", None):
+            branch = Branch.query.get(
+                current_user.branch_id
+            )
+
+    # ========================================================
+    # DYNAMIC NAMES
+    # ========================================================
+
+    institution_name = (
+        institution.name
+        if institution and getattr(institution, "name", None)
+        else "SOOYAAL Educational Institute"
+    )
+
+    branch_name = (
+        branch.name
+        if branch and getattr(branch, "name", None)
+        else None
+    )
+
+    # ========================================================
+    # DEFAULT DASHBOARD VALUES
+    # ========================================================
+
+    total_institutions = 0
+    active_institutions = 0
+    inactive_institutions = 0
+    suspended_institutions = 0
+
+    total_branches = 0
+    total_users = 0
+    total_teachers = 0
+    total_students = 0
+    total_classes = 0
+    total_subjects = 0
+    total_programs = 0
+    total_exams = 0
+
+    # ========================================================
+    # 1. SUPERADMIN
+    # ========================================================
+
+    if role == "superadmin":
+
+        # ----------------------------------------------------
+        # INSTITUTIONS
+        # ----------------------------------------------------
+
+        total_institutions = Institution.query.count()
+
+        active_institutions = Institution.query.filter(
+            Institution.status == "active"
+        ).count()
+
+        inactive_institutions = Institution.query.filter(
+            Institution.status == "inactive"
+        ).count()
+
+        suspended_institutions = Institution.query.filter(
+            Institution.status == "suspended"
+        ).count()
+
+        # ----------------------------------------------------
+        # BRANCHES
+        # ----------------------------------------------------
+
+        total_branches = Branch.query.count()
+
+        # ----------------------------------------------------
+        # USERS
+        # ----------------------------------------------------
+
+        total_users = User.query.count()
+
+        # ----------------------------------------------------
+        # TEACHERS
+        # ----------------------------------------------------
+
+        total_teachers = Teacher.query.count()
+
+        # ----------------------------------------------------
+        # STUDENTS
+        # ----------------------------------------------------
+
+        total_students = Student.query.count()
+
+        # ----------------------------------------------------
+        # CLASSES
+        # ----------------------------------------------------
+
+        total_classes = Class.query.count()
+
+        # ----------------------------------------------------
+        # SUBJECTS
+        # ----------------------------------------------------
+
+        total_subjects = Subject.query.count()
+
+        # ----------------------------------------------------
+        # PROGRAMS
+        # ----------------------------------------------------
+
+        total_programs = Program.query.count()
+
+        # ----------------------------------------------------
+        # EXAMS
+        # ----------------------------------------------------
+
+        total_exams = Exam.query.count()
+
+    # ========================================================
+    # 2. INSTITUTION ADMIN
+    # ========================================================
+    # Role:
+    # school_admin
+    # ========================================================
+
+    elif role == "school_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        # ----------------------------------------------------
+        # SECURITY
+        # ----------------------------------------------------
+
+        if not institution_id:
+            abort(403)
+
+        # ----------------------------------------------------
+        # VERIFY INSTITUTION
+        # ----------------------------------------------------
+
+        institution = Institution.query.filter(
+            Institution.id == institution_id
+        ).first()
+
+        if not institution:
+            abort(403)
+
+        # ----------------------------------------------------
+        # BRANCHES
+        # ----------------------------------------------------
+
+        total_branches = Branch.query.filter(
+            Branch.institution_id == institution_id
+        ).count()
+
+        # ----------------------------------------------------
+        # USERS
+        # ----------------------------------------------------
+
+        total_users = User.query.filter(
+            User.institution_id == institution_id
+        ).count()
+
+        # ----------------------------------------------------
+        # TEACHERS
+        # ----------------------------------------------------
+
+        total_teachers = Teacher.query.filter(
+            Teacher.institution_id == institution_id
+        ).count()
+
+        # ----------------------------------------------------
+        # STUDENTS
+        # ----------------------------------------------------
+
+        total_students = Student.query.filter(
+            Student.institution_id == institution_id
+        ).count()
+
+        # ----------------------------------------------------
+        # CLASSES
+        # ----------------------------------------------------
+
+        total_classes = Class.query.filter(
+            Class.institution_id == institution_id
+        ).count()
+
+        # ----------------------------------------------------
+        # SUBJECTS
+        # ----------------------------------------------------
+
+        total_subjects = Subject.query.filter(
+            Subject.institution_id == institution_id
+        ).count()
+
+        # ----------------------------------------------------
+        # PROGRAMS
+        # ----------------------------------------------------
+
+        total_programs = Program.query.filter(
+            Program.institution_id == institution_id
+        ).count()
+
+        # ----------------------------------------------------
+        # EXAMS
+        # ----------------------------------------------------
+
+        total_exams = Exam.query.filter(
+            Exam.institution_id == institution_id
+        ).count()
+
+    # ========================================================
+    # 3. BRANCH ADMIN
+    # ========================================================
+    # Role:
+    # branch_admin
+    # ========================================================
+
+    elif role == "branch_admin":
+
+        institution_id = getattr(
+            current_user,
+            "institution_id",
+            None
+        )
+
+        branch_id = getattr(
+            current_user,
+            "branch_id",
+            None
+        )
+
+        # ----------------------------------------------------
+        # SECURITY
+        # ----------------------------------------------------
+
+        if not institution_id or not branch_id:
+            abort(403)
+
+        # ----------------------------------------------------
+        # VERIFY BRANCH BELONGS TO INSTITUTION
+        # ----------------------------------------------------
+
+        branch = Branch.query.filter(
+            Branch.id == branch_id,
+            Branch.institution_id == institution_id
+        ).first()
+
+        if not branch:
+            abort(403)
+
+        # ----------------------------------------------------
+        # BRANCH
+        # ----------------------------------------------------
+
+        total_branches = 1
+
+        # ----------------------------------------------------
+        # USERS
+        # ----------------------------------------------------
+
+        total_users = User.query.filter(
+            User.institution_id == institution_id,
+            User.branch_id == branch_id
+        ).count()
+
+        # ----------------------------------------------------
+        # TEACHERS
+        # ----------------------------------------------------
+
+        total_teachers = Teacher.query.filter(
+            Teacher.institution_id == institution_id,
+            Teacher.branch_id == branch_id
+        ).count()
+
+        # ----------------------------------------------------
+        # STUDENTS
+        # ----------------------------------------------------
+
+        total_students = Student.query.filter(
+            Student.institution_id == institution_id,
+            Student.branch_id == branch_id
+        ).count()
+
+        # ----------------------------------------------------
+        # CLASSES
+        # ----------------------------------------------------
+
+        total_classes = Class.query.filter(
+            Class.institution_id == institution_id,
+            Class.branch_id == branch_id
+        ).count()
+
+        # ----------------------------------------------------
+        # SUBJECTS
+        # ----------------------------------------------------
+
+        total_subjects = Subject.query.filter(
+            Subject.institution_id == institution_id,
+            Subject.branch_id == branch_id
+        ).count()
+
+        # ----------------------------------------------------
+        # PROGRAMS
+        # ----------------------------------------------------
+        # Programs can be:
+        #   - branch-specific
+        #   - institution-wide/shared (branch_id = NULL)
+        # ----------------------------------------------------
+
+        total_programs = Program.query.filter(
+            Program.institution_id == institution_id,
+            db.or_(
+                Program.branch_id == branch_id,
+                Program.branch_id.is_(None)
+            )
+        ).count()
+
+        # ----------------------------------------------------
+        # EXAMS
+        # ----------------------------------------------------
+
+        total_exams = Exam.query.filter(
+            Exam.institution_id == institution_id,
+            Exam.branch_id == branch_id
+        ).count()
+
+    # ========================================================
+    # OTHER ROLES
+    # ========================================================
+
+    else:
+
+        abort(403)
+
+
+    # hi kulmiye
+    # ============================================================
+    # TOP 10 STUDENTS WITH MOST ABSENCES
+    # ============================================================
+    #
+    # RULES
+    # ------------------------------------------------------------
+    # SUPERADMIN:
+    #     - All institutions
+    #     - All branches
+    #
+    # SCHOOL ADMIN:
+    #     - Current institution only
+    #     - All branches inside that institution
+    #
+    # BRANCH ADMIN:
+    #     - Current institution only
+    #     - Current branch only
+    #
+    # RESULT:
+    #     - Top 10 students with the highest absence count
+    #     - Sorted from most absent -> least absent
+    #     - Shows:
+    #         student_name
+    #         class_name
+    #         section_name
+    #         absent_count
+    #         total_attendance
+    #         absence_rate
+    #         last_absent_date
+    # ============================================================
+
+    top_absent_students = []
+
+
+    # ============================================================
+    # ONLY ADMIN DASHBOARD ROLES
+    # ============================================================
+
+    if role in {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }:
+
+        # ========================================================
+        # BASE QUERY
+        # ========================================================
+        #
+        # IMPORTANT:
+        # AttendanceSession is JOINED ONLY ONCE.
+        #
+        # AttendanceRecord
+        #       ↓
+        # AttendanceSession
+        #       ↓
+        # Student
+        #
+        # This prevents:
+        #
+        # JOIN attendance_sessions ...
+        # JOIN attendance_sessions ...
+        #
+        # ========================================================
+
+        attendance_query = (
+            db.session.query(
+                AttendanceRecord
+            )
+            .join(
+                AttendanceSession,
+                AttendanceRecord.attendance_session_id
+                == AttendanceSession.id
+            )
+            .join(
+                Student,
+                AttendanceRecord.student_id
+                == Student.id
+            )
+        )
+
+
+        # ========================================================
+        # ROLE SCOPE
+        # ========================================================
+
+        # --------------------------------------------------------
+        # SUPERADMIN
+        # --------------------------------------------------------
+        #
+        # No institution / branch filter.
+        #
+        if role == "superadmin":
+
+            pass
+
+
+        # --------------------------------------------------------
+        # SCHOOL ADMIN
+        # --------------------------------------------------------
+        #
+        # Institution only.
+        #
+        elif role == "school_admin":
+
+            attendance_query = attendance_query.filter(
+                AttendanceSession.institution_id
+                == current_user.institution_id
+            )
+
+
+        # --------------------------------------------------------
+        # BRANCH ADMIN
+        # --------------------------------------------------------
+        #
+        # Institution + own branch.
+        #
+        elif role == "branch_admin":
+
+            attendance_query = attendance_query.filter(
+                AttendanceSession.institution_id
+                == current_user.institution_id,
+
+                AttendanceSession.branch_id
+                == current_user.branch_id
+            )
+
+
+        # ========================================================
+        # ABSENT COUNT
+        # ========================================================
+
+        absent_count_expression = func.sum(
+            case(
+                (
+                    AttendanceRecord.status == "absent",
+                    1
+                ),
+                else_=0
+            )
+        )
+
+
+        # ========================================================
+        # TOTAL ATTENDANCE RECORDS
+        # ========================================================
+
+        total_attendance_expression = func.count(
+            AttendanceRecord.id
+        )
+
+
+        # ========================================================
+        # LAST ABSENT DATE
+        # ========================================================
+
+        last_absent_date_expression = func.max(
+            case(
+                (
+                    AttendanceRecord.status == "absent",
+                    AttendanceSession.attendance_date
+                ),
+                else_=None
+            )
+        )
+
+
+        # ========================================================
+        # TOP 10 QUERY
+        # ========================================================
+
+        top_absent_rows = (
+            attendance_query
+
+            .with_entities(
+
+                # ------------------------------------------------
+                # STUDENT
+                # ------------------------------------------------
+
+                Student.id.label(
+                    "student_id"
+                ),
+
+                Student.full_name.label(
+                    "student_name"
+                ),
+
+                # ------------------------------------------------
+                # CLASS
+                # ------------------------------------------------
+                #
+                # AttendanceSession already contains class_id.
+                # We keep class_id here and resolve the actual
+                # class name below.
+                #
+                AttendanceSession.class_id.label(
+                    "class_id"
+                ),
+
+                # ------------------------------------------------
+                # SECTION
+                # ------------------------------------------------
+
+                AttendanceSession.section_id.label(
+                    "section_id"
+                ),
+
+                # ------------------------------------------------
+                # ABSENCE COUNT
+                # ------------------------------------------------
+
+                absent_count_expression.label(
+                    "absent_count"
+                ),
+
+                # ------------------------------------------------
+                # TOTAL ATTENDANCE
+                # ------------------------------------------------
+
+                total_attendance_expression.label(
+                    "total_attendance"
+                ),
+
+                # ------------------------------------------------
+                # LAST ABSENT DATE
+                # ------------------------------------------------
+
+                last_absent_date_expression.label(
+                    "last_absent_date"
+                ),
+            )
+
+            # ----------------------------------------------------
+            # GROUP
+            # ----------------------------------------------------
+
+            .group_by(
+                Student.id,
+                Student.full_name,
+                AttendanceSession.class_id,
+                AttendanceSession.section_id,
+            )
+
+            # ----------------------------------------------------
+            # ONLY STUDENTS WHO HAVE ABSENCES
+            # ----------------------------------------------------
+
+            .having(
+                absent_count_expression > 0
+            )
+
+            # ----------------------------------------------------
+            # SORT
+            # ----------------------------------------------------
+            #
+            # Most absent first.
+            #
+            .order_by(
+                absent_count_expression.desc(),
+
+                last_absent_date_expression.desc(),
+
+                Student.full_name.asc()
+            )
+
+            # ----------------------------------------------------
+            # TOP 10
+            # ----------------------------------------------------
+
+            .limit(10)
+
+            .all()
+        )
+
+
+        # ========================================================
+        # BUILD DASHBOARD DATA
+        # ========================================================
+
+        for row in top_absent_rows:
+
+            # ====================================================
+            # TOTAL ATTENDANCE
+            # ====================================================
+
+            total_count = int(
+                row.total_attendance or 0
+            )
+
+
+            # ====================================================
+            # ABSENT COUNT
+            # ====================================================
+
+            absent_count_value = int(
+                row.absent_count or 0
+            )
+
+
+            # ====================================================
+            # ABSENCE RATE
+            # ====================================================
+            #
+            # Formula:
+            #
+            # absent / total attendance × 100
+            #
+            # Example:
+            #
+            # 5 absent / 50 attendance = 10%
+            #
+            # ====================================================
+
+            if total_count > 0:
+
+                absence_rate = (
+                    absent_count_value
+                    / total_count
+                ) * 100
+
+            else:
+
+                absence_rate = 0
+
+
+            # ====================================================
+            # DEFAULT CLASS / SECTION
+            # ====================================================
+
+            class_name = "—"
+
+            section_name = "—"
+
+
+            # ====================================================
+            # GET CLASS
+            # ====================================================
+
+            if row.class_id:
+
+                class_obj = (
+                    db.session.get(
+                        Class,
+                        row.class_id
+                    )
+                )
+
+                if class_obj:
+
+                    class_name = (
+                        getattr(
+                            class_obj,
+                            "name",
+                            None
+                        )
+                        or getattr(
+                            class_obj,
+                            "class_name",
+                            None
+                        )
+                        or getattr(
+                            class_obj,
+                            "title",
+                            None
+                        )
+                        or "—"
+                    )
+
+
+            # ====================================================
+            # GET SECTION
+            # ====================================================
+
+            if row.section_id:
+
+                section_obj = (
+                    db.session.get(
+                        Section,
+                        row.section_id
+                    )
+                )
+
+                if section_obj:
+
+                    section_name = (
+                        section_obj.name
+                        or "—"
+                    )
+
+
+            # ====================================================
+            # APPEND
+            # ====================================================
+
+            top_absent_students.append(
+                {
+                    "student_id": row.student_id,
+
+                    "student_name": (
+                        row.student_name
+                        or "Unknown Student"
+                    ),
+
+                    "class_id": row.class_id,
+
+                    "class_name": class_name,
+
+                    "section_id": row.section_id,
+
+                    "section_name": section_name,
+
+                    "absent_count": (
+                        absent_count_value
+                    ),
+
+                    "total_attendance": (
+                        total_count
+                    ),
+
+                    "absence_rate": round(
+                        absence_rate,
+                        1
+                    ),
+
+                    "last_absent_date": (
+                        row.last_absent_date
+                    ),
+                }
+            )
+        
+    #== tag
+
+    #resulting also
+    # ============================================================
+    # LATEST EXAM - TOP 10 STUDENTS
+    # ============================================================
+    #
+    # RULES
+    # ------------------------------------------------------------
+    # SUPERADMIN:
+    #     Latest exam from all institutions / branches
+    #
+    # SCHOOL ADMIN:
+    #     Latest exam from current institution
+    #
+    # BRANCH ADMIN:
+    #     Latest exam from current branch
+    #
+    # RESULT:
+    #     Top 10 students from the latest exam
+    #
+    # SHOW:
+    #     Student Name
+    #     Branch
+    #     Class
+    #     Overall Average
+    #     Grade
+    #     Rank
+    # ============================================================
+
+    latest_exam = None
+    latest_exam_top_students = []
+
+
+    # ============================================================
+    # ADMIN ROLES ONLY
+    # ============================================================
+
+    if role in {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }:
+
+        # ========================================================
+        # FIND LATEST EXAM
+        # ========================================================
+
+        latest_exam_query = (
+            Exam.query
+        )
+
+
+        # ========================================================
+        # SUPERADMIN
+        # ========================================================
+
+        if role == "superadmin":
+
+            latest_exam = (
+                latest_exam_query
+                .order_by(
+                    Exam.created_at.desc(),
+                    Exam.id.desc()
+                )
+                .first()
+            )
+
+
+        # ========================================================
+        # SCHOOL ADMIN
+        # ========================================================
+
+        elif role == "school_admin":
+
+            latest_exam = (
+                latest_exam_query
+                .filter(
+                    Exam.institution_id
+                    == current_user.institution_id
+                )
+                .order_by(
+                    Exam.created_at.desc(),
+                    Exam.id.desc()
+                )
+                .first()
+            )
+
+
+        # ========================================================
+        # BRANCH ADMIN
+        # ========================================================
+
+        elif role == "branch_admin":
+
+            latest_exam = (
+                latest_exam_query
+                .filter(
+                    Exam.institution_id
+                    == current_user.institution_id,
+
+                    Exam.branch_id
+                    == current_user.branch_id
+                )
+                .order_by(
+                    Exam.created_at.desc(),
+                    Exam.id.desc()
+                )
+                .first()
+            )
+
+
+        # ========================================================
+        # IF LATEST EXAM EXISTS
+        # ========================================================
+
+        if latest_exam:
+
+            # ====================================================
+            # GET STUDENT RESULTS FOR THIS EXAM
+            # ====================================================
+
+            result_query = (
+                StudentResult.query
+                .filter(
+                    StudentResult.exam_id
+                    == latest_exam.id
+                )
+            )
+
+
+            # ====================================================
+            # ROLE SCOPE
+            # ====================================================
+
+            # ----------------------------------------------------
+            # SUPERADMIN
+            # ----------------------------------------------------
+
+            if role == "superadmin":
+
+                pass
+
+
+            # ----------------------------------------------------
+            # SCHOOL ADMIN
+            # ----------------------------------------------------
+
+            elif role == "school_admin":
+
+                result_query = result_query.filter(
+                    StudentResult.institution_id
+                    == current_user.institution_id
+                )
+
+
+            # ----------------------------------------------------
+            # BRANCH ADMIN
+            # ----------------------------------------------------
+
+            elif role == "branch_admin":
+
+                result_query = result_query.filter(
+                    StudentResult.institution_id
+                    == current_user.institution_id,
+
+                    StudentResult.branch_id
+                    == current_user.branch_id
+                )
+
+
+            # ====================================================
+            # GET ALL RESULTS
+            # ====================================================
+            #
+            # We sort by percentage first.
+            #
+            # Highest percentage = Rank 1
+            #
+            # ====================================================
+
+            result_rows = (
+                result_query
+                .join(
+                    Student,
+                    StudentResult.student_id
+                    == Student.id
+                )
+                .order_by(
+                    StudentResult.percentage.desc(),
+
+                    StudentResult.average.desc(),
+
+                    Student.full_name.asc()
+                )
+                .limit(10)
+                .all()
+            )
+
+
+            # ====================================================
+            # BUILD TOP 10
+            # ====================================================
+
+            for index, result in enumerate(
+                result_rows,
+                start=1
+            ):
+
+                # =================================================
+                # STUDENT
+                # =================================================
+
+                student_name = (
+                    result.student.full_name
+                    if result.student
+                    else "Unknown Student"
+                )
+
+
+                # =================================================
+                # BRANCH
+                # =================================================
+
+                branch_name = "—"
+
+                if result.branch:
+
+                    branch_name = (
+                        getattr(
+                            result.branch,
+                            "name",
+                            None
+                        )
+                        or getattr(
+                            result.branch,
+                            "branch_name",
+                            None
+                        )
+                        or "—"
+                    )
+
+
+                # =================================================
+                # CLASS
+                # =================================================
+
+                class_name = "—"
+
+                if result.class_:
+
+                    class_name = (
+                        getattr(
+                            result.class_,
+                            "name",
+                            None
+                        )
+                        or getattr(
+                            result.class_,
+                            "class_name",
+                            None
+                        )
+                        or getattr(
+                            result.class_,
+                            "title",
+                            None
+                        )
+                        or "—"
+                    )
+
+
+                # =================================================
+                # AVERAGE
+                # =================================================
+
+                average_value = (
+                    float(result.average or 0)
+                )
+
+
+                # =================================================
+                # PERCENTAGE
+                # =================================================
+
+                percentage_value = (
+                    float(result.percentage or 0)
+                )
+
+
+                # =================================================
+                # GRADE
+                # =================================================
+
+                grade_value = (
+                    result.grade
+                    or "—"
+                )
+
+
+                # =================================================
+                # RANK
+                # =================================================
+
+                rank_value = index
+
+
+                # =================================================
+                # POSITION VALUE
+                # =================================================
+                #
+                # Keep the stored position as extra information.
+                #
+                # For branch admin:
+                #     branch_position
+                #
+                # For school admin:
+                #     institution_position
+                #
+                # For superadmin:
+                #     institution_position
+                #
+                # But dashboard rank remains calculated from the
+                # currently visible result set.
+                #
+                # =================================================
+
+                stored_position = None
+
+                if role == "branch_admin":
+
+                    stored_position = (
+                        result.branch_position
+                    )
+
+                else:
+
+                    stored_position = (
+                        result.institution_position
+                    )
+
+
+                # =================================================
+                # APPEND
+                # =================================================
+
+                latest_exam_top_students.append(
+                    {
+                        "student_id": result.student_id,
+
+                        "student_name": student_name,
+
+                        "branch_name": branch_name,
+
+                        "class_name": class_name,
+
+                        "average": round(
+                            average_value,
+                            2
+                        ),
+
+                        "percentage": round(
+                            percentage_value,
+                            2
+                        ),
+
+                        "grade": grade_value,
+
+                        "rank": rank_value,
+
+                        "stored_position": stored_position,
+
+                        "result_status": (
+                            result.result_status
+                        ),
+
+                        "result_id": result.id,
+                    }
+                )
+
+        
+
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
     return render_template(
         "backend/home/dashboard.html",
-        user=current_user
+
+        # Current user
+        user=current_user,
+
+        # Current role
+        role=role,
+        #here
+        latest_exam=latest_exam,
+        latest_exam_top_students=latest_exam_top_students,
+
+        # Current scope
+        institution_id=getattr(
+            current_user,
+            "institution_id",
+            None
+        ),
+
+        branch_id=getattr(
+            current_user,
+            "branch_id",
+            None
+        ),
+
+        # ----------------------------------------------------
+        # SUPERADMIN
+        # ----------------------------------------------------
+
+        total_institutions=total_institutions,
+        active_institutions=active_institutions,
+        inactive_institutions=inactive_institutions,
+        suspended_institutions=suspended_institutions,
+
+        # ----------------------------------------------------
+        # ALL ROLES
+        # ----------------------------------------------------
+
+        total_branches=total_branches,
+        total_users=total_users,
+        total_teachers=total_teachers,
+        total_students=total_students,
+        total_classes=total_classes,
+        total_subjects=total_subjects,
+        total_programs=total_programs,
+        total_exams=total_exams,
+
+        # ========================================================
+        # ATTENDANCE DASHBOARD
+        # ========================================================
+
+        top_absent_students=top_absent_students,
+
+         institution=institution,
+        branch=branch,
+
+        institution_name=institution_name,
+        branch_name=branch_name,
+
     )
 
 
+# ============================================================
+# GLOBAL TEMPLATE CONTEXT
+# ============================================================
+
+@bp.app_context_processor
+def inject_global_template_data():
+
+    role = getattr(current_user, "role", None)
+
+    if hasattr(role, "value"):
+        role = role.value
+
+    role = (
+        str(role).strip().lower()
+        if role
+        else ""
+    )
+
+    institution = None
+    branch = None
+
+    # ========================================================
+    # INSTITUTION
+    # ========================================================
+
+    institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    if institution_id:
+        institution = Institution.query.get(
+            institution_id
+        )
+
+    # ========================================================
+    # BRANCH
+    # ========================================================
+
+    if branch_id:
+        branch = Branch.query.get(
+            branch_id
+        )
+
+    # ========================================================
+    # DYNAMIC INSTITUTION NAME
+    # ========================================================
+
+    institution_name = (
+        getattr(institution, "name", None)
+        if institution
+        else None
+    )
+
+    institution_name = (
+        institution_name
+        or "SOOYAAL Educational Institute"
+    )
+
+    # ========================================================
+    # DYNAMIC BRANCH NAME
+    # ========================================================
+
+    branch_name = (
+        getattr(branch, "name", None)
+        if branch
+        else None
+    )
+
+    return {
+        "current_year": datetime.now().year,
+
+        "current_role": role,
+
+        "current_institution": institution,
+
+        "current_branch": branch,
+
+        "institution_name": institution_name,
+
+        "branch_name": branch_name,
+    }
 
 # ============================================================
 # PROFILE PHOTO VALIDATION
@@ -17594,20 +18873,6 @@ def user_heartbeat():
 # ============================================================
 # 2. ALL USERS ONLINE STATUS
 # ============================================================
-# ============================================================
-# ONLINE STATUS API
-# ============================================================
-# Supports:
-#   1. User
-#      - superadmin
-#      - school_admin
-#      - branch_admin
-#
-#   2. Teacher
-#      - separate teacher session
-#
-# Student is intentionally NOT included.
-# ============================================================
 
 @bp.route("/api/online-status", methods=["GET"])
 def online_status():
@@ -18821,42 +20086,58 @@ def all_institutions():
 # ============================================================
 # ADD INSTITUTION
 # ============================================================
+# ============================================================
+# ADD INSTITUTION
+# CLOUDINARY IMAGE UPLOAD
+# PostgreSQL / Neon
+# ============================================================
 
-@bp.route("/add-institution", methods=["GET", "POST"])
+@bp.route(
+    "/add-institution",
+    methods=["GET", "POST"]
+)
 @login_required
 def add_institution():
 
-    # --------------------------------------------------------
+    # ========================================================
     # SUPERADMIN ONLY
-    # --------------------------------------------------------
+    # ========================================================
+
     if not current_user.is_authenticated:
+
         flash(
             "Authentication required.",
             "danger"
         )
+
         return redirect(
             url_for("main.login")
         )
 
     if not current_user.is_superadmin():
+
         flash(
             "You do not have permission to create an institution.",
             "danger"
         )
+
         return redirect(
             url_for("main.dashboard")
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # POST
-    # --------------------------------------------------------
+    # ========================================================
+
     if request.method == "POST":
+
+        institution = None
 
         try:
 
-            # ------------------------------------------------
+            # =================================================
             # FORM DATA
-            # ------------------------------------------------
+            # =================================================
 
             name = request.form.get(
                 "name",
@@ -18873,6 +20154,16 @@ def add_institution():
                 ""
             ).strip()
 
+            tagline = request.form.get(
+                "tagline",
+                ""
+            ).strip()
+
+            description = request.form.get(
+                "description",
+                ""
+            ).strip()
+
             email = request.form.get(
                 "email",
                 ""
@@ -18880,6 +20171,11 @@ def add_institution():
 
             phone = request.form.get(
                 "phone",
+                ""
+            ).strip()
+
+            website = request.form.get(
+                "website",
                 ""
             ).strip()
 
@@ -18903,13 +20199,8 @@ def add_institution():
                 ""
             ).strip()
 
-            website = request.form.get(
-                "website",
-                ""
-            ).strip()
-
-            description = request.form.get(
-                "description",
+            academic_year = request.form.get(
+                "academic_year",
                 ""
             ).strip()
 
@@ -18918,9 +20209,9 @@ def add_institution():
                 "active"
             ).strip().lower()
 
-            # ------------------------------------------------
+            # =================================================
             # VALIDATION
-            # ------------------------------------------------
+            # =================================================
 
             if not name:
 
@@ -18930,12 +20221,13 @@ def add_institution():
                 )
 
                 return render_template(
-                    "backend/institutions/add_institution.html"
+                    "backend/pages/institutions/add_institution.html",
+                    user=current_user
                 )
 
-            # ------------------------------------------------
+            # =================================================
             # VALID STATUS
-            # ------------------------------------------------
+            # =================================================
 
             allowed_statuses = {
                 "active",
@@ -18947,15 +20239,27 @@ def add_institution():
 
                 status = "active"
 
-            # ------------------------------------------------
-            # DUPLICATE NAME
-            # ------------------------------------------------
+            # =================================================
+            # NORMALIZE CODE
+            # =================================================
 
-            existing_name = Institution.query.filter(
-                db.func.lower(
-                    Institution.name
-                ) == name.lower()
-            ).first()
+            if code:
+
+                code = code.upper()
+
+            # =================================================
+            # DUPLICATE NAME
+            # =================================================
+
+            existing_name = (
+                Institution.query
+                .filter(
+                    db.func.lower(
+                        Institution.name
+                    ) == name.lower()
+                )
+                .first()
+            )
 
             if existing_name:
 
@@ -18965,23 +20269,25 @@ def add_institution():
                 )
 
                 return render_template(
-                    "backend/institutions/add_institution.html"
+                    "backend/pages/institutions/add_institution.html",
+                    user=current_user
                 )
 
-            # ------------------------------------------------
+            # =================================================
             # DUPLICATE CODE
-            # ------------------------------------------------
+            # =================================================
 
-            if code and hasattr(
-                Institution,
-                "code"
-            ):
+            if code:
 
-                existing_code = Institution.query.filter(
-                    db.func.lower(
-                        Institution.code
-                    ) == code.lower()
-                ).first()
+                existing_code = (
+                    Institution.query
+                    .filter(
+                        db.func.lower(
+                            Institution.code
+                        ) == code.lower()
+                    )
+                    .first()
+                )
 
                 if existing_code:
 
@@ -18991,114 +20297,255 @@ def add_institution():
                     )
 
                     return render_template(
-                        "backend/institutions/add_institution.html",
-                         user=current_user
+                        "backend/pages/institutions/add_institution.html",
+                        user=current_user
                     )
 
-            # ------------------------------------------------
+            # =================================================
             # CREATE INSTITUTION
-            # ------------------------------------------------
+            # =================================================
 
             institution = Institution(
                 name=name
             )
 
-            # ------------------------------------------------
-            # OPTIONAL FIELDS
-            # ------------------------------------------------
+            # =================================================
+            # BASIC INFORMATION
+            # =================================================
 
-            if hasattr(
-                Institution,
-                "short_name"
+            institution.short_name = (
+                short_name or None
+            )
+
+            institution.code = (
+                code or None
+            )
+
+            institution.tagline = (
+                tagline or None
+            )
+
+            institution.description = (
+                description or None
+            )
+
+            # =================================================
+            # CONTACT INFORMATION
+            # =================================================
+
+            institution.email = (
+                email or None
+            )
+
+            institution.phone = (
+                phone or None
+            )
+
+            institution.website = (
+                website or None
+            )
+
+            # =================================================
+            # LOCATION
+            # =================================================
+
+            institution.country = (
+                country or None
+            )
+
+            institution.state = (
+                state or None
+            )
+
+            institution.city = (
+                city or None
+            )
+
+            institution.address = (
+                address or None
+            )
+
+            # =================================================
+            # ACADEMIC YEAR
+            # =================================================
+
+            institution.academic_year = (
+                academic_year or None
+            )
+
+            # =================================================
+            # STATUS
+            # =================================================
+
+            institution.status = status
+
+            # =================================================
+            # DEFAULT BRAND COLORS
+            # =================================================
+
+            institution.primary_color = (
+                "#06245f"
+            )
+
+            institution.secondary_color = (
+                "#32b73a"
+            )
+
+            institution.accent_color = (
+                "#33206f"
+            )
+
+            # =================================================
+            # SAVE FIRST
+            #
+            # We need the institution ID so Cloudinary can use:
+            #
+            # sooyaal/institutions/<institution_id>/
+            #
+            # =================================================
+
+            db.session.add(
+                institution
+            )
+
+            db.session.flush()
+
+            institution_id = institution.id
+
+            # =================================================
+            # CLOUDINARY FOLDER
+            # =================================================
+
+            cloudinary_folder = (
+                f"sooyaal/institutions/{institution_id}"
+            )
+
+            # =================================================
+            # CLOUDINARY UPLOAD HELPER
+            # =================================================
+
+            def upload_to_cloudinary(
+                file,
+                public_id=None,
+                resource_type="image"
             ):
-                institution.short_name = (
-                    short_name or None
+
+                if not file:
+
+                    return None
+
+                if not file.filename:
+
+                    return None
+
+                upload_options = {
+                    "folder": cloudinary_folder,
+                    "resource_type": resource_type,
+                    "use_filename": True,
+                    "unique_filename": True,
+                    "overwrite": False,
+                }
+
+                if public_id:
+
+                    upload_options["public_id"] = (
+                        public_id
+                    )
+
+                result = cloudinary.uploader.upload(
+                    file,
+                    **upload_options
                 )
 
-            if hasattr(
-                Institution,
-                "code"
-            ):
-                institution.code = (
-                    code or None
+                return result.get(
+                    "secure_url"
                 )
 
-            if hasattr(
-                Institution,
-                "email"
-            ):
-                institution.email = (
-                    email or None
+            # =================================================
+            # MAIN LOGO
+            # =================================================
+
+            main_logo_file = request.files.get(
+                "main_logo"
+            )
+
+            if main_logo_file and main_logo_file.filename:
+
+                main_logo_url = upload_to_cloudinary(
+                    main_logo_file,
+                    public_id="main_logo"
                 )
 
-            if hasattr(
-                Institution,
-                "phone"
-            ):
-                institution.phone = (
-                    phone or None
+                institution.main_logo = (
+                    main_logo_url
                 )
 
-            if hasattr(
-                Institution,
-                "country"
-            ):
-                institution.country = (
-                    country or None
+            # =================================================
+            # SUB LOGO
+            # =================================================
+
+            sub_logo_file = request.files.get(
+                "sub_logo"
+            )
+
+            if sub_logo_file and sub_logo_file.filename:
+
+                sub_logo_url = upload_to_cloudinary(
+                    sub_logo_file,
+                    public_id="sub_logo"
                 )
 
-            if hasattr(
-                Institution,
-                "state"
-            ):
-                institution.state = (
-                    state or None
+                institution.sub_logo = (
+                    sub_logo_url
                 )
 
-            if hasattr(
-                Institution,
-                "city"
-            ):
-                institution.city = (
-                    city or None
+            # =================================================
+            # SIGNATURE PHOTO
+            # =================================================
+
+            signature_file = request.files.get(
+                "signature_photo"
+            )
+
+            if signature_file and signature_file.filename:
+
+                signature_url = upload_to_cloudinary(
+                    signature_file,
+                    public_id="signature"
                 )
 
-            if hasattr(
-                Institution,
-                "address"
-            ):
-                institution.address = (
-                    address or None
+                institution.signature_photo = (
+                    signature_url
                 )
 
-            if hasattr(
-                Institution,
-                "website"
-            ):
-                institution.website = (
-                    website or None
+            # =================================================
+            # FAVICON
+            # =================================================
+
+            favicon_file = request.files.get(
+                "favicon"
+            )
+
+            if favicon_file and favicon_file.filename:
+
+                favicon_url = upload_to_cloudinary(
+                    favicon_file,
+                    public_id="favicon"
                 )
 
-            if hasattr(
-                Institution,
-                "description"
-            ):
-                institution.description = (
-                    description or None
+                institution.favicon = (
+                    favicon_url
                 )
 
-            if hasattr(
-                Institution,
-                "status"
-            ):
-                institution.status = status
+            # =================================================
+            # COMMIT
+            # =================================================
 
-            # ------------------------------------------------
-            # SAVE
-            # ------------------------------------------------
-
-            db.session.add(institution)
             db.session.commit()
+
+            # =================================================
+            # SUCCESS
+            # =================================================
 
             flash(
                 f"Institution '{name}' was created successfully.",
@@ -19111,15 +20558,33 @@ def add_institution():
                 )
             )
 
-        except IntegrityError:
+        # ====================================================
+        # INTEGRITY ERROR
+        # ====================================================
+
+        except IntegrityError as e:
 
             db.session.rollback()
+
+            print(
+                "ADD INSTITUTION INTEGRITY ERROR:",
+                e
+            )
 
             flash(
                 "Unable to create institution because "
                 "some information already exists.",
                 "danger"
             )
+
+            return render_template(
+                "backend/pages/institutions/add_institution.html",
+                user=current_user
+            )
+
+        # ====================================================
+        # CLOUDINARY ERROR
+        # ====================================================
 
         except Exception as e:
 
@@ -19132,16 +20597,23 @@ def add_institution():
 
             flash(
                 "An unexpected error occurred while creating "
-                "the institution.",
+                "the institution. Please check the uploaded "
+                "images and try again.",
                 "danger"
             )
 
-    # --------------------------------------------------------
+            return render_template(
+                "backend/pages/institutions/add_institution.html",
+                user=current_user
+            )
+
+    # ========================================================
     # GET
-    # --------------------------------------------------------
+    # ========================================================
 
     return render_template(
-        "backend/pages/institutions/add_institution.html"
+        "backend/pages/institutions/add_institution.html",
+        user=current_user
     )
 
 
@@ -19149,48 +20621,90 @@ def add_institution():
 # VIEW INSTITUTION
 # ============================================================
 
+# ============================================================
+# VIEW INSTITUTION
+# ============================================================
+# SUPERADMIN ONLY
+#
+# FEATURES
+# ------------------------------------------------------------
+# 1. View institution details
+# 2. View Cloudinary branding images
+# 3. Count branches
+# 4. Count users
+# 5. Count programs
+# 6. Count teachers
+# 7. Count students
+# 8. Count classes
+# 9. Count subjects
+# 10. Count exams
+# 11. Show institution status
+# 12. Show academic year
+# ============================================================
+
+
 @bp.route(
-    "/view-institution/<int:institution_id>"
+    "/view-institution/<int:institution_id>",
+    methods=["GET"]
 )
 @login_required
 def view_institution(institution_id):
 
-    # --------------------------------------------------------
-    # SUPERADMIN ONLY
-    # --------------------------------------------------------
+    # ========================================================
+    # AUTHENTICATION
+    # ========================================================
 
     if not current_user.is_authenticated:
+
         flash(
             "Authentication required.",
             "danger"
         )
+
         return redirect(
             url_for("main.login")
         )
 
+    # ========================================================
+    # SUPERADMIN ONLY
+    # ========================================================
+
     if not current_user.is_superadmin():
+
         flash(
             "You do not have permission to view this institution.",
             "danger"
         )
+
         return redirect(
             url_for("main.dashboard")
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # FIND INSTITUTION
-    # --------------------------------------------------------
+    # ========================================================
 
     institution = Institution.query.get_or_404(
         institution_id
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # RELATED COUNTS
-    # --------------------------------------------------------
+    # ========================================================
 
     branch_count = 0
     user_count = 0
+    program_count = 0
+    teacher_count = 0
+    student_count = 0
+    class_count = 0
+    section_count = 0
+    subject_count = 0
+    exam_count = 0
+
+    # ========================================================
+    # BRANCH COUNT
+    # ========================================================
 
     try:
 
@@ -19201,9 +20715,13 @@ def view_institution(institution_id):
     except Exception as e:
 
         print(
-            "BRANCH COUNT ERROR:",
+            "VIEW INSTITUTION - BRANCH COUNT ERROR:",
             e
         )
+
+    # ========================================================
+    # USER COUNT
+    # ========================================================
 
     try:
 
@@ -19214,26 +20732,186 @@ def view_institution(institution_id):
     except Exception as e:
 
         print(
-            "USER COUNT ERROR:",
+            "VIEW INSTITUTION - USER COUNT ERROR:",
             e
         )
 
-    # --------------------------------------------------------
+    # ========================================================
+    # PROGRAM COUNT
+    # ========================================================
+
+    try:
+
+        program_count = Program.query.filter(
+            Program.institution_id == institution.id
+        ).count()
+
+    except Exception as e:
+
+        print(
+            "VIEW INSTITUTION - PROGRAM COUNT ERROR:",
+            e
+        )
+
+    # ========================================================
+    # TEACHER COUNT
+    # ========================================================
+
+    try:
+
+        teacher_count = Teacher.query.filter(
+            Teacher.institution_id == institution.id
+        ).count()
+
+    except Exception as e:
+
+        print(
+            "VIEW INSTITUTION - TEACHER COUNT ERROR:",
+            e
+        )
+
+    # ========================================================
+    # STUDENT COUNT
+    # ========================================================
+
+    try:
+
+        student_count = Student.query.filter(
+            Student.institution_id == institution.id
+        ).count()
+
+    except Exception as e:
+
+        print(
+            "VIEW INSTITUTION - STUDENT COUNT ERROR:",
+            e
+        )
+
+    # ========================================================
+    # CLASS COUNT
+    # ========================================================
+
+    try:
+
+        class_count = Class.query.filter(
+            Class.institution_id == institution.id
+        ).count()
+
+    except Exception as e:
+
+        print(
+            "VIEW INSTITUTION - CLASS COUNT ERROR:",
+            e
+        )
+
+    # ========================================================
+    # SECTION COUNT
+    # ========================================================
+
+    try:
+
+        section_count = Section.query.filter(
+            Section.institution_id == institution.id
+        ).count()
+
+    except Exception as e:
+
+        print(
+            "VIEW INSTITUTION - SECTION COUNT ERROR:",
+            e
+        )
+
+    # ========================================================
+    # SUBJECT COUNT
+    # ========================================================
+
+    try:
+
+        subject_count = Subject.query.filter(
+            Subject.institution_id == institution.id
+        ).count()
+
+    except Exception as e:
+
+        print(
+            "VIEW INSTITUTION - SUBJECT COUNT ERROR:",
+            e
+        )
+
+    # ========================================================
+    # EXAM COUNT
+    # ========================================================
+
+    try:
+
+        exam_count = Exam.query.filter(
+            Exam.institution_id == institution.id
+        ).count()
+
+    except Exception as e:
+
+        print(
+            "VIEW INSTITUTION - EXAM COUNT ERROR:",
+            e
+        )
+
+    # ========================================================
     # RENDER
-    # --------------------------------------------------------
+    # ========================================================
 
     return render_template(
         "backend/pages/institutions/view_institution.html",
+
         institution=institution,
+
+        # ----------------------------------------------------
+        # COUNTS
+        # ----------------------------------------------------
+
         branch_count=branch_count,
         user_count=user_count,
-         user=current_user
+        program_count=program_count,
+        teacher_count=teacher_count,
+        student_count=student_count,
+        class_count=class_count,
+        section_count=section_count,
+        subject_count=subject_count,
+        exam_count=exam_count,
+
+        # ----------------------------------------------------
+        # CURRENT USER
+        # ----------------------------------------------------
+
+        user=current_user
     )
 
 
 # ============================================================
 # EDIT INSTITUTION
 # ============================================================
+# ============================================================
+# EDIT INSTITUTION
+# ============================================================
+# SUPERADMIN ONLY
+#
+# FEATURES
+# ------------------------------------------------------------
+# 1. Edit institution information
+# 2. Validate duplicate institution name
+# 3. Validate duplicate institution code
+# 4. Edit contact/location information
+# 5. Edit branding information
+# 6. Edit academic year
+# 7. Edit institution colors
+# 8. Upload main logo to Cloudinary
+# 9. Upload sub logo to Cloudinary
+# 10. Upload signature photo to Cloudinary
+# 11. Upload favicon to Cloudinary
+# 12. Keep existing image when no new image is uploaded
+# 13. Save Cloudinary secure_url into database
+# 14. Rollback database on errors
+# ============================================================
+
 
 @bp.route(
     "/edit-institution/<int:institution_id>",
@@ -19242,47 +20920,51 @@ def view_institution(institution_id):
 @login_required
 def edit_institution(institution_id):
 
-    # --------------------------------------------------------
+    # ========================================================
     # SUPERADMIN ONLY
-    # --------------------------------------------------------
+    # ========================================================
 
     if not current_user.is_authenticated:
+
         flash(
             "Authentication required.",
             "danger"
         )
+
         return redirect(
             url_for("main.login")
         )
 
     if not current_user.is_superadmin():
+
         flash(
             "You do not have permission to edit this institution.",
             "danger"
         )
+
         return redirect(
             url_for("main.dashboard")
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # FIND INSTITUTION
-    # --------------------------------------------------------
+    # ========================================================
 
     institution = Institution.query.get_or_404(
         institution_id
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # POST
-    # --------------------------------------------------------
+    # ========================================================
 
     if request.method == "POST":
 
         try:
 
-            # ------------------------------------------------
+            # =================================================
             # FORM DATA
-            # ------------------------------------------------
+            # =================================================
 
             name = request.form.get(
                 "name",
@@ -19299,6 +20981,16 @@ def edit_institution(institution_id):
                 ""
             ).strip()
 
+            tagline = request.form.get(
+                "tagline",
+                ""
+            ).strip()
+
+            description = request.form.get(
+                "description",
+                ""
+            ).strip()
+
             email = request.form.get(
                 "email",
                 ""
@@ -19306,6 +20998,11 @@ def edit_institution(institution_id):
 
             phone = request.form.get(
                 "phone",
+                ""
+            ).strip()
+
+            website = request.form.get(
+                "website",
                 ""
             ).strip()
 
@@ -19329,13 +21026,8 @@ def edit_institution(institution_id):
                 ""
             ).strip()
 
-            website = request.form.get(
-                "website",
-                ""
-            ).strip()
-
-            description = request.form.get(
-                "description",
+            academic_year = request.form.get(
+                "academic_year",
                 ""
             ).strip()
 
@@ -19344,9 +21036,28 @@ def edit_institution(institution_id):
                 "active"
             ).strip().lower()
 
-            # ------------------------------------------------
+            # =================================================
+            # COLORS
+            # =================================================
+
+            primary_color = request.form.get(
+                "primary_color",
+                ""
+            ).strip()
+
+            secondary_color = request.form.get(
+                "secondary_color",
+                ""
+            ).strip()
+
+            accent_color = request.form.get(
+                "accent_color",
+                ""
+            ).strip()
+
+            # =================================================
             # VALIDATION
-            # ------------------------------------------------
+            # =================================================
 
             if not name:
 
@@ -19356,13 +21067,34 @@ def edit_institution(institution_id):
                 )
 
                 return render_template(
-                    "backend/institutions/edit_institution.html",
-                    institution=institution
+                    "backend/pages/institutions/edit_institution.html",
+                    institution=institution,
+                    user=current_user
                 )
 
-            # ------------------------------------------------
+            # =================================================
+            # CODE IS REQUIRED
+            #
+            # Institution model:
+            # code = nullable=False, unique=True
+            # =================================================
+
+            if not code:
+
+                flash(
+                    "Institution code is required.",
+                    "danger"
+                )
+
+                return render_template(
+                    "backend/pages/institutions/edit_institution.html",
+                    institution=institution,
+                    user=current_user
+                )
+
+            # =================================================
             # VALID STATUS
-            # ------------------------------------------------
+            # =================================================
 
             allowed_statuses = {
                 "active",
@@ -19374,14 +21106,15 @@ def edit_institution(institution_id):
 
                 status = "active"
 
-            # ------------------------------------------------
+            # =================================================
             # DUPLICATE NAME
-            # ------------------------------------------------
+            # =================================================
 
             existing_name = Institution.query.filter(
                 db.func.lower(
                     Institution.name
                 ) == name.lower(),
+
                 Institution.id != institution.id
             ).first()
 
@@ -19393,142 +21126,216 @@ def edit_institution(institution_id):
                 )
 
                 return render_template(
-                    "backend/institutions/edit_institution.html",
-                    institution=institution
+                    "backend/pages/institutions/edit_institution.html",
+                    institution=institution,
+                    user=current_user
                 )
 
-            # ------------------------------------------------
+            # =================================================
             # DUPLICATE CODE
-            # ------------------------------------------------
+            # =================================================
 
-            if code and hasattr(
-                Institution,
-                "code"
-            ):
+            existing_code = Institution.query.filter(
+                db.func.lower(
+                    Institution.code
+                ) == code.lower(),
 
-                existing_code = Institution.query.filter(
-                    db.func.lower(
-                        Institution.code
-                    ) == code.lower(),
-                    Institution.id != institution.id
-                ).first()
+                Institution.id != institution.id
+            ).first()
 
-                if existing_code:
+            if existing_code:
 
-                    flash(
-                        "Another institution with this code already exists.",
-                        "danger"
-                    )
+                flash(
+                    "Another institution with this code already exists.",
+                    "danger"
+                )
 
-                    return render_template(
-                        "backend/institutions/edit_institution.html",
-                        institution=institution
-                    )
+                return render_template(
+                    "backend/pages/institutions/edit_institution.html",
+                    institution=institution,
+                    user=current_user
+                )
 
-            # ------------------------------------------------
-            # UPDATE BASIC INFORMATION
-            # ------------------------------------------------
+            # =================================================
+            # BASIC INFORMATION
+            # =================================================
 
             institution.name = name
 
-            # ------------------------------------------------
-            # OPTIONAL FIELDS
-            # ------------------------------------------------
+            institution.short_name = (
+                short_name or None
+            )
 
-            if hasattr(
-                Institution,
-                "short_name"
-            ):
-                institution.short_name = (
-                    short_name or None
+            institution.code = code
+
+            institution.tagline = (
+                tagline or None
+            )
+
+            institution.description = (
+                description or None
+            )
+
+            # =================================================
+            # CONTACT INFORMATION
+            # =================================================
+
+            institution.email = (
+                email or None
+            )
+
+            institution.phone = (
+                phone or None
+            )
+
+            institution.website = (
+                website or None
+            )
+
+            # =================================================
+            # LOCATION
+            # =================================================
+
+            institution.country = (
+                country or None
+            )
+
+            institution.state = (
+                state or None
+            )
+
+            institution.city = (
+                city or None
+            )
+
+            institution.address = (
+                address or None
+            )
+
+            # =================================================
+            # ACADEMIC YEAR
+            # =================================================
+
+            institution.academic_year = (
+                academic_year or None
+            )
+
+            # =================================================
+            # STATUS
+            # =================================================
+
+            institution.status = status
+
+            # =================================================
+            # COLORS
+            # =================================================
+
+            institution.primary_color = (
+                primary_color or "#06245f"
+            )
+
+            institution.secondary_color = (
+                secondary_color or "#32b73a"
+            )
+
+            institution.accent_color = (
+                accent_color or "#33206f"
+            )
+
+            # =================================================
+            # CLOUDINARY
+            # =================================================
+            #
+            # Existing image remains unchanged if no new
+            # image is selected.
+            #
+            # request.files.get(...) returns FileStorage.
+            # =================================================
+
+            image_fields = {
+                "main_logo": "main_logo",
+                "sub_logo": "sub_logo",
+                "signature_photo": "signature_photo",
+                "favicon": "favicon"
+            }
+
+            # =================================================
+            # UPLOAD EACH IMAGE
+            # =================================================
+
+            for field_name, cloudinary_name in image_fields.items():
+
+                uploaded_file = request.files.get(
+                    field_name
                 )
 
-            if hasattr(
-                Institution,
-                "code"
-            ):
-                institution.code = (
-                    code or None
+                # ---------------------------------------------
+                # No new file
+                # ---------------------------------------------
+
+                if not uploaded_file:
+
+                    continue
+
+                # ---------------------------------------------
+                # Empty filename
+                # ---------------------------------------------
+
+                if not uploaded_file.filename:
+
+                    continue
+
+                # ---------------------------------------------
+                # CLOUDINARY UPLOAD
+                # ---------------------------------------------
+
+                upload_result = cloudinary.uploader.upload(
+                    uploaded_file,
+                    folder=(
+                        "sooyaal/institutions/"
+                        f"{institution.id}"
+                    ),
+                    resource_type="image"
                 )
 
-            if hasattr(
-                Institution,
-                "email"
-            ):
-                institution.email = (
-                    email or None
+                # ---------------------------------------------
+                # GET SECURE URL
+                # ---------------------------------------------
+
+                secure_url = upload_result.get(
+                    "secure_url"
                 )
 
-            if hasattr(
-                Institution,
-                "phone"
-            ):
-                institution.phone = (
-                    phone or None
+                if not secure_url:
+
+                    raise ValueError(
+                        f"Cloudinary did not return a secure URL "
+                        f"for {field_name}."
+                    )
+
+                # ---------------------------------------------
+                # SAVE URL
+                # ---------------------------------------------
+
+                setattr(
+                    institution,
+                    cloudinary_name,
+                    secure_url
                 )
 
-            if hasattr(
-                Institution,
-                "country"
-            ):
-                institution.country = (
-                    country or None
-                )
-
-            if hasattr(
-                Institution,
-                "state"
-            ):
-                institution.state = (
-                    state or None
-                )
-
-            if hasattr(
-                Institution,
-                "city"
-            ):
-                institution.city = (
-                    city or None
-                )
-
-            if hasattr(
-                Institution,
-                "address"
-            ):
-                institution.address = (
-                    address or None
-                )
-
-            if hasattr(
-                Institution,
-                "website"
-            ):
-                institution.website = (
-                    website or None
-                )
-
-            if hasattr(
-                Institution,
-                "description"
-            ):
-                institution.description = (
-                    description or None
-                )
-
-            if hasattr(
-                Institution,
-                "status"
-            ):
-                institution.status = status
-
-            # ------------------------------------------------
-            # SAVE
-            # ------------------------------------------------
+            # =================================================
+            # COMMIT
+            # =================================================
 
             db.session.commit()
 
+            # =================================================
+            # SUCCESS
+            # =================================================
+
             flash(
-                f"Institution '{institution.name}' was updated successfully.",
+                f"Institution '{institution.name}' "
+                "was updated successfully.",
                 "success"
             )
 
@@ -19537,6 +21344,10 @@ def edit_institution(institution_id):
                     "main.all_institutions"
                 )
             )
+
+        # ====================================================
+        # DATABASE INTEGRITY ERROR
+        # ====================================================
 
         except IntegrityError:
 
@@ -19547,6 +21358,10 @@ def edit_institution(institution_id):
                 "some information already exists.",
                 "danger"
             )
+
+        # ====================================================
+        # GENERAL ERROR
+        # ====================================================
 
         except Exception as e:
 
@@ -19563,16 +21378,15 @@ def edit_institution(institution_id):
                 "danger"
             )
 
-    # --------------------------------------------------------
+    # ========================================================
     # GET
-    # --------------------------------------------------------
+    # ========================================================
 
     return render_template(
         "backend/pages/institutions/edit_institution.html",
         institution=institution,
         user=current_user
     )
-
 
 # ============================================================
 # DELETE INSTITUTION
@@ -21344,9 +23158,9 @@ def edit_branch(branch_id):
 @login_required
 def delete_branch(branch_id):
 
-    # --------------------------------------------------------
-    # SUPERADMIN ONLY
-    # --------------------------------------------------------
+    # ========================================================
+    # AUTHENTICATION
+    # ========================================================
 
     if not current_user.is_authenticated:
 
@@ -21355,23 +23169,31 @@ def delete_branch(branch_id):
             "message": "Authentication required."
         }), 401
 
+    # ========================================================
+    # SUPERADMIN ONLY
+    # ========================================================
 
     if not current_user.is_superadmin():
 
         return jsonify({
             "success": False,
-            "message": "You do not have permission to delete branches."
+            "message": (
+                "You do not have permission "
+                "to delete branches."
+            )
         }), 403
 
-
-    # --------------------------------------------------------
+    # ========================================================
     # GET BRANCH
-    # --------------------------------------------------------
+    # ========================================================
 
-    branch = Branch.query.get(
-        branch_id
+    branch = (
+        Branch.query
+        .filter(
+            Branch.id == branch_id
+        )
+        .first()
     )
-
 
     if not branch:
 
@@ -21380,62 +23202,78 @@ def delete_branch(branch_id):
             "message": "Branch not found."
         }), 404
 
-
-    # --------------------------------------------------------
-    # SAVE NAME FOR RESPONSE
-    # --------------------------------------------------------
+    # ========================================================
+    # SAVE INFORMATION BEFORE DELETE
+    # ========================================================
 
     branch_name = branch.name
 
+    institution_id = branch.institution_id
 
-    # --------------------------------------------------------
+    # ========================================================
     # DELETE
-    # --------------------------------------------------------
+    #
+    # PostgreSQL ON DELETE CASCADE will remove all dependent
+    # branch-owned records.
+    # ========================================================
 
     try:
 
-        db.session.delete(
-            branch
-        )
+        db.session.delete(branch)
 
         db.session.commit()
 
+        # ====================================================
+        # SUCCESS
+        # ====================================================
 
         return jsonify({
             "success": True,
             "message": (
                 f"Branch '{branch_name}' "
-                "has been deleted successfully."
-            )
+                "and all related branch data "
+                "have been deleted successfully."
+            ),
+            "branch_id": branch_id,
+            "institution_id": institution_id,
         }), 200
 
+    # ========================================================
+    # FOREIGN KEY / INTEGRITY ERROR
+    # ========================================================
 
-    except IntegrityError:
+    except IntegrityError as e:
 
         db.session.rollback()
-
 
         return jsonify({
             "success": False,
             "message": (
-                "This branch cannot be deleted because "
-                "related records still depend on it."
-            )
+                "The branch could not be deleted because "
+                "one or more related database records "
+                "are not configured for cascade deletion."
+            ),
+            "error": str(e.orig)
+            if getattr(e, "orig", None)
+            else str(e),
         }), 409
 
+    # ========================================================
+    # UNEXPECTED ERROR
+    # ========================================================
 
     except Exception as e:
 
         db.session.rollback()
 
-
         return jsonify({
             "success": False,
             "message": (
-                f"Unable to delete branch: {str(e)}"
-            )
+                "Unable to delete branch. "
+                "All changes have been rolled back."
+            ),
+            "error": str(e),
         }), 500
-
 
 # ============================================================
 # ALL ACADEMIC YEARS
@@ -79025,83 +80863,6 @@ def student_report():
 
 # ============================================================
 # STUDENT ABSENT REPORT
-# ============================================================
-# ============================================================
-# STUDENT ABSENT REPORT
-#
-# ROUTE
-# ------------------------------------------------------------
-# GET /student-absent-report
-#
-# PURPOSE
-# ------------------------------------------------------------
-# Shows ONLY students who have ABSENT attendance records.
-#
-# ABSENT RATE
-# ------------------------------------------------------------
-#     Absent Rate =
-#     Absent Records / Total Attendance Records * 100
-#
-# IMPORTANT
-# ------------------------------------------------------------
-# ?status=present
-# ?status=late
-# ?status=excused
-#
-# will ALWAYS remain:
-#
-#     AttendanceRecord.status == "absent"
-#
-# ENDPOINT
-# ------------------------------------------------------------
-# main.student_absent_report
-# ============================================================
-
-# ============================================================
-# STUDENT ABSENT ATTENDANCE REPORT
-# ============================================================
-#
-# RULES
-# ------------------------------------------------------------
-# 1. superadmin:
-#       - Global access.
-#
-# 2. school_admin:
-#       - Institution scoped.
-#       - Can select branches inside own institution.
-#
-# 3. branch_admin:
-#       - Institution + own branch only.
-#       - Incoming branch_id is ignored/forced to own branch.
-#
-# 4. teacher:
-#       - Teacher scoped.
-#       - Only attendance sessions belonging to g.teacher.
-#       - If teacher has a branch, branch is forced.
-#
-# 5. Student must have at least ONE absent attendance record.
-#
-# 6. Once a student qualifies as absent:
-#       ALL attendance statuses are counted:
-#       present / absent / late / excused / sick / leave
-#
-# 7. Missing attendance records are NOT converted to zero.
-#
-# 8. Attendance Rate:
-#       (present + late) / total_attendance * 100
-#
-# 9. Absence Rate:
-#       absent / total_attendance * 100
-#
-# 10. Search:
-#       student name / admission number / roll number
-#
-# 11. Pagination:
-#       10 / 25 / 50 / 100
-#
-# 12. Date range:
-#       date_from / date_to
-#
 # ============================================================
 
 

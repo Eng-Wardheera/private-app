@@ -77,6 +77,7 @@
         background .18s ease,
         border-color .18s ease;
     box-sizing: border-box;
+    font-family: inherit;
 }
 
 .inst-btn:hover {
@@ -113,6 +114,7 @@
 
 .inst-btn-green:hover {
     background: #269b2e;
+    color: #ffffff;
 }
 
 .inst-btn-danger {
@@ -240,7 +242,11 @@
 
 .inst-filter-form {
     display: grid;
-    grid-template-columns: minmax(220px, 1.8fr) minmax(150px, .8fr) auto auto;
+    grid-template-columns:
+        minmax(220px, 1.8fr)
+        minmax(150px, .8fr)
+        auto
+        auto;
     gap: 11px;
     align-items: end;
 }
@@ -366,7 +372,7 @@
 
 .inst-table {
     width: 100%;
-    min-width: 1120px;
+    min-width: 1180px;
     border-collapse: collapse;
 }
 
@@ -406,7 +412,7 @@
 }
 
 .inst-name-cell {
-    min-width: 220px;
+    min-width: 250px;
 }
 
 .inst-name-main {
@@ -416,19 +422,21 @@
 }
 
 .inst-logo {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
     border-radius: 10px;
-    object-fit: cover;
+    object-fit: contain;
     border: 1px solid #e2e7ef;
     background: #f5f7fa;
+    padding: 3px;
+    box-sizing: border-box;
 }
 
 .inst-logo-fallback {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -454,11 +462,24 @@
     max-width: 280px;
 }
 
+.inst-short-name {
+    margin-top: 3px;
+    color: #657286;
+    font-size: 10px;
+    font-weight: 700;
+}
+
 .inst-code {
     margin-top: 4px;
     color: #8a95a6;
     font-size: 10px;
     font-weight: 600;
+}
+
+.inst-academic-year {
+    margin-top: 4px;
+    color: #68758a;
+    font-size: 10px;
 }
 
 .inst-text {
@@ -471,14 +492,53 @@
 
 .inst-location {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+    align-items: flex-start;
+    gap: 7px;
     color: #526074;
+    max-width: 220px;
 }
 
 .inst-location i {
     color: #8190a5;
+    margin-top: 2px;
+    flex: 0 0 auto;
+}
+
+.inst-location-text {
+    line-height: 1.45;
+}
+
+/* ============================================================
+   CONTACT
+   ============================================================ */
+
+.inst-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.inst-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #526074;
+    white-space: nowrap;
+}
+
+.inst-contact-item i {
+    width: 14px;
+    color: #8793a5;
+    text-align: center;
+}
+
+.inst-contact-item a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.inst-contact-item a:hover {
+    color: #06245f;
 }
 
 /* ============================================================
@@ -651,6 +711,7 @@
     margin: 7px 0 0;
     color: #8994a5;
     font-size: 12px;
+    line-height: 1.5;
 }
 
 /* ============================================================
@@ -717,6 +778,7 @@
    ============================================================ */
 
 @media (max-width: 1250px) {
+
     .inst-stats-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -731,6 +793,7 @@
 }
 
 @media (max-width: 900px) {
+
     .inst-stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -745,6 +808,7 @@
 }
 
 @media (max-width: 650px) {
+
     .institutions-header {
         align-items: flex-start;
     }
@@ -853,7 +917,7 @@
             </div>
 
             <div class="inst-stat-value">
-                {{ total_institutions|default(0) }}
+                {{ total_institutions|default(0, true) }}
             </div>
 
             <div class="inst-stat-label">
@@ -875,7 +939,7 @@
             </div>
 
             <div class="inst-stat-value">
-                {{ active_institutions|default(0) }}
+                {{ active_institutions|default(0, true) }}
             </div>
 
             <div class="inst-stat-label">
@@ -897,7 +961,7 @@
             </div>
 
             <div class="inst-stat-value">
-                {{ inactive_institutions|default(0) }}
+                {{ inactive_institutions|default(0, true) }}
             </div>
 
             <div class="inst-stat-label">
@@ -919,7 +983,7 @@
             </div>
 
             <div class="inst-stat-value">
-                {{ suspended_institutions|default(0) }}
+                {{ suspended_institutions|default(0, true) }}
             </div>
 
             <div class="inst-stat-label">
@@ -941,7 +1005,7 @@
             </div>
 
             <div class="inst-stat-value">
-                {{ total_branches|default(0) }}
+                {{ total_branches|default(0, true) }}
             </div>
 
             <div class="inst-stat-label">
@@ -975,7 +1039,10 @@
                 <!-- SEARCH -->
                 <div class="inst-form-group">
 
-                    <label class="inst-form-label">
+                    <label
+                        for="institutionSearch"
+                        class="inst-form-label"
+                    >
                         Search
                     </label>
 
@@ -985,10 +1052,11 @@
 
                         <input
                             type="text"
+                            id="institutionSearch"
                             name="search"
                             class="inst-input has-icon"
-                            value="{{ search|default('') }}"
-                            placeholder="Search institution, email, phone, city..."
+                            value="{{ search|default('', true) }}"
+                            placeholder="Search institution, code, email, phone, city..."
                             autocomplete="off"
                         >
 
@@ -1000,11 +1068,15 @@
                 <!-- STATUS -->
                 <div class="inst-form-group">
 
-                    <label class="inst-form-label">
+                    <label
+                        for="institutionStatus"
+                        class="inst-form-label"
+                    >
                         Status
                     </label>
 
                     <select
+                        id="institutionStatus"
                         name="status"
                         class="inst-select"
                     >
@@ -1015,7 +1087,7 @@
 
                         <option
                             value="active"
-                            {% if selected_status|default('') == 'active' %}
+                            {% if selected_status|default('', true)|lower == 'active' %}
                                 selected
                             {% endif %}
                         >
@@ -1024,7 +1096,7 @@
 
                         <option
                             value="inactive"
-                            {% if selected_status|default('') == 'inactive' %}
+                            {% if selected_status|default('', true)|lower == 'inactive' %}
                                 selected
                             {% endif %}
                         >
@@ -1033,7 +1105,7 @@
 
                         <option
                             value="suspended"
-                            {% if selected_status|default('') == 'suspended' %}
+                            {% if selected_status|default('', true)|lower == 'suspended' %}
                                 selected
                             {% endif %}
                         >
@@ -1088,7 +1160,7 @@
                 Showing
 
                 <strong>
-                    {% if pagination.total > 0 %}
+                    {% if pagination is defined and pagination.total > 0 %}
                         {{ pagination.first }}
                         –
                         {{ pagination.last }}
@@ -1100,7 +1172,11 @@
                 of
 
                 <strong>
-                    {{ pagination.total|default(0) }}
+                    {% if pagination is defined %}
+                        {{ pagination.total|default(0, true) }}
+                    {% else %}
+                        0
+                    {% endif %}
                 </strong>
 
                 institutions
@@ -1114,6 +1190,8 @@
                     Per page
                 </span>
 
+                {% set current_per_page = per_page|default(10, true)|int %}
+
                 <select
                     id="perPageSelect"
                     onchange="changePerPage(this.value)"
@@ -1121,7 +1199,7 @@
 
                     <option
                         value="10"
-                        {% if per_page|default(10) == 10 %}
+                        {% if current_per_page == 10 %}
                             selected
                         {% endif %}
                     >
@@ -1130,7 +1208,7 @@
 
                     <option
                         value="25"
-                        {% if per_page|default(10) == 25 %}
+                        {% if current_per_page == 25 %}
                             selected
                         {% endif %}
                     >
@@ -1139,7 +1217,7 @@
 
                     <option
                         value="50"
-                        {% if per_page|default(10) == 50 %}
+                        {% if current_per_page == 50 %}
                             selected
                         {% endif %}
                     >
@@ -1148,7 +1226,7 @@
 
                     <option
                         value="100"
-                        {% if per_page|default(10) == 100 %}
+                        {% if current_per_page == 100 %}
                             selected
                         {% endif %}
                     >
@@ -1229,7 +1307,11 @@
 
                         <td class="inst-number">
 
-                            {{ pagination.first + loop.index0 }}
+                            {% if pagination is defined %}
+                                {{ pagination.first + loop.index0 }}
+                            {% else %}
+                                {{ loop.index }}
+                            {% endif %}
 
                         </td>
 
@@ -1242,13 +1324,19 @@
 
                             <div class="inst-name-main">
 
-                                {% if institution.logo %}
+                                {% if institution.main_logo %}
 
                                     <img
-                                        src="{{ institution.logo }}"
-                                        alt="{{ institution.name|default('Institution') }}"
+                                        src="{{ institution.main_logo }}"
+                                        alt="{{ institution.name|default('Institution', true) }}"
                                         class="inst-logo"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        loading="lazy"
+                                        onerror="
+                                            this.style.display='none';
+                                            if (this.nextElementSibling) {
+                                                this.nextElementSibling.style.display='flex';
+                                            }
+                                        "
                                     >
 
                                     <div
@@ -1273,13 +1361,22 @@
 
                                     <div
                                         class="inst-name"
-                                        title="{{ institution.name|default('Unnamed Institution') }}"
+                                        title="{{ institution.name|default('Unnamed Institution', true) }}"
                                     >
-                                        {{ institution.name|default('Unnamed Institution') }}
+                                        {{ institution.name|default('Unnamed Institution', true) }}
                                     </div>
 
 
-                                    {% if institution.code is defined and institution.code %}
+                                    {% if institution.short_name %}
+
+                                        <div class="inst-short-name">
+                                            {{ institution.short_name }}
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    {% if institution.code %}
 
                                         <div class="inst-code">
 
@@ -1289,11 +1386,16 @@
 
                                         </div>
 
-                                    {% elif institution.short_name is defined and institution.short_name %}
+                                    {% endif %}
 
-                                        <div class="inst-code">
 
-                                            {{ institution.short_name }}
+                                    {% if institution.academic_year %}
+
+                                        <div class="inst-academic-year">
+
+                                            <i class="fas fa-calendar"></i>
+
+                                            {{ institution.academic_year }}
 
                                         </div>
 
@@ -1312,39 +1414,43 @@
 
                         <td>
 
-                            {% if institution.city or institution.country %}
+                            {% if institution.city
+                                  or institution.state
+                                  or institution.country
+                                  or institution.address %}
 
                                 <div class="inst-location">
 
                                     <i class="fas fa-location-dot"></i>
 
-                                    <span>
+                                    <div class="inst-location-text">
+
+                                        {% if institution.address %}
+                                            {{ institution.address }}
+                                        {% endif %}
 
                                         {% if institution.city %}
+                                            {% if institution.address %}
+                                                <br>
+                                            {% endif %}
                                             {{ institution.city }}
                                         {% endif %}
 
-                                        {% if institution.city and institution.country %}
-                                            ,
+                                        {% if institution.state %}
+                                            {% if institution.city %}
+                                                ,
+                                            {% endif %}
+                                            {{ institution.state }}
                                         {% endif %}
 
                                         {% if institution.country %}
+                                            {% if institution.city or institution.state %}
+                                                ,
+                                            {% endif %}
                                             {{ institution.country }}
                                         {% endif %}
 
-                                    </span>
-
-                                </div>
-
-                            {% elif institution.address is defined and institution.address %}
-
-                                <div class="inst-location">
-
-                                    <i class="fas fa-location-dot"></i>
-
-                                    <span>
-                                        {{ institution.address }}
-                                    </span>
+                                    </div>
 
                                 </div>
 
@@ -1365,35 +1471,89 @@
 
                         <td>
 
-                            {% if institution.email is defined and institution.email %}
+                            <div class="inst-contact">
 
-                                <div class="inst-text">
+                                {% if institution.email %}
 
-                                    <i class="fas fa-envelope"
-                                       style="width:14px;color:#8793a5;"></i>
+                                    <div class="inst-contact-item">
 
-                                    {{ institution.email }}
+                                        <i class="fas fa-envelope"></i>
 
-                                </div>
+                                        <a
+                                            href="mailto:{{ institution.email }}"
+                                            title="{{ institution.email }}"
+                                        >
+                                            {{ institution.email }}
+                                        </a>
 
-                            {% elif institution.phone is defined and institution.phone %}
+                                    </div>
 
-                                <div class="inst-text">
+                                {% endif %}
 
-                                    <i class="fas fa-phone"
-                                       style="width:14px;color:#8793a5;"></i>
 
-                                    {{ institution.phone }}
+                                {% if institution.phone %}
 
-                                </div>
+                                    <div class="inst-contact-item">
 
-                            {% else %}
+                                        <i class="fas fa-phone"></i>
 
-                                <span class="inst-muted">
-                                    —
-                                </span>
+                                        <a
+                                            href="tel:{{ institution.phone }}"
+                                            title="{{ institution.phone }}"
+                                        >
+                                            {{ institution.phone }}
+                                        </a>
 
-                            {% endif %}
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if institution.website %}
+
+                                    {% set website_url = institution.website %}
+
+                                    {% if not (
+                                        website_url.startswith('http://')
+                                        or
+                                        website_url.startswith('https://')
+                                    ) %}
+
+                                        {% set website_url =
+                                            'https://' ~ website_url
+                                        %}
+
+                                    {% endif %}
+
+                                    <div class="inst-contact-item">
+
+                                        <i class="fas fa-globe"></i>
+
+                                        <a
+                                            href="{{ website_url }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="{{ institution.website }}"
+                                        >
+                                            Website
+                                        </a>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if not institution.email
+                                      and not institution.phone
+                                      and not institution.website %}
+
+                                    <span class="inst-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
 
                         </td>
 
@@ -1406,9 +1566,13 @@
 
                             <div class="inst-counts">
 
-                                {% if institution.branches is defined %}
+                                {% if institution.branches is defined
+                                      and institution.branches %}
 
-                                    <span class="inst-count">
+                                    <span
+                                        class="inst-count"
+                                        title="Branches"
+                                    >
 
                                         <i class="fas fa-code-branch"></i>
 
@@ -1418,11 +1582,14 @@
 
                                 {% else %}
 
-                                    <span class="inst-count">
+                                    <span
+                                        class="inst-count"
+                                        title="Branches"
+                                    >
 
                                         <i class="fas fa-code-branch"></i>
 
-                                        —
+                                        0
 
                                     </span>
 
@@ -1441,9 +1608,13 @@
 
                             <div class="inst-counts">
 
-                                {% if institution.users is defined %}
+                                {% if institution.users is defined
+                                      and institution.users %}
 
-                                    <span class="inst-count">
+                                    <span
+                                        class="inst-count"
+                                        title="Users"
+                                    >
 
                                         <i class="fas fa-users"></i>
 
@@ -1453,11 +1624,14 @@
 
                                 {% else %}
 
-                                    <span class="inst-count">
+                                    <span
+                                        class="inst-count"
+                                        title="Users"
+                                    >
 
                                         <i class="fas fa-users"></i>
 
-                                        —
+                                        0
 
                                     </span>
 
@@ -1475,7 +1649,7 @@
                         <td>
 
                             {% set institution_status =
-                                institution.status|default('unknown')|lower
+                                institution.status|default('unknown', true)|string|lower|trim
                             %}
 
 
@@ -1489,6 +1663,7 @@
 
                                 </span>
 
+
                             {% elif institution_status == 'inactive' %}
 
                                 <span class="inst-status inst-status-inactive">
@@ -1498,6 +1673,7 @@
                                     Inactive
 
                                 </span>
+
 
                             {% elif institution_status == 'suspended' %}
 
@@ -1509,13 +1685,14 @@
 
                                 </span>
 
+
                             {% else %}
 
                                 <span class="inst-status inst-status-unknown">
 
                                     <span class="inst-status-dot"></span>
 
-                                    {{ institution.status|default('Unknown') }}
+                                    {{ institution.status|default('Unknown', true) }}
 
                                 </span>
 
@@ -1551,45 +1728,49 @@
 
                             <div class="inst-actions">
 
-                                <!-- VIEW -->
-
                                 {% if institution.id %}
 
+                                    <!-- VIEW -->
+
                                     <a
-                                        href="{{ url_for('main.view_institution', institution_id=institution.id) }}"
+                                        href="{{ url_for(
+                                            'main.view_institution',
+                                            institution_id=institution.id
+                                        ) }}"
                                         class="inst-action inst-action-view"
                                         title="View Institution"
+                                        aria-label="View Institution"
                                     >
                                         <i class="fas fa-eye"></i>
                                     </a>
 
-                                {% endif %}
 
-
-                                <!-- EDIT -->
-
-                                {% if institution.id %}
+                                    <!-- EDIT -->
 
                                     <a
-                                        href="{{ url_for('main.edit_institution', institution_id=institution.id) }}"
+                                        href="{{ url_for(
+                                            'main.edit_institution',
+                                            institution_id=institution.id
+                                        ) }}"
                                         class="inst-action inst-action-edit"
                                         title="Edit Institution"
+                                        aria-label="Edit Institution"
                                     >
                                         <i class="fas fa-pen"></i>
                                     </a>
 
-                                {% endif %}
 
-
-                                <!-- DELETE -->
-
-                                {% if institution.id %}
+                                    <!-- DELETE -->
 
                                     <button
                                         type="button"
                                         class="inst-action inst-action-delete"
                                         title="Delete Institution"
-                                        onclick="deleteInstitution({{ institution.id }}, '{{ institution.name|default('Institution')|e }}')"
+                                        aria-label="Delete Institution"
+                                        onclick='deleteInstitution(
+                                            {{ institution.id|tojson }},
+                                            {{ institution.name|default("Institution", true)|tojson }}
+                                        )'
                                     >
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -1615,6 +1796,8 @@
              PAGINATION
         ===================================================== -->
 
+        {% if pagination is defined %}
+
         <div class="inst-pagination-area">
 
             <div class="inst-page-summary">
@@ -1622,13 +1805,13 @@
                 Page
 
                 <strong>
-                    {{ pagination.page }}
+                    {{ pagination.page|default(1, true) }}
                 </strong>
 
                 of
 
                 <strong>
-                    {{ pagination.pages }}
+                    {{ pagination.pages|default(1, true) }}
                 </strong>
 
             </div>
@@ -1646,12 +1829,13 @@
                         href="{{ url_for(
                             'main.all_institutions',
                             page=1,
-                            per_page=per_page,
-                            search=search,
-                            status=selected_status
+                            per_page=current_per_page,
+                            search=search|default('', true),
+                            status=selected_status|default('', true)
                         ) }}"
                         class="inst-page-link"
                         title="First Page"
+                        aria-label="First Page"
                     >
                         <i class="fas fa-angles-left"></i>
                     </a>
@@ -1673,12 +1857,13 @@
                         href="{{ url_for(
                             'main.all_institutions',
                             page=pagination.prev_num,
-                            per_page=per_page,
-                            search=search,
-                            status=selected_status
+                            per_page=current_per_page,
+                            search=search|default('', true),
+                            status=selected_status|default('', true)
                         ) }}"
                         class="inst-page-link"
                         title="Previous Page"
+                        aria-label="Previous Page"
                     >
                         <i class="fas fa-angle-left"></i>
                     </a>
@@ -1715,9 +1900,9 @@
                                 href="{{ url_for(
                                     'main.all_institutions',
                                     page=p,
-                                    per_page=per_page,
-                                    search=search,
-                                    status=selected_status
+                                    per_page=current_per_page,
+                                    search=search|default('', true),
+                                    status=selected_status|default('', true)
                                 ) }}"
                                 class="inst-page-link"
                             >
@@ -1728,9 +1913,7 @@
 
                     {% else %}
 
-                        <span
-                            class="inst-page-link disabled"
-                        >
+                        <span class="inst-page-link disabled">
                             …
                         </span>
 
@@ -1747,12 +1930,13 @@
                         href="{{ url_for(
                             'main.all_institutions',
                             page=pagination.next_num,
-                            per_page=per_page,
-                            search=search,
-                            status=selected_status
+                            per_page=current_per_page,
+                            search=search|default('', true),
+                            status=selected_status|default('', true)
                         ) }}"
                         class="inst-page-link"
                         title="Next Page"
+                        aria-label="Next Page"
                     >
                         <i class="fas fa-angle-right"></i>
                     </a>
@@ -1774,12 +1958,13 @@
                         href="{{ url_for(
                             'main.all_institutions',
                             page=pagination.pages,
-                            per_page=per_page,
-                            search=search,
-                            status=selected_status
+                            per_page=current_per_page,
+                            search=search|default('', true),
+                            status=selected_status|default('', true)
                         ) }}"
                         class="inst-page-link"
                         title="Last Page"
+                        aria-label="Last Page"
                     >
                         <i class="fas fa-angles-right"></i>
                     </a>
@@ -1798,6 +1983,8 @@
 
         </div>
 
+        {% endif %}
+
 
         {% else %}
 
@@ -1814,7 +2001,8 @@
             </div>
 
 
-            {% if search or selected_status %}
+            {% if search|default('', true)
+                  or selected_status|default('', true) %}
 
                 <h3 class="inst-empty-title">
                     No Institutions Found
@@ -1878,6 +2066,7 @@
      ============================================================ -->
 
 <script>
+
 /* ============================================================
    CHANGE PER PAGE
    ============================================================ */
@@ -1911,6 +2100,7 @@ async function deleteInstitution(
         return;
     }
 
+
     const confirmed = confirm(
         "Are you sure you want to delete \"" +
         institutionName +
@@ -1919,6 +2109,7 @@ async function deleteInstitution(
         "and related data."
     );
 
+
     if (!confirmed) {
         return;
     }
@@ -1926,14 +2117,31 @@ async function deleteInstitution(
 
     try {
 
+        /*
+         * Use Flask-generated URL instead of hard-coding:
+         *
+         * /delete-institution/<id>
+         *
+         * This keeps the JavaScript synchronized with the
+         * actual Flask endpoint.
+         */
+
+        const deleteUrl =
+            "{{ url_for('main.delete_institution', institution_id=0) }}"
+                .replace("/0", "/" + encodeURIComponent(institutionId));
+
+
         const response = await fetch(
-            "/delete-institution/" + institutionId,
+            deleteUrl,
             {
                 method: "POST",
+
                 headers: {
                     "X-Requested-With": "XMLHttpRequest",
                     "Content-Type": "application/json"
-                }
+                },
+
+                credentials: "same-origin"
             }
         );
 
@@ -1946,14 +2154,15 @@ async function deleteInstitution(
 
             window.location.reload();
 
-        } else {
-
-            alert(
-                data.message ||
-                "Unable to delete this institution."
-            );
-
+            return;
         }
+
+
+        alert(
+            data.message ||
+            "Unable to delete this institution."
+        );
+
 
     } catch (error) {
 
@@ -1961,6 +2170,7 @@ async function deleteInstitution(
             "Delete institution error:",
             error
         );
+
 
         alert(
             "An unexpected error occurred while deleting " +
@@ -1970,6 +2180,7 @@ async function deleteInstitution(
     }
 
 }
+
 </script>
 
 {% endblock %}

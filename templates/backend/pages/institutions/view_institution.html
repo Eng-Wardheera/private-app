@@ -1,10 +1,13 @@
 {% extends "backend/home/base.html" %}
 
-{% block title %}View Institution{% endblock %}
+{% block title %}
+    View Institution
+{% endblock %}
 
 {% block content %}
 
 <style>
+
 /* ============================================================
    VIEW INSTITUTION PAGE
    ============================================================ */
@@ -66,6 +69,10 @@
     flex-wrap: wrap;
 }
 
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
 .btn {
     min-height: 42px;
     padding: 0 16px;
@@ -116,7 +123,7 @@
 }
 
 /* ============================================================
-   HERO CARD
+   HERO
    ============================================================ */
 
 .institution-hero {
@@ -146,7 +153,8 @@
     width: 92px;
     height: 92px;
     border-radius: 18px;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 8px;
     border: 1px solid #e2e7ef;
     background: #f7f9fc;
     flex-shrink: 0;
@@ -179,6 +187,13 @@
     font-size: 27px;
     font-weight: 800;
     word-break: break-word;
+}
+
+.hero-tagline {
+    color: #687386;
+    font-size: 14px;
+    margin-bottom: 10px;
+    line-height: 1.5;
 }
 
 .hero-code {
@@ -304,6 +319,11 @@
     color: #d97706;
 }
 
+.stat-icon.red {
+    background: rgba(220, 53, 69, 0.10);
+    color: #dc3545;
+}
+
 .stat-info {
     min-width: 0;
 }
@@ -322,12 +342,14 @@
 }
 
 /* ============================================================
-   MAIN GRID
+   MAIN CONTENT GRID
    ============================================================ */
 
 .content-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr);
+    grid-template-columns:
+        minmax(0, 1.55fr)
+        minmax(320px, 0.85fr);
     gap: 22px;
     align-items: start;
 }
@@ -388,7 +410,6 @@
 .info-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0;
 }
 
 .info-item {
@@ -405,10 +426,6 @@
     padding-left: 22px;
     padding-right: 0;
     border-left: 1px solid #edf0f4;
-}
-
-.info-item:nth-last-child(-n + 2) {
-    border-bottom: 0;
 }
 
 .info-label {
@@ -453,6 +470,101 @@
     color: #596579;
     font-size: 14px;
     line-height: 1.7;
+}
+
+/* ============================================================
+   BRANDING
+   ============================================================ */
+
+.branding-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.branding-item {
+    border: 1px solid #e7ebf1;
+    border-radius: 13px;
+    padding: 14px;
+    background: #fafbfd;
+}
+
+.branding-label {
+    color: #7d8797;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    margin-bottom: 10px;
+}
+
+.branding-preview {
+    height: 125px;
+    border-radius: 10px;
+    border: 1px solid #e5e9ef;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.branding-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+}
+
+.branding-empty {
+    color: #a3abb8;
+    text-align: center;
+    font-size: 12px;
+}
+
+.branding-empty i {
+    display: block;
+    margin-bottom: 6px;
+}
+
+/* ============================================================
+   COLORS
+   ============================================================ */
+
+.colors-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.color-box {
+    border: 1px solid #e6eaf0;
+    border-radius: 11px;
+    padding: 12px;
+    background: #fafbfd;
+}
+
+.color-preview {
+    width: 100%;
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,.08);
+    margin-bottom: 8px;
+}
+
+.color-name {
+    color: #697386;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.color-code {
+    color: #202b3c;
+    font-size: 12px;
+    font-weight: 800;
+    margin-top: 2px;
 }
 
 /* ============================================================
@@ -595,25 +707,7 @@
 }
 
 /* ============================================================
-   BRANCHES / USERS PLACEHOLDER
-   ============================================================ */
-
-.empty-mini {
-    padding: 22px 10px;
-    text-align: center;
-    color: #8a93a2;
-    font-size: 13px;
-}
-
-.empty-mini i {
-    display: block;
-    font-size: 25px;
-    margin-bottom: 8px;
-    color: #b2bac6;
-}
-
-/* ============================================================
-   FOOTER META
+   META
    ============================================================ */
 
 .meta-list {
@@ -640,13 +734,41 @@
 }
 
 /* ============================================================
+   EMPTY
+   ============================================================ */
+
+.empty-mini {
+    padding: 22px 10px;
+    text-align: center;
+    color: #8a93a2;
+    font-size: 13px;
+}
+
+.empty-mini i {
+    display: block;
+    font-size: 25px;
+    margin-bottom: 8px;
+    color: #b2bac6;
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
+
+@media (max-width: 1200px) {
+
+    .stats-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+}
 
 @media (max-width: 1100px) {
 
     .stats-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
 
     .content-grid {
@@ -656,6 +778,7 @@
     .hero-created {
         display: none;
     }
+
 }
 
 @media (max-width: 720px) {
@@ -700,24 +823,6 @@
         font-size: 21px;
     }
 
-    .stats-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    .stat-card {
-        padding: 15px;
-    }
-
-    .stat-icon {
-        width: 40px;
-        height: 40px;
-    }
-
-    .stat-value {
-        font-size: 20px;
-    }
-
     .info-grid {
         grid-template-columns: 1fr;
     }
@@ -734,6 +839,15 @@
     .info-item:last-child {
         border-bottom: 0;
     }
+
+    .branding-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .colors-grid {
+        grid-template-columns: 1fr;
+    }
+
 }
 
 @media (max-width: 480px) {
@@ -772,7 +886,9 @@
     .action-buttons {
         grid-template-columns: 1fr;
     }
+
 }
+
 </style>
 
 
@@ -791,8 +907,15 @@
             </div>
 
             <div>
-                <h1>Institution Details</h1>
-                <p>View and manage institution information.</p>
+
+                <h1>
+                    Institution Details
+                </h1>
+
+                <p>
+                    View and manage institution information.
+                </p>
+
             </div>
 
         </div>
@@ -825,7 +948,7 @@
 
 
     <!-- ========================================================
-         INSTITUTION HERO
+         HERO
     ========================================================= -->
 
     <div class="institution-hero">
@@ -834,13 +957,18 @@
 
             <div class="hero-main">
 
-                {% if institution.logo %}
+                <!-- MAIN LOGO -->
+
+                {% if institution.main_logo %}
 
                     <img
-                        src="{{ institution.logo }}"
+                        src="{{ institution.main_logo }}"
                         alt="{{ institution.name }}"
                         class="institution-logo"
-                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        onerror="
+                            this.style.display='none';
+                            this.nextElementSibling.style.display='flex';
+                        "
                     >
 
                     <div
@@ -862,30 +990,50 @@
                 <div class="hero-info">
 
                     <h2>
-                        {{ institution.name }}
+                        {{ institution.name|default('Unnamed Institution') }}
                     </h2>
+
+
+                    {% if institution.tagline %}
+
+                        <div class="hero-tagline">
+                            {{ institution.tagline }}
+                        </div>
+
+                    {% endif %}
 
 
                     {% if institution.code or institution.short_name %}
 
                         <div class="hero-code">
 
-                            <i data-feather="hash" style="width:14px;"></i>
+                            <i
+                                data-feather="hash"
+                                style="width:14px;"
+                            ></i>
 
                             {% if institution.code %}
+
                                 <strong>
                                     {{ institution.code }}
                                 </strong>
+
                             {% endif %}
+
 
                             {% if institution.code and institution.short_name %}
+
                                 <span>•</span>
+
                             {% endif %}
 
+
                             {% if institution.short_name %}
+
                                 <span>
                                     {{ institution.short_name }}
                                 </span>
+
                             {% endif %}
 
                         </div>
@@ -893,7 +1041,10 @@
                     {% endif %}
 
 
-                    {% set current_status = institution.status|default('active')|lower %}
+                    {% set current_status =
+                        institution.status|default('active', true)|lower
+                    %}
+
 
                     {% if current_status == 'active' %}
 
@@ -920,7 +1071,7 @@
 
                         <span class="status-badge status-inactive">
                             <span class="status-dot"></span>
-                            {{ institution.status|default('Unknown') }}
+                            {{ institution.status|default('Unknown', true) }}
                         </span>
 
                     {% endif %}
@@ -970,7 +1121,7 @@
                 </div>
 
                 <div class="stat-value">
-                    {{ total_branches|default(0) }}
+                    {{ branch_count|default(0) }}
                 </div>
 
             </div>
@@ -993,7 +1144,7 @@
                 </div>
 
                 <div class="stat-value">
-                    {{ total_users|default(0) }}
+                    {{ user_count|default(0) }}
                 </div>
 
             </div>
@@ -1001,25 +1152,22 @@
         </div>
 
 
-        <!-- STATUS -->
+        <!-- PROGRAMS -->
 
         <div class="stat-card">
 
             <div class="stat-icon purple">
-                <i data-feather="activity"></i>
+                <i data-feather="book-open"></i>
             </div>
 
             <div class="stat-info">
 
                 <div class="stat-label">
-                    Institution Status
+                    Programs
                 </div>
 
-                <div
-                    class="stat-value"
-                    style="font-size:17px; text-transform:capitalize;"
-                >
-                    {{ institution.status|default('Unknown') }}
+                <div class="stat-value">
+                    {{ program_count|default(0) }}
                 </div>
 
             </div>
@@ -1027,22 +1175,114 @@
         </div>
 
 
-        <!-- ID -->
+        <!-- STUDENTS -->
 
         <div class="stat-card">
 
             <div class="stat-icon orange">
-                <i data-feather="key"></i>
+                <i data-feather="user-check"></i>
             </div>
 
             <div class="stat-info">
 
                 <div class="stat-label">
-                    Institution ID
+                    Students
                 </div>
 
                 <div class="stat-value">
-                    #{{ institution.id }}
+                    {{ student_count|default(0) }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TEACHERS -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon blue">
+                <i data-feather="user"></i>
+            </div>
+
+            <div class="stat-info">
+
+                <div class="stat-label">
+                    Teachers
+                </div>
+
+                <div class="stat-value">
+                    {{ teacher_count|default(0) }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CLASSES -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon green">
+                <i data-feather="layers"></i>
+            </div>
+
+            <div class="stat-info">
+
+                <div class="stat-label">
+                    Classes
+                </div>
+
+                <div class="stat-value">
+                    {{ class_count|default(0) }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SUBJECTS -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon purple">
+                <i data-feather="book"></i>
+            </div>
+
+            <div class="stat-info">
+
+                <div class="stat-label">
+                    Subjects
+                </div>
+
+                <div class="stat-value">
+                    {{ subject_count|default(0) }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- EXAMS -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon red">
+                <i data-feather="clipboard"></i>
+            </div>
+
+            <div class="stat-info">
+
+                <div class="stat-label">
+                    Exams
+                </div>
+
+                <div class="stat-value">
+                    {{ exam_count|default(0) }}
                 </div>
 
             </div>
@@ -1053,10 +1293,11 @@
 
 
     <!-- ========================================================
-         CONTENT
+         MAIN CONTENT
     ========================================================= -->
 
     <div class="content-grid">
+
 
         <!-- ====================================================
              LEFT COLUMN
@@ -1090,6 +1331,7 @@
 
                     <div class="info-grid">
 
+
                         <!-- NAME -->
 
                         <div class="info-item">
@@ -1099,7 +1341,7 @@
                             </div>
 
                             <div class="info-value">
-                                {{ institution.name }}
+                                {{ institution.name|default('Not provided', true) }}
                             </div>
 
                         </div>
@@ -1114,10 +1356,12 @@
                             </div>
 
                             <div
-                                class="info-value
-                                {% if not institution.short_name %}
-                                    empty
-                                {% endif %}"
+                                class="
+                                    info-value
+                                    {% if not institution.short_name %}
+                                        empty
+                                    {% endif %}
+                                "
                             >
                                 {{ institution.short_name|default('Not provided', true) }}
                             </div>
@@ -1134,12 +1378,58 @@
                             </div>
 
                             <div
-                                class="info-value
-                                {% if not institution.code %}
-                                    empty
-                                {% endif %}"
+                                class="
+                                    info-value
+                                    {% if not institution.code %}
+                                        empty
+                                    {% endif %}
+                                "
                             >
                                 {{ institution.code|default('Not provided', true) }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- TAGLINE -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                Tagline
+                            </div>
+
+                            <div
+                                class="
+                                    info-value
+                                    {% if not institution.tagline %}
+                                        empty
+                                    {% endif %}
+                                "
+                            >
+                                {{ institution.tagline|default('Not provided', true) }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- ACADEMIC YEAR -->
+
+                        <div class="info-item">
+
+                            <div class="info-label">
+                                Academic Year
+                            </div>
+
+                            <div
+                                class="
+                                    info-value
+                                    {% if not institution.academic_year %}
+                                        empty
+                                    {% endif %}
+                            "
+                            >
+                                {{ institution.academic_year|default('Not provided', true) }}
                             </div>
 
                         </div>
@@ -1155,7 +1445,9 @@
 
                             <div class="info-value">
 
-                                {% set s = institution.status|default('active')|lower %}
+                                {% set s =
+                                    institution.status|default('active', true)|lower
+                                %}
 
                                 {% if s == 'active' %}
 
@@ -1180,7 +1472,7 @@
 
                                 {% else %}
 
-                                    {{ institution.status|default('Unknown') }}
+                                    {{ institution.status|default('Unknown', true) }}
 
                                 {% endif %}
 
@@ -1198,10 +1490,12 @@
                             </div>
 
                             <div
-                                class="info-value
-                                {% if not institution.country %}
-                                    empty
-                                {% endif %}"
+                                class="
+                                    info-value
+                                    {% if not institution.country %}
+                                        empty
+                                    {% endif %}
+                                "
                             >
                                 {{ institution.country|default('Not provided', true) }}
                             </div>
@@ -1218,10 +1512,12 @@
                             </div>
 
                             <div
-                                class="info-value
-                                {% if not institution.state %}
-                                    empty
-                                {% endif %}"
+                                class="
+                                    info-value
+                                    {% if not institution.state %}
+                                        empty
+                                    {% endif %}
+                                "
                             >
                                 {{ institution.state|default('Not provided', true) }}
                             </div>
@@ -1238,10 +1534,12 @@
                             </div>
 
                             <div
-                                class="info-value
-                                {% if not institution.city %}
-                                    empty
-                                {% endif %}"
+                                class="
+                                    info-value
+                                    {% if not institution.city %}
+                                        empty
+                                    {% endif %}
+                                "
                             >
                                 {{ institution.city|default('Not provided', true) }}
                             </div>
@@ -1258,10 +1556,12 @@
                             </div>
 
                             <div
-                                class="info-value
-                                {% if not institution.address %}
-                                    empty
-                                {% endif %}"
+                                class="
+                                    info-value
+                                    {% if not institution.address %}
+                                        empty
+                                    {% endif %}
+                                "
                             >
                                 {{ institution.address|default('Not provided', true) }}
                             </div>
@@ -1277,37 +1577,352 @@
 
             <!-- DESCRIPTION -->
 
-            {% if institution.description %}
+            <div class="card">
 
-                <div class="card">
+                <div class="card-header">
 
-                    <div class="card-header">
+                    <div class="card-header-left">
 
-                        <div class="card-header-left">
-
-                            <div class="card-header-icon">
-                                <i data-feather="file-text"></i>
-                            </div>
-
-                            <h3>
-                                Description
-                            </h3>
-
+                        <div class="card-header-icon">
+                            <i data-feather="file-text"></i>
                         </div>
+
+                        <h3>
+                            Description
+                        </h3>
 
                     </div>
 
-                    <div class="card-body">
+                </div>
+
+                <div class="card-body">
+
+                    {% if institution.description %}
 
                         <div class="description-box">
                             {{ institution.description }}
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty-mini">
+                            <i data-feather="file-minus"></i>
+                            No description provided.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- BRANDING -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="card-header-left">
+
+                        <div class="card-header-icon">
+                            <i data-feather="image"></i>
+                        </div>
+
+                        <h3>
+                            Institution Branding
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="branding-grid">
+
+
+                        <!-- MAIN LOGO -->
+
+                        <div class="branding-item">
+
+                            <div class="branding-label">
+                                Main Logo
+                            </div>
+
+                            <div class="branding-preview">
+
+                                {% if institution.main_logo %}
+
+                                    <img
+                                        src="{{ institution.main_logo }}"
+                                        alt="Main Logo"
+                                        onerror="
+                                            this.style.display='none';
+                                            this.nextElementSibling.style.display='block';
+                                        "
+                                    >
+
+                                    <div
+                                        class="branding-empty"
+                                        style="display:none;"
+                                    >
+                                        <i data-feather="image-off"></i>
+                                        Image unavailable
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="branding-empty">
+                                        <i data-feather="image-off"></i>
+                                        No main logo
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- SUB LOGO -->
+
+                        <div class="branding-item">
+
+                            <div class="branding-label">
+                                Sub Logo
+                            </div>
+
+                            <div class="branding-preview">
+
+                                {% if institution.sub_logo %}
+
+                                    <img
+                                        src="{{ institution.sub_logo }}"
+                                        alt="Sub Logo"
+                                        onerror="
+                                            this.style.display='none';
+                                            this.nextElementSibling.style.display='block';
+                                        "
+                                    >
+
+                                    <div
+                                        class="branding-empty"
+                                        style="display:none;"
+                                    >
+                                        <i data-feather="image-off"></i>
+                                        Image unavailable
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="branding-empty">
+                                        <i data-feather="image-off"></i>
+                                        No sub logo
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- SIGNATURE -->
+
+                        <div class="branding-item">
+
+                            <div class="branding-label">
+                                Signature Photo
+                            </div>
+
+                            <div class="branding-preview">
+
+                                {% if institution.signature_photo %}
+
+                                    <img
+                                        src="{{ institution.signature_photo }}"
+                                        alt="Signature"
+                                        onerror="
+                                            this.style.display='none';
+                                            this.nextElementSibling.style.display='block';
+                                        "
+                                    >
+
+                                    <div
+                                        class="branding-empty"
+                                        style="display:none;"
+                                    >
+                                        <i data-feather="image-off"></i>
+                                        Image unavailable
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="branding-empty">
+                                        <i data-feather="edit-3"></i>
+                                        No signature photo
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- FAVICON -->
+
+                        <div class="branding-item">
+
+                            <div class="branding-label">
+                                Favicon
+                            </div>
+
+                            <div class="branding-preview">
+
+                                {% if institution.favicon %}
+
+                                    <img
+                                        src="{{ institution.favicon }}"
+                                        alt="Favicon"
+                                        onerror="
+                                            this.style.display='none';
+                                            this.nextElementSibling.style.display='block';
+                                        "
+                                    >
+
+                                    <div
+                                        class="branding-empty"
+                                        style="display:none;"
+                                    >
+                                        <i data-feather="image-off"></i>
+                                        Image unavailable
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="branding-empty">
+                                        <i data-feather="globe"></i>
+                                        No favicon
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
                         </div>
 
                     </div>
 
                 </div>
 
-            {% endif %}
+            </div>
+
+
+            <!-- COLORS -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="card-header-left">
+
+                        <div class="card-header-icon">
+                            <i data-feather="droplet"></i>
+                        </div>
+
+                        <h3>
+                            Institution Colors
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="colors-grid">
+
+
+                        <!-- PRIMARY -->
+
+                        <div class="color-box">
+
+                            {% set primary =
+                                institution.primary_color|default('#06245f', true)
+                            %}
+
+                            <div
+                                class="color-preview"
+                                style="background: {{ primary }};"
+                            ></div>
+
+                            <div class="color-name">
+                                Primary Color
+                            </div>
+
+                            <div class="color-code">
+                                {{ primary }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- SECONDARY -->
+
+                        <div class="color-box">
+
+                            {% set secondary =
+                                institution.secondary_color|default('#32b73a', true)
+                            %}
+
+                            <div
+                                class="color-preview"
+                                style="background: {{ secondary }};"
+                            ></div>
+
+                            <div class="color-name">
+                                Secondary Color
+                            </div>
+
+                            <div class="color-code">
+                                {{ secondary }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- ACCENT -->
+
+                        <div class="color-box">
+
+                            {% set accent =
+                                institution.accent_color|default('#33206f', true)
+                            %}
+
+                            <div
+                                class="color-preview"
+                                style="background: {{ accent }};"
+                            ></div>
+
+                            <div class="color-name">
+                                Accent Color
+                            </div>
+
+                            <div class="color-code">
+                                {{ accent }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
 
 
             <!-- SYSTEM INFORMATION -->
@@ -1335,6 +1950,7 @@
 
                     <div class="meta-list">
 
+
                         <div class="meta-row">
 
                             <span>
@@ -1357,7 +1973,9 @@
                                 </span>
 
                                 <strong>
-                                    {{ institution.created_at.strftime('%d %B %Y, %I:%M %p') }}
+                                    {{ institution.created_at.strftime(
+                                        '%d %B %Y, %I:%M %p'
+                                    ) }}
                                 </strong>
 
                             </div>
@@ -1374,7 +1992,9 @@
                                 </span>
 
                                 <strong>
-                                    {{ institution.updated_at.strftime('%d %B %Y, %I:%M %p') }}
+                                    {{ institution.updated_at.strftime(
+                                        '%d %B %Y, %I:%M %p'
+                                    ) }}
                                 </strong>
 
                             </div>
@@ -1385,11 +2005,56 @@
                         <div class="meta-row">
 
                             <span>
+                                Academic Year
+                            </span>
+
+                            <strong>
+                                {{ institution.academic_year|default(
+                                    'Not provided',
+                                    true
+                                ) }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="meta-row">
+
+                            <span>
                                 Current Status
                             </span>
 
                             <strong style="text-transform:capitalize;">
-                                {{ institution.status|default('Unknown') }}
+                                {{ institution.status|default(
+                                    'Unknown',
+                                    true
+                                ) }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="meta-row">
+
+                            <span>
+                                Branches
+                            </span>
+
+                            <strong>
+                                {{ branch_count|default(0) }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="meta-row">
+
+                            <span>
+                                Users
+                            </span>
+
+                            <strong>
+                                {{ user_count|default(0) }}
                             </strong>
 
                         </div>
@@ -1436,6 +2101,8 @@
                     <div class="contact-list">
 
 
+                        <!-- EMAIL -->
+
                         {% if institution.email %}
 
                             <div class="contact-row">
@@ -1467,6 +2134,8 @@
                         {% endif %}
 
 
+                        <!-- PHONE -->
+
                         {% if institution.phone %}
 
                             <div class="contact-row">
@@ -1497,6 +2166,8 @@
 
                         {% endif %}
 
+
+                        <!-- WEBSITE -->
 
                         {% if institution.website %}
 
@@ -1531,7 +2202,14 @@
                         {% endif %}
 
 
-                        {% if institution.address or institution.city or institution.state or institution.country %}
+                        <!-- LOCATION -->
+
+                        {% if
+                            institution.address
+                            or institution.city
+                            or institution.state
+                            or institution.country
+                        %}
 
                             <div class="contact-row">
 
@@ -1556,15 +2234,26 @@
                                         {% endif %}
 
                                         {% if institution.state %}
-                                            {% if institution.city %}, {% endif %}
+
+                                            {% if institution.city %}
+                                                ,
+                                            {% endif %}
+
                                             {{ institution.state }}
+
                                         {% endif %}
 
                                         {% if institution.country %}
-                                            {% if institution.city or institution.state %}
+
+                                            {% if
+                                                institution.city
+                                                or institution.state
+                                            %}
                                                 ,
                                             {% endif %}
+
                                             {{ institution.country }}
+
                                         {% endif %}
 
                                     </div>
@@ -1576,13 +2265,17 @@
                         {% endif %}
 
 
-                        {% if not institution.email
-                           and not institution.phone
-                           and not institution.website
-                           and not institution.address
-                           and not institution.city
-                           and not institution.state
-                           and not institution.country %}
+                        <!-- EMPTY -->
+
+                        {% if
+                            not institution.email
+                            and not institution.phone
+                            and not institution.website
+                            and not institution.address
+                            and not institution.city
+                            and not institution.state
+                            and not institution.country
+                        %}
 
                             <div class="empty-mini">
 
@@ -1628,8 +2321,10 @@
                     <div class="quick-links">
 
 
+                        <!-- BRANCHES -->
+
                         <a
-                            href="#"
+                            href="{{ url_for('main.all_branches') }}"
                             class="quick-link"
                         >
 
@@ -1646,7 +2341,8 @@
                                     </div>
 
                                     <div class="quick-link-description">
-                                        Manage institution branches
+                                        {{ branch_count|default(0) }}
+                                        institution branches
                                     </div>
 
                                 </div>
@@ -1660,6 +2356,8 @@
 
                         </a>
 
+
+                        <!-- USERS -->
 
                         <a
                             href="#"
@@ -1679,7 +2377,8 @@
                                     </div>
 
                                     <div class="quick-link-description">
-                                        View institution users
+                                        {{ user_count|default(0) }}
+                                        institution users
                                     </div>
 
                                 </div>
@@ -1693,6 +2392,8 @@
 
                         </a>
 
+
+                        <!-- PROGRAMS -->
 
                         <a
                             href="#"
@@ -1708,11 +2409,84 @@
                                 <div>
 
                                     <div class="quick-link-title">
-                                        Courses
+                                        Programs
                                     </div>
 
                                     <div class="quick-link-description">
-                                        Manage institution courses
+                                        {{ program_count|default(0) }}
+                                        academic programs
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <i
+                                data-feather="chevron-right"
+                                class="quick-link-arrow"
+                            ></i>
+
+                        </a>
+
+
+                        <!-- STUDENTS -->
+
+                        <a
+                            href="#"
+                            class="quick-link"
+                        >
+
+                            <div class="quick-link-left">
+
+                                <div class="quick-link-icon">
+                                    <i data-feather="user-check"></i>
+                                </div>
+
+                                <div>
+
+                                    <div class="quick-link-title">
+                                        Students
+                                    </div>
+
+                                    <div class="quick-link-description">
+                                        {{ student_count|default(0) }}
+                                        students
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <i
+                                data-feather="chevron-right"
+                                class="quick-link-arrow"
+                            ></i>
+
+                        </a>
+
+
+                        <!-- EXAMS -->
+
+                        <a
+                            href="#"
+                            class="quick-link"
+                        >
+
+                            <div class="quick-link-left">
+
+                                <div class="quick-link-icon">
+                                    <i data-feather="clipboard"></i>
+                                </div>
+
+                                <div>
+
+                                    <div class="quick-link-title">
+                                        Exams
+                                    </div>
+
+                                    <div class="quick-link-description">
+                                        {{ exam_count|default(0) }}
+                                        exams
                                     </div>
 
                                 </div>
@@ -1771,7 +2545,9 @@
 
 
                         <a
-                            href="{{ url_for('main.all_institutions') }}"
+                            href="{{ url_for(
+                                'main.all_institutions'
+                            ) }}"
                             class="btn btn-secondary"
                         >
                             <i data-feather="list"></i>
@@ -1813,17 +2589,25 @@
 
 
 <script>
+
 /* ============================================================
    FEATHER ICONS
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    if (typeof feather !== "undefined") {
-        feather.replace();
+        if (
+            typeof feather !== "undefined"
+        ) {
+
+            feather.replace();
+
+        }
+
     }
-
-});
+);
 
 
 /* ============================================================
@@ -1833,7 +2617,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function confirmDeleteInstitution() {
 
     const institutionName =
-        {{ institution.name|tojson }};
+        {{ institution.name|default('this institution')|tojson }};
 
     return confirm(
         "Are you sure you want to delete \"" +
@@ -1842,7 +2626,9 @@ function confirmDeleteInstitution() {
         "This action may remove related institution data " +
         "depending on your database cascade configuration."
     );
+
 }
+
 </script>
 
 {% endblock %}
