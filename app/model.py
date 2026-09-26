@@ -2563,9 +2563,13 @@ class Subject(db.Model):
     # ========================================================
     # BRANCH RELATIONSHIP
     # ========================================================
-
-    # Nullable because a subject can be shared
-    # across multiple branches.
+    #
+    # Subject is currently created for a specific branch.
+    #
+    # NULL is still allowed at database level so that
+    # institution-wide/shared subjects can be supported later.
+    #
+    # ========================================================
 
     branch_id = db.Column(
         db.BigInteger,
@@ -2580,12 +2584,6 @@ class Subject(db.Model):
     # ========================================================
     # PROGRAM RELATIONSHIP
     # ========================================================
-
-    # Example:
-    # Secondary
-    # Primary
-    # English Language
-    # Computer Science
 
     program_id = db.Column(
         db.BigInteger,
@@ -2607,11 +2605,23 @@ class Subject(db.Model):
         index=True
     )
 
+    # ========================================================
+    # SUBJECT CODE
+    # ========================================================
+    #
     # Example:
-    # Mathematics
-    # Physics
-    # English
-    # Biology
+    #
+    # SUB001
+    # SUB002
+    # SUB003
+    #
+    # Code counter is scoped by:
+    #
+    # institution + branch
+    #
+    # Program does NOT affect the code sequence.
+    #
+    # ========================================================
 
     code = db.Column(
         db.String(50),
@@ -2619,11 +2629,19 @@ class Subject(db.Model):
         index=True
     )
 
-    # Example:
-    # MATH
-    # ENG
-    # PHY
-    # BIO
+    # ========================================================
+    # SHORT NAME
+    # ========================================================
+    #
+    # Generated server-side from subject name.
+    #
+    # Examples:
+    #
+    # Basic English Grammar -> BEG
+    # Advanced Computer Science -> ACS
+    # English Language -> EL
+    #
+    # ========================================================
 
     short_name = db.Column(
         db.String(100),
@@ -2671,6 +2689,10 @@ class Subject(db.Model):
     # MARK / EXAM CONFIGURATION
     # ========================================================
 
+    # --------------------------------------------------------
+    # MAXIMUM MARKS
+    # --------------------------------------------------------
+
     max_marks = db.Column(
         db.Numeric(6, 2),
         nullable=False,
@@ -2678,11 +2700,29 @@ class Subject(db.Model):
         server_default="100"
     )
 
+    # --------------------------------------------------------
+    # PASS MARKS
+    # --------------------------------------------------------
+    #
+    # OPTIONAL.
+    #
+    # Blank form value becomes NULL.
+    #
+    # Example:
+    #
+    # pass_marks = NULL
+    #
+    # OR:
+    #
+    # pass_marks = 50
+    #
+    # ========================================================
+
     pass_marks = db.Column(
         db.Numeric(6, 2),
-        nullable=False,
-        default=50,
-        server_default="50"
+        nullable=True,
+        default=None,
+        server_default=None
     )
 
     # ========================================================
@@ -2749,12 +2789,18 @@ class Subject(db.Model):
         "Program",
         back_populates="subjects"
     )
+
+    # ========================================================
+    # TEACHER SUBJECTS
+    # ========================================================
+
     teacher_subjects = db.relationship(
         "TeacherSubject",
         back_populates="subject",
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+
     # ========================================================
     # EXAM SUBJECTS
     # ========================================================
@@ -2765,7 +2811,11 @@ class Subject(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
-    # Subject
+
+    # ========================================================
+    # ATTENDANCE SESSIONS
+    # ========================================================
+
     attendance_sessions = db.relationship(
         "AttendanceSession",
         back_populates="subject",
@@ -2778,8 +2828,31 @@ class Subject(db.Model):
 
     __table_args__ = (
 
-        # Subject code must be unique inside
-        # an institution and branch.
+        # ====================================================
+        # SUBJECT CODE UNIQUE
+        # ====================================================
+        #
+        # Code is unique by:
+        #
+        # institution + branch
+        #
+        # Program is intentionally NOT included.
+        #
+        # Example:
+        #
+        # Nursing:
+        #   SUB001
+        #   SUB002
+        #
+        # IT:
+        #   SUB003
+        #   SUB004
+        #
+        # Business:
+        #   SUB005
+        #
+        # ====================================================
+
         db.UniqueConstraint(
             "institution_id",
             "branch_id",
@@ -2787,40 +2860,94 @@ class Subject(db.Model):
             name="uq_subject_institution_branch_code"
         ),
 
-        # Subject name must be unique inside
-        # an institution and branch.
+        # ====================================================
+        # SUBJECT NAME UNIQUE
+        # ====================================================
+        #
+        # Same subject name is allowed in different programs.
+        #
+        # Example:
+        #
+        # Nursing:
+        #   English
+        #
+        # IT:
+        #   English
+        #
+        # Business:
+        #   English
+        #
+        # But this is NOT allowed:
+        #
+        # Nursing:
+        #   English
+        # Nursing:
+        #   English
+        #
+        # Therefore:
+        #
+        # institution + branch + program + name
+        #
+        # ====================================================
+
         db.UniqueConstraint(
             "institution_id",
             "branch_id",
+            "program_id",
             "name",
-            name="uq_subject_institution_branch_name"
+            name="uq_subject_institution_branch_program_name"
         ),
 
-        # Maximum marks must be greater than zero.
+        # ====================================================
+        # MAX MARKS
+        # ====================================================
+
         db.CheckConstraint(
             "max_marks > 0",
             name="ck_subject_max_marks"
         ),
 
-        # Pass marks cannot be negative.
+        # ====================================================
+        # PASS MARKS
+        # ====================================================
+        #
+        # NULL is allowed.
+        #
+        # If a value exists, it cannot be negative.
+        #
+        # ====================================================
+
         db.CheckConstraint(
-            "pass_marks >= 0",
+            "pass_marks IS NULL OR pass_marks >= 0",
             name="ck_subject_pass_marks"
         ),
 
-        # Pass marks cannot exceed maximum marks.
+        # ====================================================
+        # PASS MARKS <= MAX MARKS
+        # ====================================================
+        #
+        # NULL is allowed.
+        #
+        # ====================================================
+
         db.CheckConstraint(
-            "pass_marks <= max_marks",
+            "pass_marks IS NULL OR pass_marks <= max_marks",
             name="ck_subject_pass_marks_max"
         ),
 
-        # Weekly hours cannot be negative.
+        # ====================================================
+        # WEEKLY HOURS
+        # ====================================================
+
         db.CheckConstraint(
             "weekly_hours IS NULL OR weekly_hours >= 0",
             name="ck_subject_weekly_hours"
         ),
 
-        # Credit hours cannot be negative.
+        # ====================================================
+        # CREDIT HOURS
+        # ====================================================
+
         db.CheckConstraint(
             "credit_hours IS NULL OR credit_hours >= 0",
             name="ck_subject_credit_hours"
@@ -2843,7 +2970,6 @@ class Subject(db.Model):
             f"code={self.code!r} "
             f"status={self.status!r}>"
         )
-
 
 
 # ============================================================
@@ -3244,6 +3370,7 @@ class Teacher(db.Model):
 # TEACHER SUBJECT MODEL
 # PostgreSQL / Neon
 # ============================================================
+
 class TeacherSubject(db.Model):
 
     __tablename__ = "teacher_subjects"
@@ -4283,7 +4410,6 @@ class StudentEnrollment(db.Model):
 
 # ============================================================
 # STUDENT CHARGE MODEL
-# Registration Fee / Other Charges
 # PostgreSQL / Neon
 # ============================================================
 class StudentCharge(db.Model):
@@ -5068,6 +5194,7 @@ class Exam(db.Model):
 
 # ============================================================
 # EXAM SUBJECT MODEL
+# PostgreSQL / Neon
 # ============================================================
 
 class ExamSubject(db.Model):

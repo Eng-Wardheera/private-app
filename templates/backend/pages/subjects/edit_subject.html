@@ -195,6 +195,13 @@
     margin-left: 2px;
 }
 
+.optional-label {
+    color: #9299a7;
+    font-size: 10px;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
 .form-control-custom,
 .form-select-custom,
 .form-textarea-custom {
@@ -230,9 +237,10 @@
 }
 
 .form-control-custom:disabled,
-.form-select-custom:disabled {
+.form-select-custom:disabled,
+.form-control-custom[readonly] {
     background: #f5f7fa;
-    color: #9aa2af;
+    color: #737d8d;
     cursor: not-allowed;
 }
 
@@ -359,6 +367,39 @@
     color: #06245f;
     margin-top: 2px;
     flex-shrink: 0;
+}
+
+/* ============================================================
+   PROGRAM INFORMATION
+   ============================================================ */
+
+.program-info-box {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.program-info-item {
+    padding: 10px;
+    border: 1px solid #e7eaf0;
+    border-radius: 9px;
+    background: #fff;
+    text-align: center;
+}
+
+.program-info-item small {
+    display: block;
+    color: #9299a7;
+    font-size: 9px;
+    margin-bottom: 3px;
+}
+
+.program-info-item strong {
+    display: block;
+    color: #06245f;
+    font-size: 13px;
+    font-weight: 800;
 }
 
 /* ============================================================
@@ -794,6 +835,23 @@
 }
 
 /* ============================================================
+   LOCKED FIELD
+   ============================================================ */
+
+.locked-field {
+    position: relative;
+}
+
+.locked-field .lock-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9299a7;
+    pointer-events: none;
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 
@@ -836,7 +894,8 @@
         grid-column: auto;
     }
 
-    .marks-preview {
+    .marks-preview,
+    .program-info-box {
         grid-template-columns: 1fr;
     }
 
@@ -855,909 +914,447 @@
 
 </style>
 
-
 <div class="edit-subject-page">
 
-    <!-- ========================================================
-         HEADER
-    ======================================================== -->
 
-    <div class="edit-subject-header">
+<!-- ========================================================
+     HEADER
+======================================================== -->
 
-        <div class="edit-subject-header-left">
+<div class="edit-subject-header">
 
-            <div class="edit-subject-header-icon">
-                <i class="fas fa-pen-to-square"></i>
-            </div>
+    <div class="edit-subject-header-left">
 
-            <div>
-
-                <h1 class="edit-subject-title">
-                    Edit Subject
-                </h1>
-
-                <p class="edit-subject-subtitle">
-                    Update the academic information and configuration of this subject.
-                </p>
-
-            </div>
-
+        <div class="edit-subject-header-icon">
+            <i class="fas fa-pen-to-square"></i>
         </div>
 
+        <div>
 
-        <div class="edit-subject-header-actions">
+            <h1 class="edit-subject-title">
+                Edit Subject
+            </h1>
 
-            <a
-                href="{{ url_for('main.all_subjects') }}"
-                class="back-subjects-btn"
-            >
-                <i class="fas fa-arrow-left"></i>
-                Back to Subjects
-            </a>
+            <p class="edit-subject-subtitle">
+                Update the academic information and configuration of this subject.
+            </p>
 
         </div>
 
     </div>
 
 
-    <!-- ========================================================
-         FORM
-    ======================================================== -->
+    <div class="edit-subject-header-actions">
 
-    <form
-        id="edit-subject-form"
-        method="POST"
-        action="{{ url_for('main.edit_subject', subject_id=subject.id) }}"
-        autocomplete="off"
-        novalidate
-    >
+        <a
+            href="{{ url_for('main.all_subjects') }}"
+            class="back-subjects-btn"
+        >
+            <i class="fas fa-arrow-left"></i>
+            Back to Subjects
+        </a>
 
-        <div class="edit-subject-grid">
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     FORM
+======================================================== -->
+
+<form
+    id="edit-subject-form"
+    method="POST"
+    action="{{ url_for('main.edit_subject', subject_id=subject.id) }}"
+    autocomplete="off"
+    novalidate
+>
+
+    <div class="edit-subject-grid">
+
+
+        <!-- ==================================================
+             MAIN
+        ================================================== -->
+
+        <div class="edit-subject-main">
+
+
+            <!-- ALERT -->
+
+            <div
+                id="form-alert"
+                class="form-alert"
+            >
+
+                <i class="fas fa-exclamation-circle"></i>
+
+                <span id="form-alert-message"></span>
+
+            </div>
+
 
             <!-- ==================================================
-                 MAIN
+                 ACADEMIC ASSIGNMENT
             ================================================== -->
 
-            <div class="edit-subject-main">
+            <div class="form-card">
 
-                <!-- ALERT -->
+                <div class="form-card-header">
 
-                <div
-                    id="form-alert"
-                    class="form-alert"
-                >
-
-                    <i class="fas fa-exclamation-circle"></i>
-
-                    <span id="form-alert-message"></span>
-
-                </div>
-
-
-                <!-- ==================================================
-                     ACADEMIC ASSIGNMENT
-                ================================================== -->
-
-                <div class="form-card">
-
-                    <div class="form-card-header">
-
-                        <div class="form-card-header-icon">
-                            <i class="fas fa-building-columns"></i>
-                        </div>
-
-                        <div>
-
-                            <h3>
-                                Academic Assignment
-                            </h3>
-
-                            <p>
-                                Update where this subject belongs.
-                            </p>
-
-                        </div>
-
+                    <div class="form-card-header-icon">
+                        <i class="fas fa-building-columns"></i>
                     </div>
 
-
-                    <div class="form-card-body">
-
-                        <div class="fields-grid">
-
-
-                            <!-- INSTITUTION -->
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="institution_id"
-                                >
-                                    Institution
-                                    <span class="required">*</span>
-                                </label>
-
-                                <select
-                                    id="institution_id"
-                                    name="institution_id"
-                                    class="form-select-custom"
-                                    required
-                                >
-
-                                    <option value="">
-                                        Select Institution
-                                    </option>
-
-                                    {% set selected_institution_id =
-                                        request.form.get(
-                                            'institution_id',
-                                            subject.institution_id
-                                        ) | string
-                                    %}
-
-                                    {% for institution in institutions %}
-
-                                        <option
-                                            value="{{ institution.id }}"
-                                            {% if selected_institution_id == institution.id|string %}
-                                                selected
-                                            {% endif %}
-                                        >
-
-                                            {{ institution.name }}
-
-                                            {% if institution.short_name %}
-                                                — {{ institution.short_name }}
-                                            {% endif %}
-
-                                        </option>
-
-                                    {% endfor %}
-
-                                </select>
-
-                                <div class="form-help">
-                                    The institution owns this subject.
-                                </div>
-
-                            </div>
-
-
-                            <!-- BRANCH -->
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="branch_id"
-                                >
-                                    Branch
-                                </label>
-
-                                <select
-                                    id="branch_id"
-                                    name="branch_id"
-                                    class="form-select-custom"
-                                >
-
-                                    <option value="">
-                                        All / Institution Level
-                                    </option>
-
-                                    {% set selected_branch_id =
-                                        request.form.get(
-                                            'branch_id',
-                                            subject.branch_id or ''
-                                        ) | string
-                                    %}
-
-                                    {% for branch in branches %}
-
-                                        <option
-                                            value="{{ branch.id }}"
-                                            data-institution-id="{{ branch.institution_id }}"
-                                            {% if selected_branch_id == branch.id|string %}
-                                                selected
-                                            {% endif %}
-                                        >
-
-                                            {{ branch.name }}
-
-                                            {% if branch.code %}
-                                                — {{ branch.code }}
-                                            {% endif %}
-
-                                        </option>
-
-                                    {% endfor %}
-
-                                </select>
-
-                                <div class="form-help">
-                                    Optional branch scope.
-                                </div>
-
-                            </div>
-
-
-                            <!-- PROGRAM -->
-
-                            <div class="form-group field-full">
-
-                                <label
-                                    class="form-label"
-                                    for="program_id"
-                                >
-                                    Program
-                                </label>
-
-                                <select
-                                    id="program_id"
-                                    name="program_id"
-                                    class="form-select-custom"
-                                >
-
-                                    <option value="">
-                                        Select Program
-                                    </option>
-
-                                    {% set selected_program_id =
-                                        request.form.get(
-                                            'program_id',
-                                            subject.program_id or ''
-                                        ) | string
-                                    %}
-
-                                    {% for program in programs %}
-
-                                        <option
-                                            value="{{ program.id }}"
-                                            data-institution-id="{{ program.institution_id }}"
-                                            {% if selected_program_id == program.id|string %}
-                                                selected
-                                            {% endif %}
-                                        >
-
-                                            {{ program.name }}
-
-                                            {% if program.code %}
-                                                — {{ program.code }}
-                                            {% endif %}
-
-                                        </option>
-
-                                    {% endfor %}
-
-                                </select>
-
-                                <div class="form-help">
-                                    Optional academic program.
-                                </div>
-
-                            </div>
-
-
-                            <!-- ASSIGNMENT INFO -->
-
-                            <div class="form-group field-full">
-
-                                <div class="assignment-box">
-
-                                    <div class="assignment-box-header">
-
-                                        <div class="assignment-box-header-icon">
-                                            <i class="fas fa-sitemap"></i>
-                                        </div>
-
-                                        <div>
-
-                                            <strong>
-                                                Subject Scope
-                                            </strong>
-
-                                            <span>
-                                                Institution → Branch → Program
-                                            </span>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="assignment-note">
-
-                                        <i class="fas fa-info-circle"></i>
-
-                                        <span>
-                                            Make sure the selected branch and program belong
-                                            to the selected institution.
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
+                    <div>
+
+                        <h3>
+                            Academic Assignment
+                        </h3>
+
+                        <p>
+                            Update where this subject belongs.
+                        </p>
 
                     </div>
 
                 </div>
 
 
-                <!-- ==================================================
-                     SUBJECT INFORMATION
-                ================================================== -->
-
-                <div class="form-card">
-
-                    <div class="form-card-header">
-
-                        <div class="form-card-header-icon">
-                            <i class="fas fa-book"></i>
-                        </div>
-
-                        <div>
-
-                            <h3>
-                                Subject Information
-                            </h3>
-
-                            <p>
-                                Update the subject identification details.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-card-body">
-
-                        <div class="fields-grid">
-
-
-                            <!-- NAME -->
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="name"
-                                >
-                                    Subject Name
-                                    <span class="required">*</span>
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    class="form-control-custom"
-                                    placeholder="e.g. Mathematics"
-                                    value="{{ request.form.get('name', subject.name) }}"
-                                    maxlength="150"
-                                    required
-                                >
-
-                                <div class="form-help">
-                                    Official subject name.
-                                </div>
-
-                            </div>
-
-
-                            <!-- CODE -->
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="code"
-                                >
-                                    Subject Code
-                                    <span class="required">*</span>
-                                </label>
-
-                                <div class="auto-code-wrapper">
-
-                                    <input
-                                        type="text"
-                                        id="code"
-                                        name="code"
-                                        class="form-control-custom"
-                                        value="{{ subject.code }}"
-                                        maxlength="50"
-                                        readonly
-                                        required
-                                    >
-
-                                    <span class="auto-code-badge">
-
-                                        <i class="fas fa-lock"></i>
-
-                                        AUTO
-
-                                    </span>
-
-                                </div>
-
-                                <div class="existing-code-notice">
-
-                                    <i class="fas fa-shield-halved"></i>
-
-                                    <span>
-                                        Subject codes are protected during editing.
-                                        Changing the subject name will not automatically
-                                        change the existing database code.
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- SHORT NAME -->
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="short_name"
-                                >
-                                    Short Name
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="short_name"
-                                    name="short_name"
-                                    class="form-control-custom"
-                                    placeholder="e.g. Math"
-                                    value="{{ request.form.get('short_name', subject.short_name or '') }}"
-                                    maxlength="100"
-                                >
-
-                                <div class="form-help">
-                                    Optional short display name.
-                                </div>
-
-                            </div>
-
-
-                            <!-- CODE PREVIEW -->
-
-                            <div class="form-group">
-
-                                <label class="form-label">
-                                    Current Code
-                                </label>
-
-                                <div class="code-preview-box">
-
-                                    <div class="code-preview-icon">
-                                        <i class="fas fa-hashtag"></i>
-                                    </div>
-
-                                    <div class="code-preview-content">
-
-                                        <span class="code-preview-label">
-                                            SUBJECT CODE
-                                        </span>
-
-                                        <span
-                                            id="code-preview"
-                                            class="code-preview-value"
-                                        >
-                                            {{ subject.code }}
-                                        </span>
-
-                                    </div>
-
-                                    <div class="code-preview-note">
-                                        Protected
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- DESCRIPTION -->
-
-                            <div class="form-group field-full">
-
-                                <label
-                                    class="form-label"
-                                    for="description"
-                                >
-                                    Description
-                                </label>
-
-                                <textarea
-                                    id="description"
-                                    name="description"
-                                    class="form-textarea-custom"
-                                    placeholder="Write a short description about this subject..."
-                                >{{ request.form.get('description', subject.description or '') }}</textarea>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ==================================================
-                     SUBJECT TYPE
-                ================================================== -->
-
-                <div class="form-card">
-
-                    <div class="form-card-header">
-
-                        <div class="form-card-header-icon">
-                            <i class="fas fa-layer-group"></i>
-                        </div>
-
-                        <div>
-
-                            <h3>
-                                Subject Type
-                            </h3>
-
-                            <p>
-                                Update the category of this subject.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-card-body">
-
-                        {% set selected_type =
-                            request.form.get(
-                                'subject_type',
-                                subject.subject_type
-                            )
-                        %}
-
-                        <div class="option-group">
-
-                            {% for subject_type in subject_types %}
-
-                                {% set type_value =
-                                    subject_type.value
-                                    if subject_type.value is defined
-                                    else subject_type
+                <div class="form-card-body">
+
+                    <div class="fields-grid">
+
+
+                        <!-- ==================================================
+                             INSTITUTION
+                        ================================================== -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="institution_id"
+                            >
+                                Institution
+                                <span class="required">*</span>
+                            </label>
+
+                            <select
+                                id="institution_id"
+                                name="institution_id"
+                                class="form-select-custom"
+                                {% if is_school_admin or is_branch_admin %}
+                                    disabled
+                                {% endif %}
+                                required
+                            >
+
+                                <option value="">
+                                    Select Institution
+                                </option>
+
+                                {% set selected_institution_id =
+                                    request.form.get(
+                                        'institution_id',
+                                        selected_institution_id
+                                    ) | string
                                 %}
 
-                                <div
-                                    class="option-item type-option-{{ type_value }}"
-                                >
+                                {% for institution in institutions %}
 
-                                    <input
-                                        type="radio"
-                                        id="subject_type_{{ loop.index }}"
-                                        name="subject_type"
-                                        value="{{ type_value }}"
-                                        {% if selected_type == type_value %}
-                                            checked
+                                    <option
+                                        value="{{ institution.id }}"
+                                        {% if selected_institution_id == institution.id|string %}
+                                            selected
                                         {% endif %}
                                     >
 
-                                    <label
-                                        for="subject_type_{{ loop.index }}"
-                                        class="option-label"
-                                    >
+                                        {{ institution.name }}
 
-                                        {% if type_value == 'academic' %}
-
-                                            <i class="fas fa-graduation-cap"></i>
-
-                                        {% elif type_value == 'practical' %}
-
-                                            <i class="fas fa-flask"></i>
-
-                                        {% elif type_value == 'language' %}
-
-                                            <i class="fas fa-language"></i>
-
-                                        {% elif type_value == 'religious' %}
-
-                                            <i class="fas fa-mosque"></i>
-
-                                        {% elif type_value == 'vocational' %}
-
-                                            <i class="fas fa-screwdriver-wrench"></i>
-
-                                        {% elif type_value == 'elective' %}
-
-                                            <i class="fas fa-list-check"></i>
-
-                                        {% elif type_value == 'compulsory' %}
-
-                                            <i class="fas fa-circle-check"></i>
-
-                                        {% else %}
-
-                                            <i class="fas fa-book"></i>
-
+                                        {% if institution.short_name %}
+                                            — {{ institution.short_name }}
                                         {% endif %}
 
-                                        {{ type_value.replace('_', ' ')|title }}
+                                    </option>
 
-                                    </label>
+                                {% endfor %}
 
-                                </div>
+                            </select>
 
-                            {% endfor %}
+                            {% if is_school_admin or is_branch_admin %}
 
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ==================================================
-                     ACADEMIC LOAD
-                ================================================== -->
-
-                <div class="form-card">
-
-                    <div class="form-card-header">
-
-                        <div class="form-card-header-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-
-                        <div>
-
-                            <h3>
-                                Academic Load
-                            </h3>
-
-                            <p>
-                                Configure weekly teaching and credit hours.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-card-body">
-
-                        <div class="fields-grid">
-
-
-                            <!-- WEEKLY HOURS -->
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="weekly_hours"
-                                >
-                                    Weekly Hours
-                                </label>
+                                <!--
+                                    Disabled fields are not submitted.
+                                    Hidden field preserves the server-side scope.
+                                -->
 
                                 <input
-                                    type="number"
-                                    id="weekly_hours"
-                                    name="weekly_hours"
-                                    class="form-control-custom"
-                                    placeholder="e.g. 5"
-                                    value="{{ request.form.get('weekly_hours', subject.weekly_hours if subject.weekly_hours is not none else '') }}"
-                                    min="0"
-                                    max="999.99"
-                                    step="0.01"
+                                    type="hidden"
+                                    name="institution_id"
+                                    value="{{ current_user_institution_id }}"
                                 >
 
-                                <div class="form-help">
-                                    Teaching hours per week.
-                                </div>
+                            {% endif %}
 
-                            </div>
+                            <div class="form-help">
 
+                                {% if is_superadmin %}
 
-                            <!-- CREDIT HOURS -->
+                                    Select the institution that owns this subject.
 
-                            <div class="form-group">
+                                {% else %}
 
-                                <label
-                                    class="form-label"
-                                    for="credit_hours"
-                                >
-                                    Credit Hours
-                                </label>
+                                    Your institution is fixed by your account scope.
 
-                                <input
-                                    type="number"
-                                    id="credit_hours"
-                                    name="credit_hours"
-                                    class="form-control-custom"
-                                    placeholder="e.g. 3"
-                                    value="{{ request.form.get('credit_hours', subject.credit_hours if subject.credit_hours is not none else '') }}"
-                                    min="0"
-                                    max="999.99"
-                                    step="0.01"
-                                >
-
-                                <div class="form-help">
-                                    Academic credit value.
-                                </div>
+                                {% endif %}
 
                             </div>
 
                         </div>
 
-                    </div>
 
-                </div>
+                        <!-- ==================================================
+                             BRANCH
+                        ================================================== -->
 
+                        <div class="form-group">
 
-                <!-- ==================================================
-                     MARKING CONFIGURATION
-                ================================================== -->
+                            <label
+                                class="form-label"
+                                for="branch_id"
+                            >
+                                Branch
+                                <span class="required">*</span>
+                            </label>
 
-                <div class="form-card">
+                            <select
+                                id="branch_id"
+                                name="branch_id"
+                                class="form-select-custom"
+                                {% if is_branch_admin %}
+                                    disabled
+                                {% endif %}
+                                required
+                            >
 
-                    <div class="form-card-header">
+                                <option value="">
+                                    Select Branch
+                                </option>
 
-                        <div class="form-card-header-icon">
-                            <i class="fas fa-chart-line"></i>
+                                {% set selected_branch_id =
+                                    request.form.get(
+                                        'branch_id',
+                                        selected_branch_id or ''
+                                    ) | string
+                                %}
+
+                                {% for branch in branches %}
+
+                                    <option
+                                        value="{{ branch.id }}"
+                                        data-institution-id="{{ branch.institution_id }}"
+                                        {% if selected_branch_id == branch.id|string %}
+                                            selected
+                                        {% endif %}
+                                    >
+
+                                        {{ branch.name }}
+
+                                        {% if branch.code %}
+                                            — {{ branch.code }}
+                                        {% endif %}
+
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                            {% if is_branch_admin %}
+
+                                <input
+                                    type="hidden"
+                                    name="branch_id"
+                                    value="{{ current_user_branch_id }}"
+                                >
+
+                            {% endif %}
+
+                            <div class="form-help">
+
+                                {% if is_branch_admin %}
+
+                                    Your branch is fixed by your account scope.
+
+                                {% else %}
+
+                                    Subject branch is required for branch-scoped subjects.
+
+                                {% endif %}
+
+                            </div>
+
                         </div>
 
-                        <div>
 
-                            <h3>
-                                Marking Configuration
-                            </h3>
+                        <!-- ==================================================
+                             PROGRAM
+                        ================================================== -->
 
-                            <p>
-                                Update maximum and passing marks.
-                            </p>
+                        <div class="form-group field-full">
+
+                            <label
+                                class="form-label"
+                                for="program_id"
+                            >
+                                Program
+                                <span class="required">*</span>
+                            </label>
+
+                            <select
+                                id="program_id"
+                                name="program_id"
+                                class="form-select-custom"
+                                required
+                            >
+
+                                <option value="">
+                                    Select Program
+                                </option>
+
+                                {% set selected_program_id =
+                                    request.form.get(
+                                        'program_id',
+                                        selected_program_id or ''
+                                    ) | string
+                                %}
+
+                                {% for program in programs %}
+
+                                    <option
+                                        value="{{ program.id }}"
+                                        data-institution-id="{{ program.institution_id }}"
+                                        data-branch-id="{{ program.branch_id or '' }}"
+                                        data-duration-months="{{ program.duration_months or '' }}"
+                                        {% if selected_program_id == program.id|string %}
+                                            selected
+                                        {% endif %}
+                                    >
+
+                                        {{ program.name }}
+
+                                        {% if program.code %}
+                                            — {{ program.code }}
+                                        {% endif %}
+
+                                        {% if program.duration_months %}
+                                            · {{ program.duration_months }} months
+                                        {% endif %}
+
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                            <div class="form-help">
+                                Select the academic program for this subject.
+                                Institution-wide programs are available to their institution branches.
+                            </div>
+
+
+                            <!-- PROGRAM INFORMATION -->
+
+                            <div
+                                id="program-info-box"
+                                class="program-info-box"
+                            >
+
+                                <div class="program-info-item">
+
+                                    <small>
+                                        PROGRAM DURATION
+                                    </small>
+
+                                    <strong id="program-duration-preview">
+                                        —
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="program-info-item">
+
+                                    <small>
+                                        WEEKLY HOURS
+                                    </small>
+
+                                    <strong id="program-weekly-preview">
+                                        5
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="program-info-item">
+
+                                    <small>
+                                        CREDIT HOURS
+                                    </small>
+
+                                    <strong id="program-credit-preview">
+                                        —
+                                    </strong>
+
+                                </div>
+
+                            </div>
 
                         </div>
 
-                    </div>
 
+                        <!-- ==================================================
+                             ASSIGNMENT INFO
+                        ================================================== -->
 
-                    <div class="form-card-body">
+                        <div class="form-group field-full">
 
-                        <div class="marks-box">
+                            <div class="assignment-box">
 
-                            <div class="marks-header">
+                                <div class="assignment-box-header">
 
-                                <div class="marks-title">
-
-                                    <div class="marks-title-icon">
-                                        <i class="fas fa-award"></i>
+                                    <div class="assignment-box-header-icon">
+                                        <i class="fas fa-sitemap"></i>
                                     </div>
 
-                                    <strong>
-                                        Assessment Marks
-                                    </strong>
+                                    <div>
 
-                                </div>
+                                        <strong>
+                                            Subject Scope
+                                        </strong>
 
-                                <div class="marks-header-badge">
+                                        <span>
+                                            Institution → Branch → Program
+                                        </span>
 
-                                    <i class="fas fa-calculator"></i>
-
-                                    Live Preview
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="marks-fields">
-
-
-                                <!-- MAX -->
-
-                                <div class="form-group">
-
-                                    <label
-                                        class="form-label"
-                                        for="max_marks"
-                                    >
-                                        Maximum Marks
-                                        <span class="required">*</span>
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        id="max_marks"
-                                        name="max_marks"
-                                        class="form-control-custom"
-                                        placeholder="100"
-                                        value="{{ request.form.get('max_marks', subject.max_marks) }}"
-                                        min="0.01"
-                                        max="9999.99"
-                                        step="0.01"
-                                        required
-                                    >
+                                    </div>
 
                                 </div>
 
 
-                                <!-- PASS -->
+                                <div class="assignment-note">
 
-                                <div class="form-group">
+                                    <i class="fas fa-info-circle"></i>
 
-                                    <label
-                                        class="form-label"
-                                        for="pass_marks"
-                                    >
-                                        Pass Marks
-                                        <span class="required">*</span>
-                                    </label>
+                                    <span>
 
-                                    <input
-                                        type="number"
-                                        id="pass_marks"
-                                        name="pass_marks"
-                                        class="form-control-custom"
-                                        placeholder="50"
-                                        value="{{ request.form.get('pass_marks', subject.pass_marks) }}"
-                                        min="0"
-                                        max="9999.99"
-                                        step="0.01"
-                                        required
-                                    >
+                                        The selected branch and program must belong
+                                        to the selected institution. Branch administrators
+                                        are restricted to their assigned branch.
 
-                                </div>
-
-                            </div>
-
-
-                            <div class="marks-preview">
-
-                                <div class="marks-preview-item">
-
-                                    <small>
-                                        MAXIMUM
-                                    </small>
-
-                                    <strong id="max-preview">
-                                        {{ subject.max_marks }}
-                                    </strong>
-
-                                </div>
-
-
-                                <div class="marks-preview-item">
-
-                                    <small>
-                                        PASS
-                                    </small>
-
-                                    <strong id="pass-preview">
-                                        {{ subject.pass_marks }}
-                                    </strong>
-
-                                </div>
-
-
-                                <div class="marks-preview-item">
-
-                                    <small>
-                                        PASS %
-                                    </small>
-
-                                    <strong id="pass-percent-preview">
-                                        50%
-                                    </strong>
+                                    </span>
 
                                 </div>
 
@@ -1773,132 +1370,208 @@
 
 
             <!-- ==================================================
-                 SIDEBAR
+                 SUBJECT INFORMATION
             ================================================== -->
 
-            <div class="edit-subject-sidebar">
+            <div class="form-card">
 
+                <div class="form-card-header">
 
-                <!-- ==================================================
-                     PREVIEW
-                ================================================== -->
-
-                <div class="sidebar-card">
-
-                    <div class="sidebar-card-header">
-
-                        <h3>
-                            Subject Preview
-                        </h3>
-
+                    <div class="form-card-header-icon">
+                        <i class="fas fa-book"></i>
                     </div>
 
+                    <div>
 
-                    <div class="sidebar-card-body">
+                        <h3>
+                            Subject Information
+                        </h3>
 
-                        <div class="subject-summary">
-
-                            <div class="subject-summary-icon">
-                                <i class="fas fa-book-open"></i>
-                            </div>
-
-                            <h3
-                                id="summary-name"
-                                class="subject-summary-name"
-                            >
-                                {{ request.form.get('name', subject.name) }}
-                            </h3>
-
-                            <div
-                                id="summary-code"
-                                class="subject-summary-code"
-                            >
-                                {{ subject.code }}
-                            </div>
-
-                        </div>
+                        <p>
+                            Update the subject identification details.
+                        </p>
 
                     </div>
 
                 </div>
 
 
-                <!-- ==================================================
-                     STATUS
-                ================================================== -->
+                <div class="form-card-body">
 
-                <div class="sidebar-card">
-
-                    <div class="sidebar-card-header">
-
-                        <h3>
-                            Subject Status
-                        </h3>
-
-                    </div>
+                    <div class="fields-grid">
 
 
-                    <div class="sidebar-card-body">
+                        <!-- NAME -->
 
-                        {% set selected_status =
-                            request.form.get(
-                                'status',
-                                subject.status
-                            )
-                        %}
+                        <div class="form-group">
 
-                        <div class="option-group">
+                            <label
+                                class="form-label"
+                                for="name"
+                            >
+                                Subject Name
+                                <span class="required">*</span>
+                            </label>
 
-                            {% for status in subject_statuses %}
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                class="form-control-custom"
+                                placeholder="e.g. Mathematics"
+                                value="{{ request.form.get('name', subject.name or '') }}"
+                                maxlength="200"
+                                required
+                            >
 
-                                {% set status_value =
-                                    status.value
-                                    if status.value is defined
-                                    else status
-                                %}
+                            <div class="form-help">
+                                Official subject name.
+                            </div>
 
-                                <div class="option-item">
+                        </div>
 
-                                    <input
-                                        type="radio"
-                                        id="status_{{ loop.index }}"
-                                        name="status"
-                                        value="{{ status_value }}"
-                                        {% if selected_status == status_value %}
-                                            checked
-                                        {% endif %}
+
+                        <!-- CODE -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="code"
+                            >
+                                Subject Code
+                            </label>
+
+                            <div class="auto-code-wrapper">
+
+                                <input
+                                    type="text"
+                                    id="code"
+                                    class="form-control-custom"
+                                    value="{{ subject.code or '' }}"
+                                    maxlength="50"
+                                    readonly
+                                    tabindex="-1"
+                                >
+
+                                <span class="auto-code-badge">
+
+                                    <i class="fas fa-lock"></i>
+
+                                    LOCKED
+
+                                </span>
+
+                            </div>
+
+                            <div class="existing-code-notice">
+
+                                <i class="fas fa-shield-halved"></i>
+
+                                <span>
+
+                                    Subject codes are protected during editing.
+                                    The existing code will not be changed.
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- SHORT NAME -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="short_name"
+                            >
+                                Short Name
+                                <span class="optional-label">
+                                    Auto-generated
+                                </span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="short_name"
+                                name="short_name"
+                                class="form-control-custom"
+                                placeholder="e.g. BEG"
+                                value="{{ request.form.get('short_name', subject.short_name or '') }}"
+                                maxlength="50"
+                                readonly
+                            >
+
+                            <div class="form-help">
+
+                                Generated from the first three words of the subject name.
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CODE PREVIEW -->
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Current Code
+                            </label>
+
+                            <div class="code-preview-box">
+
+                                <div class="code-preview-icon">
+                                    <i class="fas fa-hashtag"></i>
+                                </div>
+
+                                <div class="code-preview-content">
+
+                                    <span class="code-preview-label">
+                                        SUBJECT CODE
+                                    </span>
+
+                                    <span
+                                        id="code-preview"
+                                        class="code-preview-value"
                                     >
-
-                                    <label
-                                        for="status_{{ loop.index }}"
-                                        class="option-label {% if status_value == 'active' %}active-green{% endif %}"
-                                    >
-
-                                        {% if status_value == 'active' %}
-
-                                            <i class="fas fa-check-circle"></i>
-
-                                        {% elif status_value == 'inactive' %}
-
-                                            <i class="fas fa-pause-circle"></i>
-
-                                        {% elif status_value == 'suspended' %}
-
-                                            <i class="fas fa-ban"></i>
-
-                                        {% else %}
-
-                                            <i class="fas fa-circle"></i>
-
-                                        {% endif %}
-
-                                        {{ status_value.replace('_', ' ')|title }}
-
-                                    </label>
+                                        {{ subject.code or '—' }}
+                                    </span>
 
                                 </div>
 
-                            {% endfor %}
+                                <div class="code-preview-note">
+                                    Protected
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- DESCRIPTION -->
+
+                        <div class="form-group field-full">
+
+                            <label
+                                class="form-label"
+                                for="description"
+                            >
+                                Description
+                                <span class="optional-label">
+                                    Optional
+                                </span>
+                            </label>
+
+                            <textarea
+                                id="description"
+                                name="description"
+                                class="form-textarea-custom"
+                                placeholder="Write a short description about this subject..."
+                            >{{ request.form.get('description', subject.description or '') }}</textarea>
 
                         </div>
 
@@ -1906,124 +1579,239 @@
 
                 </div>
 
+            </div>
 
-                <!-- ==================================================
-                     IMPORTANT INFO
-                ================================================== -->
 
-                <div class="sidebar-card">
+            <!-- ==================================================
+                 SUBJECT TYPE
+            ================================================== -->
 
-                    <div class="sidebar-card-header">
+            <div class="form-card">
+
+                <div class="form-card-header">
+
+                    <div class="form-card-header-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+
+                    <div>
 
                         <h3>
-                            Important Information
+                            Subject Type
                         </h3>
+
+                        <p>
+                            Update the category of this subject.
+                        </p>
 
                     </div>
 
+                </div>
 
-                    <div class="sidebar-card-body">
 
+                <div class="form-card-body">
 
-                        <div class="info-row">
+                    {% set selected_type =
+                        request.form.get(
+                            'subject_type',
+                            subject.subject_type or ''
+                        )
+                    %}
 
-                            <div class="info-icon">
-                                <i class="fas fa-building"></i>
+                    <div class="option-group">
+
+                        {% for subject_type in subject_types %}
+
+                            {% set type_value =
+                                subject_type.value
+                                if subject_type.value is defined
+                                else subject_type
+                            %}
+
+                            {% set type_value =
+                                type_value|string|lower
+                            %}
+
+                            <div
+                                class="option-item type-option-{{ type_value }}"
+                            >
+
+                                <input
+                                    type="radio"
+                                    id="subject_type_{{ loop.index }}"
+                                    name="subject_type"
+                                    value="{{ type_value }}"
+                                    {% if selected_type|string|lower == type_value %}
+                                        checked
+                                    {% endif %}
+                                >
+
+                                <label
+                                    for="subject_type_{{ loop.index }}"
+                                    class="option-label"
+                                >
+
+                                    {% if type_value == 'academic' %}
+
+                                        <i class="fas fa-graduation-cap"></i>
+
+                                    {% elif type_value == 'practical' %}
+
+                                        <i class="fas fa-flask"></i>
+
+                                    {% elif type_value == 'language' %}
+
+                                        <i class="fas fa-language"></i>
+
+                                    {% elif type_value == 'religious' %}
+
+                                        <i class="fas fa-mosque"></i>
+
+                                    {% elif type_value == 'vocational' %}
+
+                                        <i class="fas fa-screwdriver-wrench"></i>
+
+                                    {% elif type_value == 'elective' %}
+
+                                        <i class="fas fa-list-check"></i>
+
+                                    {% elif type_value == 'compulsory' %}
+
+                                        <i class="fas fa-circle-check"></i>
+
+                                    {% else %}
+
+                                        <i class="fas fa-book"></i>
+
+                                    {% endif %}
+
+                                    {{ type_value.replace('_', ' ')|title }}
+
+                                </label>
+
                             </div>
 
-                            <div class="info-content">
+                        {% endfor %}
 
-                                <strong>
-                                    Institution
-                                </strong>
+                    </div>
 
-                                <span>
-                                    Subject must remain inside a valid institution scope.
-                                </span>
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 ACADEMIC LOAD
+            ================================================== -->
+
+            <div class="form-card">
+
+                <div class="form-card-header">
+
+                    <div class="form-card-header-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Academic Load
+                        </h3>
+
+                        <p>
+                            Academic hours are calculated from the selected program duration.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-card-body">
+
+                    <div class="fields-grid">
+
+
+                        <!-- WEEKLY HOURS -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="weekly_hours"
+                            >
+                                Weekly Hours
+                            </label>
+
+                            <input
+                                type="number"
+                                id="weekly_hours"
+                                name="weekly_hours"
+                                class="form-control-custom"
+                                value="{{ subject.weekly_hours if subject.weekly_hours is not none else '' }}"
+                                readonly
+                                tabindex="-1"
+                            >
+
+                            <div class="form-help">
+
+                                Calculated from 5 teaching days × 1 hour per day.
 
                             </div>
 
                         </div>
 
 
-                        <div class="info-row">
+                        <!-- CREDIT HOURS -->
 
-                            <div class="info-icon">
-                                <i class="fas fa-code-branch"></i>
-                            </div>
+                        <div class="form-group">
 
-                            <div class="info-content">
+                            <label
+                                class="form-label"
+                                for="credit_hours"
+                            >
+                                Credit Hours
+                            </label>
 
-                                <strong>
-                                    Branch
-                                </strong>
+                            <input
+                                type="number"
+                                id="credit_hours"
+                                name="credit_hours"
+                                class="form-control-custom"
+                                value="{{ subject.credit_hours if subject.credit_hours is not none else '' }}"
+                                readonly
+                                tabindex="-1"
+                            >
 
-                                <span>
-                                    Optional branch-level subject assignment.
-                                </span>
+                            <div class="form-help">
 
-                            </div>
-
-                        </div>
-
-
-                        <div class="info-row">
-
-                            <div class="info-icon">
-                                <i class="fas fa-graduation-cap"></i>
-                            </div>
-
-                            <div class="info-content">
-
-                                <strong>
-                                    Program
-                                </strong>
-
-                                <span>
-                                    Optional curriculum program assignment.
-                                </span>
+                                1 credit = 15 contact hours.
 
                             </div>
 
                         </div>
 
 
-                        <div class="info-row">
+                        <!-- TOTAL PROGRAM HOURS -->
 
-                            <div class="info-icon">
-                                <i class="fas fa-lock"></i>
-                            </div>
+                        <div class="form-group field-full">
 
-                            <div class="info-content">
+                            <label class="form-label">
+                                Total Program Contact Hours
+                            </label>
 
-                                <strong>
-                                    Subject Code
-                                </strong>
+                            <input
+                                type="text"
+                                id="total-program-hours"
+                                class="form-control-custom"
+                                value="—"
+                                readonly
+                                tabindex="-1"
+                            >
 
-                                <span>
-                                    Existing subject code is protected during editing.
-                                </span>
+                            <div class="form-help">
 
-                            </div>
-
-                        </div>
-
-
-                        <div class="info-row">
-
-                            <div class="info-icon">
-                                <i class="fas fa-percent"></i>
-                            </div>
-
-                            <div class="info-content">
-
-                                <strong>
-                                    Passing Marks
-                                </strong>
-
-                                <span>
-                                    Pass marks must not exceed maximum marks.
-                                </span>
+                                Calculated from program duration × 52 weeks/year × 5 hours/week.
 
                             </div>
 
@@ -2033,36 +1821,185 @@
 
                 </div>
 
-
-                <!-- ==================================================
-                     ACTIONS
-                ================================================== -->
-
-                <div class="sidebar-card">
-
-                    <div class="sidebar-card-body">
-
-                        <button
-                            type="submit"
-                            id="update-subject-btn"
-                            class="update-subject-btn"
-                        >
-
-                            <i class="fas fa-save"></i>
-
-                            <span>
-                                Save Changes
-                            </span>
-
-                        </button>
+            </div>
 
 
-                        <a
-                            href="{{ url_for('main.view_subject', subject_id=subject.id) }}"
-                            class="cancel-subject-btn"
-                        >
-                            Cancel
-                        </a>
+            <!-- ==================================================
+                 MARKING CONFIGURATION
+            ================================================== -->
+
+            <div class="form-card">
+
+                <div class="form-card-header">
+
+                    <div class="form-card-header-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Marking Configuration
+                        </h3>
+
+                        <p>
+                            Update maximum and optional passing marks.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-card-body">
+
+                    <div class="marks-box">
+
+                        <div class="marks-header">
+
+                            <div class="marks-title">
+
+                                <div class="marks-title-icon">
+                                    <i class="fas fa-award"></i>
+                                </div>
+
+                                <strong>
+                                    Assessment Marks
+                                </strong>
+
+                            </div>
+
+                            <div class="marks-header-badge">
+
+                                <i class="fas fa-calculator"></i>
+
+                                Live Preview
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="marks-fields">
+
+
+                            <!-- MAX -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="max_marks"
+                                >
+
+                                    Maximum Marks
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="max_marks"
+                                    name="max_marks"
+                                    class="form-control-custom"
+                                    placeholder="100"
+                                    value="{{ request.form.get('max_marks', subject.max_marks if subject.max_marks is not none else '100') }}"
+                                    min="0.01"
+                                    max="9999.99"
+                                    step="0.01"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <!-- PASS -->
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="pass_marks"
+                                >
+
+                                    Pass Marks
+
+                                    <span class="optional-label">
+                                        Optional
+                                    </span>
+
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="pass_marks"
+                                    name="pass_marks"
+                                    class="form-control-custom"
+                                    placeholder="Optional"
+                                    value="{% if request.form.get('pass_marks') is not none %}{{ request.form.get('pass_marks') }}{% elif subject.pass_marks is not none %}{{ subject.pass_marks }}{% endif %}"
+                                    min="0"
+                                    max="9999.99"
+                                    step="0.01"
+                                >
+
+                                <div class="form-help">
+
+                                    Leave blank if this subject does not use a fixed pass mark.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="marks-preview">
+
+
+                            <div class="marks-preview-item">
+
+                                <small>
+                                    MAXIMUM
+                                </small>
+
+                                <strong id="max-preview">
+                                    {{ subject.max_marks if subject.max_marks is not none else '—' }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="marks-preview-item">
+
+                                <small>
+                                    PASS
+                                </small>
+
+                                <strong id="pass-preview">
+                                    {% if subject.pass_marks is not none %}
+                                        {{ subject.pass_marks }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="marks-preview-item">
+
+                                <small>
+                                    PASS %
+                                </small>
+
+                                <strong id="pass-percent-preview">
+                                    —
+                                </strong>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -2072,1093 +2009,1277 @@
 
         </div>
 
-    </form>
+
+        <!-- ==================================================
+             SIDEBAR
+        ================================================== -->
+
+        <div class="edit-subject-sidebar">
+
+
+            <!-- ==================================================
+                 PREVIEW
+            ================================================== -->
+
+            <div class="sidebar-card">
+
+                <div class="sidebar-card-header">
+
+                    <h3>
+                        Subject Preview
+                    </h3>
+
+                </div>
+
+
+                <div class="sidebar-card-body">
+
+                    <div class="subject-summary">
+
+                        <div class="subject-summary-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+
+                        <h3
+                            id="summary-name"
+                            class="subject-summary-name"
+                        >
+                            {{ request.form.get('name', subject.name or 'Subject') }}
+                        </h3>
+
+                        <div
+                            id="summary-code"
+                            class="subject-summary-code"
+                        >
+                            {{ subject.code or '—' }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 STATUS
+            ================================================== -->
+
+            <div class="sidebar-card">
+
+                <div class="sidebar-card-header">
+
+                    <h3>
+                        Subject Status
+                    </h3>
+
+                </div>
+
+
+                <div class="sidebar-card-body">
+
+                    {% set selected_status =
+                        request.form.get(
+                            'status',
+                            subject.status or 'active'
+                        )
+                    %}
+
+                    <div class="option-group">
+
+                        {% for status in subject_statuses %}
+
+                            {% set status_value =
+                                status.value
+                                if status.value is defined
+                                else status
+                            %}
+
+                            {% set status_value =
+                                status_value|string|lower
+                            %}
+
+                            <div class="option-item">
+
+                                <input
+                                    type="radio"
+                                    id="status_{{ loop.index }}"
+                                    name="status"
+                                    value="{{ status_value }}"
+                                    {% if selected_status|string|lower == status_value %}
+                                        checked
+                                    {% endif %}
+                                >
+
+                                <label
+                                    for="status_{{ loop.index }}"
+                                    class="option-label {% if status_value == 'active' %}active-green{% endif %}"
+                                >
+
+                                    {% if status_value == 'active' %}
+
+                                        <i class="fas fa-check-circle"></i>
+
+                                    {% elif status_value == 'inactive' %}
+
+                                        <i class="fas fa-pause-circle"></i>
+
+                                    {% elif status_value == 'suspended' %}
+
+                                        <i class="fas fa-ban"></i>
+
+                                    {% else %}
+
+                                        <i class="fas fa-circle"></i>
+
+                                    {% endif %}
+
+                                    {{ status_value.replace('_', ' ')|title }}
+
+                                </label>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 IMPORTANT INFO
+            ================================================== -->
+
+            <div class="sidebar-card">
+
+                <div class="sidebar-card-header">
+
+                    <h3>
+                        Important Information
+                    </h3>
+
+                </div>
+
+
+                <div class="sidebar-card-body">
+
+
+                    <div class="info-row">
+
+                        <div class="info-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+
+                        <div class="info-content">
+
+                            <strong>
+                                Institution
+                            </strong>
+
+                            <span>
+                                Subject must remain inside a valid institution scope.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <div class="info-icon">
+                            <i class="fas fa-code-branch"></i>
+                        </div>
+
+                        <div class="info-content">
+
+                            <strong>
+                                Branch
+                            </strong>
+
+                            <span>
+                                Subject branch is required and must belong to the institution.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <div class="info-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+
+                        <div class="info-content">
+
+                            <strong>
+                                Program
+                            </strong>
+
+                            <span>
+                                A valid program is required. Institution-wide programs are supported.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <div class="info-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+
+                        <div class="info-content">
+
+                            <strong>
+                                Subject Code
+                            </strong>
+
+                            <span>
+                                Existing subject code is protected during editing.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <div class="info-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+
+                        <div class="info-content">
+
+                            <strong>
+                                Academic Load
+                            </strong>
+
+                            <span>
+                                5 teaching hours per week. Credits are based on 15 contact hours per credit.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <div class="info-icon">
+                            <i class="fas fa-percent"></i>
+                        </div>
+
+                        <div class="info-content">
+
+                            <strong>
+                                Passing Marks
+                            </strong>
+
+                            <span>
+                                Optional. If entered, pass marks cannot exceed maximum marks.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 ACTIONS
+            ================================================== -->
+
+            <div class="sidebar-card">
+
+                <div class="sidebar-card-body">
+
+                    <button
+                        type="submit"
+                        id="update-subject-btn"
+                        class="update-subject-btn"
+                    >
+
+                        <i class="fas fa-save"></i>
+
+                        <span>
+                            Save Changes
+                        </span>
+
+                    </button>
+
+
+                    <a
+                        href="{{ url_for('main.view_subject', subject_id=subject.id) }}"
+                        class="cancel-subject-btn"
+                    >
+
+                        Cancel
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
 
 </div>
 
-
 <script>
 
-/* ============================================================
-   DOM
-   ============================================================ */
-
-const editSubjectForm =
-    document.getElementById(
-        "edit-subject-form"
-    );
-
-const institutionSelect =
-    document.getElementById(
-        "institution_id"
-    );
-
-const branchSelect =
-    document.getElementById(
-        "branch_id"
-    );
-
-const programSelect =
-    document.getElementById(
-        "program_id"
-    );
-
-const nameInput =
-    document.getElementById(
-        "name"
-    );
+document.addEventListener("DOMContentLoaded", function () {
 
-const codeInput =
-    document.getElementById(
-        "code"
-    );
+    /* ========================================================
+       ELEMENTS
+    ======================================================== */
 
-const codePreview =
-    document.getElementById(
-        "code-preview"
-    );
+    const form = document.getElementById("edit-subject-form");
 
-const summaryName =
-    document.getElementById(
-        "summary-name"
-    );
+    const institutionSelect =
+        document.getElementById("institution_id");
 
-const summaryCode =
-    document.getElementById(
-        "summary-code"
-    );
+    const branchSelect =
+        document.getElementById("branch_id");
 
-const maxMarksInput =
-    document.getElementById(
-        "max_marks"
-    );
+    const programSelect =
+        document.getElementById("program_id");
 
-const passMarksInput =
-    document.getElementById(
-        "pass_marks"
-    );
+    const nameInput =
+        document.getElementById("name");
 
-const maxPreview =
-    document.getElementById(
-        "max-preview"
-    );
+    const shortNameInput =
+        document.getElementById("short_name");
 
-const passPreview =
-    document.getElementById(
-        "pass-preview"
-    );
+    const maxMarksInput =
+        document.getElementById("max_marks");
 
-const passPercentPreview =
-    document.getElementById(
-        "pass-percent-preview"
-    );
+    const passMarksInput =
+        document.getElementById("pass_marks");
 
-const updateSubjectButton =
-    document.getElementById(
-        "update-subject-btn"
-    );
+    const weeklyHoursInput =
+        document.getElementById("weekly_hours");
 
-const formAlert =
-    document.getElementById(
-        "form-alert"
-    );
+    const creditHoursInput =
+        document.getElementById("credit_hours");
 
-const formAlertMessage =
-    document.getElementById(
-        "form-alert-message"
-    );
+    const totalProgramHoursInput =
+        document.getElementById("total-program-hours");
 
+    const maxPreview =
+        document.getElementById("max-preview");
 
-/* ============================================================
-   ORIGINAL SUBJECT CODE
-   ============================================================ */
+    const passPreview =
+        document.getElementById("pass-preview");
 
-const ORIGINAL_SUBJECT_CODE =
-    {{ subject.code | tojson }};
+    const passPercentPreview =
+        document.getElementById("pass-percent-preview");
 
+    const summaryName =
+        document.getElementById("summary-name");
 
-/* ============================================================
-   ORIGINAL VALUES
-   ============================================================ */
+    const summaryCode =
+        document.getElementById("summary-code");
 
-const ORIGINAL_BRANCH_ID =
-    {{ (subject.branch_id or '') | tojson }};
+    const programDurationPreview =
+        document.getElementById("program-duration-preview");
 
-const ORIGINAL_PROGRAM_ID =
-    {{ (subject.program_id or '') | tojson }};
+    const programWeeklyPreview =
+        document.getElementById("program-weekly-preview");
 
+    const programCreditPreview =
+        document.getElementById("program-credit-preview");
 
-/* ============================================================
-   BRANCH DATA
-   ============================================================ */
+    const formAlert =
+        document.getElementById("form-alert");
 
-const SUBJECT_BRANCHES = [
+    const formAlertMessage =
+        document.getElementById("form-alert-message");
 
-    {% for branch in branches %}
+    const updateButton =
+        document.getElementById("update-subject-btn");
 
-    {
-        id: {{ branch.id | tojson }},
-        name: {{ branch.name | tojson }},
-        code: {{ branch.code | default('', true) | tojson }},
-        institution_id: {{ branch.institution_id | tojson }}
-    }
 
-    {% if not loop.last %},{% endif %}
+    /* ========================================================
+       NORMALIZE TEXT
+    ======================================================== */
 
-    {% endfor %}
+    function normalizeText(value) {
 
-];
-
-
-/* ============================================================
-   PROGRAM DATA
-   ============================================================ */
-
-const SUBJECT_PROGRAMS = [
-
-    {% for program in programs %}
-
-    {
-        id: {{ program.id | tojson }},
-        name: {{ program.name | tojson }},
-        code: {{ program.code | default('', true) | tojson }},
-        institution_id: {{ program.institution_id | tojson }}
-    }
-
-    {% if not loop.last %},{% endif %}
-
-    {% endfor %}
-
-];
-
-
-/* ============================================================
-   SHOW ERROR
-   ============================================================ */
-
-function showFormError(message) {
-
-    if (
-        !formAlert ||
-        !formAlertMessage
-    ) {
-        return;
-    }
-
-    formAlertMessage.textContent =
-        message;
-
-    formAlert.classList.add(
-        "show"
-    );
-
-    formAlert.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-    });
-
-}
-
-
-/* ============================================================
-   HIDE ERROR
-   ============================================================ */
-
-function hideFormError() {
-
-    if (!formAlert) {
-        return;
-    }
-
-    formAlert.classList.remove(
-        "show"
-    );
-
-}
-
-
-/* ============================================================
-   FILTER BRANCHES
-   ============================================================ */
-
-function filterSubjectBranches(
-    preserveSelected = true
-) {
-
-    if (
-        !institutionSelect ||
-        !branchSelect
-    ) {
-        return;
-    }
-
-
-    const institutionId =
-        institutionSelect.value.trim();
-
-
-    const selectedBranch =
-        preserveSelected
-            ? (
-                branchSelect.value ||
-                ORIGINAL_BRANCH_ID ||
-                ""
-            )
-            : "";
-
-
-    branchSelect.innerHTML = "";
-
-
-    const placeholder =
-        document.createElement(
-            "option"
-        );
-
-    placeholder.value = "";
-
-    placeholder.textContent =
-        "All / Institution Level";
-
-    branchSelect.appendChild(
-        placeholder
-    );
-
-
-    if (!institutionId) {
-
-        branchSelect.disabled =
-            true;
-
-        return;
+        return String(value || "")
+            .trim()
+            .replace(/\s+/g, " ");
 
     }
 
 
-    SUBJECT_BRANCHES.forEach(
-        function(branch) {
+    /* ========================================================
+       GENERATE SHORT NAME
+       RULE:
+       FIRST THREE WORDS
+    ======================================================== */
 
-            if (
-                String(
-                    branch.institution_id
-                ) !==
-                String(
-                    institutionId
-                )
-            ) {
-                return;
-            }
+    function generateShortName(subjectName) {
 
+        const cleanName =
+            normalizeText(subjectName);
 
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value =
-                branch.id;
-
-            option.textContent =
-                branch.code
-                    ? `${branch.name} — ${branch.code}`
-                    : branch.name;
-
-
-            if (
-                selectedBranch &&
-                String(
-                    selectedBranch
-                ) ===
-                String(
-                    branch.id
-                )
-            ) {
-
-                option.selected =
-                    true;
-
-            }
-
-
-            branchSelect.appendChild(
-                option
-            );
-
+        if (!cleanName) {
+            return "";
         }
-    );
 
+        const words =
+            cleanName
+                .split(" ")
+                .filter(Boolean);
 
-    branchSelect.disabled =
-        false;
+        if (!words.length) {
+            return "";
+        }
 
-}
+        return words
+            .slice(0, 3)
+            .map(function (word) {
 
+                return word.charAt(0);
 
-/* ============================================================
-   FILTER PROGRAMS
-   ============================================================ */
-
-function filterSubjectPrograms(
-    preserveSelected = true
-) {
-
-    if (
-        !institutionSelect ||
-        !programSelect
-    ) {
-        return;
+            })
+            .join("")
+            .toUpperCase()
+            .substring(0, 10);
     }
 
 
-    const institutionId =
-        institutionSelect.value.trim();
+    /* ========================================================
+       UPDATE SHORT NAME
+    ======================================================== */
 
+    function updateShortName() {
 
-    const selectedProgram =
-        preserveSelected
-            ? (
-                programSelect.value ||
-                ORIGINAL_PROGRAM_ID ||
-                ""
-            )
-            : "";
+        if (!nameInput || !shortNameInput) {
+            return;
+        }
 
-
-    programSelect.innerHTML = "";
-
-
-    const placeholder =
-        document.createElement(
-            "option"
-        );
-
-    placeholder.value = "";
-
-    placeholder.textContent =
-        "Select Program";
-
-    programSelect.appendChild(
-        placeholder
-    );
-
-
-    if (!institutionId) {
-
-        programSelect.disabled =
-            true;
-
-        return;
-
+        shortNameInput.value =
+            generateShortName(
+                nameInput.value
+            );
     }
 
 
-    SUBJECT_PROGRAMS.forEach(
-        function(program) {
+    /* ========================================================
+       UPDATE SUBJECT SUMMARY
+    ======================================================== */
 
-            if (
-                String(
-                    program.institution_id
-                ) !==
-                String(
-                    institutionId
-                )
-            ) {
-                return;
-            }
+    function updateSubjectSummary() {
 
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value =
-                program.id;
-
-            option.textContent =
-                program.code
-                    ? `${program.name} — ${program.code}`
-                    : program.name;
-
-
-            if (
-                selectedProgram &&
-                String(
-                    selectedProgram
-                ) ===
-                String(
-                    program.id
-                )
-            ) {
-
-                option.selected =
-                    true;
-
-            }
-
-
-            programSelect.appendChild(
-                option
-            );
-
+        if (!summaryName || !nameInput) {
+            return;
         }
-    );
 
-
-    programSelect.disabled =
-        false;
-
-}
-
-
-/* ============================================================
-   INSTITUTION CHANGE
-   ============================================================ */
-
-if (institutionSelect) {
-
-    institutionSelect.addEventListener(
-        "change",
-        function() {
-
-            filterSubjectBranches(
-                false
+        const name =
+            normalizeText(
+                nameInput.value
             );
-
-            filterSubjectPrograms(
-                false
-            );
-
-            hideFormError();
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   SUBJECT PREVIEW
-   ============================================================ */
-
-function updateSubjectPreview() {
-
-    const name =
-        nameInput
-            ? nameInput.value.trim()
-            : "";
-
-
-    const code =
-        ORIGINAL_SUBJECT_CODE ||
-        (
-            codeInput
-                ? codeInput.value.trim()
-                : ""
-        );
-
-
-    if (summaryName) {
 
         summaryName.textContent =
-            name ||
-            "Subject";
+            name || "Subject";
 
     }
 
 
-    if (summaryCode) {
+    /* ========================================================
+       UPDATE MARK PREVIEW
+    ======================================================== */
 
-        summaryCode.textContent =
-            code ||
-            "—";
+    function updateMarksPreview() {
 
-    }
+        const max =
+            parseFloat(
+                maxMarksInput
+                    ? maxMarksInput.value
+                    : ""
+            );
 
-
-    if (codePreview) {
-
-        codePreview.textContent =
-            code ||
-            "—";
-
-    }
-
-}
-
-
-/* ============================================================
-   MARKS PREVIEW
-   ============================================================ */
-
-function updateMarksPreview() {
-
-    const max =
-        parseFloat(
-            maxMarksInput
-                ? maxMarksInput.value
-                : ""
-        );
-
-
-    const pass =
-        parseFloat(
+        const passValue =
             passMarksInput
-                ? passMarksInput.value
-                : ""
-        );
+                ? passMarksInput.value.trim()
+                : "";
+
+        const pass =
+            passValue === ""
+                ? null
+                : parseFloat(passValue);
 
 
-    if (maxPreview) {
-
-        maxPreview.textContent =
-            Number.isFinite(max)
-                ? max
-                : "0";
-
-    }
-
-
-    if (passPreview) {
-
-        passPreview.textContent =
-            Number.isFinite(pass)
-                ? pass
-                : "0";
-
-    }
-
-
-    if (passPercentPreview) {
+        /* ----------------------------------------------------
+           MAXIMUM
+        ---------------------------------------------------- */
 
         if (
+            maxPreview &&
+            Number.isFinite(max)
+        ) {
+
+            maxPreview.textContent =
+                max.toFixed(2)
+                    .replace(/\.00$/, "");
+
+        } else if (maxPreview) {
+
+            maxPreview.textContent = "—";
+
+        }
+
+
+        /* ----------------------------------------------------
+           PASS
+        ---------------------------------------------------- */
+
+        if (
+            passPreview &&
+            pass !== null &&
+            Number.isFinite(pass)
+        ) {
+
+            passPreview.textContent =
+                pass.toFixed(2)
+                    .replace(/\.00$/, "");
+
+        } else if (passPreview) {
+
+            passPreview.textContent = "—";
+
+        }
+
+
+        /* ----------------------------------------------------
+           PASS PERCENTAGE
+        ---------------------------------------------------- */
+
+        if (
+            passPercentPreview &&
             Number.isFinite(max) &&
             max > 0 &&
+            pass !== null &&
             Number.isFinite(pass)
         ) {
 
             const percentage =
-                (
-                    pass / max
-                ) * 100;
-
+                (pass / max) * 100;
 
             passPercentPreview.textContent =
-                `${percentage.toFixed(1).replace(/\.0$/, "")}%`;
+                percentage.toFixed(2)
+                    .replace(/\.00$/, "")
+                + "%";
 
-        } else {
+        } else if (passPercentPreview) {
 
             passPercentPreview.textContent =
-                "0%";
+                "—";
 
         }
 
     }
 
-}
 
+    /* ========================================================
+       PROGRAM CALCULATION
+       
+       RULES:
+       5 teaching days/week
+       1 hour/day
+       52 weeks/year
+       12 months/year
+       15 contact hours/credit
+    ======================================================== */
 
-/* ============================================================
-   MARK EVENTS
-   ============================================================ */
+    function updateProgramCalculation() {
 
-if (maxMarksInput) {
-
-    maxMarksInput.addEventListener(
-        "input",
-        updateMarksPreview
-    );
-
-}
-
-
-if (passMarksInput) {
-
-    passMarksInput.addEventListener(
-        "input",
-        updateMarksPreview
-    );
-
-}
-
-
-if (nameInput) {
-
-    nameInput.addEventListener(
-        "input",
-        function() {
-
-            updateSubjectPreview();
-
-            hideFormError();
-
+        if (!programSelect) {
+            return;
         }
-    );
 
-}
+        const selectedOption =
+            programSelect.options[
+                programSelect.selectedIndex
+            ];
 
+        if (
+            !selectedOption ||
+            !selectedOption.value
+        ) {
 
-/* ============================================================
-   VALIDATE RELATIONSHIPS
-   ============================================================ */
+            if (programDurationPreview) {
+                programDurationPreview.textContent = "—";
+            }
 
-function validateRelationships() {
+            if (programWeeklyPreview) {
+                programWeeklyPreview.textContent = "5";
+            }
 
-    const institutionId =
-        institutionSelect.value.trim();
+            if (programCreditPreview) {
+                programCreditPreview.textContent = "—";
+            }
 
+            if (totalProgramHoursInput) {
+                totalProgramHoursInput.value = "—";
+            }
 
-    const branchId =
-        branchSelect.value.trim();
-
-
-    const programId =
-        programSelect.value.trim();
-
-
-    if (!institutionId) {
-
-        return {
-            valid: false,
-            message:
-                "Please select an institution."
-        };
-
-    }
+            return;
+        }
 
 
-    if (branchId) {
+        const durationRaw =
+            selectedOption.dataset.durationMonths || "";
 
-        const branch =
-            SUBJECT_BRANCHES.find(
-                function(item) {
-
-                    return String(
-                        item.id
-                    ) ===
-                    String(
-                        branchId
-                    );
-
-                }
-            );
+        const duration =
+            parseFloat(durationRaw);
 
 
         if (
-            !branch ||
-            String(
-                branch.institution_id
-            ) !==
-            String(
-                institutionId
-            )
+            !Number.isFinite(duration) ||
+            duration <= 0
         ) {
 
-            return {
-                valid: false,
-                message:
-                    "The selected branch does not belong to the selected institution."
-            };
+            if (programDurationPreview) {
+                programDurationPreview.textContent =
+                    "Invalid";
+            }
+
+            if (programWeeklyPreview) {
+                programWeeklyPreview.textContent =
+                    "5";
+            }
+
+            if (programCreditPreview) {
+                programCreditPreview.textContent =
+                    "—";
+            }
+
+            if (totalProgramHoursInput) {
+                totalProgramHoursInput.value =
+                    "—";
+            }
+
+            return;
+        }
+
+
+        const weeklyHours = 5;
+
+        const weeks =
+            duration * 52 / 12;
+
+        const totalHours =
+            weeklyHours * weeks;
+
+        const creditHours =
+            totalHours / 15;
+
+
+        /* ----------------------------------------------------
+           DURATION
+        ---------------------------------------------------- */
+
+        if (programDurationPreview) {
+
+            programDurationPreview.textContent =
+                duration
+                    .toFixed(2)
+                    .replace(/\.00$/, "")
+                + " months";
+
+        }
+
+
+        /* ----------------------------------------------------
+           WEEKLY
+        ---------------------------------------------------- */
+
+        if (programWeeklyPreview) {
+
+            programWeeklyPreview.textContent =
+                "5 hours";
+
+        }
+
+
+        /* ----------------------------------------------------
+           CREDIT
+        ---------------------------------------------------- */
+
+        if (programCreditPreview) {
+
+            programCreditPreview.textContent =
+                creditHours
+                    .toFixed(2)
+                + " credits";
+
+        }
+
+
+        /* ----------------------------------------------------
+           TOTAL HOURS
+        ---------------------------------------------------- */
+
+        if (totalProgramHoursInput) {
+
+            totalProgramHoursInput.value =
+                totalHours
+                    .toFixed(2)
+                + " hours";
+
+        }
+
+
+        /* ----------------------------------------------------
+           FORM DISPLAY
+           
+           These fields are readonly because the backend
+           recalculates them from Program.duration_months.
+        ---------------------------------------------------- */
+
+        if (weeklyHoursInput) {
+
+            weeklyHoursInput.value =
+                weeklyHours.toFixed(2);
+
+        }
+
+        if (creditHoursInput) {
+
+            creditHoursInput.value =
+                creditHours.toFixed(2);
 
         }
 
     }
 
 
-    if (programId) {
+    /* ========================================================
+       FILTER BRANCHES BY INSTITUTION
+    ======================================================== */
 
-        const program =
-            SUBJECT_PROGRAMS.find(
-                function(item) {
+    function filterBranches() {
 
-                    return String(
-                        item.id
-                    ) ===
-                    String(
-                        programId
-                    );
+        if (!branchSelect) {
+            return;
+        }
 
-                }
-            );
+        const selectedInstitution =
+            institutionSelect
+                ? institutionSelect.value
+                : "";
+
+        const currentBranch =
+            branchSelect.value;
+
+
+        Array.from(
+            branchSelect.options
+        ).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+            const matches =
+                !selectedInstitution ||
+                optionInstitution === selectedInstitution;
+
+            option.hidden = !matches;
+            option.disabled = !matches;
+
+        });
+
+
+        const selectedOption =
+            branchSelect.options[
+                branchSelect.selectedIndex
+            ];
 
 
         if (
-            !program ||
-            String(
-                program.institution_id
-            ) !==
-            String(
-                institutionId
-            )
+            selectedOption &&
+            selectedOption.value &&
+            selectedOption.disabled
         ) {
 
-            return {
-                valid: false,
-                message:
-                    "The selected program does not belong to the selected institution."
-            };
+            branchSelect.value = "";
 
+        }
+
+
+        /*
+         * Prevent an unused variable warning while preserving
+         * the selected branch behavior.
+         */
+
+        void currentBranch;
+    }
+
+
+    /* ========================================================
+       FILTER PROGRAMS
+       
+       Program is valid when:
+       - institution matches
+       - branch matches selected branch
+       - OR program is institution-wide (branch_id empty)
+    ======================================================== */
+
+    function filterPrograms() {
+
+        if (!programSelect) {
+            return;
+        }
+
+        const selectedInstitution =
+            institutionSelect
+                ? institutionSelect.value
+                : "";
+
+        const selectedBranch =
+            branchSelect
+                ? branchSelect.value
+                : "";
+
+
+        Array.from(
+            programSelect.options
+        ).forEach(function (option, index) {
+
+            if (index === 0) {
+                option.hidden = false;
+                option.disabled = false;
+                return;
+            }
+
+            const optionInstitution =
+                option.dataset.institutionId || "";
+
+            const optionBranch =
+                option.dataset.branchId || "";
+
+
+            const institutionMatches =
+                !selectedInstitution ||
+                optionInstitution === selectedInstitution;
+
+
+            const branchMatches =
+                !selectedBranch ||
+                !optionBranch ||
+                optionBranch === selectedBranch;
+
+
+            const visible =
+                institutionMatches &&
+                branchMatches;
+
+
+            option.hidden = !visible;
+            option.disabled = !visible;
+
+        });
+
+
+        const selectedOption =
+            programSelect.options[
+                programSelect.selectedIndex
+            ];
+
+
+        if (
+            selectedOption &&
+            selectedOption.value &&
+            selectedOption.disabled
+        ) {
+
+            programSelect.value = "";
+
+        }
+
+        updateProgramCalculation();
+
+    }
+
+
+    /* ========================================================
+       CLIENT VALIDATION
+    ======================================================== */
+
+    function showFormError(message) {
+
+        if (!formAlert || !formAlertMessage) {
+            return;
+        }
+
+        formAlertMessage.textContent =
+            message;
+
+        formAlert.classList.add("show");
+
+        formAlert.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+    }
+
+
+    function clearFormError() {
+
+        if (!formAlert) {
+            return;
+        }
+
+        formAlert.classList.remove("show");
+
+        if (formAlertMessage) {
+            formAlertMessage.textContent = "";
         }
 
     }
 
 
-    return {
-        valid: true
-    };
+    /* ========================================================
+       FORM SUBMIT
+    ======================================================== */
 
-}
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+                clearFormError();
 
 
-/* ============================================================
-   VALIDATE MARKS
-   ============================================================ */
+                /* ------------------------------------------------
+                   INSTITUTION
+                ------------------------------------------------ */
 
-function validateMarks() {
+                if (
+                    institutionSelect &&
+                    !institutionSelect.value
+                ) {
 
-    const max =
-        parseFloat(
-            maxMarksInput.value
+                    event.preventDefault();
+
+                    showFormError(
+                        "Please select an institution."
+                    );
+
+                    institutionSelect.focus();
+
+                    return;
+                }
+
+
+                /* ------------------------------------------------
+                   BRANCH
+                ------------------------------------------------ */
+
+                if (
+                    branchSelect &&
+                    !branchSelect.value
+                ) {
+
+                    event.preventDefault();
+
+                    showFormError(
+                        "Please select a branch."
+                    );
+
+                    branchSelect.focus();
+
+                    return;
+                }
+
+
+                /* ------------------------------------------------
+                   PROGRAM
+                ------------------------------------------------ */
+
+                if (
+                    programSelect &&
+                    !programSelect.value
+                ) {
+
+                    event.preventDefault();
+
+                    showFormError(
+                        "Please select a program."
+                    );
+
+                    programSelect.focus();
+
+                    return;
+                }
+
+
+                /* ------------------------------------------------
+                   NAME
+                ------------------------------------------------ */
+
+                const name =
+                    normalizeText(
+                        nameInput
+                            ? nameInput.value
+                            : ""
+                    );
+
+                if (!name) {
+
+                    event.preventDefault();
+
+                    showFormError(
+                        "Subject name is required."
+                    );
+
+                    if (nameInput) {
+                        nameInput.focus();
+                    }
+
+                    return;
+                }
+
+
+                /* ------------------------------------------------
+                   MAX MARKS
+                ------------------------------------------------ */
+
+                const max =
+                    parseFloat(
+                        maxMarksInput
+                            ? maxMarksInput.value
+                            : ""
+                    );
+
+                if (
+                    !Number.isFinite(max) ||
+                    max <= 0
+                ) {
+
+                    event.preventDefault();
+
+                    showFormError(
+                        "Maximum marks must be greater than zero."
+                    );
+
+                    if (maxMarksInput) {
+                        maxMarksInput.focus();
+                    }
+
+                    return;
+                }
+
+
+                /* ------------------------------------------------
+                   PASS MARKS
+                   OPTIONAL
+                ------------------------------------------------ */
+
+                const passRaw =
+                    passMarksInput
+                        ? passMarksInput.value.trim()
+                        : "";
+
+                if (passRaw !== "") {
+
+                    const pass =
+                        parseFloat(passRaw);
+
+
+                    if (
+                        !Number.isFinite(pass) ||
+                        pass < 0
+                    ) {
+
+                        event.preventDefault();
+
+                        showFormError(
+                            "Pass marks must be a valid non-negative number."
+                        );
+
+                        if (passMarksInput) {
+                            passMarksInput.focus();
+                        }
+
+                        return;
+                    }
+
+
+                    if (pass > max) {
+
+                        event.preventDefault();
+
+                        showFormError(
+                            "Pass marks cannot be greater than maximum marks."
+                        );
+
+                        if (passMarksInput) {
+                            passMarksInput.focus();
+                        }
+
+                        return;
+                    }
+
+                }
+
+
+                /* ------------------------------------------------
+                   BUTTON
+                ------------------------------------------------ */
+
+                if (updateButton) {
+
+                    updateButton.disabled = true;
+
+                    const buttonText =
+                        updateButton.querySelector(
+                            "span"
+                        );
+
+                    if (buttonText) {
+
+                        buttonText.textContent =
+                            "Saving...";
+
+                    }
+
+                }
+
+            }
         );
-
-
-    const pass =
-        parseFloat(
-            passMarksInput.value
-        );
-
-
-    if (
-        !Number.isFinite(max) ||
-        max <= 0
-    ) {
-
-        return {
-            valid: false,
-            message:
-                "Maximum marks must be greater than 0."
-        };
 
     }
 
 
-    if (
-        !Number.isFinite(pass) ||
-        pass < 0
-    ) {
+    /* ========================================================
+       EVENT LISTENERS
+    ======================================================== */
 
-        return {
-            valid: false,
-            message:
-                "Pass marks cannot be negative."
-        };
+    if (institutionSelect) {
 
-    }
+        institutionSelect.addEventListener(
+            "change",
+            function () {
 
+                filterBranches();
 
-    if (pass > max) {
+                filterPrograms();
 
-        return {
-            valid: false,
-            message:
-                "Pass marks cannot be greater than maximum marks."
-        };
-
-    }
-
-
-    return {
-        valid: true
-    };
-
-}
-
-
-/* ============================================================
-   VALIDATE HOURS
-   ============================================================ */
-
-function validateHours() {
-
-    const weeklyInput =
-        document.getElementById(
-            "weekly_hours"
+            }
         );
 
+    }
 
-    const creditInput =
-        document.getElementById(
-            "credit_hours"
+
+    if (branchSelect) {
+
+        branchSelect.addEventListener(
+            "change",
+            function () {
+
+                filterPrograms();
+
+            }
         );
-
-
-    const weekly =
-        weeklyInput.value.trim()
-            ? parseFloat(
-                weeklyInput.value
-            )
-            : null;
-
-
-    const credit =
-        creditInput.value.trim()
-            ? parseFloat(
-                creditInput.value
-            )
-            : null;
-
-
-    if (
-        weekly !== null &&
-        (
-            !Number.isFinite(weekly) ||
-            weekly < 0
-        )
-    ) {
-
-        return {
-            valid: false,
-            message:
-                "Weekly hours must be zero or greater."
-        };
 
     }
 
 
-    if (
-        credit !== null &&
-        (
-            !Number.isFinite(credit) ||
-            credit < 0
-        )
-    ) {
+    if (programSelect) {
 
-        return {
-            valid: false,
-            message:
-                "Credit hours must be zero or greater."
-        };
+        programSelect.addEventListener(
+            "change",
+            function () {
+
+                updateProgramCalculation();
+
+            }
+        );
 
     }
 
 
-    return {
-        valid: true
-    };
+    if (nameInput) {
 
-}
+        nameInput.addEventListener(
+            "input",
+            function () {
 
+                updateShortName();
 
-/* ============================================================
-   FORM SUBMIT
-   ============================================================ */
-
-if (editSubjectForm) {
-
-    editSubjectForm.addEventListener(
-        "submit",
-        function(event) {
-
-            hideFormError();
-
-
-            /* --------------------------------------------
-               NAME
-            -------------------------------------------- */
-
-            const subjectName =
-                nameInput.value.trim();
-
-
-            if (!subjectName) {
-
-                event.preventDefault();
-
-                showFormError(
-                    "Please enter the subject name."
-                );
-
-                nameInput.focus();
-
-                return;
+                updateSubjectSummary();
 
             }
-
-
-            if (
-                subjectName.length > 150
-            ) {
-
-                event.preventDefault();
-
-                showFormError(
-                    "Subject name cannot exceed 150 characters."
-                );
-
-                nameInput.focus();
-
-                return;
-
-            }
-
-
-            /* --------------------------------------------
-               KEEP ORIGINAL CODE
-            -------------------------------------------- */
-
-            codeInput.value =
-                ORIGINAL_SUBJECT_CODE;
-
-
-            /* --------------------------------------------
-               RELATIONSHIPS
-            -------------------------------------------- */
-
-            const relationshipResult =
-                validateRelationships();
-
-
-            if (
-                !relationshipResult.valid
-            ) {
-
-                event.preventDefault();
-
-                showFormError(
-                    relationshipResult.message
-                );
-
-                return;
-
-            }
-
-
-            /* --------------------------------------------
-               MARKS
-            -------------------------------------------- */
-
-            const marksResult =
-                validateMarks();
-
-
-            if (
-                !marksResult.valid
-            ) {
-
-                event.preventDefault();
-
-                showFormError(
-                    marksResult.message
-                );
-
-                passMarksInput.focus();
-
-                return;
-
-            }
-
-
-            /* --------------------------------------------
-               HOURS
-            -------------------------------------------- */
-
-            const hoursResult =
-                validateHours();
-
-
-            if (
-                !hoursResult.valid
-            ) {
-
-                event.preventDefault();
-
-                showFormError(
-                    hoursResult.message
-                );
-
-                return;
-
-            }
-
-
-            /* --------------------------------------------
-               TRIM TEXT
-            -------------------------------------------- */
-
-            const shortNameInput =
-                document.getElementById(
-                    "short_name"
-                );
-
-
-            const descriptionInput =
-                document.getElementById(
-                    "description"
-                );
-
-
-            if (shortNameInput) {
-
-                shortNameInput.value =
-                    shortNameInput.value.trim();
-
-            }
-
-
-            if (descriptionInput) {
-
-                descriptionInput.value =
-                    descriptionInput.value.trim();
-
-            }
-
-
-            /* --------------------------------------------
-               DOUBLE SUBMIT PROTECTION
-            -------------------------------------------- */
-
-            if (updateSubjectButton) {
-
-                updateSubjectButton.disabled =
-                    true;
-
-
-                updateSubjectButton.innerHTML =
-                    `
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span>Saving Changes...</span>
-                    `;
-
-            }
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   INITIALIZATION
-   ============================================================ */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        filterSubjectBranches(
-            true
         );
-
-        filterSubjectPrograms(
-            true
-        );
-
-        updateSubjectPreview();
-
-        updateMarksPreview();
 
     }
-);
+
+
+    if (maxMarksInput) {
+
+        maxMarksInput.addEventListener(
+            "input",
+            updateMarksPreview
+        );
+
+    }
+
+
+    if (passMarksInput) {
+
+        passMarksInput.addEventListener(
+            "input",
+            updateMarksPreview
+        );
+
+    }
+
+
+    /* ========================================================
+       INITIALIZE
+    ======================================================== */
+
+    updateShortName();
+
+    updateSubjectSummary();
+
+    updateMarksPreview();
+
+    filterBranches();
+
+    filterPrograms();
+
+    updateProgramCalculation();
+
+});
 
 </script>
 

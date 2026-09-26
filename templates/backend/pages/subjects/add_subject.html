@@ -1,4 +1,3 @@
-
 {% extends "backend/home/base.html" %}
 
 {% block content %}
@@ -200,6 +199,13 @@
     margin-left: 2px;
 }
 
+.optional-text {
+    color: #9299a7;
+    font-size: 10px;
+    font-weight: 500;
+    margin-left: 3px;
+}
+
 .form-control-custom,
 .form-select-custom,
 .form-textarea-custom {
@@ -241,11 +247,32 @@
     cursor: not-allowed;
 }
 
+.form-control-custom[readonly] {
+    background: #f8fafc;
+}
+
 .form-help {
     margin-top: 6px;
     color: #9299a7;
     font-size: 11px;
     line-height: 1.45;
+}
+
+
+/* ============================================================
+   ERROR TEXT
+   ============================================================ */
+
+.field-error-text {
+    display: none;
+    margin-top: 6px;
+    color: #b42318;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.field-error-text.show {
+    display: block;
 }
 
 
@@ -593,6 +620,93 @@
 
 
 /* ============================================================
+   ACADEMIC LOAD
+   ============================================================ */
+
+.academic-load-box {
+    padding: 14px;
+    border: 1px solid #e7eaf0;
+    border-radius: 11px;
+    background: #fafbfd;
+}
+
+.load-schedule {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.load-day {
+    padding: 9px 6px;
+    border: 1px solid #e2e7ee;
+    border-radius: 8px;
+    background: #fff;
+    text-align: center;
+}
+
+.load-day-name {
+    display: block;
+    color: #5d6675;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.load-day-hours {
+    display: block;
+    margin-top: 3px;
+    color: #06245f;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.load-day.off {
+    background: #f7f8fa;
+    border-color: #eceff3;
+}
+
+.load-day.off .load-day-name,
+.load-day.off .load-day-hours {
+    color: #a0a7b2;
+}
+
+.load-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.load-summary-item {
+    padding: 11px;
+    border: 1px solid #e8ebf0;
+    border-radius: 8px;
+    background: #fff;
+    text-align: center;
+}
+
+.load-summary-item small {
+    display: block;
+    color: #9099a8;
+    font-size: 9px;
+    margin-bottom: 4px;
+}
+
+.load-summary-item strong {
+    display: block;
+    color: #06245f;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.load-summary-item span {
+    display: block;
+    margin-top: 2px;
+    color: #9299a7;
+    font-size: 9px;
+}
+
+
+/* ============================================================
    SIDEBAR
    ============================================================ */
 
@@ -788,12 +902,23 @@
 
 
 /* ============================================================
-   REQUIRED FIELD HIGHLIGHT
+   INVALID
    ============================================================ */
 
-.field-error {
+.is-invalid {
     border-color: #dc2626 !important;
     box-shadow: 0 0 0 3px rgba(220, 38, 38, .07) !important;
+}
+
+
+/* ============================================================
+   OPTIONAL FIELD
+   ============================================================ */
+
+.optional-field {
+    color: #9299a7;
+    font-size: 10px;
+    font-weight: 500;
 }
 
 
@@ -811,6 +936,7 @@
         order: -1;
     }
 }
+
 
 @media (max-width: 700px) {
 
@@ -840,8 +966,13 @@
         grid-column: auto;
     }
 
-    .marks-preview {
+    .marks-preview,
+    .load-summary {
         grid-template-columns: 1fr;
+    }
+
+    .load-schedule {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .form-card-body {
@@ -1000,8 +1131,11 @@
                                         Select Institution
                                     </option>
 
-                                    {% set selected_institution_id =
-                                        request.form.get('institution_id', '') | string
+                                    {% set current_institution_id =
+                                        request.form.get(
+                                            'institution_id',
+                                            selected_institution_id or ''
+                                        ) | string
                                     %}
 
                                     {% for institution in institutions %}
@@ -1012,7 +1146,7 @@
 
                                         <option
                                             value="{{ institution.id }}"
-                                            {% if selected_institution_id == institution_id %}
+                                            {% if current_institution_id == institution_id %}
                                                 selected
                                             {% endif %}
                                         >
@@ -1033,6 +1167,11 @@
                                     Select the institution that owns this subject.
                                 </div>
 
+                                <div
+                                    id="institution-error"
+                                    class="field-error-text"
+                                ></div>
+
                             </div>
 
 
@@ -1047,20 +1186,25 @@
                                     for="branch_id"
                                 >
                                     Branch
+                                    <span class="required">*</span>
                                 </label>
 
                                 <select
                                     id="branch_id"
                                     name="branch_id"
                                     class="form-select-custom"
+                                    required
                                 >
 
                                     <option value="">
-                                        All / Institution Level
+                                        Select Branch
                                     </option>
 
-                                    {% set selected_branch_id =
-                                        request.form.get('branch_id', '') | string
+                                    {% set current_branch_id =
+                                        request.form.get(
+                                            'branch_id',
+                                            selected_branch_id or ''
+                                        ) | string
                                     %}
 
                                     {% for branch in branches %}
@@ -1072,7 +1216,7 @@
                                         <option
                                             value="{{ branch.id }}"
                                             data-institution-id="{{ branch.institution_id }}"
-                                            {% if selected_branch_id == branch_id %}
+                                            {% if current_branch_id == branch_id %}
                                                 selected
                                             {% endif %}
                                         >
@@ -1090,14 +1234,19 @@
                                 </select>
 
                                 <div class="form-help">
-                                    Leave empty if the subject belongs to institution level.
+                                    Subject codes are sequential separately inside each branch.
                                 </div>
+
+                                <div
+                                    id="branch-error"
+                                    class="field-error-text"
+                                ></div>
 
                             </div>
 
 
                             <!-- ==================================================
-                                 PROGRAM — REQUIRED
+                                 PROGRAM
                             ================================================== -->
 
                             <div class="form-group field-full">
@@ -1126,8 +1275,11 @@
                                         Select Program
                                     </option>
 
-                                    {% set selected_program_id =
-                                        request.form.get('program_id', '') | string
+                                    {% set current_program_id =
+                                        request.form.get(
+                                            'program_id',
+                                            selected_program_id or ''
+                                        ) | string
                                     %}
 
                                     {% for program in programs %}
@@ -1139,7 +1291,9 @@
                                         <option
                                             value="{{ program.id }}"
                                             data-institution-id="{{ program.institution_id }}"
-                                            {% if selected_program_id == program_id %}
+                                            data-branch-id="{{ program.branch_id or '' }}"
+                                            data-duration-months="{{ program.duration_months or '' }}"
+                                            {% if current_program_id == program_id %}
                                                 selected
                                             {% endif %}
                                         >
@@ -1150,6 +1304,10 @@
                                                 — {{ program.code }}
                                             {% endif %}
 
+                                            {% if program.duration_months %}
+                                                — {{ program.duration_months }} months
+                                            {% endif %}
+
                                         </option>
 
                                     {% endfor %}
@@ -1158,10 +1316,15 @@
 
                                 <div class="form-help">
 
-                                    Program is required because subject codes are
-                                    generated sequentially inside each program.
+                                    Program is required. Its duration determines
+                                    the calculated total program hours and credit hours.
 
                                 </div>
+
+                                <div
+                                    id="program-error"
+                                    class="field-error-text"
+                                ></div>
 
                             </div>
 
@@ -1201,10 +1364,10 @@
 
                                         <span>
 
-                                            Institution and Program are required.
-                                            Branch is optional. The subject code is
-                                            generated automatically according to the
-                                            selected Institution, Branch and Program.
+                                            Institution, Branch and Program are required.
+                                            Subject code is generated automatically by the
+                                            server using Institution + Branch only.
+                                            Program does not affect the subject-code counter.
 
                                         </span>
 
@@ -1221,9 +1384,9 @@
                 </div>
 
 
-                <!-- ==================================================
+                <!-- ========================================================
                      SUBJECT INFORMATION
-                ================================================== -->
+                ======================================================== -->
 
                 <div class="form-card">
 
@@ -1277,15 +1440,21 @@
                                     id="name"
                                     name="name"
                                     class="form-control-custom"
-                                    placeholder="e.g. Mathematics"
-                                    value="{{ request.form.get('name', '') }}"
+                                    placeholder="e.g. English Language Communication"
+                                    value="{{ request.form.get('name', name or '') }}"
                                     maxlength="150"
                                     required
                                 >
 
                                 <div class="form-help">
-                                    Enter the official subject name.
+                                    The first three words are used automatically
+                                    to generate the Short Name.
                                 </div>
+
+                                <div
+                                    id="name-error"
+                                    class="field-error-text"
+                                ></div>
 
                             </div>
 
@@ -1303,10 +1472,6 @@
 
                                     Subject Code
 
-                                    <span class="required">
-                                        *
-                                    </span>
-
                                 </label>
 
                                 <div class="auto-code-wrapper">
@@ -1319,6 +1484,7 @@
                                         value="{{ request.form.get('code', '') }}"
                                         maxlength="50"
                                         readonly
+                                        placeholder="Generated on save"
                                     >
 
                                     <span class="auto-code-badge">
@@ -1333,7 +1499,7 @@
 
                                 <div class="form-help">
 
-                                    Generated automatically by the system.
+                                    Generated automatically by the server.
                                     Example: SUB001, SUB002, SUB003.
 
                                 </div>
@@ -1351,7 +1517,13 @@
                                     class="form-label"
                                     for="short_name"
                                 >
+
                                     Short Name
+
+                                    <span class="required">
+                                        *
+                                    </span>
+
                                 </label>
 
                                 <input
@@ -1359,14 +1531,24 @@
                                     id="short_name"
                                     name="short_name"
                                     class="form-control-custom"
-                                    placeholder="e.g. Math"
-                                    value="{{ request.form.get('short_name', '') }}"
+                                    placeholder="Automatically generated"
+                                    value="{{ request.form.get('short_name', short_name or '') }}"
                                     maxlength="100"
+                                    readonly
+                                    required
                                 >
 
                                 <div class="form-help">
-                                    Optional display name.
+
+                                    Automatically generated from the first
+                                    three words of the Subject Name.
+
                                 </div>
+
+                                <div
+                                    id="short-name-error"
+                                    class="field-error-text"
+                                ></div>
 
                             </div>
 
@@ -1390,7 +1572,7 @@
                                     <div class="code-preview-content">
 
                                         <span class="code-preview-label">
-                                            NEXT SUBJECT CODE
+                                            SUBJECT CODE
                                         </span>
 
                                         <span
@@ -1429,7 +1611,7 @@
                                     name="description"
                                     class="form-textarea-custom"
                                     placeholder="Write a short description about this subject..."
-                                >{{ request.form.get('description', '') }}</textarea>
+                                >{{ request.form.get('description', description or '') }}</textarea>
 
                             </div>
 
@@ -1440,9 +1622,9 @@
                 </div>
 
 
-                <!-- ==================================================
+                <!-- ========================================================
                      SUBJECT TYPE
-                ================================================== -->
+                ======================================================== -->
 
                 <div class="form-card">
 
@@ -1470,17 +1652,20 @@
                     <div class="form-card-body">
 
                         {% set selected_type =
-                            request.form.get('subject_type', 'academic')
+                            request.form.get(
+                                'subject_type',
+                                subject_type or 'academic'
+                            )
                         %}
 
                         <div class="option-group">
 
-                            {% for subject_type in subject_types %}
+                            {% for item in subject_types %}
 
                                 {% set type_value =
-                                    subject_type.value
-                                    if subject_type.value is defined
-                                    else subject_type
+                                    item.value
+                                    if item.value is defined
+                                    else item
                                 %}
 
                                 <div
@@ -1546,14 +1731,19 @@
 
                         </div>
 
+                        <div
+                            id="subject-type-error"
+                            class="field-error-text"
+                        ></div>
+
                     </div>
 
                 </div>
 
 
-                <!-- ==================================================
+                <!-- ========================================================
                      ACADEMIC LOAD
-                ================================================== -->
+                ======================================================== -->
 
                 <div class="form-card">
 
@@ -1570,7 +1760,8 @@
                             </h3>
 
                             <p>
-                                Configure weekly teaching and credit hours.
+                                Academic load is calculated automatically from the
+                                program duration and weekly teaching schedule.
                             </p>
 
                         </div>
@@ -1580,78 +1771,195 @@
 
                     <div class="form-card-body">
 
-                        <div class="fields-grid">
+                        <div class="academic-load-box">
 
 
                             <!-- ==================================================
-                                 WEEKLY HOURS
+                                 WEEKLY SCHEDULE
                             ================================================== -->
 
-                            <div class="form-group">
+                            <div class="load-schedule">
 
-                                <label
-                                    class="form-label"
-                                    for="weekly_hours"
-                                >
-                                    Weekly Hours
-                                </label>
+                                <div class="load-day">
 
-                                <input
-                                    type="number"
-                                    id="weekly_hours"
-                                    name="weekly_hours"
-                                    class="form-control-custom"
-                                    placeholder="e.g. 5"
-                                    value="{{ request.form.get('weekly_hours', '') }}"
-                                    min="0"
-                                    max="999.99"
-                                    step="0.01"
-                                >
+                                    <span class="load-day-name">
+                                        Saturday
+                                    </span>
 
-                                <div class="form-help">
-                                    Number of teaching hours per week.
+                                    <span class="load-day-hours">
+                                        1 hour
+                                    </span>
+
+                                </div>
+
+                                <div class="load-day">
+
+                                    <span class="load-day-name">
+                                        Sunday
+                                    </span>
+
+                                    <span class="load-day-hours">
+                                        1 hour
+                                    </span>
+
+                                </div>
+
+                                <div class="load-day">
+
+                                    <span class="load-day-name">
+                                        Monday
+                                    </span>
+
+                                    <span class="load-day-hours">
+                                        1 hour
+                                    </span>
+
+                                </div>
+
+                                <div class="load-day">
+
+                                    <span class="load-day-name">
+                                        Tuesday
+                                    </span>
+
+                                    <span class="load-day-hours">
+                                        1 hour
+                                    </span>
+
+                                </div>
+
+                                <div class="load-day">
+
+                                    <span class="load-day-name">
+                                        Wednesday
+                                    </span>
+
+                                    <span class="load-day-hours">
+                                        1 hour
+                                    </span>
+
+                                </div>
+
+                                <div class="load-day off">
+
+                                    <span class="load-day-name">
+                                        Thursday
+                                    </span>
+
+                                    <span class="load-day-hours">
+                                        OFF
+                                    </span>
+
+                                </div>
+
+                                <div class="load-day off">
+
+                                    <span class="load-day-name">
+                                        Friday
+                                    </span>
+
+                                    <span class="load-day-hours">
+                                        OFF
+                                    </span>
+
                                 </div>
 
                             </div>
 
 
                             <!-- ==================================================
-                                 CREDIT HOURS — REQUIRED
+                                 CALCULATED VALUES
                             ================================================== -->
 
-                            <div class="form-group">
+                            <div class="load-summary">
 
-                                <label
-                                    class="form-label"
-                                    for="credit_hours"
-                                >
+                                <div class="load-summary-item">
 
-                                    Credit Hours
+                                    <small>
+                                        WEEKLY HOURS
+                                    </small>
 
-                                    <span class="required">
-                                        *
+                                    <strong id="weekly-hours-preview">
+                                        5.00
+                                    </strong>
+
+                                    <span>
+                                        hours / week
                                     </span>
 
-                                </label>
+                                </div>
 
-                                <input
-                                    type="number"
-                                    id="credit_hours"
-                                    name="credit_hours"
-                                    class="form-control-custom"
-                                    placeholder="e.g. 3"
-                                    value="{{ request.form.get('credit_hours', '') }}"
-                                    min="0"
-                                    max="999.99"
-                                    step="0.01"
-                                    required
-                                >
 
-                                <div class="form-help">
+                                <div class="load-summary-item">
 
-                                    Credit hours are required for every subject.
+                                    <small>
+                                        PROGRAM HOURS
+                                    </small>
+
+                                    <strong id="total-hours-preview">
+                                        —
+                                    </strong>
+
+                                    <span>
+                                        total contact hours
+                                    </span>
 
                                 </div>
+
+
+                                <div class="load-summary-item">
+
+                                    <small>
+                                        CREDIT HOURS
+                                    </small>
+
+                                    <strong id="credit-hours-preview">
+                                        —
+                                    </strong>
+
+                                    <span>
+                                        15 hours = 1 credit
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ==================================================
+                                 HIDDEN VALUES
+                            ================================================== -->
+
+                            <input
+                                type="hidden"
+                                id="weekly_hours"
+                                name="weekly_hours"
+                                value="5.00"
+                            >
+
+                            <input
+                                type="hidden"
+                                id="credit_hours"
+                                name="credit_hours"
+                                value=""
+                            >
+
+
+                            <div
+                                class="form-help"
+                                style="margin-top:13px;"
+                            >
+
+                                <i class="fas fa-circle-info"></i>
+
+                                Schedule:
+                                <strong>Saturday–Wednesday</strong>,
+                                1 hour per day.
+                                Thursday and Friday are OFF.
+                                Weekly load is therefore
+                                <strong>5 hours</strong>.
+                                Credit hours are calculated using
+                                <strong>15 contact hours = 1 credit</strong>.
 
                             </div>
 
@@ -1662,9 +1970,9 @@
                 </div>
 
 
-                <!-- ==================================================
+                <!-- ========================================================
                      MARKING CONFIGURATION
-                ================================================== -->
+                ======================================================== -->
 
                 <div class="form-card">
 
@@ -1681,7 +1989,7 @@
                             </h3>
 
                             <p>
-                                Define maximum and passing marks for this subject.
+                                Define maximum marks and optionally define passing marks.
                             </p>
 
                         </div>
@@ -1746,12 +2054,17 @@
                                         name="max_marks"
                                         class="form-control-custom"
                                         placeholder="100"
-                                        value="{{ request.form.get('max_marks', '100') }}"
+                                        value="{{ request.form.get('max_marks', max_marks or '100') }}"
                                         min="0.01"
                                         max="9999.99"
                                         step="0.01"
                                         required
                                     >
+
+                                    <div
+                                        id="max-marks-error"
+                                        class="field-error-text"
+                                    ></div>
 
                                 </div>
 
@@ -1769,8 +2082,8 @@
 
                                         Pass Marks
 
-                                        <span class="required">
-                                            *
+                                        <span class="optional-text">
+                                            (Optional)
                                         </span>
 
                                     </label>
@@ -1780,13 +2093,22 @@
                                         id="pass_marks"
                                         name="pass_marks"
                                         class="form-control-custom"
-                                        placeholder="50"
-                                        value="{{ request.form.get('pass_marks', '50') }}"
+                                        placeholder="Optional"
+                                        value="{{ request.form.get('pass_marks', pass_marks or '') }}"
                                         min="0"
                                         max="9999.99"
                                         step="0.01"
-                                        required
                                     >
+
+                                    <div class="form-help">
+                                        Leave empty if this subject does not use
+                                        a fixed passing-mark value.
+                                    </div>
+
+                                    <div
+                                        id="pass-marks-error"
+                                        class="field-error-text"
+                                    ></div>
 
                                 </div>
 
@@ -1802,7 +2124,7 @@
                                     </small>
 
                                     <strong id="max-preview">
-                                        {{ request.form.get('max_marks', '100') }}
+                                        {{ request.form.get('max_marks', max_marks or '100') }}
                                     </strong>
 
                                 </div>
@@ -1815,7 +2137,11 @@
                                     </small>
 
                                     <strong id="pass-preview">
-                                        {{ request.form.get('pass_marks', '50') }}
+                                        {% if request.form.get('pass_marks', pass_marks or '') %}
+                                            {{ request.form.get('pass_marks', pass_marks or '') }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
                                     </strong>
 
                                 </div>
@@ -1828,7 +2154,7 @@
                                     </small>
 
                                     <strong id="pass-percent-preview">
-                                        50%
+                                        —
                                     </strong>
 
                                 </div>
@@ -1844,9 +2170,9 @@
             </div>
 
 
-            <!-- ==================================================
+            <!-- ========================================================
                  SIDEBAR
-            ================================================== -->
+            ======================================================== -->
 
             <div class="add-subject-sidebar">
 
@@ -1878,12 +2204,20 @@
                                 id="summary-name"
                                 class="subject-summary-name"
                             >
-                                {{ request.form.get('name', '') or 'New Subject' }}
+                                {{ request.form.get('name', name or '') or 'New Subject' }}
                             </h3>
+
+                            <div
+                                id="summary-short-name"
+                                class="subject-summary-code"
+                            >
+                                {{ request.form.get('short_name', short_name or '') or 'SHORT NAME' }}
+                            </div>
 
                             <div
                                 id="summary-code"
                                 class="subject-summary-code"
+                                style="margin-top:7px;"
                             >
                                 AUTO
                             </div>
@@ -1913,17 +2247,20 @@
                     <div class="sidebar-card-body">
 
                         {% set selected_status =
-                            request.form.get('status', 'active')
+                            request.form.get(
+                                'status',
+                                status or 'active'
+                            )
                         %}
 
                         <div class="option-group">
 
-                            {% for status in subject_statuses %}
+                            {% for item in subject_statuses %}
 
                                 {% set status_value =
-                                    status.value
-                                    if status.value is defined
-                                    else status
+                                    item.value
+                                    if item.value is defined
+                                    else item
                                 %}
 
                                 <div class="option-item">
@@ -2028,7 +2365,7 @@
                                 </strong>
 
                                 <span>
-                                    Branch is optional. Empty branch means institution-level scope.
+                                    Subject codes are counted separately for each branch.
                                 </span>
 
                             </div>
@@ -2049,7 +2386,8 @@
                                 </strong>
 
                                 <span>
-                                    Program is required for sequential subject code generation.
+                                    Program is required and its duration determines
+                                    the subject academic load.
                                 </span>
 
                             </div>
@@ -2070,7 +2408,30 @@
                                 </strong>
 
                                 <span>
-                                    Code is generated by the server when the subject is saved.
+                                    Code is generated by the server using
+                                    Institution + Branch.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-font"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
+                                    Short Name
+                                </strong>
+
+                                <span>
+                                    Automatically uses the first three words
+                                    of the Subject Name.
                                 </span>
 
                             </div>
@@ -2087,11 +2448,34 @@
                             <div class="info-content">
 
                                 <strong>
+                                    Weekly Hours
+                                </strong>
+
+                                <span>
+                                    Saturday–Wednesday, 1 hour per day =
+                                    5 hours per week.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <div class="info-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+
+                            <div class="info-content">
+
+                                <strong>
                                     Credit Hours
                                 </strong>
 
                                 <span>
-                                    Credit hours are required for every subject.
+                                    Calculated from program duration using
+                                    15 contact hours per credit.
                                 </span>
 
                             </div>
@@ -2112,7 +2496,8 @@
                                 </strong>
 
                                 <span>
-                                    Pass marks cannot be greater than maximum marks.
+                                    Optional. If entered, it cannot be greater
+                                    than maximum marks.
                                 </span>
 
                             </div>
@@ -2167,1458 +2552,1444 @@
 </div>
 
 
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
 <script>
 
-/* ============================================================
-   DOM
-   ============================================================ */
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-const addSubjectForm =
-    document.getElementById(
-        "add-subject-form"
-    );
+        /* ========================================================
+           ELEMENTS
+           ======================================================== */
 
-const institutionSelect =
-    document.getElementById(
-        "institution_id"
-    );
-
-const branchSelect =
-    document.getElementById(
-        "branch_id"
-    );
-
-const programSelect =
-    document.getElementById(
-        "program_id"
-    );
-
-const nameInput =
-    document.getElementById(
-        "name"
-    );
-
-const codeInput =
-    document.getElementById(
-        "code"
-    );
-
-const shortNameInput =
-    document.getElementById(
-        "short_name"
-    );
-
-const codePreview =
-    document.getElementById(
-        "code-preview"
-    );
-
-const summaryName =
-    document.getElementById(
-        "summary-name"
-    );
-
-const summaryCode =
-    document.getElementById(
-        "summary-code"
-    );
-
-const creditHoursInput =
-    document.getElementById(
-        "credit_hours"
-    );
-
-const maxMarksInput =
-    document.getElementById(
-        "max_marks"
-    );
-
-const passMarksInput =
-    document.getElementById(
-        "pass_marks"
-    );
-
-const maxPreview =
-    document.getElementById(
-        "max-preview"
-    );
-
-const passPreview =
-    document.getElementById(
-        "pass-preview"
-    );
-
-const passPercentPreview =
-    document.getElementById(
-        "pass-percent-preview"
-    );
-
-const createSubjectButton =
-    document.getElementById(
-        "create-subject-btn"
-    );
-
-const formAlert =
-    document.getElementById(
-        "form-alert"
-    );
-
-const formAlertMessage =
-    document.getElementById(
-        "form-alert-message"
-    );
-
-
-/* ============================================================
-   OLD VALUES
-   ============================================================ */
-
-const OLD_BRANCH_ID =
-    {{ request.form.get('branch_id', '') | tojson }};
-
-const OLD_PROGRAM_ID =
-    {{ request.form.get('program_id', '') | tojson }};
-
-
-/* ============================================================
-   BRANCH DATA
-   ============================================================ */
-
-const SUBJECT_BRANCHES = [
-
-    {% for branch in branches %}
-
-    {
-        id: {{ branch.id | tojson }},
-        name: {{ branch.name | tojson }},
-        code: {{ branch.code | default('', true) | tojson }},
-        institution_id: {{ branch.institution_id | tojson }}
-    }
-
-    {% if not loop.last %},{% endif %}
-
-    {% endfor %}
-
-];
-
-
-/* ============================================================
-   PROGRAM DATA
-   ============================================================ */
-
-const SUBJECT_PROGRAMS = [
-
-    {% for program in programs %}
-
-    {
-        id: {{ program.id | tojson }},
-        name: {{ program.name | tojson }},
-        code: {{ program.code | default('', true) | tojson }},
-        institution_id: {{ program.institution_id | tojson }}
-    }
-
-    {% if not loop.last %},{% endif %}
-
-    {% endfor %}
-
-];
-
-
-/* ============================================================
-   SHOW FORM ERROR
-   ============================================================ */
-
-function showFormError(message) {
-
-    if (
-        !formAlert ||
-        !formAlertMessage
-    ) {
-        return;
-    }
-
-    formAlertMessage.textContent =
-        message;
-
-    formAlert.classList.add(
-        "show"
-    );
-
-    formAlert.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-    });
-
-}
-
-
-/* ============================================================
-   HIDE FORM ERROR
-   ============================================================ */
-
-function hideFormError() {
-
-    if (!formAlert) {
-        return;
-    }
-
-    formAlert.classList.remove(
-        "show"
-    );
-
-}
-
-
-/* ============================================================
-   CLEAR FIELD ERRORS
-   ============================================================ */
-
-function clearFieldErrors() {
-
-    document
-        .querySelectorAll(
-            ".field-error"
-        )
-        .forEach(
-            function(element) {
-
-                element.classList.remove(
-                    "field-error"
-                );
-
-            }
+        const form = document.getElementById(
+            "add-subject-form"
         );
 
-}
+        const institutionSelect =
+            document.getElementById(
+                "institution_id"
+            );
+
+        const branchSelect =
+            document.getElementById(
+                "branch_id"
+            );
+
+        const programSelect =
+            document.getElementById(
+                "program_id"
+            );
+
+        const nameInput =
+            document.getElementById(
+                "name"
+            );
+
+        const shortNameInput =
+            document.getElementById(
+                "short_name"
+            );
+
+        const codeInput =
+            document.getElementById(
+                "code"
+            );
+
+        const maxMarksInput =
+            document.getElementById(
+                "max_marks"
+            );
+
+        const passMarksInput =
+            document.getElementById(
+                "pass_marks"
+            );
+
+        const weeklyHoursInput =
+            document.getElementById(
+                "weekly_hours"
+            );
+
+        const creditHoursInput =
+            document.getElementById(
+                "credit_hours"
+            );
+
+        const weeklyHoursPreview =
+            document.getElementById(
+                "weekly-hours-preview"
+            );
+
+        const totalHoursPreview =
+            document.getElementById(
+                "total-hours-preview"
+            );
+
+        const creditHoursPreview =
+            document.getElementById(
+                "credit-hours-preview"
+            );
+
+        const maxPreview =
+            document.getElementById(
+                "max-preview"
+            );
+
+        const passPreview =
+            document.getElementById(
+                "pass-preview"
+            );
+
+        const passPercentPreview =
+            document.getElementById(
+                "pass-percent-preview"
+            );
+
+        const summaryName =
+            document.getElementById(
+                "summary-name"
+            );
+
+        const summaryShortName =
+            document.getElementById(
+                "summary-short-name"
+            );
+
+        const summaryCode =
+            document.getElementById(
+                "summary-code"
+            );
+
+        const codePreview =
+            document.getElementById(
+                "code-preview"
+            );
+
+        const alertBox =
+            document.getElementById(
+                "form-alert"
+            );
+
+        const alertMessage =
+            document.getElementById(
+                "form-alert-message"
+            );
+
+        const submitButton =
+            document.getElementById(
+                "create-subject-btn"
+            );
 
 
-/* ============================================================
-   FIELD ERROR
-   ============================================================ */
+        /* ========================================================
+           INITIAL VALUES
+           ======================================================== */
 
-function markFieldError(element) {
+        const originalBranchValue =
+            branchSelect
+                ? branchSelect.value
+                : "";
 
-    if (!element) {
-        return;
-    }
-
-    element.classList.add(
-        "field-error"
-    );
-
-    element.focus();
-
-}
+        const originalProgramValue =
+            programSelect
+                ? programSelect.value
+                : "";
 
 
-/* ============================================================
-   FILTER BRANCHES
-   ============================================================ */
+        /* ========================================================
+           HELPERS
+           ======================================================== */
 
-function filterSubjectBranches(
-    preserveSelected = true
-) {
+        function normalizeText(value) {
 
-    if (
-        !institutionSelect ||
-        !branchSelect
-    ) {
-        return;
-    }
-
-    const institutionId =
-        institutionSelect.value.trim();
-
-    const previousBranch =
-        preserveSelected
-            ? (
-                OLD_BRANCH_ID ||
-                branchSelect.value ||
-                ""
+            return String(
+                value || ""
             )
-            : "";
-
-
-    branchSelect.innerHTML = "";
-
-
-    const placeholder =
-        document.createElement(
-            "option"
-        );
-
-    placeholder.value = "";
-
-    placeholder.textContent =
-        "All / Institution Level";
-
-    branchSelect.appendChild(
-        placeholder
-    );
-
-
-    if (!institutionId) {
-
-        branchSelect.disabled =
-            true;
-
-        return;
-    }
-
-
-    SUBJECT_BRANCHES.forEach(
-        function(branch) {
-
-            if (
-                String(
-                    branch.institution_id
-                ) !==
-                String(
-                    institutionId
-                )
-            ) {
-                return;
-            }
-
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value =
-                branch.id;
-
-            option.dataset.institutionId =
-                branch.institution_id;
-
-            option.textContent =
-                branch.code
-                    ? `${branch.name} — ${branch.code}`
-                    : branch.name;
-
-
-            if (
-                previousBranch &&
-                String(previousBranch) ===
-                String(branch.id)
-            ) {
-
-                option.selected =
-                    true;
-
-            }
-
-
-            branchSelect.appendChild(
-                option
+            .trim()
+            .replace(
+                /\s+/g,
+                " "
             );
 
         }
-    );
 
 
-    branchSelect.disabled =
-        false;
+        function escapeText(value) {
 
-}
-
-
-/* ============================================================
-   FILTER PROGRAMS
-   ============================================================ */
-
-function filterSubjectPrograms(
-    preserveSelected = true
-) {
-
-    if (
-        !institutionSelect ||
-        !programSelect
-    ) {
-        return;
-    }
-
-    const institutionId =
-        institutionSelect.value.trim();
-
-    const previousProgram =
-        preserveSelected
-            ? (
-                OLD_PROGRAM_ID ||
-                programSelect.value ||
-                ""
-            )
-            : "";
-
-
-    programSelect.innerHTML = "";
-
-
-    const placeholder =
-        document.createElement(
-            "option"
-        );
-
-    placeholder.value = "";
-
-    placeholder.textContent =
-        "Select Program";
-
-    programSelect.appendChild(
-        placeholder
-    );
-
-
-    if (!institutionId) {
-
-        programSelect.disabled =
-            true;
-
-        return;
-    }
-
-
-    SUBJECT_PROGRAMS.forEach(
-        function(program) {
-
-            if (
-                String(
-                    program.institution_id
-                ) !==
-                String(
-                    institutionId
-                )
-            ) {
-                return;
-            }
-
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value =
-                program.id;
-
-            option.dataset.institutionId =
-                program.institution_id;
-
-            option.textContent =
-                program.code
-                    ? `${program.name} — ${program.code}`
-                    : program.name;
-
-
-            if (
-                previousProgram &&
-                String(previousProgram) ===
-                String(program.id)
-            ) {
-
-                option.selected =
-                    true;
-
-            }
-
-
-            programSelect.appendChild(
-                option
+            return normalizeText(
+                value
             );
 
         }
-    );
 
 
-    programSelect.disabled =
-        false;
+        /* ========================================================
+           SHORT NAME
+           --------------------------------------------------------
+           FIRST THREE WORDS ONLY
+           ======================================================== */
 
-}
-
-
-/* ============================================================
-   CODE PREVIEW
-   ============================================================ */
-
-function resetSubjectCodePreview() {
-
-    /*
-     * Code is NOT generated from subject name.
-     *
-     * Backend generates:
-     *
-     * SUB001
-     * SUB002
-     * SUB003
-     *
-     * based on the selected Program.
-     */
-
-    if (codeInput) {
-
-        codeInput.value =
-            "";
-
-    }
-
-
-    if (codePreview) {
-
-        codePreview.textContent =
-            "AUTO";
-
-    }
-
-
-    if (summaryCode) {
-
-        summaryCode.textContent =
-            "AUTO";
-
-    }
-
-}
-
-
-/* ============================================================
-   SUBJECT PREVIEW
-   ============================================================ */
-
-function updateSubjectPreview() {
-
-    const name =
-        nameInput
-            ? nameInput.value.trim()
-            : "";
-
-
-    if (summaryName) {
-
-        summaryName.textContent =
-            name ||
-            "New Subject";
-
-    }
-
-
-    if (summaryCode) {
-
-        summaryCode.textContent =
-            "AUTO";
-
-    }
-
-
-    if (codePreview) {
-
-        codePreview.textContent =
-            "AUTO";
-
-    }
-
-}
-
-
-/* ============================================================
-   MARKS PREVIEW
-   ============================================================ */
-
-function updateMarksPreview() {
-
-    const max =
-        parseFloat(
-            maxMarksInput
-                ? maxMarksInput.value
-                : ""
-        );
-
-
-    const pass =
-        parseFloat(
-            passMarksInput
-                ? passMarksInput.value
-                : ""
-        );
-
-
-    if (maxPreview) {
-
-        maxPreview.textContent =
-            Number.isFinite(max)
-                ? max
-                : "0";
-
-    }
-
-
-    if (passPreview) {
-
-        passPreview.textContent =
-            Number.isFinite(pass)
-                ? pass
-                : "0";
-
-    }
-
-
-    if (passPercentPreview) {
-
-        if (
-            Number.isFinite(max) &&
-            max > 0 &&
-            Number.isFinite(pass)
+        function generateShortName(
+            subjectName
         ) {
 
-            const percentage =
-                (
-                    pass / max
-                ) * 100;
+            const normalized =
+                normalizeText(
+                    subjectName
+                );
 
+            if (!normalized) {
 
-            passPercentPreview.textContent =
-                `${percentage.toFixed(1).replace(/\.0$/, "")}%`;
+                return "";
 
-        } else {
+            }
 
-            passPercentPreview.textContent =
-                "0%";
+            const words =
+                normalized
+                    .split(" ")
+                    .filter(
+                        function (word) {
+                            return word.length > 0;
+                        }
+                    )
+                    .slice(0, 3);
+
+            if (!words.length) {
+
+                return "";
+
+            }
+
+            return words
+                .map(
+                    function (word) {
+
+                        return word
+                            .charAt(0)
+                            .toUpperCase();
+
+                    }
+                )
+                .join("")
+                .substring(0, 10);
 
         }
 
-    }
 
-}
+        /* ========================================================
+           UPDATE SHORT NAME
+           ======================================================== */
 
+        function updateShortName() {
 
-/* ============================================================
-   VALIDATE RELATIONSHIPS
-   ============================================================ */
+            const name =
+                normalizeText(
+                    nameInput.value
+                );
 
-function validateRelationships() {
+            const shortName =
+                generateShortName(
+                    name
+                );
 
-    const institutionId =
-        institutionSelect
-            ? institutionSelect.value.trim()
-            : "";
+            shortNameInput.value =
+                shortName;
 
+            summaryShortName.textContent =
+                shortName || "SHORT NAME";
 
-    const branchId =
-        branchSelect
-            ? branchSelect.value.trim()
-            : "";
-
-
-    const programId =
-        programSelect
-            ? programSelect.value.trim()
-            : "";
+        }
 
 
-    /* --------------------------------------------------------
-       INSTITUTION
-    -------------------------------------------------------- */
+        /* ========================================================
+           UPDATE SUBJECT NAME PREVIEW
+           ======================================================== */
 
-    if (!institutionId) {
+        function updateSubjectNamePreview() {
 
-        return {
-            valid: false,
-            field: institutionSelect,
-            message:
-                "Please select an institution."
-        };
+            const name =
+                normalizeText(
+                    nameInput.value
+                );
 
-    }
+            summaryName.textContent =
+                name || "New Subject";
+
+        }
 
 
-    /* --------------------------------------------------------
-       BRANCH
-    -------------------------------------------------------- */
+        /* ========================================================
+           UPDATE MARK PREVIEW
+           ======================================================== */
 
-    if (branchId) {
+        function updateMarkPreview() {
 
-        const branch =
-            SUBJECT_BRANCHES.find(
-                function(item) {
+            const maxRaw =
+                String(
+                    maxMarksInput.value || ""
+                ).trim();
 
-                    return String(
-                        item.id
-                    ) ===
-                    String(
-                        branchId
-                    );
+            const passRaw =
+                String(
+                    passMarksInput.value || ""
+                ).trim();
+
+            const max =
+                parseFloat(
+                    maxRaw
+                );
+
+            const pass =
+                passRaw === ""
+                    ? null
+                    : parseFloat(passRaw);
+
+
+            /* ----------------------------------------------------
+               MAX PREVIEW
+               ---------------------------------------------------- */
+
+            maxPreview.textContent =
+                maxRaw || "—";
+
+
+            /* ----------------------------------------------------
+               PASS PREVIEW
+               ---------------------------------------------------- */
+
+            passPreview.textContent =
+                passRaw === ""
+                    ? "—"
+                    : passRaw;
+
+
+            /* ----------------------------------------------------
+               PASS PERCENT
+               ---------------------------------------------------- */
+
+            if (
+                pass !== null
+                && Number.isFinite(pass)
+                && Number.isFinite(max)
+                && max > 0
+            ) {
+
+                const percentage =
+                    (
+                        pass / max
+                    ) * 100;
+
+                passPercentPreview.textContent =
+                    percentage.toFixed(2) + "%";
+
+            } else {
+
+                passPercentPreview.textContent =
+                    "—";
+
+            }
+
+        }
+
+
+        /* ========================================================
+           CALCULATE ACADEMIC LOAD
+           --------------------------------------------------------
+           5 DAYS × 1 HOUR = 5 HOURS/WEEK
+           
+           PROGRAM WEEKS:
+               duration_months × 52 / 12
+
+           PROGRAM HOURS:
+               weekly_hours × program_weeks
+
+           CREDITS:
+               total_hours / 15
+           ======================================================== */
+
+        function calculateAcademicLoad() {
+
+            const selectedOption =
+                programSelect
+                    ? programSelect.options[
+                        programSelect.selectedIndex
+                    ]
+                    : null;
+
+            if (
+                !selectedOption
+                || !programSelect.value
+            ) {
+
+                weeklyHoursPreview.textContent =
+                    "5.00";
+
+                totalHoursPreview.textContent =
+                    "—";
+
+                creditHoursPreview.textContent =
+                    "—";
+
+                weeklyHoursInput.value =
+                    "5.00";
+
+                creditHoursInput.value =
+                    "";
+
+                return;
+
+            }
+
+            const durationRaw =
+                selectedOption.dataset
+                    .durationMonths;
+
+            const duration =
+                parseFloat(
+                    durationRaw
+                );
+
+            const weeklyHours =
+                5;
+
+            weeklyHoursPreview.textContent =
+                weeklyHours.toFixed(2);
+
+            weeklyHoursInput.value =
+                weeklyHours.toFixed(2);
+
+
+            if (
+                !Number.isFinite(duration)
+                || duration <= 0
+            ) {
+
+                totalHoursPreview.textContent =
+                    "—";
+
+                creditHoursPreview.textContent =
+                    "—";
+
+                creditHoursInput.value =
+                    "";
+
+                return;
+
+            }
+
+
+            const programWeeks =
+                (
+                    duration
+                    * 52
+                ) / 12;
+
+
+            const totalHours =
+                weeklyHours
+                * programWeeks;
+
+
+            const creditHours =
+                totalHours / 15;
+
+
+            totalHoursPreview.textContent =
+                totalHours.toFixed(2);
+
+
+            creditHoursPreview.textContent =
+                creditHours.toFixed(2);
+
+
+            creditHoursInput.value =
+                creditHours.toFixed(2);
+
+        }
+
+
+        /* ========================================================
+           FILTER BRANCHES BY INSTITUTION
+           ======================================================== */
+
+        function filterBranches() {
+
+            const institutionId =
+                institutionSelect.value;
+
+            let currentValue =
+                branchSelect.value;
+
+            let currentValueStillAvailable =
+                false;
+
+
+            Array.from(
+                branchSelect.options
+            ).forEach(
+                function (option, index) {
+
+                    if (index === 0) {
+
+                        option.hidden =
+                            false;
+
+                        option.disabled =
+                            false;
+
+                        return;
+
+                    }
+
+                    const optionInstitutionId =
+                        option.dataset
+                            .institutionId;
+
+
+                    const matches =
+                        institutionId
+                        && optionInstitutionId
+                        === institutionId;
+
+
+                    option.hidden =
+                        !matches;
+
+                    option.disabled =
+                        !matches;
+
+
+                    if (
+                        matches
+                        && option.value
+                        === currentValue
+                    ) {
+
+                        currentValueStillAvailable =
+                            true;
+
+                    }
 
                 }
             );
 
 
-        if (
-            !branch ||
-            String(
-                branch.institution_id
-            ) !==
-            String(
-                institutionId
-            )
-        ) {
-
-            return {
-                valid: false,
-                field: branchSelect,
-                message:
-                    "The selected branch does not belong to the selected institution."
-            };
-
-        }
-
-    }
-
-
-    /* --------------------------------------------------------
-       PROGRAM REQUIRED
-    -------------------------------------------------------- */
-
-    if (!programId) {
-
-        return {
-            valid: false,
-            field: programSelect,
-            message:
-                "Please select a program. Program is required for subject code generation."
-        };
-
-    }
-
-
-    /* --------------------------------------------------------
-       PROGRAM OWNERSHIP
-    -------------------------------------------------------- */
-
-    const program =
-        SUBJECT_PROGRAMS.find(
-            function(item) {
-
-                return String(
-                    item.id
-                ) ===
-                String(
-                    programId
-                );
-
-            }
-        );
-
-
-    if (
-        !program ||
-        String(
-            program.institution_id
-        ) !==
-        String(
-            institutionId
-        )
-    ) {
-
-        return {
-            valid: false,
-            field: programSelect,
-            message:
-                "The selected program does not belong to the selected institution."
-        };
-
-    }
-
-
-    return {
-        valid: true
-    };
-
-}
-
-
-/* ============================================================
-   VALIDATE CREDIT HOURS
-   ============================================================ */
-
-function validateCreditHours() {
-
-    if (!creditHoursInput) {
-
-        return {
-            valid: false,
-            message:
-                "Credit hours field is missing."
-        };
-
-    }
-
-
-    const raw =
-        creditHoursInput.value.trim();
-
-
-    if (!raw) {
-
-        return {
-            valid: false,
-            field: creditHoursInput,
-            message:
-                "Credit Hours are required."
-        };
-
-    }
-
-
-    const credit =
-        parseFloat(raw);
-
-
-    if (
-        !Number.isFinite(credit)
-    ) {
-
-        return {
-            valid: false,
-            field: creditHoursInput,
-            message:
-                "Please enter a valid credit hours value."
-        };
-
-    }
-
-
-    if (credit < 0) {
-
-        return {
-            valid: false,
-            field: creditHoursInput,
-            message:
-                "Credit Hours cannot be negative."
-        };
-
-    }
-
-
-    if (credit > 999.99) {
-
-        return {
-            valid: false,
-            field: creditHoursInput,
-            message:
-                "Credit Hours cannot exceed 999.99."
-        };
-
-    }
-
-
-    return {
-        valid: true
-    };
-
-}
-
-
-/* ============================================================
-   VALIDATE MARKS
-   ============================================================ */
-
-function validateMarks() {
-
-    if (
-        !maxMarksInput ||
-        !passMarksInput
-    ) {
-
-        return {
-            valid: false,
-            message:
-                "Marking fields are missing."
-        };
-
-    }
-
-
-    const max =
-        parseFloat(
-            maxMarksInput.value
-        );
-
-
-    const pass =
-        parseFloat(
-            passMarksInput.value
-        );
-
-
-    if (
-        !Number.isFinite(max) ||
-        max <= 0
-    ) {
-
-        return {
-            valid: false,
-            field: maxMarksInput,
-            message:
-                "Maximum marks must be greater than 0."
-        };
-
-    }
-
-
-    if (
-        !Number.isFinite(pass) ||
-        pass < 0
-    ) {
-
-        return {
-            valid: false,
-            field: passMarksInput,
-            message:
-                "Pass marks cannot be negative."
-        };
-
-    }
-
-
-    if (pass > max) {
-
-        return {
-            valid: false,
-            field: passMarksInput,
-            message:
-                "Pass marks cannot be greater than maximum marks."
-        };
-
-    }
-
-
-    return {
-        valid: true
-    };
-
-}
-
-
-/* ============================================================
-   VALIDATE HOURS
-   ============================================================ */
-
-function validateHours() {
-
-    const weeklyInput =
-        document.getElementById(
-            "weekly_hours"
-        );
-
-
-    if (!weeklyInput) {
-
-        return {
-            valid: true
-        };
-
-    }
-
-
-    const raw =
-        weeklyInput.value.trim();
-
-
-    if (!raw) {
-
-        return {
-            valid: true
-        };
-
-    }
-
-
-    const weekly =
-        parseFloat(raw);
-
-
-    if (
-        !Number.isFinite(weekly) ||
-        weekly < 0
-    ) {
-
-        return {
-            valid: false,
-            field: weeklyInput,
-            message:
-                "Weekly hours must be zero or greater."
-        };
-
-    }
-
-
-    if (weekly > 999.99) {
-
-        return {
-            valid: false,
-            field: weeklyInput,
-            message:
-                "Weekly hours cannot exceed 999.99."
-        };
-
-    }
-
-
-    return {
-        valid: true
-    };
-
-}
-
-
-/* ============================================================
-   INSTITUTION CHANGE
-   ============================================================ */
-
-if (institutionSelect) {
-
-    institutionSelect.addEventListener(
-        "change",
-        function() {
-
-            clearFieldErrors();
-
-            filterSubjectBranches(
-                false
-            );
-
-            filterSubjectPrograms(
-                false
-            );
-
-            resetSubjectCodePreview();
-
-            hideFormError();
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   PROGRAM CHANGE
-   ============================================================ */
-
-if (programSelect) {
-
-    programSelect.addEventListener(
-        "change",
-        function() {
-
-            clearFieldErrors();
-
-            resetSubjectCodePreview();
-
-            hideFormError();
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   BRANCH CHANGE
-   ============================================================ */
-
-if (branchSelect) {
-
-    branchSelect.addEventListener(
-        "change",
-        function() {
-
-            clearFieldErrors();
-
-            resetSubjectCodePreview();
-
-            hideFormError();
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   NAME CHANGE
-   ============================================================ */
-
-if (nameInput) {
-
-    nameInput.addEventListener(
-        "input",
-        function() {
-
-            updateSubjectPreview();
-
-            hideFormError();
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   CREDIT HOURS CHANGE
-   ============================================================ */
-
-if (creditHoursInput) {
-
-    creditHoursInput.addEventListener(
-        "input",
-        function() {
-
-            creditHoursInput.classList.remove(
-                "field-error"
-            );
-
-            hideFormError();
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   MARK EVENTS
-   ============================================================ */
-
-if (maxMarksInput) {
-
-    maxMarksInput.addEventListener(
-        "input",
-        function() {
-
-            maxMarksInput.classList.remove(
-                "field-error"
-            );
-
-            updateMarksPreview();
-
-            hideFormError();
-
-        }
-    );
-
-}
-
-
-if (passMarksInput) {
-
-    passMarksInput.addEventListener(
-        "input",
-        function() {
-
-            passMarksInput.classList.remove(
-                "field-error"
-            );
-
-            updateMarksPreview();
-
-            hideFormError();
-
-        }
-    );
-
-}
-
-
-/* ============================================================
-   FORM SUBMIT
-   ============================================================ */
-
-if (addSubjectForm) {
-
-    addSubjectForm.addEventListener(
-        "submit",
-        function(event) {
-
-            clearFieldErrors();
-
-            hideFormError();
-
-
-            /* =================================================
-               NAME
-            ================================================= */
-
-            const subjectName =
-                nameInput
-                    ? nameInput.value.trim()
-                    : "";
-
-
-            if (!subjectName) {
-
-                event.preventDefault();
-
-                showFormError(
-                    "Please enter the subject name."
-                );
-
-                markFieldError(
-                    nameInput
-                );
-
-                return;
-
-            }
-
-
             if (
-                subjectName.length > 150
+                !currentValueStillAvailable
             ) {
-
-                event.preventDefault();
-
-                showFormError(
-                    "Subject name cannot exceed 150 characters."
-                );
-
-                markFieldError(
-                    nameInput
-                );
-
-                return;
-
-            }
-
-
-            /* =================================================
-               RELATIONSHIPS
-            ================================================= */
-
-            const relationshipResult =
-                validateRelationships();
-
-
-            if (
-                !relationshipResult.valid
-            ) {
-
-                event.preventDefault();
-
-                showFormError(
-                    relationshipResult.message
-                );
-
-                markFieldError(
-                    relationshipResult.field
-                );
-
-                return;
-
-            }
-
-
-            /* =================================================
-               CREDIT HOURS — REQUIRED
-            ================================================= */
-
-            const creditResult =
-                validateCreditHours();
-
-
-            if (
-                !creditResult.valid
-            ) {
-
-                event.preventDefault();
-
-                showFormError(
-                    creditResult.message
-                );
-
-                markFieldError(
-                    creditResult.field
-                );
-
-                return;
-
-            }
-
-
-            /* =================================================
-               MARKS
-            ================================================= */
-
-            const marksResult =
-                validateMarks();
-
-
-            if (
-                !marksResult.valid
-            ) {
-
-                event.preventDefault();
-
-                showFormError(
-                    marksResult.message
-                );
-
-                markFieldError(
-                    marksResult.field
-                );
-
-                return;
-
-            }
-
-
-            /* =================================================
-               WEEKLY HOURS
-            ================================================= */
-
-            const hoursResult =
-                validateHours();
-
-
-            if (
-                !hoursResult.valid
-            ) {
-
-                event.preventDefault();
-
-                showFormError(
-                    hoursResult.message
-                );
-
-                markFieldError(
-                    hoursResult.field
-                );
-
-                return;
-
-            }
-
-
-            /* =================================================
-               CLEAN OPTIONAL FIELDS
-            ================================================= */
-
-            if (shortNameInput) {
-
-                shortNameInput.value =
-                    shortNameInput.value.trim();
-
-            }
-
-
-            const description =
-                document.getElementById(
-                    "description"
-                );
-
-
-            if (description) {
-
-                description.value =
-                    description.value.trim();
-
-            }
-
-
-            /* =================================================
-               IMPORTANT:
-               CODE IS GENERATED SERVER-SIDE
-            ================================================= */
-
-            if (codeInput) {
 
                 /*
-                 * The Flask route generates the actual code.
+                 * If the existing selected branch belongs
+                 * to another institution, clear it.
                  *
-                 * Do not generate anything from subject name.
+                 * Branch admin may already be locked by
+                 * the server, so we do not interfere when
+                 * only one branch remains.
                  */
 
-                codeInput.value =
+                const visibleOptions =
+                    Array.from(
+                        branchSelect.options
+                    ).filter(
+                        function (option, index) {
+
+                            return (
+                                index > 0
+                                && !option.disabled
+                                && !option.hidden
+                            );
+
+                        }
+                    );
+
+
+                if (
+                    visibleOptions.length === 1
+                ) {
+
+                    branchSelect.value =
+                        visibleOptions[0].value;
+
+                } else {
+
+                    branchSelect.value =
+                        "";
+
+                }
+
+            }
+
+
+            filterPrograms();
+
+        }
+
+
+        /* ========================================================
+           FILTER PROGRAMS
+           
+           PROGRAM RULE:
+           
+           1. Institution must match.
+           
+           2. Program branch may be:
+                - selected branch
+                - NULL / empty = institution-wide
+           ======================================================== */
+
+        function filterPrograms() {
+
+            const institutionId =
+                institutionSelect.value;
+
+            const branchId =
+                branchSelect.value;
+
+            const currentProgramValue =
+                programSelect.value;
+
+            let currentProgramStillAvailable =
+                false;
+
+
+            Array.from(
+                programSelect.options
+            ).forEach(
+                function (option, index) {
+
+                    if (index === 0) {
+
+                        option.hidden =
+                            false;
+
+                        option.disabled =
+                            false;
+
+                        return;
+
+                    }
+
+
+                    const optionInstitutionId =
+                        option.dataset
+                            .institutionId;
+
+                    const optionBranchId =
+                        option.dataset
+                            .branchId;
+
+
+                    const institutionMatches =
+                        institutionId
+                        && optionInstitutionId
+                        === institutionId;
+
+
+                    /*
+                     * Branch-specific program:
+                     * must match selected branch.
+                     *
+                     * Institution-wide program:
+                     * optionBranchId = ""
+                     * and is allowed for every branch
+                     * inside the institution.
+                     */
+
+                    const branchMatches =
+                        optionBranchId === ""
+                        || (
+                            branchId
+                            && optionBranchId
+                            === branchId
+                        );
+
+
+                    const visible =
+                        institutionMatches
+                        && branchMatches;
+
+
+                    option.hidden =
+                        !visible;
+
+                    option.disabled =
+                        !visible;
+
+
+                    if (
+                        visible
+                        && option.value
+                        === currentProgramValue
+                    ) {
+
+                        currentProgramStillAvailable =
+                            true;
+
+                    }
+
+                }
+            );
+
+
+            if (
+                !currentProgramStillAvailable
+            ) {
+
+                programSelect.value =
                     "";
 
             }
 
 
-            /* =================================================
-               DISABLE DOUBLE SUBMIT
-            ================================================= */
+            calculateAcademicLoad();
 
-            if (createSubjectButton) {
+        }
 
-                createSubjectButton.disabled =
-                    true;
 
-                createSubjectButton.innerHTML =
-                    `
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span>Creating Subject...</span>
-                    `;
+        /* ========================================================
+           RESET BRANCH + PROGRAM WHEN INSTITUTION CHANGES
+           ======================================================== */
+
+        function handleInstitutionChange() {
+
+            const institutionId =
+                institutionSelect.value;
+
+
+            if (!institutionId) {
+
+                branchSelect.value =
+                    "";
+
+                programSelect.value =
+                    "";
+
+                filterBranches();
+
+                calculateAcademicLoad();
+
+                return;
+
+            }
+
+
+            /*
+             * Branch list will be filtered.
+             */
+
+            filterBranches();
+
+        }
+
+
+        /* ========================================================
+           BRANCH CHANGE
+           ======================================================== */
+
+        function handleBranchChange() {
+
+            filterPrograms();
+
+        }
+
+
+        /* ========================================================
+           PROGRAM CHANGE
+           ======================================================== */
+
+        function handleProgramChange() {
+
+            calculateAcademicLoad();
+
+        }
+
+
+        /* ========================================================
+           CODE PREVIEW
+           
+           Server generates the actual code.
+           Browser only displays AUTO.
+           ======================================================== */
+
+        function updateCodePreview() {
+
+            const currentCode =
+                normalizeText(
+                    codeInput.value
+                );
+
+
+            if (currentCode) {
+
+                codePreview.textContent =
+                    currentCode;
+
+                summaryCode.textContent =
+                    currentCode;
+
+            } else {
+
+                codePreview.textContent =
+                    "AUTO";
+
+                summaryCode.textContent =
+                    "AUTO";
 
             }
 
         }
-    );
-
-}
 
 
-/* ============================================================
-   INITIALIZATION
-   ============================================================ */
+        /* ========================================================
+           ALERT
+           ======================================================== */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
+        function showAlert(
+            message
+        ) {
 
-        /* ----------------------------------------------------
-           Branches
-        ---------------------------------------------------- */
+            alertMessage.textContent =
+                message;
 
-        filterSubjectBranches(
-            true
-        );
+            alertBox.classList.add(
+                "show"
+            );
 
-
-        /* ----------------------------------------------------
-           Programs
-        ---------------------------------------------------- */
-
-        filterSubjectPrograms(
-            true
-        );
+        }
 
 
-        /* ----------------------------------------------------
-           Reset Code
-        ---------------------------------------------------- */
+        function hideAlert() {
 
-        resetSubjectCodePreview();
+            alertBox.classList.remove(
+                "show"
+            );
 
+            alertMessage.textContent =
+                "";
 
-        /* ----------------------------------------------------
-           Subject Preview
-        ---------------------------------------------------- */
-
-        updateSubjectPreview();
+        }
 
 
-        /* ----------------------------------------------------
-           Marks
-        ---------------------------------------------------- */
+        /* ========================================================
+           FIELD ERROR
+           ======================================================== */
 
-        updateMarksPreview();
+        function clearFieldErrors() {
+
+            document
+                .querySelectorAll(
+                    ".is-invalid"
+                )
+                .forEach(
+                    function (element) {
+
+                        element.classList.remove(
+                            "is-invalid"
+                        );
+
+                    }
+                );
+
+
+            document
+                .querySelectorAll(
+                    ".field-error-text"
+                )
+                .forEach(
+                    function (element) {
+
+                        element.classList.remove(
+                            "show"
+                        );
+
+                        element.textContent =
+                            "";
+
+                    }
+                );
+
+        }
+
+
+        function setFieldError(
+            field,
+            errorElement,
+            message
+        ) {
+
+            if (field) {
+
+                field.classList.add(
+                    "is-invalid"
+                );
+
+            }
+
+            if (errorElement) {
+
+                errorElement.textContent =
+                    message;
+
+                errorElement.classList.add(
+                    "show"
+                );
+
+            }
+
+        }
+
+
+        /* ========================================================
+           VALIDATE MARKS
+           
+           PASS MARKS IS OPTIONAL
+           ======================================================== */
+
+        function validateMarks() {
+
+            const maxRaw =
+                String(
+                    maxMarksInput.value || ""
+                ).trim();
+
+            const passRaw =
+                String(
+                    passMarksInput.value || ""
+                ).trim();
+
+
+            const max =
+                maxRaw === ""
+                    ? NaN
+                    : parseFloat(
+                        maxRaw
+                    );
+
+
+            const pass =
+                passRaw === ""
+                    ? null
+                    : parseFloat(
+                        passRaw
+                    );
+
+
+            if (
+                maxRaw === ""
+                || !Number.isFinite(max)
+                || max <= 0
+            ) {
+
+                setFieldError(
+                    maxMarksInput,
+                    document.getElementById(
+                        "max-marks-error"
+                    ),
+                    "Maximum marks must be greater than zero."
+                );
+
+                return false;
+
+            }
+
+
+            /*
+             * PASS MARKS IS OPTIONAL.
+             *
+             * Empty = VALID.
+             */
+
+            if (
+                pass !== null
+                && (
+                    !Number.isFinite(pass)
+                    || pass < 0
+                )
+            ) {
+
+                setFieldError(
+                    passMarksInput,
+                    document.getElementById(
+                        "pass-marks-error"
+                    ),
+                    "Pass marks must be a valid non-negative number."
+                );
+
+                return false;
+
+            }
+
+
+            if (
+                pass !== null
+                && pass > max
+            ) {
+
+                setFieldError(
+                    passMarksInput,
+                    document.getElementById(
+                        "pass-marks-error"
+                    ),
+                    "Pass marks cannot be greater than maximum marks."
+                );
+
+                return false;
+
+            }
+
+
+            return true;
+
+        }
+
+
+        /* ========================================================
+           VALIDATE BASIC FIELDS
+           ======================================================== */
+
+        function validateForm() {
+
+            clearFieldErrors();
+            hideAlert();
+
+
+            /* ----------------------------------------------------
+               INSTITUTION
+               ---------------------------------------------------- */
+
+            if (
+                !institutionSelect.value
+            ) {
+
+                setFieldError(
+                    institutionSelect,
+                    document.getElementById(
+                        "institution-error"
+                    ),
+                    "Please select an institution."
+                );
+
+                showAlert(
+                    "Please select an institution."
+                );
+
+                return false;
+
+            }
+
+
+            /* ----------------------------------------------------
+               BRANCH
+               ---------------------------------------------------- */
+
+            if (
+                !branchSelect.value
+            ) {
+
+                setFieldError(
+                    branchSelect,
+                    document.getElementById(
+                        "branch-error"
+                    ),
+                    "Please select a branch."
+                );
+
+                showAlert(
+                    "Please select a branch."
+                );
+
+                return false;
+
+            }
+
+
+            /* ----------------------------------------------------
+               PROGRAM
+               ---------------------------------------------------- */
+
+            if (
+                !programSelect.value
+            ) {
+
+                setFieldError(
+                    programSelect,
+                    document.getElementById(
+                        "program-error"
+                    ),
+                    "Please select a program."
+                );
+
+                showAlert(
+                    "Please select a program."
+                );
+
+                return false;
+
+            }
+
+
+            /* ----------------------------------------------------
+               NAME
+               ---------------------------------------------------- */
+
+            const subjectName =
+                normalizeText(
+                    nameInput.value
+                );
+
+
+            if (!subjectName) {
+
+                setFieldError(
+                    nameInput,
+                    document.getElementById(
+                        "name-error"
+                    ),
+                    "Subject name is required."
+                );
+
+                showAlert(
+                    "Please enter the subject name."
+                );
+
+                return false;
+
+            }
+
+
+            /* ----------------------------------------------------
+               SHORT NAME
+               ---------------------------------------------------- */
+
+            if (
+                !normalizeText(
+                    shortNameInput.value
+                )
+            ) {
+
+                updateShortName();
+
+            }
+
+
+            if (
+                !normalizeText(
+                    shortNameInput.value
+                )
+            ) {
+
+                setFieldError(
+                    shortNameInput,
+                    document.getElementById(
+                        "short-name-error"
+                    ),
+                    "Short name could not be generated."
+                );
+
+                showAlert(
+                    "Short name could not be generated."
+                );
+
+                return false;
+
+            }
+
+
+            /* ----------------------------------------------------
+               SUBJECT TYPE
+               ---------------------------------------------------- */
+
+            const selectedSubjectType =
+                document.querySelector(
+                    'input[name="subject_type"]:checked'
+                );
+
+
+            if (!selectedSubjectType) {
+
+                showAlert(
+                    "Please select a subject type."
+                );
+
+                return false;
+
+            }
+
+
+            /* ----------------------------------------------------
+               MARKS
+               ---------------------------------------------------- */
+
+            if (
+                !validateMarks()
+            ) {
+
+                showAlert(
+                    "Please correct the marking configuration."
+                );
+
+                return false;
+
+            }
+
+
+            /* ----------------------------------------------------
+               PROGRAM DURATION
+               ---------------------------------------------------- */
+
+            const selectedProgram =
+                programSelect.options[
+                    programSelect.selectedIndex
+                ];
+
+
+            const duration =
+                selectedProgram
+                    ? parseFloat(
+                        selectedProgram.dataset
+                            .durationMonths
+                    )
+                    : NaN;
+
+
+            if (
+                !Number.isFinite(duration)
+                || duration <= 0
+            ) {
+
+                setFieldError(
+                    programSelect,
+                    document.getElementById(
+                        "program-error"
+                    ),
+                    "Selected program must have a valid duration."
+                );
+
+                showAlert(
+                    "The selected program does not have a valid duration."
+                );
+
+                return false;
+
+            }
+
+
+            return true;
+
+        }
+
+
+        /* ========================================================
+           EVENTS
+           ======================================================== */
+
+        if (nameInput) {
+
+            nameInput.addEventListener(
+                "input",
+                function () {
+
+                    updateSubjectNamePreview();
+                    updateShortName();
+
+                }
+            );
+
+        }
+
+
+        if (institutionSelect) {
+
+            institutionSelect.addEventListener(
+                "change",
+                handleInstitutionChange
+            );
+
+        }
+
+
+        if (branchSelect) {
+
+            branchSelect.addEventListener(
+                "change",
+                handleBranchChange
+            );
+
+        }
+
+
+        if (programSelect) {
+
+            programSelect.addEventListener(
+                "change",
+                handleProgramChange
+            );
+
+        }
+
+
+        if (maxMarksInput) {
+
+            maxMarksInput.addEventListener(
+                "input",
+                updateMarkPreview
+            );
+
+        }
+
+
+        if (passMarksInput) {
+
+            passMarksInput.addEventListener(
+                "input",
+                updateMarkPreview
+            );
+
+        }
+
+
+        /* ========================================================
+           FORM SUBMIT
+           ======================================================== */
+
+        if (form) {
+
+            form.addEventListener(
+                "submit",
+                function (event) {
+
+                    if (
+                        !validateForm()
+                    ) {
+
+                        event.preventDefault();
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Recalculate before submitting.
+                     * Server remains authoritative.
+                     */
+
+                    calculateAcademicLoad();
+
+                    updateShortName();
+
+                    updateMarkPreview();
+
+
+                    /*
+                     * Do NOT submit a fake/generated code.
+                     * Server is responsible for the real code.
+                     */
+
+                    codeInput.value =
+                        normalizeText(
+                            codeInput.value
+                        );
+
+
+                    /*
+                     * Prevent accidental double submit.
+                     */
+
+                    submitButton.disabled =
+                        true;
+
+                    submitButton.innerHTML =
+                        `
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Creating Subject...</span>
+                        `;
+
+                }
+            );
+
+        }
+
+
+        /* ========================================================
+           INITIALIZE
+           ======================================================== */
+
+        updateSubjectNamePreview();
+
+        updateShortName();
+
+        filterBranches();
+
+        filterPrograms();
+
+        calculateAcademicLoad();
+
+        updateMarkPreview();
+
+        updateCodePreview();
+
+
+        /* ========================================================
+           RESTORE ORIGINAL VALUES WHEN POSSIBLE
+           ======================================================== */
+
+        if (
+            originalBranchValue
+            && Array.from(
+                branchSelect.options
+            ).some(
+                function (option) {
+                    return (
+                        option.value
+                        === originalBranchValue
+                        && !option.disabled
+                    );
+                }
+            )
+        ) {
+
+            branchSelect.value =
+                originalBranchValue;
+
+        }
+
+
+        if (
+            originalProgramValue
+            && Array.from(
+                programSelect.options
+            ).some(
+                function (option) {
+                    return (
+                        option.value
+                        === originalProgramValue
+                        && !option.disabled
+                    );
+                }
+            )
+        ) {
+
+            programSelect.value =
+                originalProgramValue;
+
+        }
+
+
+        calculateAcademicLoad();
+
+        updateMarkPreview();
 
     }
+
 );
 
 </script>
 
+
 {% endblock %}
-
-

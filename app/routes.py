@@ -39429,128 +39429,6 @@ def _subject_scope_query(query):
 
 
 # ============================================================
-# GET ALLOWED INSTITUTIONS
-# ============================================================
-
-def _subject_allowed_institutions():
-    """
-    Returns institutions available to current user.
-    """
-
-    institution_id = _subject_get_user_institution_id()
-
-    if institution_id is None:
-
-        return (
-            Institution.query
-            .order_by(Institution.name.asc())
-            .all()
-        )
-
-    institution = Institution.query.get(
-        institution_id
-    )
-
-    if institution:
-        return [institution]
-
-    return []
-
-
-# ============================================================
-# GET ALLOWED BRANCHES
-# ============================================================
-
-def _subject_allowed_branches(
-    institution_id=None
-):
-    """
-    Returns branches available to current user.
-
-    Optional institution_id filters branches further.
-    """
-
-    query = Branch.query
-
-    user_institution_id = (
-        _subject_get_user_institution_id()
-    )
-
-    if user_institution_id is not None:
-
-        query = query.filter(
-            Branch.institution_id ==
-            user_institution_id
-        )
-
-    elif institution_id is not None:
-
-        query = query.filter(
-            Branch.institution_id ==
-            institution_id
-        )
-
-
-    # Branch-scoped users
-    if not _subject_can_manage_global():
-
-        user_branch_id = (
-            _subject_get_user_branch_id()
-        )
-
-        if user_branch_id is not None:
-
-            query = query.filter(
-                Branch.id == user_branch_id
-            )
-
-
-    return (
-        query
-        .order_by(Branch.name.asc())
-        .all()
-    )
-
-
-# ============================================================
-# GET ALLOWED PROGRAMS
-# ============================================================
-
-def _subject_allowed_programs(
-    institution_id=None
-):
-    """
-    Returns programs available for subject assignment.
-    """
-
-    query = Program.query
-
-    user_institution_id = (
-        _subject_get_user_institution_id()
-    )
-
-    if user_institution_id is not None:
-
-        query = query.filter(
-            Program.institution_id ==
-            user_institution_id
-        )
-
-    elif institution_id is not None:
-
-        query = query.filter(
-            Program.institution_id ==
-            institution_id
-        )
-
-    return (
-        query
-        .order_by(Program.name.asc())
-        .all()
-    )
-
-
-# ============================================================
 # PARSE DECIMAL
 # ============================================================
 
@@ -40524,45 +40402,318 @@ def all_subjects():
         user=current_user
     )
 
+
 # ============================================================
-# GENERATE NEXT SUBJECT CODE
+# SUBJECT CONSTANTS
 # ============================================================
-def _generate_next_subject_code(
-    institution_id,
-    branch_id=None,
-    program_id=None
-):
+
+SUBJECT_TEACHING_DAYS_PER_WEEK = Decimal("5")
+SUBJECT_HOURS_PER_DAY = Decimal("1")
+SUBJECT_WEEKS_PER_YEAR = Decimal("52")
+SUBJECT_MONTHS_PER_YEAR = Decimal("12")
+SUBJECT_HOURS_PER_CREDIT = Decimal("15")
+
+
+# ============================================================
+# NORMALIZE SUBJECT NAME
+# ============================================================
+
+def _normalize_subject_name(value):
     """
-    Generate sequential subject code.
+    Normalize subject names for duplicate detection.
 
-    Example:
+    Examples:
+        "English Language"
+        " english   language "
+        "ENGLISH LANGUAGE"
 
-        Program 1:
-            SUB001
-            SUB002
-            SUB003
-
-        Program 2:
-            SUB001
-            SUB002
-
-    Sequence is scoped to:
-        institution + branch + program
+    All become the same normalized value.
     """
 
-    query = Subject.query.filter(
-        Subject.institution_id == institution_id
+    if value is None:
+        return ""
+
+    value = str(value)
+
+    # Remove leading/trailing spaces
+    value = value.strip()
+
+    # Convert multiple spaces to one
+    value = " ".join(value.split())
+
+    # Case-insensitive comparison
+    return value.casefold()
+
+
+# ============================================================
+# PARSE SUBJECT MARK
+# ============================================================
+
+def _parse_subject_mark(value):
+    """
+    Convert a subject mark into Decimal.
+
+    Blank:
+        None
+
+    Invalid:
+        None
+
+    Valid:
+        Decimal("100")
+        Decimal("50")
+        Decimal("75.50")
+    """
+
+    if value is None:
+        return None
+
+    value = str(value).strip()
+
+    # Optional field
+    if not value:
+        return None
+
+    try:
+        number = Decimal(value)
+
+    except (
+        InvalidOperation,
+        TypeError,
+        ValueError
+    ):
+        return None
+
+    # Reject NaN / Infinity
+    if not number.is_finite():
+        return None
+
+    # Store consistently as 2 decimal places
+    return number.quantize(
+        Decimal("0.01")
+    )
+
+
+# ============================================================
+# GENERATE SUBJECT SHORT NAME
+# ============================================================
+
+def _generate_subject_short_name(subject_name):
+    """
+    Generate short name from first three words.
+
+    Examples:
+
+        Basic English Grammar
+        -> BEG
+
+        Advanced Computer Science
+        -> ACS
+
+        Introduction to Computer Science
+        -> ITC
+
+        English Language
+        -> EL
+
+        Mathematics
+        -> M
+    """
+
+    if not subject_name:
+        return None
+
+    words = [
+        word.strip()
+        for word in str(subject_name).split()
+        if word.strip()
+    ]
+
+    if not words:
+        return None
+
+    short_name = "".join(
+        word[0]
+        for word in words[:3]
+    ).upper()
+
+    # Safety limit
+    short_name = short_name[:10]
+
+    return (
+        short_name
+        if short_name
+        else None
+    )
+
+
+# ============================================================
+# CALCULATE SUBJECT HOURS AND CREDITS
+# ============================================================
+
+def _calculate_subject_hours_and_credits(duration_months):
+    """
+    Calculate subject workload from program duration.
+
+    Rules:
+
+        Teaching days per week = 5
+        Hours per teaching day = 1
+
+        Weekly hours = 5
+
+        Program weeks =
+            duration_months * 52 / 12
+
+        Total program hours =
+            weekly_hours * program_weeks
+
+        Credit hours =
+            total_program_hours / 15
+
+    Examples:
+
+        12 months
+            = 52 weeks
+            = 260 hours
+            = 17.33 credits
+
+        6 months
+            = 26 weeks
+            = 130 hours
+            = 8.67 credits
+    """
+
+    if duration_months is None:
+        return None, None, None
+
+    try:
+        duration_months = Decimal(
+            str(duration_months)
+        )
+
+    except (
+        InvalidOperation,
+        TypeError,
+        ValueError
+    ):
+        return None, None, None
+
+    if duration_months <= Decimal("0"):
+        return None, None, None
+
+    # --------------------------------------------------------
+    # WEEKLY HOURS
+    # --------------------------------------------------------
+
+    weekly_hours = (
+        SUBJECT_TEACHING_DAYS_PER_WEEK
+        * SUBJECT_HOURS_PER_DAY
     )
 
     # --------------------------------------------------------
-    # BRANCH
+    # PROGRAM WEEKS
     # --------------------------------------------------------
 
-    if branch_id:
+    program_weeks = (
+        duration_months
+        * SUBJECT_WEEKS_PER_YEAR
+        / SUBJECT_MONTHS_PER_YEAR
+    )
+
+    # --------------------------------------------------------
+    # TOTAL PROGRAM HOURS
+    # --------------------------------------------------------
+
+    total_program_hours = (
+        weekly_hours
+        * program_weeks
+    )
+
+    # --------------------------------------------------------
+    # CREDIT HOURS
+    # --------------------------------------------------------
+
+    credit_hours = (
+        total_program_hours
+        / SUBJECT_HOURS_PER_CREDIT
+    )
+
+    return (
+        weekly_hours.quantize(
+            Decimal("0.01")
+        ),
+        total_program_hours.quantize(
+            Decimal("0.01")
+        ),
+        credit_hours.quantize(
+            Decimal("0.01")
+        )
+    )
+
+
+# ============================================================
+# GENERATE NEXT SUBJECT CODE
+# ============================================================
+
+def _generate_next_subject_code(
+    institution_id,
+    branch_id
+):
+    """
+    Generate Subject code.
+
+    IMPORTANT RULE:
+
+        Counter is scoped ONLY by:
+
+            institution
+            branch
+
+        Program is NOT part of the counter.
+
+    Example:
+
+        Branch A:
+
+            Nursing:
+                SUB001
+                SUB002
+
+            IT:
+                SUB003
+                SUB004
+
+            Business:
+                SUB005
+
+        Branch B:
+
+            SUB001
+    """
+
+    query = (
+        Subject.query
+        .filter(
+            Subject.institution_id
+            == institution_id
+        )
+    )
+
+    # --------------------------------------------------------
+    # BRANCH-SCOPED SUBJECTS
+    # --------------------------------------------------------
+
+    if branch_id is not None:
 
         query = query.filter(
-            Subject.branch_id == branch_id
+            Subject.branch_id
+            == branch_id
         )
+
+    # --------------------------------------------------------
+    # NULL BRANCH SAFETY
+    # --------------------------------------------------------
 
     else:
 
@@ -40570,76 +40721,280 @@ def _generate_next_subject_code(
             Subject.branch_id.is_(None)
         )
 
-    # --------------------------------------------------------
-    # PROGRAM
-    # --------------------------------------------------------
-
-    if program_id:
-
-        query = query.filter(
-            Subject.program_id == program_id
+    rows = (
+        query
+        .with_entities(
+            Subject.code
         )
-
-    else:
-
-        query = query.filter(
-            Subject.program_id.is_(None)
-        )
-
-    subjects = query.with_entities(
-        Subject.code
-    ).all()
-
-    # --------------------------------------------------------
-    # FIND HIGHEST SUB NUMBER
-    # --------------------------------------------------------
+        .all()
+    )
 
     highest_number = 0
 
-    for row in subjects:
+    for row in rows:
 
         existing_code = (
             row[0]
-            if row and row[0]
+            if row
             else ""
         )
 
-        existing_code = str(
-            existing_code
-        ).strip().upper()
+        if not existing_code:
+            continue
 
-        # Expected format:
-        # SUB001
-        # SUB002
-        # SUB123
+        existing_code = (
+            str(existing_code)
+            .strip()
+            .upper()
+        )
 
-        if existing_code.startswith("SUB"):
+        if not existing_code.startswith(
+            "SUB"
+        ):
+            continue
 
-            number_part = existing_code[3:]
+        number_part = existing_code[3:]
 
-            if number_part.isdigit():
+        if not number_part.isdigit():
+            continue
 
-                number = int(
-                    number_part
-                )
+        number = int(number_part)
 
-                if number > highest_number:
+        if number > highest_number:
+            highest_number = number
 
-                    highest_number = number
+    return (
+        f"SUB{highest_number + 1:03d}"
+    )
+
+
+# ============================================================
+# GET SUBJECT TYPES
+# ============================================================
+
+def _get_subject_type_values():
+    """
+    Normalize SUBJECT_TYPES enum/list values.
+    """
+
+    values = set()
+
+    for item in SUBJECT_TYPES:
+
+        item_value = getattr(
+            item,
+            "value",
+            item
+        )
+
+        if item_value is None:
+            continue
+
+        value = (
+            str(item_value)
+            .strip()
+            .lower()
+        )
+
+        if value:
+            values.add(value)
+
+    return values
+
+
+# ============================================================
+# GET SUBJECT STATUS VALUES
+# ============================================================
+
+def _get_subject_status_values():
+    """
+    Normalize SUBJECT_STATUSES enum/list values.
+    """
+
+    values = set()
+
+    for item in SUBJECT_STATUSES:
+
+        item_value = getattr(
+            item,
+            "value",
+            item
+        )
+
+        if item_value is None:
+            continue
+
+        value = (
+            str(item_value)
+            .strip()
+            .lower()
+        )
+
+        if value:
+            values.add(value)
+
+    return values
+
+
+# ============================================================
+# DATABASE ERROR MESSAGE
+# ============================================================
+
+def _subject_integrity_error_message(
+    exc,
+    subject_code=None,
+    short_name=None
+):
+    """
+    Convert PostgreSQL / SQLAlchemy IntegrityError
+    into a useful user-facing message.
+    """
+
+    original_error = getattr(
+        exc,
+        "orig",
+        exc
+    )
+
+    database_error = str(
+        original_error
+    ).strip()
+
+    error_lower = database_error.lower()
 
     # --------------------------------------------------------
-    # NEXT CODE
+    # PASS MARKS NOT NULL
     # --------------------------------------------------------
 
-    next_number = highest_number + 1
+    if (
+        "pass_marks" in error_lower
+        and (
+            "not-null" in error_lower
+            or "null value" in error_lower
+            or "not null" in error_lower
+        )
+    ):
 
-    return f"SUB{next_number:03d}"
+        return (
+            "Subject could not be created because "
+            "the database still requires Pass Marks. "
+            "Pass Marks is optional in the application. "
+            "Change subjects.pass_marks to nullable=True "
+            "and run the database migration."
+        )
 
+    # --------------------------------------------------------
+    # SUBJECT CODE UNIQUE
+    # --------------------------------------------------------
 
+    if (
+        "code" in error_lower
+        and (
+            "duplicate" in error_lower
+            or "unique" in error_lower
+        )
+    ):
+
+        if subject_code:
+
+            return (
+                f"Subject code '{subject_code}' "
+                "already exists in the database. "
+                "Please retry so a new code can be generated."
+            )
+
+        return (
+            "Subject code already exists in the database."
+        )
+
+    # --------------------------------------------------------
+    # SHORT NAME UNIQUE
+    # --------------------------------------------------------
+
+    if (
+        "short_name" in error_lower
+        and (
+            "duplicate" in error_lower
+            or "unique" in error_lower
+        )
+    ):
+
+        if short_name:
+
+            return (
+                f"Short name '{short_name}' "
+                "already exists under a database "
+                "UNIQUE constraint."
+            )
+
+        return (
+            "Subject short name already exists "
+            "under a database UNIQUE constraint."
+        )
+
+    # --------------------------------------------------------
+    # SUBJECT NAME UNIQUE
+    # --------------------------------------------------------
+
+    if (
+        "name" in error_lower
+        and (
+            "duplicate" in error_lower
+            or "unique" in error_lower
+        )
+    ):
+
+        return (
+            "A subject with this name already exists "
+            "under a database UNIQUE constraint."
+        )
+
+    # --------------------------------------------------------
+    # FOREIGN KEY
+    # --------------------------------------------------------
+
+    if (
+        "foreign key" in error_lower
+        or "violates foreign key constraint"
+        in error_lower
+    ):
+
+        return (
+            "The selected institution, branch, or program "
+            "is no longer valid. Please reload the page "
+            "and try again."
+        )
+
+    # --------------------------------------------------------
+    # GENERIC UNIQUE ERROR
+    # --------------------------------------------------------
+
+    if (
+        "unique constraint" in error_lower
+        or "duplicate key" in error_lower
+        or "duplicate" in error_lower
+    ):
+
+        return (
+            "A database UNIQUE constraint was violated. "
+            "Please check the subject code, short name, "
+            "or other unique fields."
+        )
+
+    # --------------------------------------------------------
+    # GENERIC CONSTRAINT
+    # --------------------------------------------------------
+
+    return (
+        "Unable to create subject because the database "
+        "rejected the record. Please check the Subject "
+        "model constraints and database schema."
+    )
 
 # ============================================================
 # ADD SUBJECT
 # ============================================================
+
 @bp.route(
     "/subjects/add",
     methods=["GET", "POST"]
@@ -40648,122 +41003,127 @@ def _generate_next_subject_code(
 def add_subject():
 
     # ========================================================
-    # CURRENT USER ROLE
+    # CURRENT USER
     # ========================================================
 
-    current_role = (
-        getattr(current_user, "role", None)
-        or ""
-    ).strip().lower()
+    user = current_user
 
     # ========================================================
-    # ROLE PERMISSION
+    # SECURITY
+    # ========================================================
+
+    if not user.is_authenticated:
+        abort(403)
+
+    # ========================================================
+    # NORMALIZE ROLE
+    # ========================================================
+
+    role = getattr(
+        user,
+        "role",
+        None
+    )
+
+    role = getattr(
+        role,
+        "value",
+        role
+    )
+
+    role = (
+        str(role).strip().lower()
+        if role
+        else None
+    )
+
+    # ========================================================
+    # ALLOWED ROLES
     # ========================================================
 
     allowed_roles = {
         "superadmin",
         "school_admin",
-        "branch_admin",
+        "branch_admin"
     }
 
-    if current_role not in allowed_roles:
-
-        flash(
-            "You do not have permission to create subjects.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("main.all_subjects")
-        )
+    if role not in allowed_roles:
+        abort(403)
 
     # ========================================================
     # ROLE FLAGS
     # ========================================================
 
     is_superadmin = (
-        current_role == "superadmin"
+        role == "superadmin"
     )
 
     is_school_admin = (
-        current_role == "school_admin"
+        role == "school_admin"
     )
 
     is_branch_admin = (
-        current_role == "branch_admin"
+        role == "branch_admin"
     )
 
     # ========================================================
-    # CURRENT USER SCOPE
+    # USER SCOPE
     # ========================================================
 
-    current_institution_id = getattr(
-        current_user,
+    user_institution_id = getattr(
+        user,
         "institution_id",
         None
     )
 
-    current_branch_id = getattr(
-        current_user,
+    user_branch_id = getattr(
+        user,
         "branch_id",
         None
     )
 
     # ========================================================
-    # BRANCH ADMIN MUST HAVE INSTITUTION + BRANCH
+    # BRANCH ADMIN SECURITY
     # ========================================================
 
     if is_branch_admin:
 
-        if not current_institution_id:
+        if not user_institution_id:
+            abort(403)
 
-            flash(
-                "Your account is not assigned to an institution.",
-                "danger"
-            )
-
-            return redirect(
-                url_for("main.all_subjects")
-            )
-
-        if not current_branch_id:
-
-            flash(
-                "Your account is not assigned to a branch.",
-                "danger"
-            )
-
-            return redirect(
-                url_for("main.all_subjects")
-            )
+        if not user_branch_id:
+            abort(403)
 
     # ========================================================
-    # SCHOOL ADMIN MUST HAVE INSTITUTION
+    # DEFAULT FORM VALUES
     # ========================================================
 
-    if is_school_admin:
+    institution_raw = ""
+    branch_raw = ""
+    program_raw = ""
 
-        if not current_institution_id:
+    name = ""
+    short_name = ""
 
-            flash(
-                "Your account is not assigned to an institution.",
-                "danger"
-            )
+    subject_type = ""
 
-            return redirect(
-                url_for("main.all_subjects")
-            )
+    max_marks_raw = "100"
+    pass_marks_raw = ""
 
-    # ========================================================
-    # SELECTED VALUES
-    # ========================================================
+    description = ""
 
-    selected_institution_id = None
-    selected_branch_id = None
-    selected_program_id = None
+    status = "active"
 
     # ========================================================
-    # GET
+    # SELECTED IDS
+    # ========================================================
+
+    institution_id = None
+    branch_id = None
+    program_id = None
+
+    # ========================================================
+    # DEFAULT SCOPE FOR GET
     # ========================================================
 
     if request.method == "GET":
@@ -40774,20 +41134,7 @@ def add_subject():
 
         if is_superadmin:
 
-            selected_institution_id = (
-                request.args.get("institution_id")
-                or None
-            )
-
-            selected_branch_id = (
-                request.args.get("branch_id")
-                or None
-            )
-
-            selected_program_id = (
-                request.args.get("program_id")
-                or None
-            )
+            institution_id = None
 
         # ----------------------------------------------------
         # SCHOOL ADMIN
@@ -40795,18 +41142,8 @@ def add_subject():
 
         elif is_school_admin:
 
-            selected_institution_id = (
-                current_institution_id
-            )
-
-            selected_branch_id = (
-                request.args.get("branch_id")
-                or None
-            )
-
-            selected_program_id = (
-                request.args.get("program_id")
-                or None
+            institution_id = (
+                user_institution_id
             )
 
         # ----------------------------------------------------
@@ -40815,758 +41152,911 @@ def add_subject():
 
         elif is_branch_admin:
 
-            # NEVER TAKE BRANCH FROM URL
-            selected_institution_id = (
-                current_institution_id
+            institution_id = (
+                user_institution_id
             )
 
-            selected_branch_id = (
-                current_branch_id
-            )
-
-            selected_program_id = (
-                request.args.get("program_id")
-                or None
+            branch_id = (
+                user_branch_id
             )
 
     # ========================================================
-    # POST
+    # READ POST DATA
     # ========================================================
 
     if request.method == "POST":
 
-        errors = {}
-
-        # ====================================================
-        # FORM VALUES
-        # ====================================================
-
-        institution_id = (
-            request.form.get("institution_id")
+        institution_raw = (
+            request.form.get(
+                "institution_id"
+            )
             or ""
         ).strip()
 
-        branch_id = (
-            request.form.get("branch_id")
+        branch_raw = (
+            request.form.get(
+                "branch_id"
+            )
             or ""
         ).strip()
 
-        program_id = (
-            request.form.get("program_id")
+        program_raw = (
+            request.form.get(
+                "program_id"
+            )
             or ""
         ).strip()
 
         name = (
-            request.form.get("name")
+            request.form.get(
+                "name"
+            )
             or ""
         ).strip()
 
         short_name = (
-            request.form.get("short_name")
+            request.form.get(
+                "short_name"
+            )
             or ""
         ).strip()
 
         subject_type = (
-            request.form.get("subject_type")
-            or "academic"
+            request.form.get(
+                "subject_type"
+            )
+            or ""
         ).strip().lower()
 
-        weekly_hours_raw = (
-            request.form.get("weekly_hours")
-            or ""
-        ).strip()
-
-        credit_hours_raw = (
-            request.form.get("credit_hours")
-            or ""
-        ).strip()
-
         max_marks_raw = (
-            request.form.get("max_marks")
+            request.form.get(
+                "max_marks"
+            )
             or "100"
         ).strip()
 
+        # IMPORTANT:
+        # Pass marks is OPTIONAL.
+
         pass_marks_raw = (
-            request.form.get("pass_marks")
-            or "50"
+            request.form.get(
+                "pass_marks"
+            )
+            or ""
         ).strip()
 
         description = (
-            request.form.get("description")
+            request.form.get(
+                "description"
+            )
             or ""
         ).strip()
 
         status = (
-            request.form.get("status")
+            request.form.get(
+                "status"
+            )
             or "active"
         ).strip().lower()
 
-        # ====================================================
-        # OPTIONAL VALUES
-        # ====================================================
+    # ========================================================
+    # ERRORS
+    # ========================================================
 
-        branch_id = branch_id or None
-        program_id = program_id or None
-        short_name = short_name or None
-        description = description or None
+    errors = {}
 
-        # ====================================================
-        # BRANCH ADMIN
-        # FORCE OWN INSTITUTION + BRANCH
-        # ====================================================
+    # ========================================================
+    # PARSE INSTITUTION
+    # ========================================================
 
-        if is_branch_admin:
+    if institution_raw:
 
-            institution_id = str(
-                current_institution_id
+        try:
+
+            institution_id = int(
+                institution_raw
             )
 
-            branch_id = str(
-                current_branch_id
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            errors[
+                "institution_id"
+            ] = "Invalid institution."
+
+            institution_id = None
+
+    # ========================================================
+    # SCHOOL ADMIN INSTITUTION LOCK
+    # ========================================================
+
+    if is_school_admin:
+
+        institution_id = (
+            user_institution_id
+        )
+
+    # ========================================================
+    # BRANCH ADMIN INSTITUTION LOCK
+    # ========================================================
+
+    elif is_branch_admin:
+
+        institution_id = (
+            user_institution_id
+        )
+
+    # ========================================================
+    # PARSE BRANCH
+    # ========================================================
+
+    if branch_raw:
+
+        try:
+
+            branch_id = int(
+                branch_raw
             )
 
-        # ====================================================
-        # SCHOOL ADMIN
-        # FORCE OWN INSTITUTION
-        # ====================================================
+        except (
+            TypeError,
+            ValueError
+        ):
 
-        elif is_school_admin:
+            errors[
+                "branch_id"
+            ] = "Invalid branch."
 
-            institution_id = str(
-                current_institution_id
+            branch_id = None
+
+    # ========================================================
+    # BRANCH ADMIN BRANCH LOCK
+    # ========================================================
+
+    if is_branch_admin:
+
+        branch_id = (
+            user_branch_id
+        )
+
+    # ========================================================
+    # PARSE PROGRAM
+    # ========================================================
+
+    if program_raw:
+
+        try:
+
+            program_id = int(
+                program_raw
             )
 
-        # ====================================================
-        # UPDATE SELECTED VALUES
-        # ====================================================
+        except (
+            TypeError,
+            ValueError
+        ):
 
-        selected_institution_id = (
-            institution_id or None
+            errors[
+                "program_id"
+            ] = "Invalid program."
+
+            program_id = None
+
+    # ========================================================
+    # INSTITUTION REQUIRED
+    # ========================================================
+
+    if not institution_id:
+
+        errors[
+            "institution_id"
+        ] = "Institution is required."
+
+    # ========================================================
+    # BRANCH REQUIRED
+    # ========================================================
+
+    if not branch_id:
+
+        errors[
+            "branch_id"
+        ] = "Branch is required."
+
+    # ========================================================
+    # BRANCH ADMIN SECURITY
+    # ========================================================
+
+    if (
+        is_branch_admin
+        and branch_id
+        and branch_id != user_branch_id
+    ):
+
+        errors[
+            "branch_id"
+        ] = (
+            "You can only manage subjects "
+            "in your own branch."
         )
 
-        selected_branch_id = (
-            branch_id or None
+    # ========================================================
+    # LOAD INSTITUTION
+    # ========================================================
+
+    institution = None
+
+    if institution_id:
+
+        institution = (
+            Institution.query
+            .filter(
+                Institution.id
+                == institution_id
+            )
+            .first()
         )
 
-        selected_program_id = (
-            program_id or None
+        if not institution:
+
+            errors[
+                "institution_id"
+            ] = (
+                "Selected institution "
+                "does not exist."
+            )
+
+    # ========================================================
+    # INSTITUTION SCOPE SECURITY
+    # ========================================================
+
+    if (
+        institution
+        and not is_superadmin
+        and institution.id
+        != user_institution_id
+    ):
+
+        errors[
+            "institution_id"
+        ] = (
+            "You can only manage subjects "
+            "inside your own institution."
         )
 
-        # ====================================================
-        # INSTITUTION
-        # ====================================================
+    # ========================================================
+    # LOAD BRANCH
+    # ========================================================
 
-        institution = None
-        institution_id_int = None
+    branch = None
 
-        if not institution_id:
+    if branch_id:
 
-            errors["institution_id"] = (
-                "Institution is required."
+        branch = (
+            Branch.query
+            .filter(
+                Branch.id
+                == branch_id
+            )
+            .first()
+        )
+
+        if not branch:
+
+            errors[
+                "branch_id"
+            ] = (
+                "Selected branch "
+                "does not exist."
+            )
+
+    # ========================================================
+    # BRANCH → INSTITUTION VALIDATION
+    # ========================================================
+
+    if (
+        branch
+        and institution
+        and branch.institution_id
+        != institution.id
+    ):
+
+        errors[
+            "branch_id"
+        ] = (
+            "Selected branch does not "
+            "belong to the selected institution."
+        )
+
+    # ========================================================
+    # BRANCH ADMIN OWN BRANCH VALIDATION
+    # ========================================================
+
+    if (
+        is_branch_admin
+        and branch
+        and branch.id != user_branch_id
+    ):
+
+        errors[
+            "branch_id"
+        ] = (
+            "You can only use your own branch."
+        )
+
+    # ========================================================
+    # SUBJECT NAME VALIDATION
+    # ========================================================
+
+    if not name:
+
+        errors[
+            "name"
+        ] = "Subject name is required."
+
+    elif len(name) > 200:
+
+        errors[
+            "name"
+        ] = "Subject name is too long."
+
+    # ========================================================
+    # GENERATE SHORT NAME SERVER-SIDE
+    # ========================================================
+
+    generated_short_name = (
+        _generate_subject_short_name(
+            name
+        )
+        if name
+        else None
+    )
+
+    if generated_short_name:
+
+        short_name = (
+            generated_short_name
+        )
+
+    # ========================================================
+    # SHORT NAME VALIDATION
+    # ========================================================
+
+    if not short_name:
+
+        errors[
+            "short_name"
+        ] = (
+            "Short name could not "
+            "be generated."
+        )
+
+    elif len(short_name) > 50:
+
+        errors[
+            "short_name"
+        ] = (
+            "Short name is too long."
+        )
+
+    # ========================================================
+    # SUBJECT TYPE VALUES
+    # ========================================================
+
+    valid_subject_types = (
+        _get_subject_type_values()
+    )
+
+    # ========================================================
+    # SUBJECT TYPE VALIDATION
+    # ========================================================
+
+    if not subject_type:
+
+        errors[
+            "subject_type"
+        ] = (
+            "Subject type is required."
+        )
+
+    elif (
+        subject_type
+        not in valid_subject_types
+    ):
+
+        errors[
+            "subject_type"
+        ] = (
+            "Invalid subject type."
+        )
+
+    # ========================================================
+    # SUBJECT STATUS VALUES
+    # ========================================================
+
+    valid_subject_statuses = (
+        _get_subject_status_values()
+    )
+
+    # ========================================================
+    # STATUS VALIDATION
+    # ========================================================
+
+    if (
+        status
+        not in valid_subject_statuses
+    ):
+
+        errors[
+            "status"
+        ] = (
+            "Invalid subject status."
+        )
+
+    # ========================================================
+    # MAX MARKS
+    # ========================================================
+
+    max_marks = _parse_subject_mark(
+        max_marks_raw
+    )
+
+    if max_marks is None:
+
+        errors[
+            "max_marks"
+        ] = (
+            "Maximum marks must be "
+            "a valid number."
+        )
+
+    elif max_marks <= Decimal("0"):
+
+        errors[
+            "max_marks"
+        ] = (
+            "Maximum marks must be "
+            "greater than zero."
+        )
+
+    # ========================================================
+    # PASS MARKS
+    # ========================================================
+    #
+    # OPTIONAL
+    #
+    # Blank = None
+    #
+    # ========================================================
+
+    pass_marks = None
+
+    if pass_marks_raw:
+
+        pass_marks = _parse_subject_mark(
+            pass_marks_raw
+        )
+
+        if pass_marks is None:
+
+            errors[
+                "pass_marks"
+            ] = (
+                "Pass marks must be "
+                "a valid number."
+            )
+
+        elif pass_marks < Decimal("0"):
+
+            errors[
+                "pass_marks"
+            ] = (
+                "Pass marks cannot "
+                "be negative."
+            )
+
+    # ========================================================
+    # PASS MARKS <= MAX MARKS
+    # ========================================================
+
+    if (
+        max_marks is not None
+        and pass_marks is not None
+        and pass_marks > max_marks
+    ):
+
+        errors[
+            "pass_marks"
+        ] = (
+            "Pass marks cannot be "
+            "greater than maximum marks."
+        )
+
+    # ========================================================
+    # LOAD PROGRAM
+    # ========================================================
+
+    program = None
+
+    # --------------------------------------------------------
+    # PROGRAM REQUIRED
+    # --------------------------------------------------------
+
+    if not program_id:
+
+        errors[
+            "program_id"
+        ] = "Program is required."
+
+    # --------------------------------------------------------
+    # PROGRAM VALIDATION
+    # --------------------------------------------------------
+
+    elif institution:
+
+        program = (
+            Program.query
+            .filter(
+                Program.id
+                == program_id
+            )
+            .first()
+        )
+
+        if not program:
+
+            errors[
+                "program_id"
+            ] = (
+                "Selected program "
+                "does not exist."
             )
 
         else:
 
-            try:
+            # ------------------------------------------------
+            # PROGRAM → INSTITUTION
+            # ------------------------------------------------
 
-                institution_id_int = int(
-                    institution_id
+            if (
+                program.institution_id
+                != institution.id
+            ):
+
+                errors[
+                    "program_id"
+                ] = (
+                    "Selected program does not "
+                    "belong to the selected institution."
                 )
 
-            except (TypeError, ValueError):
+            # ------------------------------------------------
+            # PROGRAM → BRANCH
+            # ------------------------------------------------
+            #
+            # branch_id NULL = institution-wide
+            #
+            # branch_id set = branch-specific
+            #
+            # ------------------------------------------------
 
-                errors["institution_id"] = (
-                    "Invalid institution selected."
+            elif (
+                branch
+                and program.branch_id is not None
+                and program.branch_id
+                != branch.id
+            ):
+
+                errors[
+                    "program_id"
+                ] = (
+                    "Selected program is not "
+                    "available in this branch."
                 )
 
-            else:
+    # ========================================================
+    # PROGRAM DURATION
+    # ========================================================
 
-                institution = (
-                    Institution.query
-                    .filter(
-                        Institution.id
-                        == institution_id_int
-                    )
-                    .first()
-                )
+    weekly_hours = None
+    total_program_hours = None
+    credit_hours = None
 
-                if not institution:
+    if program:
 
-                    errors["institution_id"] = (
-                        "Selected institution does not exist."
-                    )
+        duration_months = getattr(
+            program,
+            "duration_months",
+            None
+        )
 
-                # --------------------------------------------
-                # SCHOOL ADMIN / BRANCH ADMIN
-                # --------------------------------------------
+        try:
 
-                if (
-                    not is_superadmin
-                    and current_institution_id
-                    and institution_id_int
-                    != int(current_institution_id)
-                ):
-
-                    errors["institution_id"] = (
-                        "You can only use your assigned "
-                        "institution."
-                    )
-
-        # ====================================================
-        # BRANCH
-        # ====================================================
-
-        branch = None
-        branch_id_int = None
-
-        if not branch_id:
-
-            errors["branch_id"] = (
-                "Branch is required."
+            duration_decimal = Decimal(
+                str(duration_months)
             )
+
+        except (
+            InvalidOperation,
+            TypeError,
+            ValueError
+        ):
+
+            duration_decimal = None
+
+        # ----------------------------------------------------
+        # DURATION REQUIRED
+        # ----------------------------------------------------
+
+        if (
+            duration_decimal is None
+            or duration_decimal
+            <= Decimal("0")
+        ):
+
+            errors[
+                "program_id"
+            ] = (
+                "The selected program must "
+                "have a valid duration in months."
+            )
+
+        # ----------------------------------------------------
+        # CALCULATE
+        # ----------------------------------------------------
 
         else:
 
-            try:
+            (
+                weekly_hours,
+                total_program_hours,
+                credit_hours
+            ) = (
+                _calculate_subject_hours_and_credits(
+                    duration_decimal
+                )
+            )
 
-                branch_id_int = int(
-                    branch_id
+            if (
+                weekly_hours is None
+                or total_program_hours is None
+                or credit_hours is None
+            ):
+
+                errors[
+                    "program_id"
+                ] = (
+                    "Unable to calculate subject "
+                    "hours and credits from the "
+                    "program duration."
                 )
 
-            except (TypeError, ValueError):
+    # ========================================================
+    # DUPLICATE SUBJECT CHECK
+    # ========================================================
+    #
+    # SAME:
+    #   institution
+    #   branch
+    #   program
+    #   normalized name
+    #
+    # DIFFERENT PROGRAM = ALLOWED
+    #
+    # ========================================================
 
-                errors["branch_id"] = (
-                    "Invalid branch selected."
-                )
+    if (
+        institution
+        and branch
+        and program
+        and name
+    ):
 
-            else:
-
-                branch = (
-                    Branch.query
-                    .filter(
-                        Branch.id
-                        == branch_id_int
-                    )
-                    .first()
-                )
-
-                if not branch:
-
-                    errors["branch_id"] = (
-                        "Selected branch does not exist."
-                    )
-
-                else:
-
-                    # ----------------------------------------
-                    # BRANCH → INSTITUTION
-                    # ----------------------------------------
-
-                    if (
-                        institution_id_int
-                        is not None
-                        and getattr(
-                            branch,
-                            "institution_id",
-                            None
-                        )
-                        != institution_id_int
-                    ):
-
-                        errors["branch_id"] = (
-                            "The selected branch does not "
-                            "belong to the selected institution."
-                        )
-
-                    # ----------------------------------------
-                    # BRANCH ADMIN → OWN BRANCH ONLY
-                    # ----------------------------------------
-
-                    if is_branch_admin:
-
-                        if (
-                            int(branch.id)
-                            != int(current_branch_id)
-                        ):
-
-                            errors["branch_id"] = (
-                                "You can only use your "
-                                "assigned branch."
-                            )
-
-                        if (
-                            getattr(
-                                branch,
-                                "institution_id",
-                                None
-                            )
-                            != int(current_institution_id)
-                        ):
-
-                            errors["branch_id"] = (
-                                "The selected branch does not "
-                                "belong to your institution."
-                            )
-
-                    # ----------------------------------------
-                    # SCHOOL ADMIN → OWN INSTITUTION
-                    # ----------------------------------------
-
-                    if is_school_admin:
-
-                        if (
-                            getattr(
-                                branch,
-                                "institution_id",
-                                None
-                            )
-                            != int(current_institution_id)
-                        ):
-
-                            errors["branch_id"] = (
-                                "You can only use branches "
-                                "from your institution."
-                            )
-
-        # ====================================================
-        # NAME
-        # ====================================================
-
-        if not name:
-
-            errors["name"] = (
-                "Subject name is required."
+        normalized_new_name = (
+            _normalize_subject_name(
+                name
             )
-
-        elif len(name) > 150:
-
-            errors["name"] = (
-                "Subject name cannot exceed "
-                "150 characters."
-            )
-
-        # ====================================================
-        # SHORT NAME
-        # ====================================================
-
-        if short_name and len(short_name) > 100:
-
-            errors["short_name"] = (
-                "Short name cannot exceed "
-                "100 characters."
-            )
-
-        # ====================================================
-        # SUBJECT TYPE
-        # ====================================================
-
-        if subject_type not in SUBJECT_TYPES:
-
-            errors["subject_type"] = (
-                "Invalid subject type selected."
-            )
-
-        # ====================================================
-        # STATUS
-        # ====================================================
-
-        if status not in SUBJECT_STATUSES:
-
-            errors["status"] = (
-                "Invalid subject status selected."
-            )
-
-        # ====================================================
-        # DECIMAL VALUES
-        # ====================================================
-
-        weekly_hours = _subject_parse_decimal(
-            weekly_hours_raw,
-            "weekly_hours",
-            errors,
-            allow_empty=True
         )
 
-        credit_hours = _subject_parse_decimal(
-            credit_hours_raw,
-            "credit_hours",
-            errors,
-            allow_empty=True
-        )
-
-        max_marks = _subject_parse_decimal(
-            max_marks_raw,
-            "max_marks",
-            errors,
-            allow_empty=False
-        )
-
-        pass_marks = _subject_parse_decimal(
-            pass_marks_raw,
-            "pass_marks",
-            errors,
-            allow_empty=False
-        )
-
-        # ====================================================
-        # HOURS VALIDATION
-        # ====================================================
-
-        if (
-            weekly_hours is not None
-            and weekly_hours < Decimal("0")
-        ):
-
-            errors["weekly_hours"] = (
-                "Weekly hours cannot be negative."
-            )
-
-        if (
-            credit_hours is not None
-            and credit_hours < Decimal("0")
-        ):
-
-            errors["credit_hours"] = (
-                "Credit hours cannot be negative."
-            )
-
-        # ====================================================
-        # MARKS VALIDATION
-        # ====================================================
-
-        if (
-            max_marks is not None
-            and max_marks <= Decimal("0")
-        ):
-
-            errors["max_marks"] = (
-                "Maximum marks must be greater than 0."
-            )
-
-        if (
-            pass_marks is not None
-            and pass_marks < Decimal("0")
-        ):
-
-            errors["pass_marks"] = (
-                "Pass marks cannot be negative."
-            )
-
-        if (
-            max_marks is not None
-            and pass_marks is not None
-            and pass_marks > max_marks
-        ):
-
-            errors["pass_marks"] = (
-                "Pass marks cannot be greater than "
-                "maximum marks."
-            )
-
-        # ====================================================
-        # PROGRAM REQUIRED
-        # ====================================================
-
-        if not program_id:
-
-            errors["program_id"] = (
-                "Program is required to generate "
-                "the subject code."
-            )
-
-        # ====================================================
-        # PROGRAM
-        # ====================================================
-
-        program = None
-        program_id_int = None
-
-        if program_id:
-
-            try:
-
-                program_id_int = int(
-                    program_id
-                )
-
-            except (TypeError, ValueError):
-
-                errors["program_id"] = (
-                    "Invalid program selected."
-                )
-
-            else:
-
-                program = (
-                    Program.query
-                    .filter(
-                        Program.id
-                        == program_id_int
-                    )
-                    .first()
-                )
-
-                if not program:
-
-                    errors["program_id"] = (
-                        "Selected program does not exist."
-                    )
-
-                else:
-
-                    # ----------------------------------------
-                    # PROGRAM INSTITUTION
-                    # ----------------------------------------
-
-                    program_institution_id = getattr(
-                        program,
-                        "institution_id",
-                        None
-                    )
-
-                    if (
-                        institution_id_int
-                        is not None
-                        and program_institution_id
-                        != institution_id_int
-                    ):
-
-                        errors["program_id"] = (
-                            "The selected program does not "
-                            "belong to the selected institution."
-                        )
-
-                    # ----------------------------------------
-                    # BRANCH ADMIN PROGRAM SCOPE
-                    # ----------------------------------------
-
-                    if is_branch_admin:
-
-                        program_branch_id = getattr(
-                            program,
-                            "branch_id",
-                            None
-                        )
-
-                        # Program may be:
-                        #
-                        # - Current branch
-                        # - Institution-wide (NULL branch)
-                        #
-
-                        if (
-                            program_branch_id is not None
-                            and int(program_branch_id)
-                            != int(current_branch_id)
-                        ):
-
-                            errors["program_id"] = (
-                                "You can only use programs "
-                                "assigned to your branch or "
-                                "institution-wide programs."
-                            )
-
-        # ====================================================
-        # DUPLICATE SUBJECT
-        # ====================================================
-
-        if (
-            institution_id_int is not None
-            and branch_id_int is not None
-            and name
-            and not errors.get("institution_id")
-            and not errors.get("branch_id")
-        ):
-
-            query = Subject.query.filter(
+        existing_subjects = (
+            Subject.query
+            .filter(
                 Subject.institution_id
-                == institution_id_int,
+                == institution.id,
 
                 Subject.branch_id
-                == branch_id_int
+                == branch.id,
+
+                Subject.program_id
+                == program.id
             )
+            .all()
+        )
 
-            if program_id_int:
+        duplicate_subject = None
 
-                query = query.filter(
-                    Subject.program_id
-                    == program_id_int
-                )
+        for existing_subject in (
+            existing_subjects
+        ):
 
-            else:
-
-                query = query.filter(
-                    Subject.program_id.is_(None)
-                )
-
-            query = query.filter(
-                db.func.lower(
-                    Subject.name
-                )
-                == name.lower()
-            )
-
-            if query.first():
-
-                errors["name"] = (
-                    "A subject with this name already "
-                    "exists for the selected program."
-                )
-
-        # ====================================================
-        # GENERATE SUBJECT CODE
-        # ====================================================
-
-        code = None
-
-        if not errors:
-
-            code = _generate_next_subject_code(
-
-                institution_id=(
-                    institution_id_int
-                ),
-
-                branch_id=(
-                    branch_id_int
-                ),
-
-                program_id=(
-                    program_id_int
+            existing_name = (
+                _normalize_subject_name(
+                    existing_subject.name
                 )
             )
 
-        # ====================================================
-        # CREATE SUBJECT
-        # ====================================================
+            if (
+                existing_name
+                == normalized_new_name
+            ):
 
-        if not errors:
-
-            try:
-
-                subject = Subject(
-
-                    institution_id=(
-                        institution_id_int
-                    ),
-
-                    branch_id=(
-                        branch_id_int
-                    ),
-
-                    program_id=(
-                        program_id_int
-                    ),
-
-                    name=name,
-
-                    code=code,
-
-                    short_name=short_name,
-
-                    subject_type=subject_type,
-
-                    weekly_hours=weekly_hours,
-
-                    credit_hours=credit_hours,
-
-                    max_marks=max_marks,
-
-                    pass_marks=pass_marks,
-
-                    description=description,
-
-                    status=status,
+                duplicate_subject = (
+                    existing_subject
                 )
 
-                db.session.add(subject)
+                break
 
-                db.session.commit()
+        if duplicate_subject:
 
-                flash(
-                    f'Subject "{subject.name}" '
-                    f'with code "{subject.code}" '
-                    f'was created successfully.',
-                    "success"
-                )
-
-                return redirect(
-                    url_for(
-                        "main.view_subject",
-                        subject_id=subject.id
-                    )
-                )
-
-            except IntegrityError as exc:
-
-                db.session.rollback()
-
-                current_app.logger.exception(
-                    "Subject integrity error"
-                )
-
-                error_text = str(
-                    getattr(
-                        exc,
-                        "orig",
-                        exc
-                    )
-                ).lower()
-
-                if "code" in error_text:
-
-                    flash(
-                        "The generated subject code already "
-                        "exists. Please try again.",
-                        "danger"
-                    )
-
-                elif "name" in error_text:
-
-                    flash(
-                        "A subject with this name already "
-                        "exists for the selected program.",
-                        "danger"
-                    )
-
-                else:
-
-                    flash(
-                        "Unable to create the subject because "
-                        "of a database constraint.",
-                        "danger"
-                    )
-
-            except Exception:
-
-                db.session.rollback()
-
-                current_app.logger.exception(
-                    "Unexpected error while creating subject"
-                )
-
-                flash(
-                    "An unexpected error occurred while "
-                    "creating the subject.",
-                    "danger"
-                )
-
-        # ====================================================
-        # VALIDATION ERRORS
-        # ====================================================
-
-        if errors:
-
-            for message in errors.values():
-
-                flash(
-                    message,
-                    "danger"
-                )
+            errors[
+                "name"
+            ] = (
+                "This subject already exists "
+                "in the selected program "
+                "and branch."
+            )
 
     # ========================================================
-    # FORM DATA
+    # CREATE SUBJECT
     # ========================================================
+
+    if not errors:
+
+        # ----------------------------------------------------
+        # GENERATE SERVER-SIDE CODE
+        # ----------------------------------------------------
+
+        subject_code = (
+            _generate_next_subject_code(
+                institution_id=institution.id,
+                branch_id=branch.id
+            )
+        )
+
+        # ----------------------------------------------------
+        # CREATE OBJECT
+        # ----------------------------------------------------
+
+        subject = Subject(
+
+            institution_id=(
+                institution.id
+            ),
+
+            branch_id=(
+                branch.id
+            ),
+
+            program_id=(
+                program.id
+            ),
+
+            # IMPORTANT:
+            # Never trust code from the form.
+            code=subject_code,
+
+            name=name,
+
+            short_name=(
+                short_name
+            ),
+
+            subject_type=(
+                subject_type
+            ),
+
+            max_marks=(
+                max_marks
+            ),
+
+            # IMPORTANT:
+            # Optional.
+            # Blank -> None.
+            pass_marks=(
+                pass_marks
+            ),
+
+            weekly_hours=(
+                weekly_hours
+            ),
+
+            credit_hours=(
+                credit_hours
+            ),
+
+            description=(
+                description
+                if description
+                else None
+            ),
+
+            status=(
+                status
+            )
+        )
+
+        # ----------------------------------------------------
+        # SAVE
+        # ----------------------------------------------------
+
+        try:
+
+            db.session.add(
+                subject
+            )
+
+            db.session.commit()
+
+            # ------------------------------------------------
+            # SUCCESS
+            # ------------------------------------------------
+
+            flash(
+                (
+                    f"Subject '{subject.name}' "
+                    f"created successfully with "
+                    f"code {subject.code}."
+                ),
+                "success"
+            )
+
+            return redirect(
+                url_for(
+                    "main.add_subject"
+                )
+            )
+
+        # ----------------------------------------------------
+        # DATABASE ERROR
+        # ----------------------------------------------------
+
+        except IntegrityError as exc:
+
+            db.session.rollback()
+
+            error_message = (
+                _subject_integrity_error_message(
+                    exc,
+                    subject_code=(
+                        subject_code
+                    ),
+                    short_name=(
+                        short_name
+                    )
+                )
+            )
+
+            flash(
+                error_message,
+                "danger"
+            )
+
+    # ========================================================
+    # SELECTED VALUES
+    # ========================================================
+
+    selected_institution_id = (
+        institution_id
+    )
+
+    selected_branch_id = (
+        branch_id
+    )
+
+    selected_program_id = (
+        program_id
+    )
 
     # ========================================================
     # INSTITUTIONS
@@ -41584,235 +42074,266 @@ def add_subject():
 
     else:
 
-        institution = None
-
-        if current_institution_id:
-
-            institution = (
-                Institution.query
-                .filter(
-                    Institution.id
-                    == current_institution_id
-                )
-                .first()
-            )
-
         institutions = (
-            [institution]
-            if institution
-            else []
+            Institution.query
+            .filter(
+                Institution.id
+                == user_institution_id
+            )
+            .order_by(
+                Institution.name.asc()
+            )
+            .all()
         )
 
     # ========================================================
     # BRANCHES
     # ========================================================
 
+    branches_query = Branch.query
+
+    # --------------------------------------------------------
+    # SUPERADMIN
+    # --------------------------------------------------------
+
     if is_superadmin:
 
-        # SUPERADMIN → ALL BRANCHES
+        if institution_id:
 
-        branches = (
-            Branch.query
-            .order_by(
-                Branch.name.asc()
+            branches_query = (
+                branches_query
+                .filter(
+                    Branch.institution_id
+                    == institution_id
+                )
             )
-            .all()
-        )
 
-    elif is_school_admin:
-
-        # SCHOOL ADMIN → ALL BRANCHES
-        # OF HIS INSTITUTION
-
-        branches = (
-            Branch.query
-            .filter(
-                Branch.institution_id
-                == current_institution_id
-            )
-            .order_by(
-                Branch.name.asc()
-            )
-            .all()
-        )
-
-    elif is_branch_admin:
-
-        # ====================================================
-        # BRANCH ADMIN → ONLY HIS BRANCH
-        # ====================================================
-
-        branches = (
-            Branch.query
-            .filter(
-                Branch.id
-                == current_branch_id,
-
-                Branch.institution_id
-                == current_institution_id
-            )
-            .order_by(
-                Branch.name.asc()
-            )
-            .all()
-        )
+    # --------------------------------------------------------
+    # SCHOOL ADMIN / BRANCH ADMIN
+    # --------------------------------------------------------
 
     else:
 
-        branches = []
+        branches_query = (
+            branches_query
+            .filter(
+                Branch.institution_id
+                == user_institution_id
+            )
+        )
+
+    # --------------------------------------------------------
+    # BRANCH ADMIN OWN BRANCH ONLY
+    # --------------------------------------------------------
+
+    if is_branch_admin:
+
+        branches_query = (
+            branches_query
+            .filter(
+                Branch.id
+                == user_branch_id
+            )
+        )
+
+    # --------------------------------------------------------
+    # LOAD BRANCHES
+    # --------------------------------------------------------
+
+    branches = (
+        branches_query
+        .order_by(
+            Branch.name.asc()
+        )
+        .all()
+    )
 
     # ========================================================
     # PROGRAMS
     # ========================================================
 
+    programs_query = Program.query
+
+    # --------------------------------------------------------
+    # SUPERADMIN
+    # --------------------------------------------------------
+
     if is_superadmin:
 
-        programs = (
-            Program.query
-            .order_by(
-                Program.name.asc()
+        if institution_id:
+
+            programs_query = (
+                programs_query
+                .filter(
+                    Program.institution_id
+                    == institution_id
+                )
             )
-            .all()
-        )
 
-    elif is_school_admin:
+        else:
 
-        programs = (
-            Program.query
+            # No institution selected.
+            # Return empty program list.
+            programs_query = (
+                programs_query
+                .filter(
+                    Program.institution_id
+                    == -1
+                )
+            )
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN / BRANCH ADMIN
+    # --------------------------------------------------------
+
+    else:
+
+        programs_query = (
+            programs_query
             .filter(
                 Program.institution_id
-                == current_institution_id
+                == user_institution_id
             )
-            .order_by(
-                Program.name.asc()
-            )
-            .all()
         )
 
-    elif is_branch_admin:
+    # --------------------------------------------------------
+    # BRANCH PROGRAM FILTER
+    # --------------------------------------------------------
+    #
+    # Program.branch_id NULL:
+    #   Institution-wide
+    #
+    # Program.branch_id = selected branch:
+    #   Branch-specific
+    #
+    # --------------------------------------------------------
 
-        # ====================================================
-        # BRANCH ADMIN:
-        #
-        # Current branch programs
-        # +
-        # Institution-wide programs
-        # ====================================================
+    if branch_id:
 
-        programs = (
-            Program.query
-            .filter(
-                Program.institution_id
-                == current_institution_id
-            )
+        programs_query = (
+            programs_query
             .filter(
                 db.or_(
                     Program.branch_id
-                    == current_branch_id,
+                    == branch_id,
 
                     Program.branch_id.is_(None)
                 )
             )
-            .order_by(
-                Program.name.asc()
-            )
-            .all()
         )
 
-    else:
+    # --------------------------------------------------------
+    # LOAD PROGRAMS
+    # --------------------------------------------------------
 
-        programs = []
-
-    # ========================================================
-    # FINAL BRANCH ADMIN SAFETY FILTER
-    # ========================================================
-
-    if is_branch_admin:
-
-        branches = [
-            branch
-            for branch in branches
-            if (
-                int(branch.id)
-                == int(current_branch_id)
-                and
-                int(branch.institution_id)
-                == int(current_institution_id)
-            )
-        ]
+    programs = (
+        programs_query
+        .order_by(
+            Program.name.asc()
+        )
+        .all()
+    )
 
     # ========================================================
-    # FINAL CONTEXT
+    # RENDER TEMPLATE
     # ========================================================
 
-    context = {
-
-        # ----------------------------------------------------
-        # DATA
-        # ----------------------------------------------------
-
-        "institutions": institutions,
-
-        "branches": branches,
-
-        "programs": programs,
-
-        # ----------------------------------------------------
-        # SELECTED
-        # ----------------------------------------------------
-
-        "selected_institution_id": (
-            selected_institution_id
-        ),
-
-        "selected_branch_id": (
-            selected_branch_id
-        ),
-
-        "selected_program_id": (
-            selected_program_id
-        ),
+    return render_template(
+        "backend/pages/subjects/add_subject.html",
 
         # ----------------------------------------------------
         # USER
         # ----------------------------------------------------
 
-        "current_user_role": (
-            current_role
+        user=user,
+
+        # ----------------------------------------------------
+        # SELECT OPTIONS
+        # ----------------------------------------------------
+
+        institutions=institutions,
+
+        branches=branches,
+
+        programs=programs,
+
+        # ----------------------------------------------------
+        # SELECTED VALUES
+        # ----------------------------------------------------
+
+        selected_institution_id=(
+            selected_institution_id
         ),
 
-        "current_user_institution_id": (
-            current_institution_id
+        selected_branch_id=(
+            selected_branch_id
         ),
 
-        "current_user_branch_id": (
-            current_branch_id
+        selected_program_id=(
+            selected_program_id
         ),
 
         # ----------------------------------------------------
-        # ROLE FLAGS
+        # SUBJECT FIELDS
         # ----------------------------------------------------
 
-        "is_superadmin": (
-            is_superadmin
+        name=name,
+
+        short_name=short_name,
+
+        subject_type=subject_type,
+
+        max_marks=(
+            max_marks_raw
+            if max_marks_raw
+            else "100"
         ),
 
-        "is_school_admin": (
-            is_school_admin
+        # IMPORTANT:
+        # Blank is preserved.
+        # Do NOT convert blank to 0 or 50.
+
+        pass_marks=(
+            pass_marks_raw
         ),
 
-        "is_branch_admin": (
-            is_branch_admin
+        description=description,
+
+        status=status,
+
+        # ----------------------------------------------------
+        # VALIDATION ERRORS
+        # ----------------------------------------------------
+
+        errors=errors,
+
+        # ----------------------------------------------------
+        # CALCULATED VALUES
+        # ----------------------------------------------------
+
+        weekly_hours=(
+            weekly_hours
         ),
-    }
 
-    # ========================================================
-    # RENDER
-    # ========================================================
+        total_program_hours=(
+            total_program_hours
+        ),
 
-    return render_template(
-        "backend/pages/subjects/add_subject.html",
-        **context
+        credit_hours=(
+            credit_hours
+        ),
+
+        # ----------------------------------------------------
+        # ENUM / CHOICES
+        # ----------------------------------------------------
+
+        subject_types=(
+            SUBJECT_TYPES
+        ),
+
+        subject_statuses=(
+            SUBJECT_STATUSES
+        )
     )
 
 
@@ -41873,6 +42394,10 @@ def view_subject(subject_id):
 # ============================================================
 # EDIT SUBJECT
 # ============================================================
+# ============================================================
+# EDIT SUBJECT
+# ============================================================
+
 @bp.route(
     "/subjects/<int:subject_id>/edit",
     methods=["GET", "POST"]
@@ -41880,28 +42405,54 @@ def view_subject(subject_id):
 @login_required
 def edit_subject(subject_id):
 
-    # ============================================================
+    # ========================================================
     # GET SUBJECT
-    # ============================================================
+    # ========================================================
 
-    subject = Subject.query.get_or_404(subject_id)
+    subject = Subject.query.get_or_404(
+        subject_id
+    )
 
-    # ============================================================
+    # ========================================================
+    # CURRENT USER
+    # ========================================================
+
+    user = current_user
+
+    # ========================================================
     # CURRENT USER ROLE
-    # ============================================================
+    # ========================================================
+
+    current_role = getattr(
+        user,
+        "role",
+        None
+    )
+
+    # --------------------------------------------------------
+    # ENUM SAFE
+    # --------------------------------------------------------
+
+    current_role = getattr(
+        current_role,
+        "value",
+        current_role
+    )
 
     current_role = (
-        getattr(current_user, "role", None) or ""
-    ).strip().lower()
+        str(current_role).strip().lower()
+        if current_role
+        else None
+    )
 
-    # ============================================================
+    # ========================================================
     # ALLOWED ROLES
-    # ============================================================
+    # ========================================================
 
     allowed_roles = {
         "superadmin",
         "school_admin",
-        "branch_admin",
+        "branch_admin"
     }
 
     if current_role not in allowed_roles:
@@ -41912,12 +42463,12 @@ def edit_subject(subject_id):
         )
 
         return redirect(
-            url_for("main.all_subjects")
+            url_for("main.subjects")
         )
 
-    # ============================================================
+    # ========================================================
     # ROLE FLAGS
-    # ============================================================
+    # ========================================================
 
     is_superadmin = (
         current_role == "superadmin"
@@ -41931,29 +42482,33 @@ def edit_subject(subject_id):
         current_role == "branch_admin"
     )
 
-    # ============================================================
+    # ========================================================
     # CURRENT USER SCOPE
-    # ============================================================
+    # ========================================================
 
     current_institution_id = getattr(
-        current_user,
+        user,
         "institution_id",
         None
     )
 
     current_branch_id = getattr(
-        current_user,
+        user,
         "branch_id",
         None
     )
 
-    # ============================================================
-    # REQUIRED SCOPE VALIDATION
-    # ============================================================
+    # ========================================================
+    # REQUIRED USER SCOPE
+    # ========================================================
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN
+    # --------------------------------------------------------
 
     if is_school_admin:
 
-        if current_institution_id is None:
+        if not current_institution_id:
 
             flash(
                 "Your account is not assigned to an institution.",
@@ -41961,12 +42516,16 @@ def edit_subject(subject_id):
             )
 
             return redirect(
-                url_for("main.all_subjects")
+                url_for("main.subjects")
             )
+
+    # --------------------------------------------------------
+    # BRANCH ADMIN
+    # --------------------------------------------------------
 
     if is_branch_admin:
 
-        if current_institution_id is None:
+        if not current_institution_id:
 
             flash(
                 "Your account is not assigned to an institution.",
@@ -41974,10 +42533,10 @@ def edit_subject(subject_id):
             )
 
             return redirect(
-                url_for("main.all_subjects")
+                url_for("main.subjects")
             )
 
-        if current_branch_id is None:
+        if not current_branch_id:
 
             flash(
                 "Your account is not assigned to a branch.",
@@ -41985,21 +42544,16 @@ def edit_subject(subject_id):
             )
 
             return redirect(
-                url_for("main.all_subjects")
+                url_for("main.subjects")
             )
 
-    # ============================================================
+    # ========================================================
     # EXISTING SUBJECT SECURITY
-    #
-    # SUPERADMIN
-    #     Can edit everything.
-    #
+    # ========================================================
+
+    # --------------------------------------------------------
     # SCHOOL ADMIN
-    #     Can edit subjects inside own institution.
-    #
-    # BRANCH ADMIN
-    #     Can edit subjects inside own branch ONLY.
-    # ============================================================
+    # --------------------------------------------------------
 
     if is_school_admin:
 
@@ -42014,14 +42568,18 @@ def edit_subject(subject_id):
             )
 
             return redirect(
-                url_for("main.all_subjects")
+                url_for("main.subjects")
             )
+
+    # --------------------------------------------------------
+    # BRANCH ADMIN
+    # --------------------------------------------------------
 
     elif is_branch_admin:
 
-        # --------------------------------------------------------
-        # Institution must match
-        # --------------------------------------------------------
+        # ----------------------------------------------------
+        # INSTITUTION MUST MATCH
+        # ----------------------------------------------------
 
         if (
             subject.institution_id
@@ -42034,16 +42592,14 @@ def edit_subject(subject_id):
             )
 
             return redirect(
-                url_for("main.all_subjects")
+                url_for("main.subjects")
             )
 
-        # --------------------------------------------------------
-        # Branch MUST match exactly
+        # ----------------------------------------------------
+        # BRANCH MUST MATCH EXACTLY
         #
-        # branch_admin cannot edit:
-        # - another branch subject
-        # - institution-wide subject (branch_id=None)
-        # --------------------------------------------------------
+        # branch_id=None is not editable by branch_admin.
+        # ----------------------------------------------------
 
         if (
             subject.branch_id
@@ -42057,40 +42613,173 @@ def edit_subject(subject_id):
             )
 
             return redirect(
-                url_for("main.all_subjects")
+                url_for("main.subjects")
             )
 
-    # ============================================================
+    # ========================================================
+    # FORM VALUES
+    # ========================================================
+
+    errors = {}
+
+    # ========================================================
+    # DEFAULT VALUES FROM EXISTING SUBJECT
+    # ========================================================
+
+    institution_id = (
+        subject.institution_id
+    )
+
+    branch_id = (
+        subject.branch_id
+    )
+
+    program_id = (
+        subject.program_id
+    )
+
+    name = (
+        subject.name or ""
+    ).strip()
+
+    short_name = (
+        subject.short_name or ""
+    ).strip()
+
+    subject_type = (
+        subject.subject_type or ""
+    ).strip().lower()
+
+    status = (
+        subject.status or "active"
+    ).strip().lower()
+
+    max_marks_raw = (
+        str(subject.max_marks)
+        if subject.max_marks is not None
+        else "100"
+    )
+
+    pass_marks_raw = (
+        str(subject.pass_marks)
+        if subject.pass_marks is not None
+        else ""
+    )
+
+    description = (
+        subject.description or ""
+    ).strip()
+
+    weekly_hours = (
+        subject.weekly_hours
+    )
+
+    total_program_hours = None
+
+    credit_hours = (
+        subject.credit_hours
+    )
+
+    # ========================================================
     # POST
-    # ============================================================
+    # ========================================================
 
     if request.method == "POST":
 
-        errors = {}
-
-        # ========================================================
-        # INSTITUTION
-        # ========================================================
+        # ====================================================
+        # READ FORM
+        # ====================================================
 
         institution_raw = (
-            request.form.get("institution_id") or ""
+            request.form.get(
+                "institution_id"
+            )
+            or ""
         ).strip()
 
-        institution_id = None
+        branch_raw = (
+            request.form.get(
+                "branch_id"
+            )
+            or ""
+        ).strip()
 
-        if is_branch_admin or is_school_admin:
+        program_raw = (
+            request.form.get(
+                "program_id"
+            )
+            or ""
+        ).strip()
 
-            # ----------------------------------------------------
-            # NEVER TRUST FORM FOR ADMIN SCOPE
-            # ----------------------------------------------------
+        name = (
+            request.form.get(
+                "name"
+            )
+            or ""
+        ).strip()
 
-            institution_id = current_institution_id
+        max_marks_raw = (
+            request.form.get(
+                "max_marks"
+            )
+            or "100"
+        ).strip()
 
-        elif is_superadmin:
+        pass_marks_raw = (
+            request.form.get(
+                "pass_marks"
+            )
+            or ""
+        ).strip()
+
+        description = (
+            request.form.get(
+                "description"
+            )
+            or ""
+        ).strip()
+
+        subject_type = (
+            request.form.get(
+                "subject_type"
+            )
+            or "academic"
+        ).strip().lower()
+
+        status = (
+            request.form.get(
+                "status"
+            )
+            or "active"
+        ).strip().lower()
+
+        # ====================================================
+        # IMPORTANT:
+        # SHORT NAME IS NOT TRUSTED FROM FORM
+        # ====================================================
+
+        short_name = ""
+
+        # ====================================================
+        # IMPORTANT:
+        # SUBJECT CODE IS NEVER READ FROM FORM
+        # ====================================================
+
+        code = (
+            subject.code or ""
+        ).strip().upper()
+
+        # ====================================================
+        # INSTITUTION
+        # ====================================================
+
+        if is_superadmin:
 
             if not institution_raw:
 
-                errors["institution_id"] = (
+                errors[
+                    "institution_id"
+                ] = (
                     "Institution is required."
                 )
 
@@ -42105,61 +42794,90 @@ def edit_subject(subject_id):
                     if institution_id <= 0:
                         raise ValueError
 
-                except (TypeError, ValueError):
+                except (
+                    TypeError,
+                    ValueError
+                ):
 
-                    errors["institution_id"] = (
+                    institution_id = None
+
+                    errors[
+                        "institution_id"
+                    ] = (
                         "Invalid institution."
                     )
 
-        # ========================================================
+        else:
+
+            # ------------------------------------------------
+            # NEVER TRUST FORM FOR ADMIN SCOPE
+            # ------------------------------------------------
+
+            institution_id = (
+                current_institution_id
+            )
+
+        # ====================================================
         # BRANCH
-        # ========================================================
-
-        branch_raw = (
-            request.form.get("branch_id") or ""
-        ).strip()
-
-        branch_id = None
+        # ====================================================
 
         if is_branch_admin:
 
-            # ----------------------------------------------------
-            # BRANCH ADMIN:
+            # ------------------------------------------------
             # FORCE CURRENT BRANCH
-            # ----------------------------------------------------
+            # ------------------------------------------------
 
-            branch_id = current_branch_id
+            branch_id = (
+                current_branch_id
+            )
 
-        elif branch_raw:
+        else:
 
-            try:
+            if not branch_raw:
 
-                branch_id = int(
-                    branch_raw
+                errors[
+                    "branch_id"
+                ] = (
+                    "Branch is required."
                 )
 
-                if branch_id <= 0:
-                    raise ValueError
+                branch_id = None
 
-            except (TypeError, ValueError):
+            else:
 
-                errors["branch_id"] = (
-                    "Invalid branch."
-                )
+                try:
 
-        # ========================================================
+                    branch_id = int(
+                        branch_raw
+                    )
+
+                    if branch_id <= 0:
+                        raise ValueError
+
+                except (
+                    TypeError,
+                    ValueError
+                ):
+
+                    branch_id = None
+
+                    errors[
+                        "branch_id"
+                    ] = (
+                        "Invalid branch."
+                    )
+
+        # ====================================================
         # PROGRAM
-        # ========================================================
-
-        program_raw = (
-            request.form.get("program_id") or ""
-        ).strip()
-
-        program_id = None
+        # ====================================================
 
         if not program_raw:
 
-            errors["program_id"] = (
+            program_id = None
+
+            errors[
+                "program_id"
+            ] = (
                 "Program is required."
             )
 
@@ -42174,185 +42892,196 @@ def edit_subject(subject_id):
                 if program_id <= 0:
                     raise ValueError
 
-            except (TypeError, ValueError):
+            except (
+                TypeError,
+                ValueError
+            ):
 
-                errors["program_id"] = (
+                program_id = None
+
+                errors[
+                    "program_id"
+                ] = (
                     "Invalid program."
                 )
 
-        # ========================================================
+        # ====================================================
         # SUBJECT NAME
-        # ========================================================
-
-        name = (
-            request.form.get("name") or ""
-        ).strip()
+        # ====================================================
 
         if not name:
 
-            errors["name"] = (
+            errors[
+                "name"
+            ] = (
                 "Subject name is required."
             )
 
         elif len(name) > 150:
 
-            errors["name"] = (
+            errors[
+                "name"
+            ] = (
                 "Subject name cannot exceed "
                 "150 characters."
             )
 
-        # ========================================================
-        # SUBJECT CODE
-        #
-        # IMPORTANT:
-        # CODE IS NEVER CHANGED FROM FORM.
-        # ========================================================
+        # ====================================================
+        # GENERATE SHORT NAME
+        # ====================================================
 
-        code = (
-            subject.code or ""
-        ).strip().upper()
-
-        if not code:
-
-            errors["code"] = (
-                "This subject does not have a valid "
-                "subject code."
+        generated_short_name = (
+            _generate_subject_short_name(
+                name
             )
+            if name
+            else None
+        )
 
-        # ========================================================
-        # SHORT NAME
-        # ========================================================
+        if generated_short_name:
 
-        short_name = (
-            request.form.get("short_name") or ""
-        ).strip()
-
-        if short_name:
-
-            if len(short_name) > 100:
-
-                errors["short_name"] = (
-                    "Short name cannot exceed "
-                    "100 characters."
-                )
+            short_name = (
+                generated_short_name
+            )
 
         else:
 
-            short_name = None
+            errors[
+                "short_name"
+            ] = (
+                "Unable to generate subject short name."
+            )
 
-        # ========================================================
+        # ====================================================
+        # SUBJECT CODE
+        # ====================================================
+        #
+        # Existing code is preserved.
+        #
+        # Edit route NEVER generates a new code.
+        #
+        # ====================================================
+
+        if not code:
+
+            errors[
+                "code"
+            ] = (
+                "This subject does not have "
+                "a valid subject code."
+            )
+
+        # ====================================================
         # SUBJECT TYPE
-        # ========================================================
+        # ====================================================
 
-        subject_type = (
-            request.form.get("subject_type")
-            or "academic"
-        ).strip().lower()
+        valid_subject_types = (
+            _get_subject_type_values()
+        )
 
-        if subject_type not in SUBJECT_TYPES:
+        if not subject_type:
 
-            errors["subject_type"] = (
+            errors[
+                "subject_type"
+            ] = (
+                "Subject type is required."
+            )
+
+        elif (
+            subject_type
+            not in valid_subject_types
+        ):
+
+            errors[
+                "subject_type"
+            ] = (
                 "Invalid subject type."
             )
 
-        # ========================================================
+        # ====================================================
         # STATUS
-        # ========================================================
+        # ====================================================
 
-        status = (
-            request.form.get("status")
-            or "active"
-        ).strip().lower()
+        valid_subject_statuses = (
+            _get_subject_status_values()
+        )
 
-        if status not in SUBJECT_STATUSES:
+        if (
+            status
+            not in valid_subject_statuses
+        ):
 
-            errors["status"] = (
+            errors[
+                "status"
+            ] = (
                 "Invalid subject status."
             )
 
-        # ========================================================
-        # WEEKLY HOURS
-        # ========================================================
-
-        weekly_hours = _subject_parse_decimal(
-            request.form.get("weekly_hours"),
-            "weekly_hours",
-            errors,
-            allow_empty=True
-        )
-
-        if (
-            weekly_hours is not None
-            and weekly_hours < Decimal("0")
-        ):
-
-            errors["weekly_hours"] = (
-                "Weekly hours cannot be negative."
-            )
-
-        # ========================================================
-        # CREDIT HOURS
-        # ========================================================
-
-        credit_hours = _subject_parse_decimal(
-            request.form.get("credit_hours"),
-            "credit_hours",
-            errors,
-            allow_empty=True
-        )
-
-        if (
-            credit_hours is not None
-            and credit_hours < Decimal("0")
-        ):
-
-            errors["credit_hours"] = (
-                "Credit hours cannot be negative."
-            )
-
-        # ========================================================
+        # ====================================================
         # MAX MARKS
-        # ========================================================
+        # ====================================================
 
-        max_marks = _subject_parse_decimal(
-            request.form.get("max_marks"),
-            "max_marks",
-            errors,
-            allow_empty=False
+        max_marks = _parse_subject_mark(
+            max_marks_raw
         )
 
-        if (
-            max_marks is not None
-            and max_marks <= Decimal("0")
-        ):
+        if max_marks is None:
 
-            errors["max_marks"] = (
-                "Maximum marks must be greater than 0."
+            errors[
+                "max_marks"
+            ] = (
+                "Maximum marks must be "
+                "a valid number."
             )
 
-        # ========================================================
+        elif max_marks <= Decimal("0"):
+
+            errors[
+                "max_marks"
+            ] = (
+                "Maximum marks must be "
+                "greater than zero."
+            )
+
+        # ====================================================
         # PASS MARKS
-        # ========================================================
+        # ====================================================
+        #
+        # OPTIONAL
+        #
+        # Blank = None
+        #
+        # ====================================================
 
-        pass_marks = _subject_parse_decimal(
-            request.form.get("pass_marks"),
-            "pass_marks",
-            errors,
-            allow_empty=False
-        )
+        pass_marks = None
 
-        if (
-            pass_marks is not None
-            and pass_marks < Decimal("0")
-        ):
+        if pass_marks_raw:
 
-            errors["pass_marks"] = (
-                "Pass marks cannot be negative."
+            pass_marks = _parse_subject_mark(
+                pass_marks_raw
             )
 
-        # ========================================================
+            if pass_marks is None:
+
+                errors[
+                    "pass_marks"
+                ] = (
+                    "Pass marks must be "
+                    "a valid number."
+                )
+
+            elif pass_marks < Decimal("0"):
+
+                errors[
+                    "pass_marks"
+                ] = (
+                    "Pass marks cannot "
+                    "be negative."
+                )
+
+        # ====================================================
         # PASS MARKS <= MAX MARKS
-        # ========================================================
+        # ====================================================
 
         if (
             max_marks is not None
@@ -42360,271 +43089,456 @@ def edit_subject(subject_id):
             and pass_marks > max_marks
         ):
 
-            errors["pass_marks"] = (
-                "Pass marks cannot be greater than "
-                "maximum marks."
+            errors[
+                "pass_marks"
+            ] = (
+                "Pass marks cannot be greater "
+                "than maximum marks."
             )
 
-        # ========================================================
-        # DESCRIPTION
-        # ========================================================
+        # ====================================================
+        # INSTITUTION VALIDATION
+        # ====================================================
 
-        description = (
-            request.form.get("description") or ""
-        ).strip()
+        institution = None
 
-        if not description:
-            description = None
+        if institution_id:
 
-        # ========================================================
-        # USER SCOPE SECURITY
-        #
-        # This is backend enforcement.
-        # Even if someone modifies HTML/POST manually,
-        # branch_admin cannot escape his scope.
-        # ========================================================
+            institution = (
+                Institution.query
+                .filter(
+                    Institution.id
+                    == institution_id
+                )
+                .first()
+            )
 
-        if is_school_admin:
+            if not institution:
 
-            if (
-                institution_id
-                != current_institution_id
-            ):
-
-                errors["institution_id"] = (
-                    "You cannot move this subject "
-                    "to another institution."
+                errors[
+                    "institution_id"
+                ] = (
+                    "Selected institution "
+                    "does not exist."
                 )
 
-        if is_branch_admin:
+        else:
 
-            # ----------------------------------------------------
-            # Force institution
-            # ----------------------------------------------------
-
-            institution_id = (
-                current_institution_id
+            errors[
+                "institution_id"
+            ] = (
+                "Institution is required."
             )
 
-            # ----------------------------------------------------
-            # Force branch
-            # ----------------------------------------------------
+        # ====================================================
+        # USER INSTITUTION SCOPE
+        # ====================================================
 
-            branch_id = (
-                current_branch_id
+        if (
+            institution
+            and not is_superadmin
+            and institution.id
+            != current_institution_id
+        ):
+
+            errors[
+                "institution_id"
+            ] = (
+                "You can only manage subjects "
+                "inside your own institution."
             )
 
-        # ========================================================
-        # RELATIONSHIP VALIDATION
-        # ========================================================
+        # ====================================================
+        # BRANCH VALIDATION
+        # ====================================================
 
-        if institution_id is not None:
+        branch = None
 
-            _validate_subject_relationships(
-                institution_id,
-                branch_id,
-                program_id,
-                errors
+        if branch_id:
+
+            branch = (
+                Branch.query
+                .filter(
+                    Branch.id
+                    == branch_id
+                )
+                .first()
             )
 
-        # ========================================================
-        # EXTRA BRANCH ADMIN PROGRAM SECURITY
-        #
-        # Program must belong to:
-        #
-        #   1. Current institution
-        #   2. Current branch
-        #
-        # OR:
-        #
-        #   Institution-wide program (branch_id=NULL)
-        # ========================================================
+            if not branch:
+
+                errors[
+                    "branch_id"
+                ] = (
+                    "Selected branch "
+                    "does not exist."
+                )
+
+        else:
+
+            errors[
+                "branch_id"
+            ] = (
+                "Branch is required."
+            )
+
+        # ====================================================
+        # BRANCH → INSTITUTION
+        # ====================================================
+
+        if (
+            branch
+            and institution
+            and branch.institution_id
+            != institution.id
+        ):
+
+            errors[
+                "branch_id"
+            ] = (
+                "Selected branch does not "
+                "belong to the selected institution."
+            )
+
+        # ====================================================
+        # BRANCH ADMIN → OWN BRANCH
+        # ====================================================
 
         if (
             is_branch_admin
-            and program_id is not None
+            and branch
+            and branch.id
+            != current_branch_id
         ):
 
-            selected_program = (
-                Program.query.filter(
-                    Program.id == program_id,
-                    Program.institution_id
-                    == current_institution_id
-                ).first()
+            errors[
+                "branch_id"
+            ] = (
+                "You can only use your own branch."
             )
 
-            if selected_program is None:
+        # ====================================================
+        # PROGRAM VALIDATION
+        # ====================================================
 
-                errors["program_id"] = (
+        program = None
+
+        if program_id:
+
+            program = (
+                Program.query
+                .filter(
+                    Program.id
+                    == program_id
+                )
+                .first()
+            )
+
+            if not program:
+
+                errors[
+                    "program_id"
+                ] = (
+                    "Selected program "
+                    "does not exist."
+                )
+
+        # ====================================================
+        # PROGRAM → INSTITUTION
+        # ====================================================
+
+        if (
+            program
+            and institution
+            and program.institution_id
+            != institution.id
+        ):
+
+            errors[
+                "program_id"
+            ] = (
+                "Selected program does not "
+                "belong to the selected institution."
+            )
+
+        # ====================================================
+        # PROGRAM → BRANCH
+        # ====================================================
+        #
+        # Allowed:
+        #
+        # program.branch_id == selected branch
+        #
+        # OR:
+        #
+        # program.branch_id == NULL
+        #
+        # ====================================================
+
+        if (
+            program
+            and branch
+            and program.branch_id is not None
+            and program.branch_id
+            != branch.id
+        ):
+
+            errors[
+                "program_id"
+            ] = (
+                "Selected program is not "
+                "available in this branch."
+            )
+
+        # ====================================================
+        # BRANCH ADMIN → PROGRAM SECURITY
+        # ====================================================
+
+        if (
+            is_branch_admin
+            and program
+        ):
+
+            if (
+                program.institution_id
+                != current_institution_id
+            ):
+
+                errors[
+                    "program_id"
+                ] = (
                     "You cannot use a program "
                     "outside your institution."
                 )
 
             elif (
-                selected_program.branch_id is not None
-                and selected_program.branch_id
+                program.branch_id is not None
+                and program.branch_id
                 != current_branch_id
             ):
 
-                errors["program_id"] = (
+                errors[
+                    "program_id"
+                ] = (
                     "You cannot use a program "
                     "outside your assigned branch."
                 )
 
-        # ========================================================
-        # BRANCH SECURITY
-        # ========================================================
+        # ====================================================
+        # PROGRAM DURATION
+        # ====================================================
+        #
+        # Weekly hours and credit hours are recalculated
+        # from Program.duration_months.
+        #
+        # Do NOT trust values from form.
+        #
+        # ====================================================
 
-        if branch_id is not None:
+        weekly_hours = None
+        total_program_hours = None
+        credit_hours = None
 
-            selected_branch = (
-                Branch.query.filter(
-                    Branch.id == branch_id
-                ).first()
+        if program:
+
+            duration_months = getattr(
+                program,
+                "duration_months",
+                None
             )
 
-            if selected_branch is None:
+            try:
 
-                errors["branch_id"] = (
-                    "Selected branch does not exist."
+                duration_decimal = Decimal(
+                    str(duration_months)
+                )
+
+            except (
+                InvalidOperation,
+                TypeError,
+                ValueError
+            ):
+
+                duration_decimal = None
+
+            if (
+                duration_decimal is None
+                or duration_decimal
+                <= Decimal("0")
+            ):
+
+                errors[
+                    "program_id"
+                ] = (
+                    "The selected program must "
+                    "have a valid duration in months."
                 )
 
             else:
 
-                if (
-                    institution_id is not None
-                    and selected_branch.institution_id
-                    != institution_id
-                ):
-
-                    errors["branch_id"] = (
-                        "Selected branch does not "
-                        "belong to the selected institution."
+                (
+                    weekly_hours,
+                    total_program_hours,
+                    credit_hours
+                ) = (
+                    _calculate_subject_hours_and_credits(
+                        duration_decimal
                     )
-
-                # ------------------------------------------------
-                # BRANCH ADMIN MUST USE OWN BRANCH
-                # ------------------------------------------------
+                )
 
                 if (
-                    is_branch_admin
-                    and selected_branch.id
-                    != current_branch_id
+                    weekly_hours is None
+                    or total_program_hours is None
+                    or credit_hours is None
                 ):
 
-                    errors["branch_id"] = (
-                        "You cannot move this subject "
-                        "to another branch."
+                    errors[
+                        "program_id"
+                    ] = (
+                        "Unable to calculate subject "
+                        "hours and credits from the "
+                        "program duration."
                     )
 
-        # ========================================================
+        # ====================================================
         # DUPLICATE SUBJECT NAME
+        # ====================================================
         #
-        # Same name is allowed in different branches,
-        # but not within the same institution + branch.
-        # ========================================================
+        # IMPORTANT:
+        #
+        # Same name in different programs = ALLOWED
+        #
+        # Same name in same:
+        #
+        # institution
+        # branch
+        # program
+        #
+        # = NOT ALLOWED
+        #
+        # ====================================================
 
         if (
-            institution_id is not None
+            institution
+            and branch
+            and program
             and name
         ):
 
-            duplicate_name_query = (
-                Subject.query.filter(
-                    Subject.id != subject.id,
+            normalized_new_name = (
+                _normalize_subject_name(
+                    name
+                )
+            )
+
+            existing_subjects = (
+                Subject.query
+                .filter(
                     Subject.institution_id
-                    == institution_id,
-                    db.func.lower(
-                        Subject.name
-                    ) == name.lower()
+                    == institution.id,
+
+                    Subject.branch_id
+                    == branch.id,
+
+                    Subject.program_id
+                    == program.id,
+
+                    Subject.id
+                    != subject.id
                 )
+                .all()
             )
 
-            if branch_id is not None:
+            duplicate_subject = None
 
-                duplicate_name_query = (
-                    duplicate_name_query.filter(
-                        Subject.branch_id
-                        == branch_id
+            for existing_subject in (
+                existing_subjects
+            ):
+
+                existing_name = (
+                    _normalize_subject_name(
+                        existing_subject.name
                     )
                 )
 
-            else:
+                if (
+                    existing_name
+                    == normalized_new_name
+                ):
 
-                duplicate_name_query = (
-                    duplicate_name_query.filter(
-                        Subject.branch_id.is_(None)
+                    duplicate_subject = (
+                        existing_subject
                     )
+
+                    break
+
+            if duplicate_subject:
+
+                errors[
+                    "name"
+                ] = (
+                    "This subject already exists "
+                    "in the selected program "
+                    "and branch."
                 )
 
-            duplicate_name = (
-                duplicate_name_query.first()
-            )
-
-            if duplicate_name:
-
-                errors["name"] = (
-                    "Another subject with this name "
-                    "already exists in the selected "
-                    "institution and branch."
-                )
-
-        # ========================================================
+        # ====================================================
         # DUPLICATE SUBJECT CODE
+        # ====================================================
         #
-        # Existing code is preserved.
-        # ========================================================
+        # Code remains unchanged.
+        #
+        # Code uniqueness:
+        #
+        # institution + branch + code
+        #
+        # ====================================================
 
         if (
-            institution_id is not None
+            institution
+            and branch
             and code
         ):
 
-            duplicate_code_query = (
-                Subject.query.filter(
-                    Subject.id != subject.id,
+            duplicate_code = (
+                Subject.query
+                .filter(
+                    Subject.id
+                    != subject.id,
+
                     Subject.institution_id
-                    == institution_id,
+                    == institution.id,
+
+                    Subject.branch_id
+                    == branch.id,
+
                     db.func.upper(
                         Subject.code
-                    ) == code.upper()
-                )
-            )
-
-            if branch_id is not None:
-
-                duplicate_code_query = (
-                    duplicate_code_query.filter(
-                        Subject.branch_id
-                        == branch_id
                     )
+                    == code.upper()
                 )
-
-            else:
-
-                duplicate_code_query = (
-                    duplicate_code_query.filter(
-                        Subject.branch_id.is_(None)
-                    )
-                )
-
-            duplicate_code = (
-                duplicate_code_query.first()
+                .first()
             )
 
             if duplicate_code:
 
-                errors["code"] = (
-                    "The existing subject code is "
-                    "already used in the selected "
+                errors[
+                    "code"
+                ] = (
+                    f"Subject code '{code}' "
+                    "is already used in this "
                     "institution and branch."
                 )
 
-        # ========================================================
+        # ====================================================
         # VALIDATION FAILED
-        # ========================================================
+        # ====================================================
 
         if errors:
+
+            # ------------------------------------------------
+            # FLASH UNIQUE ERRORS
+            # ------------------------------------------------
 
             for message in errors.values():
 
@@ -42633,9 +43547,9 @@ def edit_subject(subject_id):
                     "danger"
                 )
 
-            # ----------------------------------------------------
-            # BUILD SAFE FORM CONTEXT
-            # ----------------------------------------------------
+            # ------------------------------------------------
+            # LOAD FORM OPTIONS
+            # ------------------------------------------------
 
             if is_superadmin:
 
@@ -42647,16 +43561,63 @@ def edit_subject(subject_id):
                     .all()
                 )
 
+                branches_query = Branch.query
+
+                if institution_id:
+
+                    branches_query = (
+                        branches_query
+                        .filter(
+                            Branch.institution_id
+                            == institution_id
+                        )
+                    )
+
                 branches = (
-                    Branch.query
+                    branches_query
                     .order_by(
                         Branch.name.asc()
                     )
                     .all()
                 )
 
+                programs_query = Program.query
+
+                if institution_id:
+
+                    programs_query = (
+                        programs_query
+                        .filter(
+                            Program.institution_id
+                            == institution_id
+                        )
+                    )
+
+                else:
+
+                    programs_query = (
+                        programs_query
+                        .filter(
+                            Program.id == -1
+                        )
+                    )
+
+                if branch_id:
+
+                    programs_query = (
+                        programs_query
+                        .filter(
+                            db.or_(
+                                Program.branch_id
+                                == branch_id,
+
+                                Program.branch_id.is_(None)
+                            )
+                        )
+                    )
+
                 programs = (
-                    Program.query
+                    programs_query
                     .order_by(
                         Program.name.asc()
                     )
@@ -42666,7 +43627,8 @@ def edit_subject(subject_id):
             elif is_school_admin:
 
                 institutions = (
-                    Institution.query.filter(
+                    Institution.query
+                    .filter(
                         Institution.id
                         == current_institution_id
                     )
@@ -42677,7 +43639,8 @@ def edit_subject(subject_id):
                 )
 
                 branches = (
-                    Branch.query.filter(
+                    Branch.query
+                    .filter(
                         Branch.institution_id
                         == current_institution_id
                     )
@@ -42687,11 +43650,30 @@ def edit_subject(subject_id):
                     .all()
                 )
 
-                programs = (
-                    Program.query.filter(
+                programs_query = (
+                    Program.query
+                    .filter(
                         Program.institution_id
                         == current_institution_id
                     )
+                )
+
+                if branch_id:
+
+                    programs_query = (
+                        programs_query
+                        .filter(
+                            db.or_(
+                                Program.branch_id
+                                == branch_id,
+
+                                Program.branch_id.is_(None)
+                            )
+                        )
+                    )
+
+                programs = (
+                    programs_query
                     .order_by(
                         Program.name.asc()
                     )
@@ -42702,11 +43684,11 @@ def edit_subject(subject_id):
 
                 # ------------------------------------------------
                 # BRANCH ADMIN
-                # ONLY ONE BRANCH
                 # ------------------------------------------------
 
                 institutions = (
-                    Institution.query.filter(
+                    Institution.query
+                    .filter(
                         Institution.id
                         == current_institution_id
                     )
@@ -42717,9 +43699,11 @@ def edit_subject(subject_id):
                 )
 
                 branches = (
-                    Branch.query.filter(
+                    Branch.query
+                    .filter(
                         Branch.id
                         == current_branch_id,
+
                         Branch.institution_id
                         == current_institution_id
                     )
@@ -42730,12 +43714,15 @@ def edit_subject(subject_id):
                 )
 
                 programs = (
-                    Program.query.filter(
+                    Program.query
+                    .filter(
                         Program.institution_id
                         == current_institution_id,
+
                         db.or_(
                             Program.branch_id
                             == current_branch_id,
+
                             Program.branch_id.is_(None)
                         )
                     )
@@ -42745,112 +43732,255 @@ def edit_subject(subject_id):
                     .all()
                 )
 
+            # ------------------------------------------------
+            # RENDER AGAIN
+            # ------------------------------------------------
+
             return render_template(
                 "backend/pages/subjects/edit_subject.html",
+
+                user=user,
+
                 institutions=institutions,
+
                 branches=branches,
+
                 programs=programs,
+
                 subject=subject,
-                is_superadmin=is_superadmin,
-                is_school_admin=is_school_admin,
-                is_branch_admin=is_branch_admin,
+
+                is_superadmin=(
+                    is_superadmin
+                ),
+
+                is_school_admin=(
+                    is_school_admin
+                ),
+
+                is_branch_admin=(
+                    is_branch_admin
+                ),
+
                 current_user_institution_id=(
                     current_institution_id
                 ),
+
                 current_user_branch_id=(
                     current_branch_id
                 ),
+
                 selected_institution_id=(
                     institution_id
-                    if institution_id is not None
-                    else subject.institution_id
                 ),
+
                 selected_branch_id=(
                     branch_id
-                    if branch_id is not None
-                    else subject.branch_id
                 ),
+
                 selected_program_id=(
                     program_id
-                    if program_id is not None
-                    else subject.program_id
-                )
+                ),
+
+                # --------------------------------------------
+                # FORM VALUES
+                # --------------------------------------------
+
+                name=name,
+
+                short_name=short_name,
+
+                subject_type=subject_type,
+
+                max_marks=max_marks_raw,
+
+                pass_marks=pass_marks_raw,
+
+                description=description,
+
+                status=status,
+
+                # --------------------------------------------
+                # CALCULATED VALUES
+                # --------------------------------------------
+
+                weekly_hours=(
+                    weekly_hours
+                ),
+
+                total_program_hours=(
+                    total_program_hours
+                ),
+
+                credit_hours=(
+                    credit_hours
+                ),
+
+                # --------------------------------------------
+                # ENUM VALUES
+                # --------------------------------------------
+
+                subject_types=(
+                    SUBJECT_TYPES
+                ),
+
+                subject_statuses=(
+                    SUBJECT_STATUSES
+                ),
+
+                # --------------------------------------------
+                # ERRORS
+                # --------------------------------------------
+
+                errors=errors
             )
 
-        # ========================================================
+        # ====================================================
         # UPDATE SUBJECT
-        # ========================================================
+        # ====================================================
 
         try:
 
-            # ----------------------------------------------------
-            # IMPORTANT:
-            # SUBJECT CODE IS NOT CHANGED
-            # ----------------------------------------------------
+            # ------------------------------------------------
+            # INSTITUTION
+            # ------------------------------------------------
 
             subject.institution_id = (
-                institution_id
+                institution.id
             )
+
+            # ------------------------------------------------
+            # BRANCH
+            # ------------------------------------------------
 
             subject.branch_id = (
-                branch_id
+                branch.id
             )
 
+            # ------------------------------------------------
+            # PROGRAM
+            # ------------------------------------------------
+
             subject.program_id = (
-                program_id
+                program.id
             )
+
+            # ------------------------------------------------
+            # SUBJECT NAME
+            # ------------------------------------------------
 
             subject.name = (
                 name
             )
 
+            # ------------------------------------------------
+            # SHORT NAME
+            # ------------------------------------------------
+            #
+            # Generated server-side.
+            #
+            # ------------------------------------------------
+
             subject.short_name = (
                 short_name
             )
+
+            # ------------------------------------------------
+            # CODE
+            # ------------------------------------------------
+            #
+            # NEVER CHANGE CODE DURING EDIT.
+            #
+            # ------------------------------------------------
+
+            subject.code = (
+                code
+            )
+
+            # ------------------------------------------------
+            # SUBJECT TYPE
+            # ------------------------------------------------
 
             subject.subject_type = (
                 subject_type
             )
 
+            # ------------------------------------------------
+            # WEEKLY HOURS
+            # ------------------------------------------------
+
             subject.weekly_hours = (
                 weekly_hours
             )
+
+            # ------------------------------------------------
+            # CREDIT HOURS
+            # ------------------------------------------------
 
             subject.credit_hours = (
                 credit_hours
             )
 
+            # ------------------------------------------------
+            # MAX MARKS
+            # ------------------------------------------------
+
             subject.max_marks = (
                 max_marks
             )
+
+            # ------------------------------------------------
+            # PASS MARKS
+            # ------------------------------------------------
+            #
+            # Optional.
+            #
+            # Blank = None.
+            #
+            # ------------------------------------------------
 
             subject.pass_marks = (
                 pass_marks
             )
 
+            # ------------------------------------------------
+            # DESCRIPTION
+            # ------------------------------------------------
+
             subject.description = (
                 description
             )
+
+            # ------------------------------------------------
+            # STATUS
+            # ------------------------------------------------
 
             subject.status = (
                 status
             )
 
-            # ----------------------------------------------------
+            # ------------------------------------------------
             # UPDATED TIMESTAMP
-            # ----------------------------------------------------
+            # ------------------------------------------------
 
-            subject.updated_at = datetime.utcnow()
+            subject.updated_at = (
+                datetime.utcnow()
+            )
 
-            # ----------------------------------------------------
-            # COMMIT
-            # ----------------------------------------------------
+            # ------------------------------------------------
+            # SAVE
+            # ------------------------------------------------
 
             db.session.commit()
 
+            # ------------------------------------------------
+            # SUCCESS
+            # ------------------------------------------------
+
             flash(
-                f'Subject "{subject.name}" '
-                f'updated successfully.',
+                (
+                    f'Subject "{subject.name}" '
+                    f'updated successfully.'
+                ),
                 "success"
             )
 
@@ -42861,11 +43991,11 @@ def edit_subject(subject_id):
                 )
             )
 
-        # ========================================================
+        # ====================================================
         # DATABASE INTEGRITY ERROR
-        # ========================================================
+        # ====================================================
 
-        except IntegrityError:
+        except IntegrityError as exc:
 
             db.session.rollback()
 
@@ -42875,17 +44005,22 @@ def edit_subject(subject_id):
                 subject.id
             )
 
+            error_message = (
+                _subject_integrity_error_message(
+                    exc,
+                    subject_code=code,
+                    short_name=short_name
+                )
+            )
+
             flash(
-                "Unable to update the subject because "
-                "of a database constraint conflict. "
-                "Please check the institution, branch, "
-                "program, name, and code.",
+                error_message,
                 "danger"
             )
 
-        # ========================================================
+        # ====================================================
         # GENERAL ERROR
-        # ========================================================
+        # ====================================================
 
         except Exception as exc:
 
@@ -42904,9 +44039,13 @@ def edit_subject(subject_id):
                 "danger"
             )
 
-    # ============================================================
+    # ========================================================
     # GET / FAILED POST AFTER DATABASE ERROR
-    # ============================================================
+    # ========================================================
+
+    # ========================================================
+    # INSTITUTIONS
+    # ========================================================
 
     if is_superadmin:
 
@@ -42918,26 +44057,11 @@ def edit_subject(subject_id):
             .all()
         )
 
-        branches = (
-            Branch.query
-            .order_by(
-                Branch.name.asc()
-            )
-            .all()
-        )
-
-        programs = (
-            Program.query
-            .order_by(
-                Program.name.asc()
-            )
-            .all()
-        )
-
-    elif is_school_admin:
+    else:
 
         institutions = (
-            Institution.query.filter(
+            Institution.query
+            .filter(
                 Institution.id
                 == current_institution_id
             )
@@ -42947,107 +44071,314 @@ def edit_subject(subject_id):
             .all()
         )
 
-        branches = (
-            Branch.query.filter(
-                Branch.institution_id
-                == current_institution_id
-            )
-            .order_by(
-                Branch.name.asc()
-            )
-            .all()
-        )
+    # ========================================================
+    # BRANCHES
+    # ========================================================
 
-        programs = (
-            Program.query.filter(
-                Program.institution_id
-                == current_institution_id
+    branches_query = Branch.query
+
+    # --------------------------------------------------------
+    # SUPERADMIN
+    # --------------------------------------------------------
+
+    if is_superadmin:
+
+        if institution_id:
+
+            branches_query = (
+                branches_query
+                .filter(
+                    Branch.institution_id
+                    == institution_id
+                )
             )
-            .order_by(
-                Program.name.asc()
-            )
-            .all()
-        )
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN
+    # --------------------------------------------------------
 
     else:
 
-        # ========================================================
-        # BRANCH ADMIN
-        # EXACTLY ONE BRANCH
-        # ========================================================
-
-        institutions = (
-            Institution.query.filter(
-                Institution.id
-                == current_institution_id
-            )
-            .order_by(
-                Institution.name.asc()
-            )
-            .all()
-        )
-
-        branches = (
-            Branch.query.filter(
-                Branch.id
-                == current_branch_id,
+        branches_query = (
+            branches_query
+            .filter(
                 Branch.institution_id
                 == current_institution_id
             )
-            .order_by(
-                Branch.name.asc()
-            )
-            .all()
         )
 
-        programs = (
-            Program.query.filter(
+    # --------------------------------------------------------
+    # BRANCH ADMIN
+    # --------------------------------------------------------
+
+    if is_branch_admin:
+
+        branches_query = (
+            branches_query
+            .filter(
+                Branch.id
+                == current_branch_id
+            )
+        )
+
+    branches = (
+        branches_query
+        .order_by(
+            Branch.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # PROGRAMS
+    # ========================================================
+
+    programs_query = Program.query
+
+    # --------------------------------------------------------
+    # SUPERADMIN
+    # --------------------------------------------------------
+
+    if is_superadmin:
+
+        if institution_id:
+
+            programs_query = (
+                programs_query
+                .filter(
+                    Program.institution_id
+                    == institution_id
+                )
+            )
+
+        else:
+
+            programs_query = (
+                programs_query
+                .filter(
+                    Program.id == -1
+                )
+            )
+
+    # --------------------------------------------------------
+    # SCHOOL ADMIN / BRANCH ADMIN
+    # --------------------------------------------------------
+
+    else:
+
+        programs_query = (
+            programs_query
+            .filter(
                 Program.institution_id
-                == current_institution_id,
+                == current_institution_id
+            )
+        )
+
+    # --------------------------------------------------------
+    # BRANCH PROGRAMS
+    # --------------------------------------------------------
+
+    if branch_id:
+
+        programs_query = (
+            programs_query
+            .filter(
                 db.or_(
                     Program.branch_id
-                    == current_branch_id,
+                    == branch_id,
+
                     Program.branch_id.is_(None)
                 )
             )
-            .order_by(
-                Program.name.asc()
-            )
-            .all()
         )
 
-    # ============================================================
+    # --------------------------------------------------------
+    # LOAD PROGRAMS
+    # --------------------------------------------------------
+
+    programs = (
+        programs_query
+        .order_by(
+            Program.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
     # RENDER EDIT PAGE
-    # ============================================================
+    # ========================================================
 
     return render_template(
         "backend/pages/subjects/edit_subject.html",
+
+        # ----------------------------------------------------
+        # USER
+        # ----------------------------------------------------
+
+        user=user,
+
+        # ----------------------------------------------------
+        # SELECT OPTIONS
+        # ----------------------------------------------------
+
         institutions=institutions,
+
         branches=branches,
+
         programs=programs,
+
+        # ----------------------------------------------------
+        # SUBJECT
+        # ----------------------------------------------------
+
         subject=subject,
-        is_superadmin=is_superadmin,
-        is_school_admin=is_school_admin,
-        is_branch_admin=is_branch_admin,
+
+        # ----------------------------------------------------
+        # ROLE FLAGS
+        # ----------------------------------------------------
+
+        is_superadmin=(
+            is_superadmin
+        ),
+
+        is_school_admin=(
+            is_school_admin
+        ),
+
+        is_branch_admin=(
+            is_branch_admin
+        ),
+
+        # ----------------------------------------------------
+        # USER SCOPE
+        # ----------------------------------------------------
+
         current_user_institution_id=(
             current_institution_id
         ),
+
         current_user_branch_id=(
             current_branch_id
         ),
+
+        # ----------------------------------------------------
+        # SELECTED VALUES
+        # ----------------------------------------------------
+
         selected_institution_id=(
             subject.institution_id
         ),
+
         selected_branch_id=(
             subject.branch_id
         ),
+
         selected_program_id=(
             subject.program_id
         ),
-        user=current_user
+
+        # ----------------------------------------------------
+        # FORM VALUES
+        # ----------------------------------------------------
+
+        name=name,
+
+        short_name=short_name,
+
+        subject_type=subject_type,
+
+        max_marks=max_marks_raw,
+
+        pass_marks=pass_marks_raw,
+
+        description=description,
+
+        status=status,
+
+        # ----------------------------------------------------
+        # CALCULATED VALUES
+        # ----------------------------------------------------
+
+        weekly_hours=(
+            weekly_hours
+        ),
+
+        total_program_hours=(
+            total_program_hours
+        ),
+
+        credit_hours=(
+            credit_hours
+        ),
+
+        # ----------------------------------------------------
+        # CHOICES
+        # ----------------------------------------------------
+
+        subject_types=(
+            SUBJECT_TYPES
+        ),
+
+        subject_statuses=(
+            SUBJECT_STATUSES
+        ),
+
+        # ----------------------------------------------------
+        # ERRORS
+        # ----------------------------------------------------
+
+        errors=errors
     )
 
+# ============================================================
+# GLOBAL INSTITUTION / BRANCH CONTEXT
+# ============================================================
 
+@bp.app_context_processor
+def inject_global_school_context():
+
+    institution = None
+    branch = None
+
+    try:
+
+        # ----------------------------------------------------
+        # Current logged-in user
+        # ----------------------------------------------------
+
+        if current_user.is_authenticated:
+
+            # ------------------------------------------------
+            # Institution
+            # ------------------------------------------------
+
+            if getattr(current_user, "institution_id", None):
+
+                institution = Institution.query.get(
+                    current_user.institution_id
+                )
+
+            # ------------------------------------------------
+            # Branch
+            # ------------------------------------------------
+
+            if getattr(current_user, "branch_id", None):
+
+                branch = Branch.query.get(
+                    current_user.branch_id
+                )
+
+    except Exception:
+
+        # Global template context waa inuusan page-ka
+        # jabin haddii record-ku uusan jirin.
+        institution = None
+        branch = None
+
+    return {
+        "institution": institution,
+        "branch": branch,
+    }
 
 # ============================================================
 # DELETE SUBJECT

@@ -4,71 +4,229 @@
 
 <div class="sidebar" data-background-color="dark">
 
-    <!-- ========================================================
-         SIDEBAR LOGO
-         ======================================================== -->
 
-    <div class="sidebar-logo">
+<!-- ========================================================
+     SIDEBAR LOGO
+     ======================================================== -->
 
-        <div class="logo-header" data-background-color="dark">
+<div class="sidebar-logo">
 
-            <a href="{{ url_for('main.dashboard') }}" class="logo">
+    <div
+        class="logo-header"
+        data-background-color="dark"
+        style="
+            background:#ffffff;
+        "
+    >
 
-                {% if institution is defined and institution.logo %}
+        <a
+            href="{{ url_for('main.dashboard') }}"
+            class="logo"
+            style="
+                display:flex;
+                align-items:center;
+                min-width:0;
+                text-decoration:none;
+            "
+        >
+
+            <!-- =================================================
+                 BRANCH
+                 Branch logo + branch name
+                 Institution name underneath
+                 ================================================= -->
+
+            {% if branch is defined and branch %}
+
+                {% if branch.main_logo %}
+
                     <img
-                        src="{{ institution.logo }}"
-                        alt="{{ institution.name or 'Institution' }}"
+                        src="{{ branch.main_logo }}"
+                        alt="{{ branch.name }}"
                         class="navbar-brand"
-                        style="height:38px; width:auto; object-fit:contain;"
-                    >
-                {% else %}
-                    <span
                         style="
-                            color:#ffffff;
-                            font-size:18px;
-                            font-weight:800;
-                            letter-spacing:.5px;
-                            white-space:nowrap;
+                            height:38px;
+                            width:38px;
+                            object-fit:contain;
+                            flex:0 0 38px;
+                            background:#ffffff;
+                            border-radius:4px;
+                            margin-right:9px;
                         "
                     >
-                        {{ institution.name if institution is defined and institution.name else 'PRIVATE INSTITUTION' }}
-                    </span>
+
+                {% elif institution is defined and institution.main_logo %}
+
+                    <!-- Institution logo fallback -->
+
+                    <img
+                        src="{{ institution.main_logo }}"
+                        alt="{{ branch.name }}"
+                        class="navbar-brand"
+                        style="
+                            height:38px;
+                            width:38px;
+                            object-fit:contain;
+                            flex:0 0 38px;
+                            background:#ffffff;
+                            border-radius:4px;
+                            margin-right:9px;
+                        "
+                    >
+
                 {% endif %}
 
-            </a>
 
+                <!-- Branch Name + Institution -->
 
-            <!-- Sidebar Controls -->
-
-            <div class="nav-toggle">
-
-                <button
-                    class="btn btn-toggle toggle-sidebar"
-                    type="button"
+                <span
+                    style="
+                        display:flex;
+                        flex-direction:column;
+                        justify-content:center;
+                        min-width:0;
+                        line-height:1.15;
+                        
+                    "
                 >
-                    <i class="gg-menu-right"></i>
-                </button>
 
-                <button
-                    class="btn btn-toggle sidenav-toggler"
-                    type="button"
+                    <span
+                        style="
+                            color:#fff;
+                            font-size:14px;
+                            font-weight:800;
+                            white-space:nowrap;
+                            overflow:hidden;
+                            text-overflow:ellipsis;
+                        "
+                        title="{{ branch.name }}"
+                    >
+                        {{ branch.name }}
+                    </span>
+
+                    {% if institution is defined and institution.name %}
+
+                        <span
+                            style="
+                                color:#6b7280;
+                                font-size:10px;
+                                font-weight:600;
+                                margin-top:2px;
+                                white-space:nowrap;
+                                overflow:hidden;
+                                text-overflow:ellipsis;
+                            "
+                            title="{{ institution.name }}"
+                        >
+                            {{ institution.name }}
+                        </span>
+
+                    {% endif %}
+
+                </span>
+
+
+            <!-- =================================================
+                 INSTITUTION
+                 Institution logo + institution name
+                 ================================================= -->
+
+            {% elif institution is defined and institution %}
+
+                {% if institution.main_logo %}
+
+                    <img
+                        src="{{ institution.main_logo }}"
+                        alt="{{ institution.name or 'Institution' }}"
+                        class="navbar-brand"
+                        style="
+                            height:38px;
+                            width:38px;
+                            object-fit:contain;
+                            flex:0 0 38px;
+                            background:#ffffff;
+                            border-radius:4px;
+                            margin-right:9px;
+                        "
+                    >
+
+                {% endif %}
+
+
+                <span
+                    style="
+                        color:#fff;
+                        font-size:14px;
+                        font-weight:800;
+                        line-height:1.15;
+                        white-space:nowrap;
+                        overflow:hidden;
+                        text-overflow:ellipsis;
+                    "
+                    title="{{ institution.name }}"
                 >
-                    <i class="gg-menu-left"></i>
-                </button>
+                    {{ institution.name }}
+                </span>
 
-            </div>
 
+            <!-- =================================================
+                 FALLBACK
+                 ================================================= -->
+
+            {% else %}
+
+                <span
+                    style="
+                        color:#fff;
+                        font-size:16px;
+                        font-weight:800;
+                        letter-spacing:.5px;
+                        white-space:nowrap;
+                    "
+                >
+                    PRIVATE INSTITUTION
+                </span>
+
+            {% endif %}
+
+        </a>
+
+
+        <!-- ====================================================
+             SIDEBAR CONTROLS
+             AS-IS — NOT CHANGED
+             ==================================================== -->
+
+        <div class="nav-toggle">
 
             <button
-                class="topbar-toggler more"
+                class="btn btn-toggle toggle-sidebar"
                 type="button"
             >
-                <i class="gg-more-vertical-alt"></i>
+                <i class="gg-menu-right"></i>
+            </button>
+
+            <button
+                class="btn btn-toggle sidenav-toggler"
+                type="button"
+            >
+                <i class="gg-menu-left"></i>
             </button>
 
         </div>
 
+
+        <button
+            class="topbar-toggler more"
+            type="button"
+        >
+            <i class="gg-more-vertical-alt"></i>
+        </button>
+
     </div>
+
+</div>
+
 
 
     <!-- ========================================================
