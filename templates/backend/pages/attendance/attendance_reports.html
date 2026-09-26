@@ -1140,8 +1140,8 @@ Attendance Reports
             </h1>
 
             <p class="attendance-reports-subtitle">
-                View, filter and analyze student attendance
-                records by academic year, date, branch, class,
+                View, filter and analyze combined student attendance
+                summaries by academic year, date, branch, class,
                 section, subject, teacher and attendance status.
             </p>
 
@@ -1344,6 +1344,30 @@ Attendance Reports
         >
 
             <div class="attendance-filter-grid">
+
+                <!-- STUDENT SEARCH -->
+
+                <div class="attendance-filter-field">
+
+                    <label
+                        class="attendance-filter-label"
+                        for="attendance-search"
+                    >
+                        Student Search
+                    </label>
+
+                    <input
+                        id="attendance-search"
+                        type="search"
+                        name="search"
+                        class="attendance-input"
+                        value="{{ search|default('') }}"
+                        placeholder="Name, admission or roll no."
+                        autocomplete="off"
+                    >
+
+                </div>
+
 
                 <!-- ACADEMIC YEAR -->
 
@@ -2350,8 +2374,10 @@ Attendance Reports
     </div>
 
 
+
     <!-- ======================================================
-         ATTENDANCE TABLE
+         STUDENT ATTENDANCE SUMMARY TABLE
+         ONE ROW = ONE STUDENT
          ====================================================== -->
 
     <div class="attendance-table-card">
@@ -2361,25 +2387,15 @@ Attendance Reports
             <div class="attendance-table-title-wrap">
 
                 <h2 class="attendance-table-title">
-                    Attendance Records
+                    Student Attendance Summary
                 </h2>
 
                 <div class="attendance-table-count">
-
                     Showing
-
-                    <strong>
-                        {{ attendance_reports|length }}
-                    </strong>
-
+                    <strong>{{ attendance_reports|length }}</strong>
                     of
-
-                    <strong>
-                        {{ pagination.total|default(0) }}
-                    </strong>
-
-                    attendance records
-
+                    <strong>{{ pagination.total|default(0) }}</strong>
+                    students
                 </div>
 
             </div>
@@ -2394,90 +2410,73 @@ Attendance Reports
             >
 
                 {% if academic_year_id %}
-                    <input
-                        type="hidden"
-                        name="academic_year_id"
-                        value="{{ academic_year_id }}"
-                    >
+                    <input type="hidden"
+                           name="academic_year_id"
+                           value="{{ academic_year_id }}">
                 {% endif %}
 
                 {% if branch_id %}
-                    <input
-                        type="hidden"
-                        name="branch_id"
-                        value="{{ branch_id }}"
-                    >
+                    <input type="hidden"
+                           name="branch_id"
+                           value="{{ branch_id }}">
                 {% endif %}
 
                 {% if class_id %}
-                    <input
-                        type="hidden"
-                        name="class_id"
-                        value="{{ class_id }}"
-                    >
+                    <input type="hidden"
+                           name="class_id"
+                           value="{{ class_id }}">
                 {% endif %}
 
                 {% if section_id %}
-                    <input
-                        type="hidden"
-                        name="section_id"
-                        value="{{ section_id }}"
-                    >
+                    <input type="hidden"
+                           name="section_id"
+                           value="{{ section_id }}">
                 {% endif %}
 
                 {% if subject_id %}
-                    <input
-                        type="hidden"
-                        name="subject_id"
-                        value="{{ subject_id }}"
-                    >
+                    <input type="hidden"
+                           name="subject_id"
+                           value="{{ subject_id }}">
                 {% endif %}
 
                 {% if teacher_id %}
-                    <input
-                        type="hidden"
-                        name="teacher_id"
-                        value="{{ teacher_id }}"
-                    >
+                    <input type="hidden"
+                           name="teacher_id"
+                           value="{{ teacher_id }}">
                 {% endif %}
 
                 {% if status %}
-                    <input
-                        type="hidden"
-                        name="status"
-                        value="{{ status }}"
-                    >
+                    <input type="hidden"
+                           name="status"
+                           value="{{ status }}">
+                {% endif %}
+
+                {% if search %}
+                    <input type="hidden"
+                           name="search"
+                           value="{{ search }}">
                 {% endif %}
 
                 {% if date_from %}
-                    <input
-                        type="hidden"
-                        name="date_from"
-                        value="{{ date_from }}"
-                    >
+                    <input type="hidden"
+                           name="date_from"
+                           value="{{ date_from }}">
                 {% endif %}
 
                 {% if date_to %}
-                    <input
-                        type="hidden"
-                        name="date_to"
-                        value="{{ date_to }}"
-                    >
+                    <input type="hidden"
+                           name="date_to"
+                           value="{{ date_to }}">
                 {% endif %}
 
 
-                <span>
-                    Per page
-                </span>
-
+                <span>Per page</span>
 
                 <select
                     name="per_page"
                     onchange="this.form.submit()"
                 >
-
                     {% for option in [10, 25, 50, 100] %}
-
                         <option
                             value="{{ option }}"
                             {% if per_page|default(25)|int == option %}
@@ -2486,9 +2485,7 @@ Attendance Reports
                         >
                             {{ option }}
                         </option>
-
                     {% endfor %}
-
                 </select>
 
             </form>
@@ -2510,23 +2507,27 @@ Attendance Reports
 
                             <th>Student</th>
 
+                            <th>Branch</th>
+
                             <th>Class</th>
 
                             <th>Section</th>
 
-                            <th>Subject</th>
+                            <th>Total</th>
 
-                            <th>Teacher</th>
+                            <th>Present</th>
 
-                            <th>Date</th>
-
-                            <th>Session</th>
-
-                            <th>Status</th>
+                            <th>Absent</th>
 
                             <th>Late</th>
 
-                            <th>Notes</th>
+                            <th>Excused</th>
+
+                            <th>Sick</th>
+
+                            <th>Leave</th>
+
+                            <th>Attendance Rate</th>
 
                         </tr>
 
@@ -2537,23 +2538,48 @@ Attendance Reports
 
                         {% for record in attendance_reports %}
 
+                            {% set total =
+                                record.total_attendance|default(0)|int
+                            %}
+
+                            {% set present =
+                                record.present_count|default(0)|int
+                            %}
+
+                            {% set absent =
+                                record.absent_count|default(0)|int
+                            %}
+
+                            {% set late =
+                                record.late_count|default(0)|int
+                            %}
+
+                            {% set excused =
+                                record.excused_count|default(0)|int
+                            %}
+
+                            {% set sick =
+                                record.sick_count|default(0)|int
+                            %}
+
+                            {% set leave =
+                                record.leave_count|default(0)|int
+                            %}
+
+
                             <tr>
 
                                 <!-- NUMBER -->
 
                                 <td>
-
                                     <span class="attendance-number">
-
                                         {{
                                             (
                                                 (pagination.page - 1)
                                                 * pagination.per_page
                                             ) + loop.index
                                         }}
-
                                     </span>
-
                                 </td>
 
 
@@ -2565,24 +2591,19 @@ Attendance Reports
 
                                         <div class="attendance-student-avatar">
 
-                                            {% if record.student
-                                                and record.student.photo %}
+                                            {% if record.student_photo %}
 
                                                 <img
                                                     src="{{ url_for(
                                                         'static',
-                                                        filename=record.student.photo
+                                                        filename=record.student_photo
                                                     ) }}"
-                                                    alt="{{ record.student.full_name }}"
+                                                    alt="{{ record.student_name|default('Student') }}"
                                                 >
 
-                                            {% elif record.student
-                                                and record.student.full_name %}
+                                            {% elif record.student_name %}
 
-                                                {{
-                                                    record.student.full_name[:1]
-                                                    |upper
-                                                }}
+                                                {{ record.student_name[:1]|upper }}
 
                                             {% else %}
 
@@ -2597,36 +2618,23 @@ Attendance Reports
 
                                             <div class="attendance-student-name">
 
-                                                {% if record.student %}
-
-                                                    {{ record.student.full_name }}
-
-                                                {% else %}
-
-                                                    Unknown Student
-
-                                                {% endif %}
+                                                {{
+                                                    record.student_name
+                                                    |default('Unknown Student')
+                                                }}
 
                                             </div>
 
 
                                             <div class="attendance-student-id">
 
-                                                {% if record.student %}
+                                                {% if record.admission_no %}
 
-                                                    {% if record.student.admission_no %}
+                                                    {{ record.admission_no }}
 
-                                                        {{ record.student.admission_no }}
+                                                {% elif record.roll_no %}
 
-                                                    {% elif record.student.roll_no %}
-
-                                                        {{ record.student.roll_no }}
-
-                                                    {% else %}
-
-                                                        Student #{{ record.student_id }}
-
-                                                    {% endif %}
+                                                    {{ record.roll_no }}
 
                                                 {% else %}
 
@@ -2643,17 +2651,33 @@ Attendance Reports
                                 </td>
 
 
+                                <!-- BRANCH -->
+
+                                <td>
+
+                                    {% if record.branch_names %}
+
+                                        <div class="attendance-class-name">
+                                            {{ record.branch_names }}
+                                        </div>
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+
                                 <!-- CLASS -->
 
                                 <td>
 
-                                    {% if record.session
-                                        and record.session.class_ %}
+                                    {% if record.class_names %}
 
                                         <div class="attendance-class-name">
-
-                                            {{ record.session.class_.name }}
-
+                                            {{ record.class_names }}
                                         </div>
 
                                     {% else %}
@@ -2669,13 +2693,10 @@ Attendance Reports
 
                                 <td>
 
-                                    {% if record.session
-                                        and record.session.section %}
+                                    {% if record.section_names %}
 
                                         <div class="attendance-section-name">
-
-                                            {{ record.session.section.name }}
-
+                                            {{ record.section_names }}
                                         </div>
 
                                     {% else %}
@@ -2687,225 +2708,43 @@ Attendance Reports
                                 </td>
 
 
-                                <!-- SUBJECT -->
+                                <!-- TOTAL -->
+
+                                <td>
+                                    <strong>
+                                        {{ total }}
+                                    </strong>
+                                </td>
+
+
+                                <!-- PRESENT -->
 
                                 <td>
 
-                                    {% if record.session
-                                        and record.session.subject %}
-
-                                        <div class="attendance-subject">
-
-                                            {{ record.session.subject.name }}
-
-                                        </div>
-
-                                    {% else %}
-
-                                        —
-
-                                    {% endif %}
+                                    <span
+                                        class="
+                                            attendance-status
+                                            attendance-status-present
+                                        "
+                                    >
+                                        {{ present }}
+                                    </span>
 
                                 </td>
 
 
-                                <!-- TEACHER -->
+                                <!-- ABSENT -->
 
                                 <td>
 
-                                    {% if record.session
-                                        and record.session.teacher %}
-
-                                        <div class="attendance-teacher">
-
-                                            {{ record.session.teacher.full_name }}
-
-                                        </div>
-
-                                    {% elif record.marked_by_teacher %}
-
-                                        <div class="attendance-teacher">
-
-                                            {{ record.marked_by_teacher.full_name }}
-
-                                        </div>
-
-                                    {% else %}
-
-                                        —
-
-                                    {% endif %}
-
-                                </td>
-
-
-                                <!-- DATE -->
-
-                                <td>
-
-                                    {% if record.session
-                                        and record.session.attendance_date %}
-
-                                        <div class="attendance-date">
-
-                                            {{
-                                                record.session.attendance_date.strftime(
-                                                    '%d %b %Y'
-                                                )
-                                            }}
-
-                                        </div>
-
-                                    {% else %}
-
-                                        —
-
-                                    {% endif %}
-
-
-                                    {% if record.created_at %}
-
-                                        <div class="attendance-time">
-
-                                            {{
-                                                record.created_at.strftime(
-                                                    '%I:%M %p'
-                                                )
-                                            }}
-
-                                        </div>
-
-                                    {% endif %}
-
-                                </td>
-
-
-                                <!-- SESSION -->
-
-                                <td>
-
-                                    {% if record.session %}
-
-                                        <div class="attendance-session">
-
-                                            {{
-                                                record.session.session_type
-                                                |default('class')
-                                                |replace('_', ' ')
-                                                |title
-                                            }}
-
-                                        </div>
-
-
-                                        {% if record.session.period %}
-
-                                            <div class="attendance-period">
-
-                                                {{ record.session.period }}
-
-                                            </div>
-
-                                        {% endif %}
-
-                                    {% else %}
-
-                                        —
-
-                                    {% endif %}
-
-                                </td>
-
-
-                                <!-- STATUS -->
-
-                                <td>
-
-                                    {% set attendance_status =
-                                        record.status
-                                        |default('present')
-                                        |lower
-                                    %}
-
-
-                                    {% if attendance_status == 'present' %}
-
-                                        <span
-                                            class="
-                                                attendance-status
-                                                attendance-status-present
-                                            "
-                                        >
-                                            Present
-                                        </span>
-
-                                    {% elif attendance_status == 'absent' %}
-
-                                        <span
-                                            class="
-                                                attendance-status
-                                                attendance-status-absent
-                                            "
-                                        >
-                                            Absent
-                                        </span>
-
-                                    {% elif attendance_status == 'late' %}
-
-                                        <span
-                                            class="
-                                                attendance-status
-                                                attendance-status-late
-                                            "
-                                        >
-                                            Late
-                                        </span>
-
-                                    {% elif attendance_status == 'excused' %}
-
-                                        <span
-                                            class="
-                                                attendance-status
-                                                attendance-status-excused
-                                            "
-                                        >
-                                            Excused
-                                        </span>
-
-                                    {% elif attendance_status == 'sick' %}
-
-                                        <span
-                                            class="
-                                                attendance-status
-                                                attendance-status-sick
-                                            "
-                                        >
-                                            Sick
-                                        </span>
-
-                                    {% elif attendance_status == 'leave' %}
-
-                                        <span
-                                            class="
-                                                attendance-status
-                                                attendance-status-leave
-                                            "
-                                        >
-                                            Leave
-                                        </span>
-
-                                    {% else %}
-
-                                        <span
-                                            class="
-                                                attendance-status
-                                                attendance-status-leave
-                                            "
-                                        >
-                                            {{ attendance_status|title }}
-                                        </span>
-
-                                    {% endif %}
+                                    <span
+                                        class="
+                                            attendance-status
+                                            attendance-status-absent
+                                        "
+                                    >
+                                        {{ absent }}
+                                    </span>
 
                                 </td>
 
@@ -2914,50 +2753,92 @@ Attendance Reports
 
                                 <td>
 
-                                    {% if record.minutes_late is not none %}
-
-                                        {% if record.minutes_late > 0 %}
-
-                                            <span class="attendance-late-minutes">
-
-                                                {{ record.minutes_late }}
-                                                min
-
-                                            </span>
-
-                                        {% else %}
-
-                                            —
-
-                                        {% endif %}
-
-                                    {% else %}
-
-                                        —
-
-                                    {% endif %}
+                                    <span
+                                        class="
+                                            attendance-status
+                                            attendance-status-late
+                                        "
+                                    >
+                                        {{ late }}
+                                    </span>
 
                                 </td>
 
 
-                                <!-- NOTES -->
+                                <!-- EXCUSED -->
 
                                 <td>
 
-                                    {% if record.notes %}
+                                    <span
+                                        class="
+                                            attendance-status
+                                            attendance-status-excused
+                                        "
+                                    >
+                                        {{ excused }}
+                                    </span>
 
-                                        <div
-                                            class="attendance-notes"
-                                            title="{{ record.notes }}"
-                                        >
-                                            {{ record.notes }}
+                                </td>
+
+
+                                <!-- SICK -->
+
+                                <td>
+
+                                    <span
+                                        class="
+                                            attendance-status
+                                            attendance-status-sick
+                                        "
+                                    >
+                                        {{ sick }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- LEAVE -->
+
+                                <td>
+
+                                    <span
+                                        class="
+                                            attendance-status
+                                            attendance-status-leave
+                                        "
+                                    >
+                                        {{ leave }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- ATTENDANCE RATE -->
+
+                                <td>
+
+                                    <div class="attendance-rate-cell">
+
+                                        <strong>
+                                            {{ record.attendance_rate|default(0) }}%
+                                        </strong>
+
+                                        <div class="attendance-rate-bar">
+
+                                            <span
+                                                style="width: {{ [
+                                                    record.attendance_rate|default(0)|float,
+                                                    100
+                                                ]|min }}%;"
+                                            ></span>
+
                                         </div>
 
-                                    {% else %}
+                                        <small>
+                                            Present + Late
+                                        </small>
 
-                                        —
-
-                                    {% endif %}
+                                    </div>
 
                                 </td>
 
@@ -3013,9 +2894,11 @@ Attendance Reports
                                 {{ pagination.total }}
                             </strong>
 
+                            students
+
                         {% else %}
 
-                            No attendance records found.
+                            No students found.
 
                         {% endif %}
 
@@ -3026,8 +2909,6 @@ Attendance Reports
 
                         <div class="attendance-pagination-links">
 
-                            <!-- PREVIOUS -->
-
                             {% if pagination.has_prev %}
 
                                 <a
@@ -3035,6 +2916,7 @@ Attendance Reports
                                         'main.attendance_reports',
                                         page=pagination.prev_num,
                                         per_page=per_page,
+                                        search=search,
                                         academic_year_id=academic_year_id,
                                         branch_id=branch_id,
                                         class_id=class_id,
@@ -3053,12 +2935,7 @@ Attendance Reports
 
                             {% else %}
 
-                                <span
-                                    class="
-                                        attendance-page-link
-                                        disabled
-                                    "
-                                >
+                                <span class="attendance-page-link disabled">
                                     <i class="fa-solid fa-chevron-left"></i>
                                 </span>
 
@@ -3066,21 +2943,16 @@ Attendance Reports
 
 
                             {% set start_page = pagination.page - 2 %}
-
                             {% set end_page = pagination.page + 2 %}
-
 
                             {% if start_page < 1 %}
                                 {% set start_page = 1 %}
                             {% endif %}
 
-
                             {% if end_page > pagination.pages %}
                                 {% set end_page = pagination.pages %}
                             {% endif %}
 
-
-                            <!-- FIRST -->
 
                             {% if start_page > 1 %}
 
@@ -3089,6 +2961,7 @@ Attendance Reports
                                         'main.attendance_reports',
                                         page=1,
                                         per_page=per_page,
+                                        search=search,
                                         academic_year_id=academic_year_id,
                                         branch_id=branch_id,
                                         class_id=class_id,
@@ -3104,19 +2977,12 @@ Attendance Reports
                                     1
                                 </a>
 
-
                                 {% if start_page > 2 %}
-
-                                    <span class="attendance-page-dots">
-                                        ...
-                                    </span>
-
+                                    <span class="attendance-page-dots">...</span>
                                 {% endif %}
 
                             {% endif %}
 
-
-                            <!-- PAGE NUMBERS -->
 
                             {% for page_num in range(
                                 start_page,
@@ -3141,6 +3007,7 @@ Attendance Reports
                                             'main.attendance_reports',
                                             page=page_num,
                                             per_page=per_page,
+                                            search=search,
                                             academic_year_id=academic_year_id,
                                             branch_id=branch_id,
                                             class_id=class_id,
@@ -3161,24 +3028,18 @@ Attendance Reports
                             {% endfor %}
 
 
-                            <!-- LAST -->
-
                             {% if end_page < pagination.pages %}
 
                                 {% if end_page < pagination.pages - 1 %}
-
-                                    <span class="attendance-page-dots">
-                                        ...
-                                    </span>
-
+                                    <span class="attendance-page-dots">...</span>
                                 {% endif %}
-
 
                                 <a
                                     href="{{ url_for(
                                         'main.attendance_reports',
                                         page=pagination.pages,
                                         per_page=per_page,
+                                        search=search,
                                         academic_year_id=academic_year_id,
                                         branch_id=branch_id,
                                         class_id=class_id,
@@ -3197,8 +3058,6 @@ Attendance Reports
                             {% endif %}
 
 
-                            <!-- NEXT -->
-
                             {% if pagination.has_next %}
 
                                 <a
@@ -3206,6 +3065,7 @@ Attendance Reports
                                         'main.attendance_reports',
                                         page=pagination.next_num,
                                         per_page=per_page,
+                                        search=search,
                                         academic_year_id=academic_year_id,
                                         branch_id=branch_id,
                                         class_id=class_id,
@@ -3224,12 +3084,7 @@ Attendance Reports
 
                             {% else %}
 
-                                <span
-                                    class="
-                                        attendance-page-link
-                                        disabled
-                                    "
-                                >
+                                <span class="attendance-page-link disabled">
                                     <i class="fa-solid fa-chevron-right"></i>
                                 </span>
 
@@ -3253,25 +3108,19 @@ Attendance Reports
             <div class="attendance-empty">
 
                 <div class="attendance-empty-icon">
-
                     <i class="fa-solid fa-calendar-xmark"></i>
-
                 </div>
 
 
                 <h3 class="attendance-empty-title">
-
-                    No Attendance Records Found
-
+                    No Student Attendance Found
                 </h3>
 
 
                 <p class="attendance-empty-text">
-
-                    There are no attendance records matching
-                    the selected date range and filters.
+                    There are no students with attendance records
+                    matching the selected date range and filters.
                     Try another period or clear some filters.
-
                 </p>
 
 
@@ -3279,11 +3128,8 @@ Attendance Reports
                     href="{{ url_for('main.attendance_reports') }}"
                     class="attendance-btn attendance-btn-light"
                 >
-
                     <i class="fa-solid fa-rotate-left"></i>
-
                     Clear Filters
-
                 </a>
 
             </div>
@@ -3296,10 +3142,72 @@ Attendance Reports
 
 
 <!-- ============================================================
+     AGGREGATED REPORT EXTRA CSS
+     ============================================================ -->
+
+<style>
+
+    .attendance-rate-cell {
+        min-width: 105px;
+    }
+
+    .attendance-rate-cell strong {
+        display: block;
+        color: #06245f;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .attendance-rate-cell small {
+        display: block;
+        margin-top: 4px;
+        color: #94a3b8;
+        font-size: 9px;
+        font-weight: 600;
+    }
+
+    .attendance-rate-bar {
+        width: 100%;
+        height: 5px;
+        margin-top: 6px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e8edf4;
+    }
+
+    .attendance-rate-bar span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: #32b73a;
+        transition: width .2s ease;
+    }
+
+    @media (max-width: 700px) {
+
+        .attendance-rate-cell {
+            min-width: 90px;
+        }
+
+    }
+
+    @media print {
+
+        .attendance-rate-bar {
+            display: none;
+        }
+
+        .attendance-rate-cell small {
+            display: none;
+        }
+
+    }
+
+</style>
+
+
+<!-- ============================================================
      QUICK DATE RANGE JAVASCRIPT
-     IMPORTANT:
-     This uses the route's real parameters:
-     date_from / date_to
      ============================================================ -->
 
 <script>
@@ -3309,28 +3217,16 @@ Attendance Reports
     "use strict";
 
 
-    const buttons = document.querySelectorAll(
+    const rangeButtons = document.querySelectorAll(
         ".attendance-range-btn"
-    );
-
-    const dateFromInput = document.getElementById(
-        "attendance-date-from"
-    );
-
-    const dateToInput = document.getElementById(
-        "attendance-date-to"
     );
 
     const rangeCurrent = document.getElementById(
         "attendanceRangeCurrent"
     );
 
-    const filterForm = document.getElementById(
-        "attendanceFilterForm"
-    );
 
-
-    if (!buttons.length || !dateFromInput || !dateToInput) {
+    if (!rangeButtons.length) {
         return;
     }
 
@@ -3344,13 +3240,11 @@ Attendance Reports
 
     function formatDate(date) {
 
-        return (
-            date.getFullYear()
-            + "-"
-            + pad(date.getMonth() + 1)
-            + "-"
-            + pad(date.getDate())
-        );
+        return [
+            date.getFullYear(),
+            pad(date.getMonth() + 1),
+            pad(date.getDate())
+        ].join("-");
 
     }
 
@@ -3377,186 +3271,207 @@ Attendance Reports
     }
 
 
-    function subtractDays(date, days) {
+    function addDays(date, amount) {
 
         const result = new Date(date);
 
-        result.setDate(
-            result.getDate() - days
-        );
+        result.setDate(result.getDate() + amount);
 
         return result;
 
     }
 
 
-    function subtractMonths(date, months) {
-
-        return new Date(
-            date.getFullYear(),
-            date.getMonth() - months,
-            date.getDate()
-        );
-
-    }
-
-
-    function setActiveButton(selectedRange) {
-
-        buttons.forEach(function (button) {
-
-            const buttonRange =
-                button.dataset.range;
-
-            button.classList.toggle(
-                "active",
-                buttonRange === selectedRange
-            );
-
-        });
-
-    }
-
-
-    function updateCurrentLabel(label) {
-
-        if (rangeCurrent) {
-
-            rangeCurrent.textContent = label;
-
-        }
-
-    }
-
-
-    function applyRange(range) {
+    function setRange(range) {
 
         const today = new Date();
 
         let from = null;
-        let to = null;
-        let label = "Select Period";
+        let to = today;
 
 
-        if (range === "today") {
+        switch (range) {
 
-            from = new Date(today);
-            to = new Date(today);
-            label = "Today";
+            case "today":
 
-        }
+                from = today;
+                to = today;
 
-
-        else if (range === "yesterday") {
-
-            from = subtractDays(today, 1);
-            to = subtractDays(today, 1);
-            label = "Yesterday";
-
-        }
+                break;
 
 
-        else if (range === "last_3_days") {
+            case "yesterday":
 
-            from = subtractDays(today, 2);
-            to = today;
-            label = "Last 3 Days";
+                from = addDays(today, -1);
+                to = addDays(today, -1);
 
-        }
-
-
-        else if (range === "last_7_days") {
-
-            from = subtractDays(today, 6);
-            to = today;
-            label = "Last 7 Days";
-
-        }
+                break;
 
 
-        else if (range === "this_month") {
+            case "last_3_days":
 
-            from = startOfMonth(today);
-            to = today;
-            label = "This Month";
+                from = addDays(today, -2);
+                to = today;
 
-        }
+                break;
 
 
-        else if (range === "last_month") {
+            case "last_7_days":
 
-            const previousMonth =
-                new Date(
+                from = addDays(today, -6);
+                to = today;
+
+                break;
+
+
+            case "this_month":
+
+                from = startOfMonth(today);
+                to = today;
+
+                break;
+
+
+            case "last_month": {
+
+                const previousMonth = new Date(
                     today.getFullYear(),
                     today.getMonth() - 1,
                     1
                 );
 
-            from = startOfMonth(
-                previousMonth
-            );
+                from = startOfMonth(previousMonth);
+                to = endOfMonth(previousMonth);
 
-            to = endOfMonth(
-                previousMonth
-            );
+                break;
+            }
 
-            label = "Last Month";
+
+            case "last_2_months": {
+
+                const twoMonthsAgo = new Date(
+                    today.getFullYear(),
+                    today.getMonth() - 2,
+                    1
+                );
+
+                from = twoMonthsAgo;
+                to = today;
+
+                break;
+            }
+
+
+            case "last_3_months": {
+
+                const threeMonthsAgo = new Date(
+                    today.getFullYear(),
+                    today.getMonth() - 3,
+                    1
+                );
+
+                from = threeMonthsAgo;
+                to = today;
+
+                break;
+            }
+
+
+            case "last_6_months": {
+
+                const sixMonthsAgo = new Date(
+                    today.getFullYear(),
+                    today.getMonth() - 6,
+                    1
+                );
+
+                from = sixMonthsAgo;
+                to = today;
+
+                break;
+            }
+
+
+            case "all":
+
+                from = null;
+                to = null;
+
+                break;
+
+
+            default:
+
+                return;
 
         }
 
 
-        else if (range === "last_2_months") {
+        const url = new URL(
+            window.location.href
+        );
 
-            from = startOfMonth(
-                subtractMonths(today, 1)
+
+        url.searchParams.delete("page");
+
+
+        if (from && to) {
+
+            url.searchParams.set(
+                "date_from",
+                formatDate(from)
             );
 
-            to = today;
+            url.searchParams.set(
+                "date_to",
+                formatDate(to)
+            );
 
-            label = "Last 2 Months";
+        } else {
+
+            url.searchParams.delete("date_from");
+            url.searchParams.delete("date_to");
 
         }
 
 
-        else if (range === "last_3_months") {
+        window.location.href = url.toString();
 
-            from = startOfMonth(
-                subtractMonths(today, 2)
+    }
+
+
+    function updateActiveRange() {
+
+        const params = new URLSearchParams(
+            window.location.search
+        );
+
+        const from = params.get("date_from");
+        const to = params.get("date_to");
+
+
+        rangeButtons.forEach(function (button) {
+
+            button.classList.remove("active");
+
+        });
+
+
+        let matched = false;
+
+
+        if (!from && !to) {
+
+            const allButton = document.querySelector(
+                '[data-range="all"]'
             );
 
-            to = today;
+            if (allButton) {
+                allButton.classList.add("active");
+            }
 
-            label = "Last 3 Months";
-
-        }
-
-
-        else if (range === "last_6_months") {
-
-            from = startOfMonth(
-                subtractMonths(today, 5)
-            );
-
-            to = today;
-
-            label = "Last 6 Months";
-
-        }
-
-
-        else if (range === "all") {
-
-            dateFromInput.value = "";
-            dateToInput.value = "";
-
-            setActiveButton(range);
-
-            updateCurrentLabel(
-                "All Dates"
-            );
-
-            if (filterForm) {
-                filterForm.submit();
+            if (rangeCurrent) {
+                rangeCurrent.textContent = "All Dates";
             }
 
             return;
@@ -3564,28 +3479,155 @@ Attendance Reports
         }
 
 
-        if (from && to) {
+        const today = new Date();
 
-            dateFromInput.value =
-                formatDate(from);
+        const todayValue = formatDate(today);
 
-            dateToInput.value =
-                formatDate(to);
+        const yesterdayValue = formatDate(
+            addDays(today, -1)
+        );
 
-            setActiveButton(range);
 
-            updateCurrentLabel(label);
+        let selectedRange = null;
 
-            if (filterForm) {
-                filterForm.submit();
+
+        if (
+            from === todayValue &&
+            to === todayValue
+        ) {
+
+            selectedRange = "today";
+
+        } else if (
+            from === yesterdayValue &&
+            to === yesterdayValue
+        ) {
+
+            selectedRange = "yesterday";
+
+        } else {
+
+            const ranges = [
+                "last_3_days",
+                "last_7_days",
+                "this_month",
+                "last_month",
+                "last_2_months",
+                "last_3_months",
+                "last_6_months"
+            ];
+
+
+            ranges.forEach(function (range) {
+
+                if (selectedRange) {
+                    return;
+                }
+
+
+                let expectedFrom = null;
+                let expectedTo = today;
+
+
+                switch (range) {
+
+                    case "last_3_days":
+                        expectedFrom = addDays(today, -2);
+                        break;
+
+                    case "last_7_days":
+                        expectedFrom = addDays(today, -6);
+                        break;
+
+                    case "this_month":
+                        expectedFrom = startOfMonth(today);
+                        break;
+
+                    case "last_2_months":
+                        expectedFrom = new Date(
+                            today.getFullYear(),
+                            today.getMonth() - 2,
+                            1
+                        );
+                        break;
+
+                    case "last_3_months":
+                        expectedFrom = new Date(
+                            today.getFullYear(),
+                            today.getMonth() - 3,
+                            1
+                        );
+                        break;
+
+                    case "last_6_months":
+                        expectedFrom = new Date(
+                            today.getFullYear(),
+                            today.getMonth() - 6,
+                            1
+                        );
+                        break;
+
+                    case "last_month": {
+
+                        const previousMonth = new Date(
+                            today.getFullYear(),
+                            today.getMonth() - 1,
+                            1
+                        );
+
+                        expectedFrom =
+                            startOfMonth(previousMonth);
+
+                        expectedTo =
+                            endOfMonth(previousMonth);
+
+                        break;
+                    }
+
+                }
+
+
+                if (
+                    expectedFrom &&
+                    formatDate(expectedFrom) === from &&
+                    formatDate(expectedTo) === to
+                ) {
+
+                    selectedRange = range;
+
+                }
+
+            });
+
+        }
+
+
+        if (selectedRange) {
+
+            const button = document.querySelector(
+                '[data-range="' + selectedRange + '"]'
+            );
+
+            if (button) {
+                button.classList.add("active");
             }
+
+            if (rangeCurrent) {
+                rangeCurrent.textContent =
+                    from + " → " + to;
+            }
+
+        } else if (rangeCurrent) {
+
+            rangeCurrent.textContent =
+                from + " → " + to;
 
         }
 
     }
 
 
-    buttons.forEach(function (button) {
+    rangeButtons.forEach(function (button) {
 
         button.addEventListener(
             "click",
@@ -3594,7 +3636,11 @@ Attendance Reports
                 const range =
                     button.dataset.range;
 
-                applyRange(range);
+                if (!range) {
+                    return;
+                }
+
+                setRange(range);
 
             }
         );
@@ -3602,29 +3648,11 @@ Attendance Reports
     });
 
 
-    /*
-     * Detect existing server-side date range.
-     */
-
-    const existingFrom =
-        dateFromInput.value;
-
-    const existingTo =
-        dateToInput.value;
-
-
-    if (existingFrom && existingTo) {
-
-        updateCurrentLabel(
-            existingFrom
-            + " → "
-            + existingTo
-        );
-
-    }
+    updateActiveRange();
 
 })();
 
 </script>
+
 
 {% endblock %}

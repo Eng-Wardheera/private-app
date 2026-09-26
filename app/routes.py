@@ -21,7 +21,7 @@ from flask_mail import Message
 from openpyxl import load_workbook
 import pytz
 from slugify import slugify
-from sqlalchemy import and_, case, distinct, func, or_
+from sqlalchemy import and_, case, cast, distinct, func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -72126,12 +72126,10 @@ def delete_attendance_record(record_id):
     )
 
 
-
-
-
 # ============================================================
 # ATTENDANCE REPORTS
 # ============================================================
+
 @bp.route(
     "/attendance/reports",
     methods=["GET"]
@@ -72155,14 +72153,34 @@ def attendance_reports():
     if not user.is_authenticated:
         abort(403)
 
+    # --------------------------------------------------------
+    # NORMALIZE ROLE
+    # --------------------------------------------------------
+
     user_role = getattr(
         user,
         "role",
         None
     )
 
+    user_role = getattr(
+        user_role,
+        "value",
+        user_role
+    )
+
+    user_role = (
+        str(user_role).strip().lower()
+        if user_role
+        else None
+    )
+
     if user_role not in allowed_roles:
         abort(403)
+
+    # ========================================================
+    # USER SCOPE
+    # ========================================================
 
     institution_id = getattr(
         user,
@@ -72176,15 +72194,19 @@ def attendance_reports():
         None
     )
 
-    # ========================================================
-    # BASIC USER SCOPE VALIDATION
-    # ========================================================
+    # --------------------------------------------------------
+    # Non-superadmin must belong to institution
+    # --------------------------------------------------------
 
     if (
         user_role != "superadmin"
         and not institution_id
     ):
         abort(403)
+
+    # --------------------------------------------------------
+    # Branch admin must have branch
+    # --------------------------------------------------------
 
     if (
         user_role == "branch_admin"
@@ -72251,7 +72273,7 @@ def attendance_reports():
     ).strip()
 
     # ========================================================
-    # VALID STATUSES
+    # VALID ATTENDANCE STATUSES
     # ========================================================
 
     valid_statuses = {
@@ -72329,7 +72351,7 @@ def attendance_reports():
         )
 
     # ========================================================
-    # PAGINATION SETTINGS
+    # PAGINATION
     # ========================================================
 
     allowed_per_page = (
@@ -72411,6 +72433,10 @@ def attendance_reports():
 
     if user_role == "branch_admin":
 
+        # ----------------------------------------------------
+        # Branch admin is permanently locked to own branch
+        # ----------------------------------------------------
+
         if effective_branch_id is None:
 
             effective_branch_id = (
@@ -72446,91 +72472,123 @@ def attendance_reports():
             abort(403)
 
     # ========================================================
-    # STUDENT SEARCH HELPER
+    # STUDENT SEARCH CONDITIONS
     # ========================================================
 
-    def apply_student_search(
-        model_query
-    ):
+    student_search_conditions = []
 
-        if not search:
-            return model_query
+    if search:
 
         search_pattern = (
             f"%{search}%"
         )
 
-        conditions = []
+        # ----------------------------------------------------
+        # Student name
+        # ----------------------------------------------------
 
         if hasattr(
             Student,
             "name"
         ):
 
-            conditions.append(
+            student_search_conditions.append(
                 Student.name.ilike(
                     search_pattern
                 )
             )
+
+        # ----------------------------------------------------
+        # Student full name
+        # ----------------------------------------------------
 
         if hasattr(
             Student,
             "full_name"
         ):
 
-            conditions.append(
+            student_search_conditions.append(
                 Student.full_name.ilike(
                     search_pattern
                 )
             )
+
+        # ----------------------------------------------------
+        # Admission number
+        # ----------------------------------------------------
 
         if hasattr(
             Student,
             "admission_no"
         ):
 
-            conditions.append(
+            student_search_conditions.append(
                 Student.admission_no.ilike(
                     search_pattern
                 )
             )
+
+        # ----------------------------------------------------
+        # Student ID
+        #
+        # cast is used so this also works if student_id
+        # happens to be numeric.
+        # ----------------------------------------------------
 
         if hasattr(
             Student,
             "student_id"
         ):
 
-            conditions.append(
-                Student.student_id.ilike(
+            student_search_conditions.append(
+                cast(
+                    Student.student_id,
+                    db.String
+                ).ilike(
                     search_pattern
                 )
             )
+
+        # ----------------------------------------------------
+        # Roll number
+        # ----------------------------------------------------
 
         if hasattr(
             Student,
             "roll_no"
         ):
 
-            conditions.append(
-                Student.roll_no.ilike(
+            student_search_conditions.append(
+                cast(
+                    Student.roll_no,
+                    db.String
+                ).ilike(
                     search_pattern
                 )
             )
 
-        if conditions:
-
-            model_query = model_query.filter(
-                or_(*conditions)
-            )
-
-        return model_query
-
     # ========================================================
-    # BASE REPORT QUERY
+    # BASE FILTERED ATTENDANCE QUERY
+    #
+    # IMPORTANT:
+    # --------------------------------------------------------
+    # This query represents ALL attendance records matching
+    # the selected filters.
+    #
+    # It is NOT grouped yet.
+    #
+    # This allows us to reuse the exact same filtered dataset
+    # for:
+    #
+    #   1. student summary
+    #   2. statistics
+    #   3. branch/class/section names
     # ========================================================
 
-    query = (
-        AttendanceRecord.query
+    filtered_query = (
+        db.session.query(
+            AttendanceRecord
+        )
         .join(
             AttendanceSession,
             AttendanceRecord.attendance_session_id
@@ -72552,7 +72610,7 @@ def attendance_reports():
 
     if user_role != "superadmin":
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceSession.institution_id
             == institution_id
         )
@@ -72563,7 +72621,7 @@ def attendance_reports():
 
     if effective_branch_id:
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceSession.branch_id
             == effective_branch_id
         )
@@ -72574,7 +72632,7 @@ def attendance_reports():
 
     if effective_teacher_id:
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceSession.teacher_id
             == effective_teacher_id
         )
@@ -72585,7 +72643,7 @@ def attendance_reports():
 
     if academic_year_id:
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceSession.academic_year_id
             == academic_year_id
         )
@@ -72596,7 +72654,7 @@ def attendance_reports():
 
     if class_id:
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceSession.class_id
             == class_id
         )
@@ -72607,7 +72665,7 @@ def attendance_reports():
 
     if section_id:
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceSession.section_id
             == section_id
         )
@@ -72618,7 +72676,7 @@ def attendance_reports():
 
     if subject_id:
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceSession.subject_id
             == subject_id
         )
@@ -72629,7 +72687,7 @@ def attendance_reports():
 
     if status:
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceRecord.status
             == status
         )
@@ -72640,7 +72698,7 @@ def attendance_reports():
 
     if parsed_date_from:
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceSession.attendance_date
             >= parsed_date_from
         )
@@ -72651,7 +72709,7 @@ def attendance_reports():
 
     if parsed_date_to:
 
-        query = query.filter(
+        filtered_query = filtered_query.filter(
             AttendanceSession.attendance_date
             <= parsed_date_to
         )
@@ -72660,369 +72718,1162 @@ def attendance_reports():
     # STUDENT SEARCH
     # ========================================================
 
-    query = apply_student_search(
-        query
+    if student_search_conditions:
+
+        filtered_query = filtered_query.filter(
+            or_(
+                *student_search_conditions
+            )
+        )
+
+    # ========================================================
+    # STUDENT SUMMARY
+    #
+    # CRITICAL FIX
+    # --------------------------------------------------------
+    # GROUP ONLY BY student_id.
+    #
+    # DO NOT group by:
+    #
+    #   branch_id
+    #   class_id
+    #   section_id
+    #   academic_year_id
+    #
+    # Otherwise one student can produce multiple rows.
+    # ========================================================
+
+    summary_query = (
+        filtered_query
+        .with_entities(
+
+            AttendanceRecord.student_id.label(
+                "student_id"
+            ),
+
+            func.count(
+                AttendanceRecord.id
+            ).label(
+                "total_attendance"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "present",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "present_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "absent",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "absent_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "late",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "late_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "excused",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "excused_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "sick",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "sick_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "leave",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "leave_count"
+            ),
+        )
+        .group_by(
+            AttendanceRecord.student_id
+        )
     )
 
     # ========================================================
-    # ORDER
+    # COUNT UNIQUE STUDENT SUMMARY ROWS
+    #
+    # CRITICAL FIX
+    # --------------------------------------------------------
+    # Do NOT do:
+    #
+    #   grouped_query.scalar()
+    #
+    # because the grouped query returns multiple rows.
+    #
+    # Instead:
+    #
+    #   SELECT COUNT(*)
+    #   FROM (
+    #       grouped student summary
+    #   ) AS student_summary
     # ========================================================
 
-    query = query.order_by(
-        AttendanceSession.attendance_date.desc(),
-        AttendanceRecord.id.desc()
+    summary_subquery = (
+        summary_query
+        .subquery()
+    )
+
+    total_students = (
+        db.session.query(
+            func.count()
+        )
+        .select_from(
+            summary_subquery
+        )
+        .scalar()
+        or 0
     )
 
     # ========================================================
-    # FIRST PAGINATION
+    # TOTAL PAGES
     # ========================================================
 
-    pagination = query.paginate(
-        page=page,
-        per_page=per_page,
-        error_out=False
-    )
+    if total_students > 0:
+
+        total_pages = (
+            (
+                total_students
+                + per_page
+                - 1
+            )
+            // per_page
+        )
+
+    else:
+
+        total_pages = 0
 
     # ========================================================
-    # CRITICAL PAGINATION FIX
-    #
-    # Example:
-    #
-    # Total records = 2
-    # Per page       = 25
-    # Available pages = 1
-    #
-    # But URL may contain:
-    #
-    # ?page=2
-    #
-    # That produces:
-    #
-    # Showing 0 of 2
-    #
-    # So automatically move to the last valid page.
+    # FIX INVALID PAGE
     # ========================================================
 
     if (
-        pagination.total > 0
-        and page > pagination.pages
+        total_pages > 0
+        and page > total_pages
     ):
 
-        page = pagination.pages
+        page = total_pages
 
-        if page < 1:
-            page = 1
+    elif (
+        total_pages == 0
+        and page > 1
+    ):
 
-        pagination = query.paginate(
-            page=page,
-            per_page=per_page,
-            error_out=False
+        page = 1
+
+    # ========================================================
+    # OFFSET
+    # ========================================================
+
+    offset = (
+        (
+            page
+            - 1
         )
-
-    # ========================================================
-    # FINAL REPORT DATA
-    # ========================================================
-
-    attendance_reports_data = (
-        pagination.items
+        * per_page
     )
 
     # ========================================================
-    # STATISTICS QUERY
+    # FETCH CURRENT PAGE STUDENT SUMMARIES
+    # ========================================================
+
+    summary_rows = (
+        summary_query
+        .order_by(
+            AttendanceRecord.student_id.asc()
+        )
+        .offset(
+            offset
+        )
+        .limit(
+            per_page
+        )
+        .all()
+    )
+
+    # ========================================================
+    # CURRENT PAGE STUDENT IDS
+    # ========================================================
+
+    student_ids = [
+        row.student_id
+        for row in summary_rows
+        if row.student_id is not None
+    ]
+
+    # ========================================================
+    # LOAD STUDENTS
+    # ========================================================
+
+    students_by_id = {}
+
+    if student_ids:
+
+        students = (
+            Student.query
+            .filter(
+                Student.id.in_(
+                    student_ids
+                )
+            )
+            .all()
+        )
+
+        students_by_id = {
+            student.id: student
+            for student in students
+        }
+
+    # ========================================================
+    # PAGE ATTENDANCE CONTEXT
     #
-    # IMPORTANT:
-    # Uses exactly the same security
-    # and filters as the main report.
+    # We separately collect all branch/class/section values
+    # for the students on the current page.
+    #
+    # This does NOT affect student grouping.
     # ========================================================
 
-    stats_query = (
-        AttendanceRecord.query
-        .join(
-            AttendanceSession,
-            AttendanceRecord.attendance_session_id
-            == AttendanceSession.id
-        )
-        .join(
-            Student,
-            AttendanceRecord.student_id
-            == Student.id
-        )
-        .filter(
-            AttendanceRecord.student_id.isnot(None)
-        )
-    )
+    context_rows = []
 
-    # ========================================================
-    # STATISTICS INSTITUTION
-    # ========================================================
+    if student_ids:
 
-    if user_role != "superadmin":
+        context_query = (
+            db.session.query(
+                AttendanceRecord.student_id.label(
+                    "student_id"
+                ),
 
-        stats_query = stats_query.filter(
-            AttendanceSession.institution_id
-            == institution_id
-        )
+                AttendanceSession.branch_id.label(
+                    "branch_id"
+                ),
 
-    # ========================================================
-    # STATISTICS BRANCH
-    # ========================================================
+                AttendanceSession.class_id.label(
+                    "class_id"
+                ),
 
-    if effective_branch_id:
-
-        stats_query = stats_query.filter(
-            AttendanceSession.branch_id
-            == effective_branch_id
-        )
-
-    # ========================================================
-    # STATISTICS TEACHER
-    # ========================================================
-
-    if effective_teacher_id:
-
-        stats_query = stats_query.filter(
-            AttendanceSession.teacher_id
-            == effective_teacher_id
-        )
-
-    # ========================================================
-    # STATISTICS ACADEMIC YEAR
-    # ========================================================
-
-    if academic_year_id:
-
-        stats_query = stats_query.filter(
-            AttendanceSession.academic_year_id
-            == academic_year_id
-        )
-
-    # ========================================================
-    # STATISTICS CLASS
-    # ========================================================
-
-    if class_id:
-
-        stats_query = stats_query.filter(
-            AttendanceSession.class_id
-            == class_id
-        )
-
-    # ========================================================
-    # STATISTICS SECTION
-    # ========================================================
-
-    if section_id:
-
-        stats_query = stats_query.filter(
-            AttendanceSession.section_id
-            == section_id
-        )
-
-    # ========================================================
-    # STATISTICS SUBJECT
-    # ========================================================
-
-    if subject_id:
-
-        stats_query = stats_query.filter(
-            AttendanceSession.subject_id
-            == subject_id
-        )
-
-    # ========================================================
-    # STATISTICS STATUS
-    # ========================================================
-
-    if status:
-
-        stats_query = stats_query.filter(
-            AttendanceRecord.status
-            == status
-        )
-
-    # ========================================================
-    # STATISTICS DATE FROM
-    # ========================================================
-
-    if parsed_date_from:
-
-        stats_query = stats_query.filter(
-            AttendanceSession.attendance_date
-            >= parsed_date_from
-        )
-
-    # ========================================================
-    # STATISTICS DATE TO
-    # ========================================================
-
-    if parsed_date_to:
-
-        stats_query = stats_query.filter(
-            AttendanceSession.attendance_date
-            <= parsed_date_to
-        )
-
-    # ========================================================
-    # STATISTICS SEARCH
-    # ========================================================
-
-    stats_query = apply_student_search(
-        stats_query
-    )
-
-    # ========================================================
-    # TOTAL ATTENDANCE
-    # ========================================================
-
-    total_attendance = (
-        stats_query
-        .with_entities(
-            func.count(
-                AttendanceRecord.id
+                AttendanceSession.section_id.label(
+                    "section_id"
+                ),
+            )
+            .join(
+                AttendanceSession,
+                AttendanceRecord.attendance_session_id
+                == AttendanceSession.id
+            )
+            .filter(
+                AttendanceRecord.student_id.in_(
+                    student_ids
+                )
             )
         )
-        .scalar()
-        or 0
-    )
 
-    # ========================================================
-    # PRESENT
-    # ========================================================
+        # ----------------------------------------------------
+        # Repeat EXACT security/filter scope
+        # ----------------------------------------------------
 
-    present_count = (
-        stats_query
-        .filter(
-            AttendanceRecord.status
-            == "present"
+        if user_role != "superadmin":
+
+            context_query = context_query.filter(
+                AttendanceSession.institution_id
+                == institution_id
+            )
+
+        if effective_branch_id:
+
+            context_query = context_query.filter(
+                AttendanceSession.branch_id
+                == effective_branch_id
+            )
+
+        if effective_teacher_id:
+
+            context_query = context_query.filter(
+                AttendanceSession.teacher_id
+                == effective_teacher_id
+            )
+
+        if academic_year_id:
+
+            context_query = context_query.filter(
+                AttendanceSession.academic_year_id
+                == academic_year_id
+            )
+
+        if class_id:
+
+            context_query = context_query.filter(
+                AttendanceSession.class_id
+                == class_id
+            )
+
+        if section_id:
+
+            context_query = context_query.filter(
+                AttendanceSession.section_id
+                == section_id
+            )
+
+        if subject_id:
+
+            context_query = context_query.filter(
+                AttendanceSession.subject_id
+                == subject_id
+            )
+
+        if status:
+
+            context_query = context_query.filter(
+                AttendanceRecord.status
+                == status
+            )
+
+        if parsed_date_from:
+
+            context_query = context_query.filter(
+                AttendanceSession.attendance_date
+                >= parsed_date_from
+            )
+
+        if parsed_date_to:
+
+            context_query = context_query.filter(
+                AttendanceSession.attendance_date
+                <= parsed_date_to
+            )
+
+        context_rows = (
+            context_query
+            .distinct()
+            .all()
         )
-        .with_entities(
-            func.count(
-                AttendanceRecord.id
+
+    # ========================================================
+    # COLLECT IDS PER STUDENT
+    # ========================================================
+
+    student_branch_ids = {}
+    student_class_ids = {}
+    student_section_ids = {}
+
+    for row in context_rows:
+
+        sid = row.student_id
+
+        if not sid:
+            continue
+
+        student_branch_ids.setdefault(
+            sid,
+            set()
+        )
+
+        student_class_ids.setdefault(
+            sid,
+            set()
+        )
+
+        student_section_ids.setdefault(
+            sid,
+            set()
+        )
+
+        if row.branch_id:
+
+            student_branch_ids[
+                sid
+            ].add(
+                row.branch_id
+            )
+
+        if row.class_id:
+
+            student_class_ids[
+                sid
+            ].add(
+                row.class_id
+            )
+
+        if row.section_id:
+
+            student_section_ids[
+                sid
+            ].add(
+                row.section_id
+            )
+
+    # ========================================================
+    # LOAD BRANCHES
+    # ========================================================
+
+    all_branch_ids = set()
+
+    for ids in student_branch_ids.values():
+
+        all_branch_ids.update(
+            ids
+        )
+
+    branches_by_id = {}
+
+    if all_branch_ids:
+
+        branch_items = (
+            Branch.query
+            .filter(
+                Branch.id.in_(
+                    all_branch_ids
+                )
+            )
+            .all()
+        )
+
+        branches_by_id = {
+            item.id: item
+            for item in branch_items
+        }
+
+    # ========================================================
+    # LOAD CLASSES
+    # ========================================================
+
+    all_class_ids = set()
+
+    for ids in student_class_ids.values():
+
+        all_class_ids.update(
+            ids
+        )
+
+    classes_by_id = {}
+
+    if all_class_ids:
+
+        class_items = (
+            Class.query
+            .filter(
+                Class.id.in_(
+                    all_class_ids
+                )
+            )
+            .all()
+        )
+
+        classes_by_id = {
+            item.id: item
+            for item in class_items
+        }
+
+    # ========================================================
+    # LOAD SECTIONS
+    # ========================================================
+
+    all_section_ids = set()
+
+    for ids in student_section_ids.values():
+
+        all_section_ids.update(
+            ids
+        )
+
+    sections_by_id = {}
+
+    if all_section_ids:
+
+        section_items = (
+            Section.query
+            .filter(
+                Section.id.in_(
+                    all_section_ids
+                )
+            )
+            .all()
+        )
+
+        sections_by_id = {
+            item.id: item
+            for item in section_items
+        }
+
+    # ========================================================
+    # BUILD FINAL STUDENT REPORT
+    # ========================================================
+
+    attendance_reports_data = []
+
+    for row in summary_rows:
+
+        student = students_by_id.get(
+            row.student_id
+        )
+
+        if not student:
+            continue
+
+        # ----------------------------------------------------
+        # COUNTS
+        # ----------------------------------------------------
+
+        total = int(
+            row.total_attendance
+            or 0
+        )
+
+        present = int(
+            row.present_count
+            or 0
+        )
+
+        absent = int(
+            row.absent_count
+            or 0
+        )
+
+        late = int(
+            row.late_count
+            or 0
+        )
+
+        excused = int(
+            row.excused_count
+            or 0
+        )
+
+        sick = int(
+            row.sick_count
+            or 0
+        )
+
+        leave = int(
+            row.leave_count
+            or 0
+        )
+
+        # ----------------------------------------------------
+        # ATTENDANCE RATE
+        #
+        # Present + Late = attended
+        # ----------------------------------------------------
+
+        attendance_rate = 0.0
+
+        if total > 0:
+
+            attendance_rate = round(
+                (
+                    present
+                    + late
+                )
+                / total
+                * 100,
+                1
+            )
+
+        # ----------------------------------------------------
+        # STUDENT NAME
+        # ----------------------------------------------------
+
+        student_name = (
+            getattr(
+                student,
+                "full_name",
+                None
+            )
+            or getattr(
+                student,
+                "name",
+                None
+            )
+            or ""
+        )
+
+        # ----------------------------------------------------
+        # ADMISSION NUMBER
+        # ----------------------------------------------------
+
+        admission_no = (
+            getattr(
+                student,
+                "admission_no",
+                None
+            )
+            or ""
+        )
+
+        # ----------------------------------------------------
+        # ROLL NUMBER
+        # ----------------------------------------------------
+
+        roll_no = (
+            getattr(
+                student,
+                "roll_no",
+                None
+            )
+            or ""
+        )
+
+        # ----------------------------------------------------
+        # PHOTO
+        # ----------------------------------------------------
+
+        student_photo = (
+            getattr(
+                student,
+                "photo",
+                None
+            )
+            or getattr(
+                student,
+                "photo_url",
+                None
+            )
+            or getattr(
+                student,
+                "image",
+                None
+            )
+            or getattr(
+                student,
+                "profile_photo",
+                None
+            )
+            or ""
+        )
+
+        # ----------------------------------------------------
+        # BRANCH NAMES
+        # ----------------------------------------------------
+
+        branch_names_list = []
+
+        for branch_id_value in sorted(
+            student_branch_ids.get(
+                row.student_id,
+                set()
+            )
+        ):
+
+            branch_item = branches_by_id.get(
+                branch_id_value
+            )
+
+            if branch_item:
+
+                branch_name = getattr(
+                    branch_item,
+                    "name",
+                    None
+                )
+
+                if branch_name:
+
+                    branch_names_list.append(
+                        str(branch_name)
+                    )
+
+        branch_names = ", ".join(
+            dict.fromkeys(
+                branch_names_list
             )
         )
-        .scalar()
-        or 0
-    )
 
-    # ========================================================
-    # ABSENT
-    # ========================================================
+        # ----------------------------------------------------
+        # CLASS NAMES
+        # ----------------------------------------------------
 
-    absent_count = (
-        stats_query
-        .filter(
-            AttendanceRecord.status
-            == "absent"
-        )
-        .with_entities(
-            func.count(
-                AttendanceRecord.id
+        class_names_list = []
+
+        for class_id_value in sorted(
+            student_class_ids.get(
+                row.student_id,
+                set()
+            )
+        ):
+
+            class_item = classes_by_id.get(
+                class_id_value
+            )
+
+            if class_item:
+
+                class_name = getattr(
+                    class_item,
+                    "name",
+                    None
+                )
+
+                if class_name:
+
+                    class_names_list.append(
+                        str(class_name)
+                    )
+
+        class_names = ", ".join(
+            dict.fromkeys(
+                class_names_list
             )
         )
-        .scalar()
-        or 0
-    )
 
-    # ========================================================
-    # LATE
-    # ========================================================
+        # ----------------------------------------------------
+        # SECTION NAMES
+        # ----------------------------------------------------
 
-    late_count = (
-        stats_query
-        .filter(
-            AttendanceRecord.status
-            == "late"
-        )
-        .with_entities(
-            func.count(
-                AttendanceRecord.id
+        section_names_list = []
+
+        for section_id_value in sorted(
+            student_section_ids.get(
+                row.student_id,
+                set()
+            )
+        ):
+
+            section_item = sections_by_id.get(
+                section_id_value
+            )
+
+            if section_item:
+
+                section_name = getattr(
+                    section_item,
+                    "name",
+                    None
+                )
+
+                if section_name:
+
+                    section_names_list.append(
+                        str(section_name)
+                    )
+
+        section_names = ", ".join(
+            dict.fromkeys(
+                section_names_list
             )
         )
-        .scalar()
-        or 0
-    )
 
-    # ========================================================
-    # EXCUSED
-    # ========================================================
+        # ----------------------------------------------------
+        # PRIMARY CLASS ID
+        # ----------------------------------------------------
 
-    excused_count = (
-        stats_query
-        .filter(
-            AttendanceRecord.status
-            == "excused"
-        )
-        .with_entities(
-            func.count(
-                AttendanceRecord.id
+        primary_class_id = None
+
+        class_id_values = list(
+            student_class_ids.get(
+                row.student_id,
+                set()
             )
         )
-        .scalar()
-        or 0
-    )
 
-    # ========================================================
-    # SICK
-    # ========================================================
+        if class_id_values:
 
-    sick_count = (
-        stats_query
-        .filter(
-            AttendanceRecord.status
-            == "sick"
-        )
-        .with_entities(
-            func.count(
-                AttendanceRecord.id
+            primary_class_id = sorted(
+                class_id_values
+            )[0]
+
+        # ----------------------------------------------------
+        # PRIMARY SECTION ID
+        # ----------------------------------------------------
+
+        primary_section_id = None
+
+        section_id_values = list(
+            student_section_ids.get(
+                row.student_id,
+                set()
             )
         )
-        .scalar()
-        or 0
-    )
+
+        if section_id_values:
+
+            primary_section_id = sorted(
+                section_id_values
+            )[0]
+
+        # ----------------------------------------------------
+        # FINAL REPORT ROW
+        # ----------------------------------------------------
+
+        attendance_reports_data.append({
+
+            "student": student,
+
+            "student_id": (
+                row.student_id
+            ),
+
+            "student_name": (
+                student_name
+            ),
+
+            "student_photo": (
+                student_photo
+            ),
+
+            "admission_no": (
+                admission_no
+            ),
+
+            "roll_no": (
+                roll_no
+            ),
+
+            "branch_names": (
+                branch_names
+            ),
+
+            "class_names": (
+                class_names
+            ),
+
+            "section_names": (
+                section_names
+            ),
+
+            "class_id": (
+                primary_class_id
+            ),
+
+            "section_id": (
+                primary_section_id
+            ),
+
+            "total_attendance": (
+                total
+            ),
+
+            "present_count": (
+                present
+            ),
+
+            "absent_count": (
+                absent
+            ),
+
+            "late_count": (
+                late
+            ),
+
+            "excused_count": (
+                excused
+            ),
+
+            "sick_count": (
+                sick
+            ),
+
+            "leave_count": (
+                leave
+            ),
+
+            "attendance_rate": (
+                attendance_rate
+            ),
+        })
 
     # ========================================================
-    # LEAVE
+    # STATISTICS
+    #
+    # IMPORTANT
+    # --------------------------------------------------------
+    # Use ONE aggregate query.
+    #
+    # This prevents MultipleResultsFound errors.
+    #
+    # There is NO:
+    #
+    #     group_by(status).scalar()
+    #
     # ========================================================
 
-    leave_count = (
-        stats_query
-        .filter(
-            AttendanceRecord.status
-            == "leave"
-        )
+    stats_row = (
+        filtered_query
         .with_entities(
+
             func.count(
                 AttendanceRecord.id
-            )
-        )
-        .scalar()
-        or 0
-    )
+            ).label(
+                "total_attendance"
+            ),
 
-    # ========================================================
-    # UNIQUE STUDENTS
-    # ========================================================
-
-    total_students = (
-        stats_query
-        .with_entities(
             func.count(
                 func.distinct(
                     AttendanceRecord.student_id
                 )
-            )
+            ).label(
+                "unique_students"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "present",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "present_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "absent",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "absent_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "late",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "late_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "excused",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "excused_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "sick",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "sick_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            AttendanceRecord.status
+                            == "leave",
+                            1
+                        ),
+                        else_=0
+                    )
+                ),
+                0
+            ).label(
+                "leave_count"
+            ),
         )
-        .scalar()
-        or 0
+        .first()
     )
 
     # ========================================================
-    # ATTENDANCE RATE
+    # STATISTICS VALUES
     # ========================================================
 
-    attendance_rate = 0
+    if stats_row:
 
-    if total_attendance:
+        total_attendance = int(
+            getattr(
+                stats_row,
+                "total_attendance",
+                0
+            )
+            or 0
+        )
+
+        unique_student_count = int(
+            getattr(
+                stats_row,
+                "unique_students",
+                0
+            )
+            or 0
+        )
+
+        present_count = int(
+            getattr(
+                stats_row,
+                "present_count",
+                0
+            )
+            or 0
+        )
+
+        absent_count = int(
+            getattr(
+                stats_row,
+                "absent_count",
+                0
+            )
+            or 0
+        )
+
+        late_count = int(
+            getattr(
+                stats_row,
+                "late_count",
+                0
+            )
+            or 0
+        )
+
+        excused_count = int(
+            getattr(
+                stats_row,
+                "excused_count",
+                0
+            )
+            or 0
+        )
+
+        sick_count = int(
+            getattr(
+                stats_row,
+                "sick_count",
+                0
+            )
+            or 0
+        )
+
+        leave_count = int(
+            getattr(
+                stats_row,
+                "leave_count",
+                0
+            )
+            or 0
+        )
+
+    else:
+
+        total_attendance = 0
+
+        unique_student_count = 0
+
+        present_count = 0
+
+        absent_count = 0
+
+        late_count = 0
+
+        excused_count = 0
+
+        sick_count = 0
+
+        leave_count = 0
+
+    # ========================================================
+    # OVERALL ATTENDANCE RATE
+    # ========================================================
+
+    attendance_rate = 0.0
+
+    if total_attendance > 0:
 
         attendance_rate = round(
             (
@@ -73155,19 +74006,16 @@ def attendance_reports():
 
     if class_id:
 
-        # ----------------------------------------------------
-        # If selected class is not accessible,
-        # do not expose sections from it.
-        # ----------------------------------------------------
-
         if (
             accessible_class_ids
             and class_id
             not in accessible_class_ids
         ):
 
-            section_query = section_query.filter(
-                Section.id == -1
+            section_query = (
+                section_query.filter(
+                    Section.id == -1
+                )
             )
 
         else:
@@ -73180,12 +74028,6 @@ def attendance_reports():
             )
 
     else:
-
-        # ----------------------------------------------------
-        # No class selected:
-        # show only sections belonging to
-        # accessible classes.
-        # ----------------------------------------------------
 
         if accessible_class_ids:
 
@@ -73275,9 +74117,9 @@ def attendance_reports():
                 )
             )
 
-    # ========================================================
-    # TEACHER USER SCOPE
-    # ========================================================
+    # --------------------------------------------------------
+    # Teacher login only sees self
+    # --------------------------------------------------------
 
     if user_role == "teacher":
 
@@ -73297,14 +74139,131 @@ def attendance_reports():
     )
 
     # ========================================================
-    # IMPORTANT:
-    # Keep displayed filter value compatible with
-    # the selected URL value.
-    #
-    # For branch_admin / teacher, effective values are used
-    # for security, while original values remain available
-    # to the template.
+    # PAGINATION CLASS
     # ========================================================
+
+    class AttendanceStudentPagination:
+
+        def __init__(
+            self,
+            items,
+            page,
+            per_page,
+            total
+        ):
+
+            self.items = items
+
+            self.page = page
+
+            self.per_page = per_page
+
+            self.total = total
+
+            self.pages = (
+                (
+                    total
+                    + per_page
+                    - 1
+                )
+                // per_page
+                if total
+                else 0
+            )
+
+        # ----------------------------------------------------
+        # HAS PREVIOUS
+        # ----------------------------------------------------
+
+        @property
+        def has_prev(self):
+
+            return self.page > 1
+
+        # ----------------------------------------------------
+        # HAS NEXT
+        # ----------------------------------------------------
+
+        @property
+        def has_next(self):
+
+            return (
+                self.pages > 0
+                and self.page < self.pages
+            )
+
+        # ----------------------------------------------------
+        # PREVIOUS PAGE
+        # ----------------------------------------------------
+
+        @property
+        def prev_num(self):
+
+            if self.has_prev:
+
+                return self.page - 1
+
+            return None
+
+        # ----------------------------------------------------
+        # NEXT PAGE
+        # ----------------------------------------------------
+
+        @property
+        def next_num(self):
+
+            if self.has_next:
+
+                return self.page + 1
+
+            return None
+
+        # ----------------------------------------------------
+        # FIRST ITEM NUMBER
+        # ----------------------------------------------------
+
+        @property
+        def first(self):
+
+            if self.total == 0:
+                return 0
+
+            return (
+                (
+                    self.page
+                    - 1
+                )
+                * self.per_page
+            ) + 1
+
+        # ----------------------------------------------------
+        # LAST ITEM NUMBER
+        # ----------------------------------------------------
+
+        @property
+        def last(self):
+
+            if self.total == 0:
+                return 0
+
+            return min(
+                self.page
+                * self.per_page,
+                self.total
+            )
+
+    # ========================================================
+    # PAGINATION OBJECT
+    # ========================================================
+
+    pagination = (
+        AttendanceStudentPagination(
+            attendance_reports_data,
+            page,
+            per_page,
+            total_students
+        )
+    )
 
     # ========================================================
     # RENDER
@@ -73314,10 +74273,16 @@ def attendance_reports():
         "backend/pages/attendance/attendance_reports.html",
 
         # ====================================================
-        # REPORT DATA
+        # STUDENT SUMMARY
         # ====================================================
 
-        attendance_reports=attendance_reports_data,
+        attendance_reports=(
+            attendance_reports_data
+        ),
+
+        # ====================================================
+        # PAGINATION
+        # ====================================================
 
         pagination=pagination,
 
@@ -73325,23 +74290,41 @@ def attendance_reports():
         # STATISTICS
         # ====================================================
 
-        total_students=total_students,
+        total_students=(
+            unique_student_count
+        ),
 
-        total_attendance=total_attendance,
+        total_attendance=(
+            total_attendance
+        ),
 
-        present_count=present_count,
+        present_count=(
+            present_count
+        ),
 
-        absent_count=absent_count,
+        absent_count=(
+            absent_count
+        ),
 
-        late_count=late_count,
+        late_count=(
+            late_count
+        ),
 
-        excused_count=excused_count,
+        excused_count=(
+            excused_count
+        ),
 
-        sick_count=sick_count,
+        sick_count=(
+            sick_count
+        ),
 
-        leave_count=leave_count,
+        leave_count=(
+            leave_count
+        ),
 
-        attendance_rate=attendance_rate,
+        attendance_rate=(
+            attendance_rate
+        ),
 
         # ====================================================
         # FILTER VALUES
@@ -73349,17 +74332,29 @@ def attendance_reports():
 
         search=search,
 
-        academic_year_id=academic_year_id,
+        academic_year_id=(
+            academic_year_id
+        ),
 
-        branch_id=branch_id,
+        branch_id=(
+            branch_id
+        ),
 
-        class_id=class_id,
+        class_id=(
+            class_id
+        ),
 
-        section_id=section_id,
+        section_id=(
+            section_id
+        ),
 
-        subject_id=subject_id,
+        subject_id=(
+            subject_id
+        ),
 
-        teacher_id=teacher_id,
+        teacher_id=(
+            teacher_id
+        ),
 
         status=status,
 
@@ -73372,32 +74367,53 @@ def attendance_reports():
         page=page,
 
         # ====================================================
-        # EFFECTIVE SECURITY VALUES
+        # EFFECTIVE SECURITY
         # ====================================================
 
-        effective_branch_id=effective_branch_id,
+        effective_branch_id=(
+            effective_branch_id
+        ),
 
-        effective_teacher_id=effective_teacher_id,
+        effective_teacher_id=(
+            effective_teacher_id
+        ),
 
         # ====================================================
         # FILTER OPTIONS
         # ====================================================
 
-        academic_years=academic_years,
+        academic_years=(
+            academic_years
+        ),
 
-        branches=branches,
+        branches=(
+            branches
+        ),
 
-        classes=classes,
+        classes=(
+            classes
+        ),
 
-        sections=sections,
+        sections=(
+            sections
+        ),
 
-        subjects=subjects,
+        subjects=(
+            subjects
+        ),
 
-        teachers=teachers,
+        teachers=(
+            teachers
+        ),
+
+        # ====================================================
+        # CURRENT USER
+        # ====================================================
+
         user=current_user
     )
 
-
+    
 # ============================================================
 # ABSENT REPORTS
 # ============================================================
@@ -78004,6 +79020,2130 @@ def student_report():
 
         term_id=term_id,
     )
+
+
+
+# ============================================================
+# STUDENT ABSENT REPORT
+# ============================================================
+# ============================================================
+# STUDENT ABSENT REPORT
+#
+# ROUTE
+# ------------------------------------------------------------
+# GET /student-absent-report
+#
+# PURPOSE
+# ------------------------------------------------------------
+# Shows ONLY students who have ABSENT attendance records.
+#
+# ABSENT RATE
+# ------------------------------------------------------------
+#     Absent Rate =
+#     Absent Records / Total Attendance Records * 100
+#
+# IMPORTANT
+# ------------------------------------------------------------
+# ?status=present
+# ?status=late
+# ?status=excused
+#
+# will ALWAYS remain:
+#
+#     AttendanceRecord.status == "absent"
+#
+# ENDPOINT
+# ------------------------------------------------------------
+# main.student_absent_report
+# ============================================================
+
+# ============================================================
+# STUDENT ABSENT ATTENDANCE REPORT
+# ============================================================
+#
+# RULES
+# ------------------------------------------------------------
+# 1. superadmin:
+#       - Global access.
+#
+# 2. school_admin:
+#       - Institution scoped.
+#       - Can select branches inside own institution.
+#
+# 3. branch_admin:
+#       - Institution + own branch only.
+#       - Incoming branch_id is ignored/forced to own branch.
+#
+# 4. teacher:
+#       - Teacher scoped.
+#       - Only attendance sessions belonging to g.teacher.
+#       - If teacher has a branch, branch is forced.
+#
+# 5. Student must have at least ONE absent attendance record.
+#
+# 6. Once a student qualifies as absent:
+#       ALL attendance statuses are counted:
+#       present / absent / late / excused / sick / leave
+#
+# 7. Missing attendance records are NOT converted to zero.
+#
+# 8. Attendance Rate:
+#       (present + late) / total_attendance * 100
+#
+# 9. Absence Rate:
+#       absent / total_attendance * 100
+#
+# 10. Search:
+#       student name / admission number / roll number
+#
+# 11. Pagination:
+#       10 / 25 / 50 / 100
+#
+# 12. Date range:
+#       date_from / date_to
+#
+# ============================================================
+
+
+@bp.route(
+    "/attendance/reports/student-absent",
+    methods=["GET"]
+)
+@login_required
+def student_absent_report():
+
+    # ========================================================
+    # IMPORTS
+    # ========================================================
+
+    from datetime import date, datetime
+    from zoneinfo import ZoneInfo
+
+    from sqlalchemy import (
+        func,
+        case,
+        or_,
+        and_,
+    )
+
+    # ========================================================
+    # SECURITY
+    # ========================================================
+
+    user = current_user
+
+    if not user or not user.is_authenticated:
+        abort(403)
+
+    role = getattr(
+        user,
+        "role",
+        None
+    )
+
+    role = getattr(
+        role,
+        "value",
+        role
+    )
+
+    role = (
+        str(role).strip().lower()
+        if role
+        else None
+    )
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+        "teacher",
+    }
+
+    if role not in allowed_roles:
+        abort(403)
+
+    # ========================================================
+    # CURRENT DATE
+    # AFRICA/MOGADISHU
+    # ========================================================
+
+    try:
+        today = datetime.now(
+            ZoneInfo("Africa/Mogadishu")
+        ).date()
+    except Exception:
+        today = date.today()
+
+    # ========================================================
+    # SAFE INTEGER
+    # ========================================================
+
+    def _to_int(value, default=None):
+        try:
+            if value is None:
+                return default
+
+            value = str(value).strip()
+
+            if not value:
+                return default
+
+            return int(value)
+
+        except (TypeError, ValueError):
+            return default
+
+    # ========================================================
+    # QUERY PARAMETERS
+    # ========================================================
+
+    search = (
+        request.args.get("search", "")
+        .strip()
+    )
+
+    academic_year_id = _to_int(
+        request.args.get("academic_year_id")
+    )
+
+    branch_id = _to_int(
+        request.args.get("branch_id")
+    )
+
+    class_id = _to_int(
+        request.args.get("class_id")
+    )
+
+    section_id = _to_int(
+        request.args.get("section_id")
+    )
+
+    subject_id = _to_int(
+        request.args.get("subject_id")
+    )
+
+    teacher_id = _to_int(
+        request.args.get("teacher_id")
+    )
+
+    # ========================================================
+    # DATE FILTERS
+    # ========================================================
+
+    date_from_raw = (
+        request.args.get("date_from", "")
+        .strip()
+    )
+
+    date_to_raw = (
+        request.args.get("date_to", "")
+        .strip()
+    )
+
+    date_from = None
+    date_to = None
+
+    # --------------------------------------------------------
+    # Parse date_from
+    # --------------------------------------------------------
+
+    if date_from_raw:
+        try:
+            date_from = date.fromisoformat(
+                date_from_raw
+            )
+        except ValueError:
+            date_from = None
+
+    # --------------------------------------------------------
+    # Parse date_to
+    # --------------------------------------------------------
+
+    if date_to_raw:
+        try:
+            date_to = date.fromisoformat(
+                date_to_raw
+            )
+        except ValueError:
+            date_to = None
+
+    # ========================================================
+    # DATE VALIDATION
+    # ========================================================
+
+    if date_from and date_to:
+        if date_from > date_to:
+            date_from, date_to = (
+                date_to,
+                date_from
+            )
+
+    # ========================================================
+    # PAGINATION
+    # ========================================================
+
+    page = _to_int(
+        request.args.get("page"),
+        1
+    )
+
+    if not page or page < 1:
+        page = 1
+
+    per_page = _to_int(
+        request.args.get("per_page"),
+        10
+    )
+
+    if per_page not in {
+        10,
+        25,
+        50,
+        100,
+    }:
+        per_page = 10
+
+    # ========================================================
+    # USER SCOPE
+    # ========================================================
+
+    user_institution_id = getattr(
+        user,
+        "institution_id",
+        None
+    )
+
+    user_branch_id = getattr(
+        user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # TEACHER SCOPE
+    # ========================================================
+
+    teacher_scope_id = None
+
+    if role == "teacher":
+
+        teacher = getattr(
+            g,
+            "teacher",
+            None
+        )
+
+        if not teacher:
+            abort(403)
+
+        teacher_scope_id = teacher.id
+
+        # Teacher's own branch is authoritative.
+        teacher_branch_id = getattr(
+            teacher,
+            "branch_id",
+            None
+        )
+
+        if teacher_branch_id:
+            user_branch_id = teacher_branch_id
+
+        # Teacher's institution is authoritative.
+        teacher_institution_id = getattr(
+            teacher,
+            "institution_id",
+            None
+        )
+
+        if teacher_institution_id:
+            user_institution_id = (
+                teacher_institution_id
+            )
+
+    # ========================================================
+    # FORCE BRANCH FOR RESTRICTED ROLES
+    # ========================================================
+
+    if role in {
+        "branch_admin",
+        "teacher",
+    }:
+
+        branch_id = user_branch_id
+
+        if not branch_id:
+            abort(403)
+
+    # ========================================================
+    # FORCE TEACHER FOR TEACHER ROLE
+    # ========================================================
+
+    if role == "teacher":
+
+        teacher_id = teacher_scope_id
+
+    # ========================================================
+    # VALIDATE INSTITUTION FOR RESTRICTED USERS
+    # ========================================================
+
+    if role in {
+        "school_admin",
+        "branch_admin",
+        "teacher",
+    }:
+
+        if not user_institution_id:
+            abort(403)
+
+    # ========================================================
+    # VALIDATE SELECTED BRANCH
+    # ========================================================
+
+    selected_branch = None
+
+    if branch_id:
+
+        selected_branch = (
+            db.session.query(Branch)
+            .filter(
+                Branch.id == branch_id
+            )
+            .first()
+        )
+
+        if not selected_branch:
+            abort(404)
+
+        # ----------------------------------------------------
+        # school_admin
+        # ----------------------------------------------------
+
+        if role == "school_admin":
+
+            if (
+                selected_branch.institution_id
+                != user_institution_id
+            ):
+                abort(403)
+
+        # ----------------------------------------------------
+        # branch_admin
+        # ----------------------------------------------------
+
+        elif role == "branch_admin":
+
+            if (
+                selected_branch.institution_id
+                != user_institution_id
+            ):
+                abort(403)
+
+            if (
+                selected_branch.id
+                != user_branch_id
+            ):
+                abort(403)
+
+        # ----------------------------------------------------
+        # teacher
+        # ----------------------------------------------------
+
+        elif role == "teacher":
+
+            if (
+                selected_branch.institution_id
+                != user_institution_id
+            ):
+                abort(403)
+
+            if (
+                selected_branch.id
+                != user_branch_id
+            ):
+                abort(403)
+
+    # ========================================================
+    # VALIDATE ACADEMIC YEAR
+    # ========================================================
+
+    selected_academic_year = None
+
+    if academic_year_id:
+
+        selected_academic_year = (
+            db.session.query(AcademicYear)
+            .filter(
+                AcademicYear.id
+                == academic_year_id
+            )
+            .first()
+        )
+
+        if not selected_academic_year:
+            abort(404)
+
+        if role != "superadmin":
+
+            if (
+                selected_academic_year.institution_id
+                != user_institution_id
+            ):
+                abort(403)
+
+    # ========================================================
+    # VALIDATE CLASS
+    # ========================================================
+
+    selected_class = None
+
+    if class_id:
+
+        selected_class = (
+            db.session.query(Class)
+            .filter(
+                Class.id == class_id
+            )
+            .first()
+        )
+
+        if not selected_class:
+            abort(404)
+
+        if role != "superadmin":
+
+            if (
+                selected_class.institution_id
+                != user_institution_id
+            ):
+                abort(403)
+
+        # ----------------------------------------------------
+        # Branch validation where class is branch-specific
+        # ----------------------------------------------------
+
+        class_branch_id = getattr(
+            selected_class,
+            "branch_id",
+            None
+        )
+
+        if branch_id and class_branch_id:
+
+            if class_branch_id != branch_id:
+                abort(403)
+
+    # ========================================================
+    # VALIDATE SECTION
+    # ========================================================
+
+    selected_section = None
+
+    if section_id:
+
+        selected_section = (
+            db.session.query(Section)
+            .filter(
+                Section.id == section_id
+            )
+            .first()
+        )
+
+        if not selected_section:
+            abort(404)
+
+        if role != "superadmin":
+
+            section_institution_id = getattr(
+                selected_section,
+                "institution_id",
+                None
+            )
+
+            if (
+                section_institution_id
+                and section_institution_id
+                != user_institution_id
+            ):
+                abort(403)
+
+        # ----------------------------------------------------
+        # Section -> class validation
+        # ----------------------------------------------------
+
+        section_class_id = getattr(
+            selected_section,
+            "class_id",
+            None
+        )
+
+        if class_id and section_class_id:
+
+            if section_class_id != class_id:
+                abort(403)
+
+        # ----------------------------------------------------
+        # Section -> branch validation
+        # ----------------------------------------------------
+
+        section_branch_id = getattr(
+            selected_section,
+            "branch_id",
+            None
+        )
+
+        if branch_id and section_branch_id:
+
+            if section_branch_id != branch_id:
+                abort(403)
+
+    # ========================================================
+    # VALIDATE SUBJECT
+    # ========================================================
+
+    selected_subject = None
+
+    if subject_id:
+
+        selected_subject = (
+            db.session.query(Subject)
+            .filter(
+                Subject.id == subject_id
+            )
+            .first()
+        )
+
+        if not selected_subject:
+            abort(404)
+
+        if role != "superadmin":
+
+            subject_institution_id = getattr(
+                selected_subject,
+                "institution_id",
+                None
+            )
+
+            if (
+                subject_institution_id
+                and subject_institution_id
+                != user_institution_id
+            ):
+                abort(403)
+
+        # ----------------------------------------------------
+        # Branch-specific subject
+        # ----------------------------------------------------
+
+        subject_branch_id = getattr(
+            selected_subject,
+            "branch_id",
+            None
+        )
+
+        if branch_id and subject_branch_id:
+
+            if subject_branch_id != branch_id:
+                abort(403)
+
+    # ========================================================
+    # VALIDATE TEACHER FILTER
+    # ========================================================
+
+    selected_teacher = None
+
+    if teacher_id:
+
+        selected_teacher = (
+            db.session.query(Teacher)
+            .filter(
+                Teacher.id == teacher_id
+            )
+            .first()
+        )
+
+        if not selected_teacher:
+            abort(404)
+
+        if role != "superadmin":
+
+            if (
+                selected_teacher.institution_id
+                != user_institution_id
+            ):
+                abort(403)
+
+        # ----------------------------------------------------
+        # Branch-specific teacher
+        # ----------------------------------------------------
+
+        selected_teacher_branch_id = getattr(
+            selected_teacher,
+            "branch_id",
+            None
+        )
+
+        if (
+            branch_id
+            and selected_teacher_branch_id
+            and selected_teacher_branch_id
+            != branch_id
+        ):
+            abort(403)
+
+    # ========================================================
+    # BASE ATTENDANCE FILTERS
+    # ========================================================
+
+    base_filters = []
+
+    # --------------------------------------------------------
+    # Institution
+    # --------------------------------------------------------
+
+    if role != "superadmin":
+
+        base_filters.append(
+            AttendanceSession.institution_id
+            == user_institution_id
+        )
+
+    # --------------------------------------------------------
+    # Branch
+    # --------------------------------------------------------
+
+    if branch_id:
+
+        base_filters.append(
+            AttendanceSession.branch_id
+            == branch_id
+        )
+
+    # --------------------------------------------------------
+    # Academic Year
+    # --------------------------------------------------------
+
+    if academic_year_id:
+
+        base_filters.append(
+            AttendanceSession.academic_year_id
+            == academic_year_id
+        )
+
+    # --------------------------------------------------------
+    # Class
+    # --------------------------------------------------------
+
+    if class_id:
+
+        base_filters.append(
+            AttendanceSession.class_id
+            == class_id
+        )
+
+    # --------------------------------------------------------
+    # Section
+    # --------------------------------------------------------
+
+    if section_id:
+
+        base_filters.append(
+            AttendanceSession.section_id
+            == section_id
+        )
+
+    # --------------------------------------------------------
+    # Subject
+    # --------------------------------------------------------
+
+    if subject_id:
+
+        base_filters.append(
+            AttendanceSession.subject_id
+            == subject_id
+        )
+
+    # --------------------------------------------------------
+    # Teacher
+    # --------------------------------------------------------
+
+    if teacher_id:
+
+        base_filters.append(
+            AttendanceSession.teacher_id
+            == teacher_id
+        )
+
+    # --------------------------------------------------------
+    # Date From
+    # --------------------------------------------------------
+
+    if date_from:
+
+        base_filters.append(
+            AttendanceSession.attendance_date
+            >= date_from
+        )
+
+    # --------------------------------------------------------
+    # Date To
+    # --------------------------------------------------------
+
+    if date_to:
+
+        base_filters.append(
+            AttendanceSession.attendance_date
+            <= date_to
+        )
+
+    # ========================================================
+    # SEARCH STUDENT
+    # ========================================================
+
+    if search:
+
+        search_like = f"%{search}%"
+
+        base_filters.append(
+            or_(
+                Student.full_name.ilike(
+                    search_like
+                ),
+                Student.admission_no.ilike(
+                    search_like
+                ),
+                Student.roll_no.ilike(
+                    search_like
+                )
+            )
+        )
+
+    # ========================================================
+    # STATUS EXPRESSIONS
+    # ========================================================
+
+    absent_case = case(
+        (
+            AttendanceRecord.status
+            == "absent",
+            1
+        ),
+        else_=0
+    )
+
+    present_case = case(
+        (
+            AttendanceRecord.status
+            == "present",
+            1
+        ),
+        else_=0
+    )
+
+    late_case = case(
+        (
+            AttendanceRecord.status
+            == "late",
+            1
+        ),
+        else_=0
+    )
+
+    excused_case = case(
+        (
+            AttendanceRecord.status
+            == "excused",
+            1
+        ),
+        else_=0
+    )
+
+    sick_case = case(
+        (
+            AttendanceRecord.status
+            == "sick",
+            1
+        ),
+        else_=0
+    )
+
+    leave_case = case(
+        (
+            AttendanceRecord.status
+            == "leave",
+            1
+        ),
+        else_=0
+    )
+
+    # ========================================================
+    # MAIN STUDENT REPORT QUERY
+    #
+    # IMPORTANT:
+    # We DO NOT filter AttendanceRecord.status == "absent"
+    # here.
+    #
+    # Instead:
+    #   HAVING absent_count > 0
+    #
+    # This allows all statuses to be counted correctly.
+    # ========================================================
+
+    report_query = (
+        db.session.query(
+            Student.id.label(
+                "student_id"
+            ),
+
+            Student.full_name.label(
+                "student_name"
+            ),
+
+            Student.admission_no.label(
+                "admission_no"
+            ),
+
+            Student.roll_no.label(
+                "roll_no"
+            ),
+
+            Student.photo.label(
+                "student_photo"
+            ),
+
+            func.count(
+                AttendanceRecord.id
+            ).label(
+                "total_attendance"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    absent_case
+                ),
+                0
+            ).label(
+                "absent_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    present_case
+                ),
+                0
+            ).label(
+                "present_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    late_case
+                ),
+                0
+            ).label(
+                "late_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    excused_case
+                ),
+                0
+            ).label(
+                "excused_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    sick_case
+                ),
+                0
+            ).label(
+                "sick_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    leave_case
+                ),
+                0
+            ).label(
+                "leave_count"
+            ),
+        )
+
+        .join(
+            AttendanceSession,
+            AttendanceSession.id
+            == AttendanceRecord.attendance_session_id
+        )
+
+        .join(
+            Student,
+            Student.id
+            == AttendanceRecord.student_id
+        )
+
+        .filter(
+            *base_filters
+        )
+
+        .group_by(
+            Student.id,
+            Student.full_name,
+            Student.admission_no,
+            Student.roll_no,
+            Student.photo,
+        )
+
+        # ----------------------------------------------------
+        # ONLY STUDENTS WITH ABSENCE
+        # ----------------------------------------------------
+
+        .having(
+            func.sum(
+                absent_case
+            ) > 0
+        )
+
+        .order_by(
+            Student.full_name.asc()
+        )
+    )
+
+    # ========================================================
+    # PAGINATION
+    # ========================================================
+
+    pagination = report_query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    absent_reports = []
+
+    # ========================================================
+    # CURRENT PAGE STUDENT IDS
+    # ========================================================
+
+    student_ids = [
+        row.student_id
+        for row in pagination.items
+        if row.student_id
+    ]
+
+    # ========================================================
+    # ACTIVE ENROLLMENT DISPLAY DATA
+    # ========================================================
+
+    enrollment_map = {}
+
+    if student_ids:
+
+        enrollment_rows = (
+            db.session.query(
+                StudentEnrollment.student_id,
+
+                Branch.name.label(
+                    "branch_name"
+                ),
+
+                Class.name.label(
+                    "class_name"
+                ),
+
+                Section.name.label(
+                    "section_name"
+                ),
+            )
+
+            .join(
+                Branch,
+                Branch.id
+                == StudentEnrollment.branch_id
+            )
+
+            .join(
+                Class,
+                Class.id
+                == StudentEnrollment.class_id
+            )
+
+            .outerjoin(
+                Section,
+                Section.id
+                == StudentEnrollment.section_id
+            )
+
+            .filter(
+                StudentEnrollment.student_id.in_(
+                    student_ids
+                )
+            )
+
+            .filter(
+                StudentEnrollment.status
+                == "active"
+            )
+        )
+
+        # ----------------------------------------------------
+        # Keep institution scope
+        # ----------------------------------------------------
+
+        if role != "superadmin":
+
+            enrollment_rows = enrollment_rows.filter(
+                StudentEnrollment.institution_id
+                == user_institution_id
+            )
+
+        # ----------------------------------------------------
+        # If branch is selected, display enrollment
+        # from that branch.
+        # ----------------------------------------------------
+
+        if branch_id:
+
+            enrollment_rows = enrollment_rows.filter(
+                StudentEnrollment.branch_id
+                == branch_id
+            )
+
+        # ----------------------------------------------------
+        # If academic year selected
+        # ----------------------------------------------------
+
+        if academic_year_id:
+
+            enrollment_rows = enrollment_rows.filter(
+                StudentEnrollment.academic_year_id
+                == academic_year_id
+            )
+
+        # ----------------------------------------------------
+        # If class selected
+        # ----------------------------------------------------
+
+        if class_id:
+
+            enrollment_rows = enrollment_rows.filter(
+                StudentEnrollment.class_id
+                == class_id
+            )
+
+        # ----------------------------------------------------
+        # If section selected
+        # ----------------------------------------------------
+
+        if section_id:
+
+            enrollment_rows = enrollment_rows.filter(
+                StudentEnrollment.section_id
+                == section_id
+            )
+
+        enrollment_rows = enrollment_rows.all()
+
+        # ====================================================
+        # BUILD STUDENT -> ENROLLMENTS MAP
+        # ====================================================
+
+        for row in enrollment_rows:
+
+            sid = row.student_id
+
+            if sid not in enrollment_map:
+
+                enrollment_map[sid] = {
+                    "branches": set(),
+                    "classes": set(),
+                    "sections": set(),
+                }
+
+            if row.branch_name:
+                enrollment_map[sid][
+                    "branches"
+                ].add(
+                    row.branch_name
+                )
+
+            if row.class_name:
+                enrollment_map[sid][
+                    "classes"
+                ].add(
+                    row.class_name
+                )
+
+            if row.section_name:
+                enrollment_map[sid][
+                    "sections"
+                ].add(
+                    row.section_name
+                )
+
+    # ========================================================
+    # BUILD FINAL REPORT ROWS
+    # ========================================================
+
+    for row in pagination.items:
+
+        total_attendance = int(
+            row.total_attendance or 0
+        )
+
+        absent_count = int(
+            row.absent_count or 0
+        )
+
+        present_count = int(
+            row.present_count or 0
+        )
+
+        late_count = int(
+            row.late_count or 0
+        )
+
+        excused_count = int(
+            row.excused_count or 0
+        )
+
+        sick_count = int(
+            row.sick_count or 0
+        )
+
+        leave_count = int(
+            row.leave_count or 0
+        )
+
+        # ====================================================
+        # ATTENDANCE RATE
+        #
+        # PRESENT + LATE are considered attended.
+        # ====================================================
+
+        if total_attendance > 0:
+
+            attendance_rate = round(
+                (
+                    (
+                        present_count
+                        + late_count
+                    )
+                    / total_attendance
+                ) * 100,
+                1
+            )
+
+        else:
+
+            attendance_rate = 0.0
+
+        # ====================================================
+        # ABSENCE RATE
+        # ====================================================
+
+        if total_attendance > 0:
+
+            absence_rate = round(
+                (
+                    absent_count
+                    / total_attendance
+                ) * 100,
+                1
+            )
+
+        else:
+
+            absence_rate = 0.0
+
+        # ====================================================
+        # CLAMP PERCENTAGES
+        # ====================================================
+
+        attendance_rate = max(
+            0.0,
+            min(
+                100.0,
+                attendance_rate
+            )
+        )
+
+        absence_rate = max(
+            0.0,
+            min(
+                100.0,
+                absence_rate
+            )
+        )
+
+        # ====================================================
+        # ENROLLMENT NAMES
+        # ====================================================
+
+        enrollment_data = enrollment_map.get(
+            row.student_id,
+            {
+                "branches": set(),
+                "classes": set(),
+                "sections": set(),
+            }
+        )
+
+        branch_names = sorted(
+            enrollment_data["branches"]
+        )
+
+        class_names = sorted(
+            enrollment_data["classes"]
+        )
+
+        section_names = sorted(
+            enrollment_data["sections"]
+        )
+
+        branch_names_text = (
+            ", ".join(branch_names)
+            if branch_names
+            else "—"
+        )
+
+        class_names_text = (
+            ", ".join(class_names)
+            if class_names
+            else "—"
+        )
+
+        section_names_text = (
+            ", ".join(section_names)
+            if section_names
+            else "—"
+        )
+
+        # ====================================================
+        # APPEND REPORT OBJECT
+        # ====================================================
+
+        absent_reports.append({
+            # ------------------------------------------------
+            # Student
+            # ------------------------------------------------
+
+            "student_id": row.student_id,
+
+            "student_name": (
+                row.student_name
+                or "Unknown Student"
+            ),
+
+            "admission_no": (
+                row.admission_no
+                or "—"
+            ),
+
+            "roll_no": (
+                row.roll_no
+                or "—"
+            ),
+
+            "student_photo": (
+                row.student_photo
+                if row.student_photo
+                else None
+            ),
+
+            # ------------------------------------------------
+            # Attendance totals
+            # ------------------------------------------------
+
+            "total_attendance": (
+                total_attendance
+            ),
+
+            "absent_count": (
+                absent_count
+            ),
+
+            "present_count": (
+                present_count
+            ),
+
+            "late_count": (
+                late_count
+            ),
+
+            "excused_count": (
+                excused_count
+            ),
+
+            "sick_count": (
+                sick_count
+            ),
+
+            "leave_count": (
+                leave_count
+            ),
+
+            # ------------------------------------------------
+            # Percentages
+            # ------------------------------------------------
+
+            "attendance_rate": (
+                attendance_rate
+            ),
+
+            "absence_rate": (
+                absence_rate
+            ),
+
+            # ------------------------------------------------
+            # Enrollment display
+            # ------------------------------------------------
+
+            "branch_names": (
+                branch_names_text
+            ),
+
+            "branch_name": (
+                branch_names_text
+            ),
+
+            "class_names": (
+                class_names_text
+            ),
+
+            "class_name": (
+                class_names_text
+            ),
+
+            "section_names": (
+                section_names_text
+            ),
+
+            "section_name": (
+                section_names_text
+            ),
+        })
+
+    # ========================================================
+    # GLOBAL STATISTICS
+    #
+    # MUST USE THE SAME BASE FILTERS AND SAME ABSENT-STUDENT
+    # LOGIC AS THE MAIN REPORT.
+    # ========================================================
+
+    stats_grouped = (
+        db.session.query(
+
+            Student.id.label(
+                "student_id"
+            ),
+
+            func.count(
+                AttendanceRecord.id
+            ).label(
+                "total_attendance"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    absent_case
+                ),
+                0
+            ).label(
+                "absent_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    present_case
+                ),
+                0
+            ).label(
+                "present_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    late_case
+                ),
+                0
+            ).label(
+                "late_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    excused_case
+                ),
+                0
+            ).label(
+                "excused_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    sick_case
+                ),
+                0
+            ).label(
+                "sick_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    leave_case
+                ),
+                0
+            ).label(
+                "leave_count"
+            ),
+        )
+
+        .join(
+            AttendanceSession,
+            AttendanceSession.id
+            == AttendanceRecord.attendance_session_id
+        )
+
+        .join(
+            Student,
+            Student.id
+            == AttendanceRecord.student_id
+        )
+
+        .filter(
+            *base_filters
+        )
+
+        .group_by(
+            Student.id
+        )
+
+        .having(
+            func.sum(
+                absent_case
+            ) > 0
+        )
+
+        .subquery()
+    )
+
+    # ========================================================
+    # AGGREGATE GLOBAL STATISTICS
+    # ========================================================
+
+    stats_row = (
+        db.session.query(
+
+            func.coalesce(
+                func.sum(
+                    stats_grouped.c.total_attendance
+                ),
+                0
+            ).label(
+                "total_attendance"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    stats_grouped.c.absent_count
+                ),
+                0
+            ).label(
+                "absent_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    stats_grouped.c.present_count
+                ),
+                0
+            ).label(
+                "present_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    stats_grouped.c.late_count
+                ),
+                0
+            ).label(
+                "late_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    stats_grouped.c.excused_count
+                ),
+                0
+            ).label(
+                "excused_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    stats_grouped.c.sick_count
+                ),
+                0
+            ).label(
+                "sick_count"
+            ),
+
+            func.coalesce(
+                func.sum(
+                    stats_grouped.c.leave_count
+                ),
+                0
+            ).label(
+                "leave_count"
+            ),
+
+            func.count(
+                stats_grouped.c.student_id
+            ).label(
+                "total_students"
+            ),
+        )
+        .first()
+    )
+
+    # ========================================================
+    # GLOBAL STATS VALUES
+    # ========================================================
+
+    total_students = int(
+        getattr(
+            stats_row,
+            "total_students",
+            0
+        ) or 0
+    )
+
+    total_attendance = int(
+        getattr(
+            stats_row,
+            "total_attendance",
+            0
+        ) or 0
+    )
+
+    absent_count = int(
+        getattr(
+            stats_row,
+            "absent_count",
+            0
+        ) or 0
+    )
+
+    present_count = int(
+        getattr(
+            stats_row,
+            "present_count",
+            0
+        ) or 0
+    )
+
+    late_count = int(
+        getattr(
+            stats_row,
+            "late_count",
+            0
+        ) or 0
+    )
+
+    excused_count = int(
+        getattr(
+            stats_row,
+            "excused_count",
+            0
+        ) or 0
+    )
+
+    sick_count = int(
+        getattr(
+            stats_row,
+            "sick_count",
+            0
+        ) or 0
+    )
+
+    leave_count = int(
+        getattr(
+            stats_row,
+            "leave_count",
+            0
+        ) or 0
+    )
+
+    # ========================================================
+    # GLOBAL ABSENCE RATE
+    # ========================================================
+
+    if total_attendance > 0:
+
+        absent_rate = round(
+            (
+                absent_count
+                / total_attendance
+            ) * 100,
+            1
+        )
+
+    else:
+
+        absent_rate = 0.0
+
+    # ========================================================
+    # GLOBAL ATTENDANCE RATE
+    # ========================================================
+
+    if total_attendance > 0:
+
+        attendance_rate = round(
+            (
+                (
+                    present_count
+                    + late_count
+                )
+                / total_attendance
+            ) * 100,
+            1
+        )
+
+    else:
+
+        attendance_rate = 0.0
+
+    # ========================================================
+    # CLAMP GLOBAL RATES
+    # ========================================================
+
+    absent_rate = max(
+        0.0,
+        min(
+            100.0,
+            absent_rate
+        )
+    )
+
+    attendance_rate = max(
+        0.0,
+        min(
+            100.0,
+            attendance_rate
+        )
+    )
+
+    # ========================================================
+    # ACADEMIC YEARS DROPDOWN
+    # ========================================================
+
+    academic_years_query = (
+        db.session.query(AcademicYear)
+    )
+
+    if role != "superadmin":
+
+        academic_years_query = (
+            academic_years_query
+            .filter(
+                AcademicYear.institution_id
+                == user_institution_id
+            )
+        )
+
+    academic_years = (
+        academic_years_query
+        .order_by(
+            AcademicYear.id.desc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # BRANCHES DROPDOWN
+    # ========================================================
+
+    branches_query = (
+        db.session.query(Branch)
+    )
+
+    if role != "superadmin":
+
+        branches_query = (
+            branches_query
+            .filter(
+                Branch.institution_id
+                == user_institution_id
+            )
+        )
+
+    if role in {
+        "branch_admin",
+        "teacher",
+    }:
+
+        branches_query = (
+            branches_query
+            .filter(
+                Branch.id
+                == user_branch_id
+            )
+        )
+
+    branches = (
+        branches_query
+        .order_by(
+            Branch.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # CLASSES DROPDOWN
+    # ========================================================
+
+    classes_query = (
+        db.session.query(Class)
+    )
+
+    if role != "superadmin":
+
+        classes_query = (
+            classes_query
+            .filter(
+                Class.institution_id
+                == user_institution_id
+            )
+        )
+
+    if branch_id:
+
+        classes_query = (
+            classes_query
+            .filter(
+                or_(
+                    Class.branch_id
+                    == branch_id,
+
+                    Class.branch_id.is_(None)
+                )
+            )
+        )
+
+    classes = (
+        classes_query
+        .order_by(
+            Class.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # SECTIONS DROPDOWN
+    # ========================================================
+
+    sections_query = (
+        db.session.query(Section)
+    )
+
+    if role != "superadmin":
+
+        sections_query = (
+            sections_query
+            .filter(
+                Section.institution_id
+                == user_institution_id
+            )
+        )
+
+    if class_id:
+
+        sections_query = (
+            sections_query
+            .filter(
+                Section.class_id
+                == class_id
+            )
+        )
+
+    if branch_id:
+
+        sections_query = (
+            sections_query
+            .filter(
+                or_(
+                    Section.branch_id
+                    == branch_id,
+
+                    Section.branch_id.is_(None)
+                )
+            )
+        )
+
+    sections = (
+        sections_query
+        .order_by(
+            Section.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # SUBJECTS DROPDOWN
+    # ========================================================
+
+    subjects_query = (
+        db.session.query(Subject)
+    )
+
+    if role != "superadmin":
+
+        subjects_query = (
+            subjects_query
+            .filter(
+                Subject.institution_id
+                == user_institution_id
+            )
+        )
+
+    if branch_id:
+
+        subjects_query = (
+            subjects_query
+            .filter(
+                or_(
+                    Subject.branch_id
+                    == branch_id,
+
+                    Subject.branch_id.is_(None)
+                )
+            )
+        )
+
+    subjects = (
+        subjects_query
+        .order_by(
+            Subject.name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # TEACHERS DROPDOWN
+    # ========================================================
+
+    teachers_query = (
+        db.session.query(Teacher)
+    )
+
+    if role != "superadmin":
+
+        teachers_query = (
+            teachers_query
+            .filter(
+                Teacher.institution_id
+                == user_institution_id
+            )
+        )
+
+    if branch_id:
+
+        teachers_query = (
+            teachers_query
+            .filter(
+                or_(
+                    Teacher.branch_id
+                    == branch_id,
+
+                    Teacher.branch_id.is_(None)
+                )
+            )
+        )
+
+    # --------------------------------------------------------
+    # Teacher should only see himself.
+    # --------------------------------------------------------
+
+    if role == "teacher":
+
+        teachers_query = (
+            teachers_query
+            .filter(
+                Teacher.id
+                == teacher_scope_id
+            )
+        )
+
+    teachers = (
+        teachers_query
+        .order_by(
+            Teacher.full_name.asc()
+        )
+        .all()
+    )
+
+    # ========================================================
+    # DATE RANGE LABEL
+    # ========================================================
+
+    if date_from and date_to:
+
+        if date_from == date_to:
+
+            date_range_label = (
+                date_from.strftime("%d %b %Y")
+            )
+
+        else:
+
+            date_range_label = (
+                f"{date_from.strftime('%d %b %Y')}"
+                f" - "
+                f"{date_to.strftime('%d %b %Y')}"
+            )
+
+    elif date_from:
+
+        date_range_label = (
+            f"From "
+            f"{date_from.strftime('%d %b %Y')}"
+        )
+
+    elif date_to:
+
+        date_range_label = (
+            f"Until "
+            f"{date_to.strftime('%d %b %Y')}"
+        )
+
+    else:
+
+        date_range_label = "All dates"
+
+    # ========================================================
+    # RENDER
+    # ========================================================
+
+    return render_template(
+        "backend/pages/attendance/student_absent_report.html",
+
+        # ----------------------------------------------------
+        # REPORT DATA
+        # ----------------------------------------------------
+
+        absent_reports=absent_reports,
+        user=current_user,
+
+        # Alias in case template/JS uses another name
+        absent_records=absent_reports,
+
+        # ----------------------------------------------------
+        # PAGINATION
+        # ----------------------------------------------------
+
+        pagination=pagination,
+
+        page=page,
+
+        per_page=per_page,
+
+        # ----------------------------------------------------
+        # GLOBAL STATS
+        # ----------------------------------------------------
+
+        total_students=total_students,
+
+        total_attendance=total_attendance,
+
+        absent_count=absent_count,
+
+        present_count=present_count,
+
+        late_count=late_count,
+
+        excused_count=excused_count,
+
+        sick_count=sick_count,
+
+        leave_count=leave_count,
+
+        absent_rate=absent_rate,
+
+        attendance_rate=attendance_rate,
+
+        # ----------------------------------------------------
+        # DROPDOWNS
+        # ----------------------------------------------------
+
+        academic_years=academic_years,
+
+        branches=branches,
+
+        classes=classes,
+
+        sections=sections,
+
+        subjects=subjects,
+
+        teachers=teachers,
+
+        # ----------------------------------------------------
+        # FILTER VALUES
+        # ----------------------------------------------------
+
+        search=search,
+
+        academic_year_id=academic_year_id,
+
+        branch_id=branch_id,
+
+        class_id=class_id,
+
+        section_id=section_id,
+
+        subject_id=subject_id,
+
+        teacher_id=teacher_id,
+
+        date_from=(
+            date_from.isoformat()
+            if date_from
+            else ""
+        ),
+
+        date_to=(
+            date_to.isoformat()
+            if date_to
+            else ""
+        ),
+
+        # ----------------------------------------------------
+        # DATE
+        # ----------------------------------------------------
+
+        today=today.isoformat(),
+
+        date_range_label=date_range_label,
+
+        # ----------------------------------------------------
+        # REPORT STATUS
+        # ----------------------------------------------------
+
+        status="absent",
+
+        # ----------------------------------------------------
+        # ROLE
+        # ----------------------------------------------------
+
+        role=role,
+    )
+
+
+
+
 
 
 # ============================================================
