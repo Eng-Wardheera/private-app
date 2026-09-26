@@ -1,0 +1,3170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ student_name or "Student" }}
+        -
+        {{ exam_title or "Examination Result" }}
+    </title>
+
+
+    <style>
+
+        /* ============================================================
+           BRAND COLORS
+           ============================================================ */
+
+        :root {
+
+            --primary-color:
+                {{ site_settings.primary_color
+                   if site_settings and site_settings.primary_color
+                   else '#06245f' }};
+
+            --secondary-color:
+                {{ site_settings.secondary_color
+                   if site_settings and site_settings.secondary_color
+                   else '#32b73a' }};
+
+            --accent-color:
+                {{ site_settings.accent_color
+                   if site_settings and site_settings.accent_color
+                   else '#33206f' }};
+
+            --text-color: #172033;
+
+            --muted-color: #667085;
+
+            --border-color: #d9dee8;
+
+            --light-bg: #f5f7fb;
+
+            --white: #ffffff;
+
+            --success-color: #198754;
+
+            --danger-color: #dc3545;
+
+        }
+
+
+        /* ============================================================
+           RESET
+           ============================================================ */
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+
+            margin: 0;
+
+            padding: 0;
+
+            background: #eef1f6;
+
+            color: var(--text-color);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+        }
+
+
+        body {
+            min-height: 100vh;
+        }
+
+
+        /* ============================================================
+           ACTION BAR
+           ============================================================ */
+
+        .print-actions {
+
+            width: 210mm;
+
+            margin: 20px auto 12px;
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            gap: 10px;
+
+        }
+
+
+        .print-button,
+        .back-button {
+
+            border: none;
+
+            border-radius: 7px;
+
+            padding: 10px 16px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 7px;
+
+        }
+
+
+        .print-button {
+
+            color: #ffffff;
+
+            background: var(--primary-color);
+
+        }
+
+
+        .back-button {
+
+            color: #ffffff;
+
+            background: var(--accent-color);
+
+        }
+
+
+        .print-button:hover,
+        .back-button:hover {
+
+            opacity: 0.92;
+
+        }
+
+
+        /* ============================================================
+           A4 PAGE
+           ============================================================ */
+
+        .result-page {
+
+            width: 210mm;
+
+            min-height: 297mm;
+
+            margin: 0 auto 30px;
+
+            background: #ffffff;
+
+            padding: 14mm 14mm 12mm;
+
+            position: relative;
+
+            box-shadow:
+                0 4px 25px rgba(0, 0, 0, 0.10);
+
+        }
+
+
+        /* ============================================================
+           PAGE BORDER
+           ============================================================ */
+
+        .result-page::before {
+
+            content: "";
+
+            position: absolute;
+
+            inset: 7mm;
+
+            border: 1px solid #d9dee8;
+
+            pointer-events: none;
+
+        }
+
+
+        .result-content {
+
+            position: relative;
+
+            z-index: 1;
+
+        }
+
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+
+        .institution-header {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 18px;
+
+            padding-bottom: 13px;
+
+            border-bottom:
+                3px solid var(--primary-color);
+
+        }
+
+
+        .header-logo {
+
+            width: 78px;
+
+            height: 78px;
+
+            object-fit: contain;
+
+            flex: 0 0 78px;
+
+        }
+
+
+        .header-logo-placeholder {
+
+            width: 78px;
+
+            height: 78px;
+
+            flex: 0 0 78px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border:
+                1px solid var(--border-color);
+
+            border-radius: 8px;
+
+            color: var(--muted-color);
+
+            font-size: 10px;
+
+            text-align: center;
+
+        }
+
+
+        .institution-information {
+
+            flex: 1;
+
+            text-align: center;
+
+        }
+
+
+        .institution-name {
+
+            margin: 0;
+
+            color: var(--primary-color);
+
+            font-size: 22px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.3px;
+
+        }
+
+
+        .institution-tagline {
+
+            margin-top: 5px;
+
+            color: var(--accent-color);
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.8px;
+
+        }
+
+
+        .institution-address {
+
+            margin-top: 5px;
+
+            color: var(--muted-color);
+
+            font-size: 10px;
+
+            line-height: 1.5;
+
+        }
+
+
+        .institution-contact {
+
+            margin-top: 2px;
+
+            color: var(--muted-color);
+
+            font-size: 9px;
+
+        }
+
+
+        /* ============================================================
+           DOCUMENT HEADING
+           ============================================================ */
+
+        .document-heading {
+
+            text-align: center;
+
+            padding: 16px 0 12px;
+
+        }
+
+
+        .document-title {
+
+            margin: 0;
+
+            color: var(--primary-color);
+
+            font-size: 20px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .document-subtitle {
+
+            margin-top: 5px;
+
+            color: var(--muted-color);
+
+            font-size: 11px;
+
+            font-weight: 600;
+
+        }
+
+
+        .document-line {
+
+            width: 70px;
+
+            height: 3px;
+
+            margin: 9px auto 0;
+
+            background: var(--secondary-color);
+
+            border-radius: 10px;
+
+        }
+
+
+        /* ============================================================
+           INFORMATION GRID
+           ============================================================ */
+
+        .information-grid {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 12px;
+
+            margin-top: 6px;
+
+        }
+
+
+        .information-box {
+
+            border:
+                1px solid var(--border-color);
+
+            border-radius: 7px;
+
+            overflow: hidden;
+
+            background: #ffffff;
+
+        }
+
+
+        .information-box-title {
+
+            padding: 8px 10px;
+
+            background: var(--primary-color);
+
+            color: #ffffff;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.4px;
+
+        }
+
+
+        .information-row {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            justify-content: space-between;
+
+            gap: 12px;
+
+            padding: 6px 10px;
+
+            border-bottom:
+                1px solid #edf0f5;
+
+            font-size: 10px;
+
+        }
+
+
+        .information-row:last-child {
+
+            border-bottom: none;
+
+        }
+
+
+        .information-label {
+
+            color: var(--muted-color);
+
+            font-weight: 600;
+
+        }
+
+
+        .information-value {
+
+            color: var(--text-color);
+
+            font-weight: 700;
+
+            text-align: right;
+
+        }
+
+
+        /* ============================================================
+           BRANCH INFORMATION
+           ============================================================ */
+
+        .branch-information {
+
+            margin-top: 12px;
+
+            border:
+                1px solid var(--border-color);
+
+            border-radius: 7px;
+
+            overflow: hidden;
+
+            background: #ffffff;
+
+        }
+
+
+        .branch-header {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 12px;
+
+            padding: 8px 10px;
+
+            background: var(--accent-color);
+
+            color: #ffffff;
+
+        }
+
+
+        .branch-header-title {
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.4px;
+
+        }
+
+
+        .branch-header-code {
+
+            font-size: 9px;
+
+            font-weight: 700;
+
+            opacity: 0.95;
+
+        }
+
+
+        .branch-content {
+
+            display: grid;
+
+            grid-template-columns:
+                1.2fr
+                1fr
+                1fr
+                1.2fr;
+
+            gap: 0;
+
+        }
+
+
+        .branch-item {
+
+            min-height: 46px;
+
+            padding: 7px 10px;
+
+            border-right:
+                1px solid #edf0f5;
+
+        }
+
+
+        .branch-item:last-child {
+
+            border-right: none;
+
+        }
+
+
+        .branch-label {
+
+            display: block;
+
+            color: var(--muted-color);
+
+            font-size: 8px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.3px;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .branch-value {
+
+            display: block;
+
+            color: var(--text-color);
+
+            font-size: 9.5px;
+
+            font-weight: 700;
+
+        }
+
+
+        /* ============================================================
+           SECTION HEADING
+           ============================================================ */
+
+        .section-heading {
+
+            margin-top: 17px;
+
+            margin-bottom: 7px;
+
+            color: var(--primary-color);
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.4px;
+
+        }
+
+
+        /* ============================================================
+           RESULTS TABLE
+           ============================================================ */
+
+        .results-table-wrapper {
+
+            width: 100%;
+
+            border:
+                1px solid var(--border-color);
+
+            border-radius: 7px;
+
+            overflow: hidden;
+
+        }
+
+
+        .results-table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            table-layout: fixed;
+
+        }
+
+
+        .results-table thead th {
+
+            padding: 8px 6px;
+
+            background: var(--primary-color);
+
+            color: #ffffff;
+
+            border-right:
+                1px solid rgba(255, 255, 255, 0.22);
+
+            font-size: 9px;
+
+            font-weight: 800;
+
+            text-align: center;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .results-table thead th:last-child {
+
+            border-right: none;
+
+        }
+
+
+        .results-table tbody td {
+
+            padding: 7px 6px;
+
+            border-right:
+                1px solid var(--border-color);
+
+            border-bottom:
+                1px solid var(--border-color);
+
+            font-size: 9.5px;
+
+            vertical-align: middle;
+
+        }
+
+
+        .results-table tbody tr:last-child td {
+
+            border-bottom: none;
+
+        }
+
+
+        .results-table tbody td:last-child {
+
+            border-right: none;
+
+        }
+
+
+        .results-table tbody tr:nth-child(even) {
+
+            background: #fafbfd;
+
+        }
+
+
+        .column-number {
+
+            width: 7%;
+
+            text-align: center;
+
+        }
+
+
+        .column-subject {
+
+            width: 27%;
+
+        }
+
+
+        .column-code {
+
+            width: 12%;
+
+            text-align: center;
+
+        }
+
+
+        .column-teacher {
+
+            width: 19%;
+
+        }
+
+
+        .column-marks {
+
+            width: 12%;
+
+            text-align: center;
+
+        }
+
+
+        .column-max {
+
+            width: 10%;
+
+            text-align: center;
+
+        }
+
+
+        .column-status {
+
+            width: 13%;
+
+            text-align: center;
+
+        }
+
+
+        .subject-name {
+
+            font-weight: 700;
+
+            color: var(--text-color);
+
+        }
+
+
+        .subject-code {
+
+            color: var(--muted-color);
+
+            font-weight: 600;
+
+        }
+
+
+        .teacher-name {
+
+            color: #344054;
+
+        }
+
+
+        .marks-value {
+
+            font-weight: 800;
+
+            color: var(--primary-color);
+
+        }
+
+
+        .status-pass {
+
+            color: var(--success-color);
+
+            font-weight: 800;
+
+        }
+
+
+        .status-fail {
+
+            color: var(--danger-color);
+
+            font-weight: 800;
+
+        }
+
+
+        .status-absent {
+
+            color: var(--accent-color);
+
+            font-weight: 800;
+
+        }
+
+
+        .status-exempted {
+
+            color: var(--accent-color);
+
+            font-weight: 800;
+
+        }
+
+
+        .status-missing {
+
+            color: var(--muted-color);
+
+            font-weight: 700;
+
+        }
+
+
+        /* ============================================================
+           SUMMARY GRID
+           ============================================================ */
+
+        .summary-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 9px;
+
+            margin-top: 13px;
+
+        }
+
+
+        .summary-card {
+
+            min-height: 68px;
+
+            padding: 9px 10px;
+
+            border:
+                1px solid var(--border-color);
+
+            border-radius: 7px;
+
+            background: #ffffff;
+
+            text-align: center;
+
+        }
+
+
+        .summary-label {
+
+            color: var(--muted-color);
+
+            font-size: 8.5px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.35px;
+
+        }
+
+
+        .summary-value {
+
+            margin-top: 7px;
+
+            color: var(--primary-color);
+
+            font-size: 17px;
+
+            font-weight: 900;
+
+        }
+
+
+        .summary-note {
+
+            margin-top: 3px;
+
+            color: var(--muted-color);
+
+            font-size: 8px;
+
+            line-height: 1.3;
+
+        }
+
+
+        .result-pass {
+
+            color: var(--success-color);
+
+        }
+
+
+        .result-fail {
+
+            color: var(--danger-color);
+
+        }
+
+
+        /* ============================================================
+           FINAL RESULT PANEL
+           ============================================================ */
+
+        .final-result-panel {
+
+            margin-top: 12px;
+
+            padding: 10px 14px;
+
+            border:
+                1px solid var(--border-color);
+
+            border-radius: 7px;
+
+            background: var(--light-bg);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 16px;
+
+        }
+
+
+        .final-result-label {
+
+            color: var(--muted-color);
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .final-result-value {
+
+            font-size: 18px;
+
+            font-weight: 900;
+
+        }
+
+
+        /* ============================================================
+           ACADEMIC POSITIONS
+           ============================================================ */
+
+        .positions-grid {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+
+            margin-top: 8px;
+
+        }
+
+
+        .position-card {
+
+            min-height: 70px;
+
+            padding: 10px;
+
+            border:
+                1px solid var(--border-color);
+
+            border-radius: 7px;
+
+            background: #ffffff;
+
+            text-align: center;
+
+        }
+
+
+        .position-label {
+
+            color: var(--muted-color);
+
+            font-size: 8.5px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.35px;
+
+        }
+
+
+        .position-value {
+
+            margin-top: 7px;
+
+            color: var(--primary-color);
+
+            font-size: 19px;
+
+            font-weight: 900;
+
+        }
+
+
+        .position-note {
+
+            margin-top: 3px;
+
+            color: var(--muted-color);
+
+            font-size: 8px;
+
+        }
+
+
+        /* ============================================================
+           GRADE
+           ============================================================ */
+
+        .grade-panel {
+
+            margin-top: 10px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 14px;
+
+            padding: 9px 14px;
+
+            border:
+                1px solid var(--border-color);
+
+            border-radius: 7px;
+
+            background: #ffffff;
+
+        }
+
+
+        .grade-label {
+
+            color: var(--muted-color);
+
+            font-size: 9px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .grade-value {
+
+            color: var(--primary-color);
+
+            font-size: 18px;
+
+            font-weight: 900;
+
+        }
+
+
+        /* ============================================================
+           REMARKS
+           ============================================================ */
+
+        .remarks-section {
+
+            margin-top: 13px;
+
+        }
+
+
+        .remarks-box {
+
+            min-height: 45px;
+
+            padding: 9px 11px;
+
+            border:
+                1px solid var(--border-color);
+
+            border-radius: 7px;
+
+            background: #ffffff;
+
+            color: #344054;
+
+            font-size: 9.5px;
+
+            line-height: 1.5;
+
+        }
+
+
+        .remarks-empty {
+
+            color: var(--muted-color);
+
+            font-style: italic;
+
+        }
+
+
+        .subject-remark {
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .subject-remark:last-child {
+
+            margin-bottom: 0;
+
+        }
+
+
+        /* ============================================================
+           SIGNATURES
+           ============================================================ */
+
+        .signature-grid {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 40px;
+
+            margin-top: 24px;
+
+        }
+
+
+        .signature-box {
+
+            text-align: center;
+
+        }
+
+
+        .signature-image {
+
+            max-width: 130px;
+
+            max-height: 45px;
+
+            object-fit: contain;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .signature-line {
+
+            border-top:
+                1px solid #667085;
+
+            margin-top: 12px;
+
+            padding-top: 5px;
+
+        }
+
+
+        .signature-name {
+
+            color: var(--text-color);
+
+            font-size: 9px;
+
+            font-weight: 800;
+
+        }
+
+
+        .signature-title {
+
+            margin-top: 2px;
+
+            color: var(--muted-color);
+
+            font-size: 8px;
+
+        }
+
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+
+        .result-footer {
+
+            margin-top: 20px;
+
+            padding-top: 9px;
+
+            border-top:
+                1px solid var(--border-color);
+
+            text-align: center;
+
+        }
+
+
+        .footer-text {
+
+            color: var(--muted-color);
+
+            font-size: 8px;
+
+            line-height: 1.5;
+
+        }
+
+
+        .footer-institution {
+
+            margin-top: 3px;
+
+            color: var(--primary-color);
+
+            font-size: 8px;
+
+            font-weight: 800;
+
+        }
+
+
+        /* ============================================================
+           PRINT
+           ============================================================ */
+
+        @page {
+
+            size: A4;
+
+            margin: 0;
+
+        }
+
+
+        @media print {
+
+            html,
+            body {
+
+                width: 210mm;
+
+                min-height: 297mm;
+
+                background: #ffffff !important;
+
+            }
+
+
+            body {
+
+                margin: 0;
+
+                padding: 0;
+
+            }
+
+
+            .print-actions {
+
+                display: none !important;
+
+            }
+
+
+            .result-page {
+
+                width: 210mm;
+
+                min-height: 297mm;
+
+                margin: 0;
+
+                padding:
+                    14mm
+                    14mm
+                    12mm;
+
+                box-shadow: none;
+
+                page-break-after: avoid;
+
+            }
+
+
+            .result-page::before {
+
+                display: block;
+
+            }
+
+
+            .results-table thead {
+
+                display: table-header-group;
+
+            }
+
+
+            .results-table tr {
+
+                page-break-inside: avoid;
+
+            }
+
+
+            .information-box,
+            .branch-information,
+            .summary-card,
+            .position-card,
+            .final-result-panel,
+            .grade-panel,
+            .remarks-box,
+            .signature-box {
+
+                page-break-inside: avoid;
+
+            }
+
+
+            * {
+
+                -webkit-print-color-adjust: exact !important;
+
+                print-color-adjust: exact !important;
+
+            }
+
+        }
+
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+
+        @media screen and (max-width: 900px) {
+
+            .print-actions {
+
+                width:
+                    calc(100% - 24px);
+
+            }
+
+
+            .result-page {
+
+                width:
+                    calc(100% - 24px);
+
+                min-height: auto;
+
+                margin-bottom: 20px;
+
+            }
+
+
+            .information-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .branch-content {
+
+                grid-template-columns:
+                    1fr 1fr;
+
+            }
+
+
+            .branch-item:nth-child(2) {
+
+                border-right: none;
+
+            }
+
+
+            .branch-item {
+
+                border-bottom:
+                    1px solid #edf0f5;
+
+            }
+
+
+            .summary-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+        }
+
+
+        @media screen and (max-width: 600px) {
+
+            .institution-header {
+
+                flex-direction: column;
+
+            }
+
+
+            .header-logo,
+            .header-logo-placeholder {
+
+                width: 65px;
+
+                height: 65px;
+
+                flex-basis: 65px;
+
+            }
+
+
+            .institution-name {
+
+                font-size: 17px;
+
+            }
+
+
+            .document-title {
+
+                font-size: 16px;
+
+            }
+
+
+            .branch-content {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .branch-item {
+
+                border-right: none;
+
+            }
+
+
+            .positions-grid {
+
+                grid-template-columns: 1fr 1fr;
+
+            }
+
+
+            .results-table-wrapper {
+
+                overflow-x: auto;
+
+            }
+
+
+            .results-table {
+
+                min-width: 700px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ============================================================
+         PRINT ACTIONS
+         ============================================================ -->
+
+    <div class="print-actions">
+
+        <a
+            href="{{ request.referrer or url_for('main.exam_results') }}"
+            class="back-button"
+        >
+            ← Back
+        </a>
+
+
+        <button
+            type="button"
+            class="print-button"
+            onclick="window.print()"
+        >
+            🖨 Print Result
+        </button>
+
+    </div>
+
+
+    <!-- ============================================================
+         A4 PAGE
+         ============================================================ -->
+
+    <div class="result-page">
+
+        <div class="result-content">
+
+
+            <!-- ====================================================
+                 INSTITUTION HEADER
+                 ==================================================== -->
+
+            <header class="institution-header">
+
+
+                <!-- LEFT LOGO -->
+
+                {% if exam and exam.branch and exam.branch.main_logo %}
+
+                    <img
+                        src="{% if exam.branch.main_logo.startswith('/') %}
+                                {{ exam.branch.main_logo }}
+                             {% else %}
+                                {{ url_for(
+                                    'static',
+                                    filename=exam.branch.main_logo
+                                ) }}
+                             {% endif %}"
+                        alt="{{ exam.branch.name or 'Branch Logo' }}"
+                        class="header-logo"
+                    >
+
+                {% elif site_settings and site_settings.main_logo %}
+
+                    <img
+                        src="{% if site_settings.main_logo.startswith('/') %}
+                                {{ site_settings.main_logo }}
+                             {% else %}
+                                {{ url_for(
+                                    'static',
+                                    filename=site_settings.main_logo
+                                ) }}
+                             {% endif %}"
+                        alt="{{ site_settings.site_name or 'Institution Logo' }}"
+                        class="header-logo"
+                    >
+
+                {% else %}
+
+                    <div class="header-logo-placeholder">
+                        LOGO
+                    </div>
+
+                {% endif %}
+
+
+                <!-- INSTITUTION -->
+
+                <div class="institution-information">
+
+
+                    <h1 class="institution-name">
+
+                        {{
+                            site_settings.site_name
+                            if site_settings and site_settings.site_name
+                            else (
+                                site_settings.site_title
+                                if site_settings and site_settings.site_title
+                                else "SOOYAAL EDUCATIONAL INSTITUTE"
+                            )
+                        }}
+
+                    </h1>
+
+
+                    {% if site_settings and site_settings.tagline %}
+
+                        <div class="institution-tagline">
+
+                            {{ site_settings.tagline }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="institution-address">
+
+                        {% if site_settings and site_settings.address %}
+
+                            {{ site_settings.address }}
+
+                        {% endif %}
+
+
+                        {% if site_settings and site_settings.city %}
+
+                            {% if site_settings.address %}
+                                ,
+                            {% endif %}
+
+                            {{ site_settings.city }}
+
+                        {% endif %}
+
+
+                        {% if site_settings and site_settings.state %}
+
+                            {% if site_settings.city %}
+                                ,
+                            {% endif %}
+
+                            {{ site_settings.state }}
+
+                        {% endif %}
+
+
+                        {% if site_settings and site_settings.country %}
+
+                            {% if
+                                site_settings.city
+                                or site_settings.state
+                                or site_settings.address
+                            %}
+                                ,
+                            {% endif %}
+
+                            {{ site_settings.country }}
+
+                        {% endif %}
+
+                    </div>
+
+
+                    {% if site_settings and (
+                        site_settings.phone
+                        or site_settings.email
+                        or site_settings.website
+                    ) %}
+
+                        <div class="institution-contact">
+
+                            {% if site_settings.phone %}
+
+                                {{ site_settings.phone }}
+
+                            {% endif %}
+
+
+                            {% if
+                                site_settings.phone
+                                and site_settings.email
+                            %}
+
+                                &nbsp; | &nbsp;
+
+                            {% endif %}
+
+
+                            {% if site_settings.email %}
+
+                                {{ site_settings.email }}
+
+                            {% endif %}
+
+
+                            {% if
+                                (
+                                    site_settings.phone
+                                    or site_settings.email
+                                )
+                                and site_settings.website
+                            %}
+
+                                &nbsp; | &nbsp;
+
+                            {% endif %}
+
+
+                            {% if site_settings.website %}
+
+                                {{ site_settings.website }}
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- RIGHT LOGO -->
+
+                {% if exam and exam.branch and exam.branch.sub_logo %}
+
+                    <img
+                        src="{% if exam.branch.sub_logo.startswith('/') %}
+                                {{ exam.branch.sub_logo }}
+                             {% else %}
+                                {{ url_for(
+                                    'static',
+                                    filename=exam.branch.sub_logo
+                                ) }}
+                             {% endif %}"
+                        alt="{{ exam.branch.name or 'Branch' }}"
+                        class="header-logo"
+                    >
+
+                {% elif site_settings and site_settings.sub_logo %}
+
+                    <img
+                        src="{% if site_settings.sub_logo.startswith('/') %}
+                                {{ site_settings.sub_logo }}
+                             {% else %}
+                                {{ url_for(
+                                    'static',
+                                    filename=site_settings.sub_logo
+                                ) }}
+                             {% endif %}"
+                        alt="Institution"
+                        class="header-logo"
+                    >
+
+                {% else %}
+
+                    <div class="header-logo-placeholder">
+                        RESULT
+                    </div>
+
+                {% endif %}
+
+            </header>
+
+
+            <!-- ====================================================
+                 DOCUMENT TITLE
+                 ==================================================== -->
+
+            <section class="document-heading">
+
+
+                <h2 class="document-title">
+
+                    {{
+                        site_settings.exam_title
+                        if site_settings and site_settings.exam_title
+                        else "STUDENT EXAMINATION RESULT"
+                    }}
+
+                </h2>
+
+
+                <div class="document-subtitle">
+
+                    {{
+                        site_settings.exam_subtitle
+                        if site_settings and site_settings.exam_subtitle
+                        else "EXAMINATION RESULT"
+                    }}
+
+                </div>
+
+
+                <div class="document-line"></div>
+
+            </section>
+
+
+               <!-- ====================================================
+                 BRANCH INFORMATION
+                 ==================================================== -->
+
+            {% set result_branch = exam.branch if exam and exam.branch else none %}
+
+
+            {% if result_branch %}
+
+                <section class="branch-information">
+
+
+                    <div class="branch-header">
+
+                        <span class="branch-header-title">
+                            Branch Information
+                        </span>
+
+
+                        <span class="branch-header-code">
+
+                            {% if result_branch.code %}
+
+                                {{ result_branch.code }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="branch-content">
+
+
+                        <!-- BRANCH NAME -->
+
+                        <div class="branch-item">
+
+                            <span class="branch-label">
+                                Branch
+                            </span>
+
+                            <span class="branch-value">
+
+                                {{ result_branch.name or "—" }}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- PHONE -->
+
+                        <div class="branch-item">
+
+                            <span class="branch-label">
+                                Phone
+                            </span>
+
+                            <span class="branch-value">
+
+                                {{ result_branch.phone or "—" }}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- EMAIL -->
+
+                        <div class="branch-item">
+
+                            <span class="branch-label">
+                                Email
+                            </span>
+
+                            <span class="branch-value">
+
+                                {{ result_branch.email or "—" }}
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- LOCATION -->
+
+                        <div class="branch-item">
+
+                            <span class="branch-label">
+                                Location
+                            </span>
+
+                            <span class="branch-value">
+
+                                {% if result_branch.address %}
+
+                                    {{ result_branch.address }}
+
+                                {% endif %}
+
+
+                                {% if
+                                    result_branch.address
+                                    and result_branch.city
+                                %}
+
+                                    ,
+
+                                {% endif %}
+
+
+                                {% if result_branch.city %}
+
+                                    {{ result_branch.city }}
+
+                                {% endif %}
+
+
+                                {% if
+                                    not result_branch.address
+                                    and not result_branch.city
+                                %}
+
+                                    —
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+            <!-- ====================================================
+                 STUDENT INFORMATION
+                 ==================================================== -->
+
+            <section class="information-grid">
+
+
+                <!-- STUDENT -->
+
+                <div class="information-box">
+
+
+                    <div class="information-box-title">
+
+                        Student Information
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Student Name
+                        </span>
+
+                        <span class="information-value">
+                            {{ student_name or "—" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Admission No.
+                        </span>
+
+                        <span class="information-value">
+                            {{ admission_no or "—" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Roll No.
+                        </span>
+
+                        <span class="information-value">
+                            {{ roll_no or "—" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Program
+                        </span>
+
+                        <span class="information-value">
+
+                            {% if program %}
+
+                                {{
+                                    program.name
+                                    or program.title
+                                    or "—"
+                                }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Class
+                        </span>
+
+                        <span class="information-value">
+
+                            {% if student_class %}
+
+                                {{
+                                    student_class.name
+                                    or student_class.title
+                                    or "—"
+                                }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Section
+                        </span>
+
+                        <span class="information-value">
+
+                            {% if student_section %}
+
+                                {{
+                                    student_section.name
+                                    or student_section.title
+                                    or "—"
+                                }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- EXAM -->
+
+                <div class="information-box">
+
+
+                    <div class="information-box-title">
+
+                        Examination Information
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Examination
+                        </span>
+
+                        <span class="information-value">
+                            {{ exam_title or "—" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Exam Code
+                        </span>
+
+                        <span class="information-value">
+                            {{ exam_code or "—" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Exam Type
+                        </span>
+
+                        <span class="information-value">
+                            {{ exam_type or "—" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Academic Year
+                        </span>
+
+                        <span class="information-value">
+
+                            {% if academic_year %}
+
+                                {{
+                                    academic_year.name
+                                    or academic_year.year
+                                    or academic_year.title
+                                    or academic_year
+                                }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Term
+                        </span>
+
+                        <span class="information-value">
+
+                            {% if term %}
+
+                                {{
+                                    term.name
+                                    or term.title
+                                    or term.code
+                                    or term
+                                }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="information-row">
+
+                        <span class="information-label">
+                            Result Date
+                        </span>
+
+                        <span class="information-value">
+
+                            {% if result.updated_at %}
+
+                                {{
+                                    result.updated_at.strftime(
+                                        "%d/%m/%Y"
+                                    )
+                                }}
+
+                            {% elif result.created_at %}
+
+                                {{
+                                    result.created_at.strftime(
+                                        "%d/%m/%Y"
+                                    )
+                                }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+         
+
+
+            <!-- ====================================================
+                 SUBJECT RESULTS
+                 ==================================================== -->
+
+            <div class="section-heading">
+
+                Subject Results
+
+            </div>
+
+
+            <div class="results-table-wrapper">
+
+
+                <table class="results-table">
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th class="column-number">
+                                #
+                            </th>
+
+                            <th class="column-subject">
+                                Subject
+                            </th>
+
+                            <th class="column-code">
+                                Code
+                            </th>
+
+                            <th class="column-teacher">
+                                Teacher
+                            </th>
+
+                            <th class="column-marks">
+                                Marks
+                            </th>
+
+                            <th class="column-max">
+                                Max
+                            </th>
+
+                            <th class="column-status">
+                                Result
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% if subject_rows %}
+
+
+                            {% for row in subject_rows %}
+
+                                <tr>
+
+
+                                    <!-- NUMBER -->
+
+                                    <td class="column-number">
+
+                                        {{ loop.index }}
+
+                                    </td>
+
+
+                                    <!-- SUBJECT -->
+
+                                    <td class="column-subject">
+
+                                        <span class="subject-name">
+
+                                            {{ row.subject_name or "—" }}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- CODE -->
+
+                                    <td class="column-code">
+
+                                        <span class="subject-code">
+
+                                            {{ row.subject_code or "—" }}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- TEACHER -->
+
+                                    <td class="column-teacher">
+
+                                        <span class="teacher-name">
+
+                                            {{ row.teacher_name or "—" }}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- MARKS -->
+
+                                    <td class="column-marks">
+
+
+                                        {% if row.is_absent %}
+
+                                            <span class="status-absent">
+                                                ABS
+                                            </span>
+
+
+                                        {% elif row.is_exempted %}
+
+                                            <span class="status-exempted">
+                                                EXM
+                                            </span>
+
+
+                                        {% elif row.marks is not none %}
+
+                                            <span class="marks-value">
+
+                                                {{ row.marks }}
+
+                                            </span>
+
+
+                                        {% else %}
+
+                                            <span class="status-missing">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- MAX -->
+
+                                    <td class="column-max">
+
+                                        {{ row.max_marks or "—" }}
+
+                                    </td>
+
+
+                                    <!-- RESULT -->
+
+                                    <td class="column-status">
+
+
+                                        {% if row.status == "PASS" %}
+
+                                            <span class="status-pass">
+                                                PASS
+                                            </span>
+
+
+                                        {% elif row.status == "FAIL" %}
+
+                                            <span class="status-fail">
+                                                FAIL
+                                            </span>
+
+
+                                        {% elif row.status == "ABSENT" %}
+
+                                            <span class="status-absent">
+                                                ABSENT
+                                            </span>
+
+
+                                        {% elif row.status == "EXEMPTED" %}
+
+                                            <span class="status-exempted">
+                                                EXEMPTED
+                                            </span>
+
+
+                                        {% else %}
+
+                                            <span class="status-missing">
+                                                MISSING
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+
+                        {% else %}
+
+
+                            <tr>
+
+                                <td
+                                    colspan="7"
+                                    style="
+                                        text-align:center;
+                                        padding:18px;
+                                        color:#667085;
+                                    "
+                                >
+
+                                    No subject results available.
+
+                                </td>
+
+                            </tr>
+
+
+                        {% endif %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- ====================================================
+                 RESULT SUMMARY
+                 ==================================================== -->
+
+            <div class="summary-grid">
+
+
+                <!-- TOTAL MARKS -->
+
+                <div class="summary-card">
+
+                    <div class="summary-label">
+                        Total Marks
+                    </div>
+
+
+                    <div class="summary-value">
+
+                        {% if total_marks is not none %}
+
+                            {{ total_marks }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="summary-note">
+                        Marks obtained
+                    </div>
+
+                </div>
+
+
+                <!-- MAXIMUM -->
+
+                <div class="summary-card">
+
+                    <div class="summary-label">
+                        Maximum Marks
+                    </div>
+
+
+                    <div class="summary-value">
+
+                        {% if maximum_marks is not none %}
+
+                            {{ maximum_marks }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="summary-note">
+                        Total possible marks
+                    </div>
+
+                </div>
+
+
+                <!-- PERCENTAGE -->
+
+                <div class="summary-card">
+
+                    <div class="summary-label">
+                        Percentage
+                    </div>
+
+
+                    <div class="summary-value">
+
+                        {% if percentage is not none %}
+
+                            {{ "%.2f"|format(
+                                percentage|float
+                            ) }}%
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="summary-note">
+                        Overall percentage
+                    </div>
+
+                </div>
+
+
+                <!-- FINAL RESULT -->
+
+                <div class="summary-card">
+
+                    <div class="summary-label">
+                        Final Result
+                    </div>
+
+
+                    {% if percentage is not none %}
+
+
+                        {% if percentage|float >= 50 %}
+
+                            <div
+                                class="summary-value result-pass"
+                            >
+                                PASS
+                            </div>
+
+
+                            <div class="summary-note">
+                                Student passed
+                            </div>
+
+
+                        {% else %}
+
+                            <div
+                                class="summary-value result-fail"
+                            >
+                                FAIL
+                            </div>
+
+
+                            <div class="summary-note">
+                                Student did not pass
+                            </div>
+
+                        {% endif %}
+
+
+                    {% else %}
+
+                        <div class="summary-value">
+                            —
+                        </div>
+
+
+                        <div class="summary-note">
+                            Result not available
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ====================================================
+                 FINAL RESULT EMPHASIS
+                 ==================================================== -->
+
+            <div class="final-result-panel">
+
+
+                <span class="final-result-label">
+                    Final Result
+                </span>
+
+
+                {% if percentage is not none %}
+
+
+                    {% if percentage|float >= 50 %}
+
+                        <span
+                            class="final-result-value result-pass"
+                        >
+                            PASS
+                        </span>
+
+
+                    {% else %}
+
+                        <span
+                            class="final-result-value result-fail"
+                        >
+                            FAIL
+                        </span>
+
+                    {% endif %}
+
+
+                {% else %}
+
+                    <span class="final-result-value">
+                        —
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- ====================================================
+                 ACADEMIC POSITIONS
+                 ==================================================== -->
+
+            <div class="section-heading">
+
+                Academic Positions
+
+            </div>
+
+
+            <div class="positions-grid">
+
+
+                <!-- BRANCH POSITION -->
+
+                <div class="position-card">
+
+                    <div class="position-label">
+
+                        Branch Position
+
+                    </div>
+
+
+                    <div class="position-value">
+
+                        {% if branch_position is not none %}
+
+                            {{ branch_position }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="position-note">
+
+                        Position in branch
+
+                    </div>
+
+                </div>
+
+
+                <!-- CLASS POSITION -->
+
+                <div class="position-card">
+
+                    <div class="position-label">
+
+                        Class Position
+
+                    </div>
+
+
+                    <div class="position-value">
+
+                        {% if class_position is not none %}
+
+                            {{ class_position }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="position-note">
+
+                        Position in class
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ====================================================
+                 FINAL GRADE
+                 ==================================================== -->
+
+            <div class="grade-panel">
+
+
+                <span class="grade-label">
+
+                    Final Grade
+
+                </span>
+
+
+                <span class="grade-value">
+
+                    {% if grade %}
+
+                        {{ grade }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+
+            <!-- ====================================================
+                 REMARKS
+                 ==================================================== -->
+
+            <!-- <section class="remarks-section">
+
+
+                <div class="section-heading">
+
+                    Remarks
+
+                </div>
+
+
+                <div class="remarks-box">
+
+
+                    {% set has_remarks = false %}
+
+
+                    {% for row in subject_rows %}
+
+
+                        {% if row.remark %}
+
+
+                            {% set has_remarks = true %}
+
+
+                            <div class="subject-remark">
+
+                                <strong>
+                                    {{ row.subject_name }}:
+                                </strong>
+
+                                {{ row.remark }}
+
+                            </div>
+
+
+                        {% endif %}
+
+
+                    {% endfor %}
+
+
+                    {% if not has_remarks %}
+
+
+                        {% if result.remarks %}
+
+                            {{ result.remarks }}
+
+                        {% else %}
+
+                            <span class="remarks-empty">
+
+                                No remarks available.
+
+                            </span>
+
+                        {% endif %}
+
+
+                    {% endif %}
+
+                </div>
+
+            </section> -->
+
+
+            <!-- ====================================================
+                 SIGNATURES
+                 ==================================================== -->
+
+            <div class="signature-grid">
+
+
+                <!-- PRINCIPAL SIGNATURE -->
+
+                <div class="signature-box">
+
+
+                    {% if result_branch and result_branch.signature_photo %}
+
+                        <img
+                            src="{% if result_branch.signature_photo.startswith('/') %}
+                                    {{ result_branch.signature_photo }}
+                                 {% else %}
+                                    {{ url_for(
+                                        'static',
+                                        filename=result_branch.signature_photo
+                                    ) }}
+                                 {% endif %}"
+                            alt="Branch Signature"
+                            class="signature-image"
+                        >
+
+
+                    {% elif site_settings and site_settings.principal_signature %}
+
+                        <img
+                            src="{% if site_settings.principal_signature.startswith('/') %}
+                                    {{ site_settings.principal_signature }}
+                                 {% else %}
+                                    {{ url_for(
+                                        'static',
+                                        filename=site_settings.principal_signature
+                                    ) }}
+                                 {% endif %}"
+                            alt="Principal Signature"
+                            class="signature-image"
+                        >
+
+                    {% endif %}
+
+
+                    <div class="signature-line">
+
+
+                        <div class="signature-name">
+
+                            {% if site_settings and site_settings.principal_name %}
+
+                                {{ site_settings.principal_name }}
+
+                            {% elif result_branch %}
+
+                                {{ result_branch.name }}
+
+                            {% else %}
+
+                                Principal
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="signature-title">
+
+                            {{
+                                site_settings.principal_title
+                                if site_settings
+                                and site_settings.principal_title
+                                else "Principal"
+                            }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- AUTHORIZED SIGNATURE -->
+
+                <div class="signature-box">
+
+
+                    {% if result_branch and result_branch.signature_photo %}
+
+                        <img
+                            src="{% if result_branch.signature_photo.startswith('/') %}
+                                    {{ result_branch.signature_photo }}
+                                 {% else %}
+                                    {{ url_for(
+                                        'static',
+                                        filename=result_branch.signature_photo
+                                    ) }}
+                                 {% endif %}"
+                            alt="Authorized Signature"
+                            class="signature-image"
+                        >
+
+
+                    {% elif site_settings and site_settings.sign_logo %}
+
+                        <img
+                            src="{% if site_settings.sign_logo.startswith('/') %}
+                                    {{ site_settings.sign_logo }}
+                                 {% else %}
+                                    {{ url_for(
+                                        'static',
+                                        filename=site_settings.sign_logo
+                                    ) }}
+                                 {% endif %}"
+                            alt="Authorized Signature"
+                            class="signature-image"
+                        >
+
+                    {% endif %}
+
+
+                    <div class="signature-line">
+
+
+                        <div class="signature-name">
+
+                            Authorized Signature
+
+                        </div>
+
+
+                        <div class="signature-title">
+
+                            Examination Office
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ====================================================
+                 FOOTER
+                 ==================================================== -->
+
+            <footer class="result-footer">
+
+
+                {% if site_settings and site_settings.exam_footer %}
+
+                    <div class="footer-text">
+
+                        {{ site_settings.exam_footer }}
+
+                    </div>
+
+
+                {% else %}
+
+                    <div class="footer-text">
+
+                        This document is an official examination result
+                        issued by the institution.
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="footer-institution">
+
+
+                    {% if result_branch %}
+
+                        {{ result_branch.name }}
+
+                        {% if result_branch.code %}
+                            ({{ result_branch.code }})
+                        {% endif %}
+
+
+                    {% elif site_settings and site_settings.short_name %}
+
+                        {{ site_settings.short_name }}
+
+
+                    {% elif site_settings and site_settings.site_name %}
+
+                        {{ site_settings.site_name }}
+
+
+                    {% else %}
+
+                        SOOYAAL EDUCATIONAL INSTITUTE
+
+                    {% endif %}
+
+
+                </div>
+
+            </footer>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         PRINT SCRIPT
+         ============================================================ -->
+
+    <script>
+
+        function printResult() {
+
+            window.print();
+
+        }
+
+    </script>
+
+
+</body>
+</html>

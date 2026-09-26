@@ -1382,25 +1382,4201 @@ Exam Results
         </div>
 
 
-        <div class="exam-results-header-actions">
+
+<style>
+
+/* ============================================================
+   EXAM RESULT IMPORT
+   ============================================================ */
+
+.exam-results-import-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.exam-results-file-input {
+    display: block;
+
+    width: 220px;
+    height: 42px;
+
+    padding: 7px 10px;
+
+    border: 1px solid #d9dee8;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #06245f;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    box-sizing: border-box;
+}
+
+.exam-results-file-input::file-selector-button {
+    margin-right: 10px;
+
+    padding: 7px 12px;
+
+    border: 0;
+    border-radius: 6px;
+
+    background: #06245f;
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.exam-results-file-input::file-selector-button:hover {
+    background: #051d4e;
+}
+
+.exam-results-import-form
+.exam-results-btn {
+    border: 1px solid #d9dee8;
+    cursor: pointer;
+}
+
+</style>
+
+
+<div class="exam-results-header-actions">
+
+    <!-- =====================================================
+         PRINT
+    ====================================================== -->
+
+    <button
+        type="button"
+        class="exam-results-btn exam-results-btn-light"
+        onclick="window.print()"
+    >
+        <i class="fa-solid fa-print"></i>
+        Print
+    </button>
+
+
+   <!-- =====================================================
+     EXPORT SAMPLE EXAM MARK
+====================================================== -->
+
+<a
+    href="{{ url_for('main.export_sample_exam_result') }}"
+    class="exam-results-btn exam-results-btn-light"
+>
+    <i class="fa-solid fa-file-excel"></i>
+    Export Sample Exam Mark
+</a>
+
+
+<!-- =====================================================
+     EXPORT EXAM RESULTS BUTTON
+====================================================== -->
+
+<button
+    type="button"
+    class="exam-results-btn exam-results-btn-light"
+    id="openExportExamResultModal"
+>
+    <i class="fa-solid fa-file-excel"></i>
+    Export Exam Results
+</button>
+
+
+<!-- ============================================================
+     EXPORT EXAM RESULTS MODAL
+============================================================ -->
+
+<div
+    class="exam-result-export-modal"
+    id="exportExamResultModal"
+    aria-hidden="true"
+>
+
+    <!-- OVERLAY -->
+
+    <div
+        class="exam-result-export-overlay"
+        id="exportExamResultOverlay"
+    ></div>
+
+
+    <!-- DIALOG -->
+
+    <div
+        class="exam-result-export-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="exportExamResultTitle"
+    >
+
+        <!-- ====================================================
+             HEADER
+        ===================================================== -->
+
+        <div class="exam-result-export-header">
+
+            <div class="exam-result-export-header-left">
+
+                <div class="exam-result-export-icon">
+                    <i class="fa-solid fa-file-excel"></i>
+                </div>
+
+                <div>
+
+                    <h2 id="exportExamResultTitle">
+                        Export Exam Results
+                    </h2>
+
+                    <p>
+                        Select the program, class and examination
+                        you want to export.
+                    </p>
+
+                </div>
+
+            </div>
+
 
             <button
                 type="button"
-                class="exam-results-btn exam-results-btn-light"
-                onclick="window.print()"
+                class="exam-result-export-close"
+                id="closeExportExamResultModal"
+                aria-label="Close"
             >
-                <i class="fa-solid fa-print"></i>
-                Print
+                <i class="fa-solid fa-xmark"></i>
             </button>
-            <a
-                href="{{ url_for('main.add_exam_result') }}"
-                class="exam-results-btn exam-results-btn-light"
-            >
-                <i class="fa-solid fa-plus"></i>
-                Add Exam Mark
-            </a>
 
         </div>
+
+
+        <!-- ====================================================
+             BODY
+        ===================================================== -->
+
+        <div class="exam-result-export-body">
+
+            <!-- ==================================================
+                 PROGRAM
+            =================================================== -->
+
+            <div class="exam-result-export-field">
+
+                <label for="exportExamProgram">
+
+                    <i class="fa-solid fa-graduation-cap"></i>
+
+                    Program
+
+                    <span>*</span>
+
+                </label>
+
+
+                <select
+                    id="exportExamProgram"
+                    class="exam-result-export-select"
+                >
+
+                    <option value="">
+                        Select Program
+                    </option>
+
+                    {% for program in programs %}
+
+                        <option value="{{ program.id }}">
+
+                            {{ program.name }}
+
+                            {% if program.code %}
+                                ({{ program.code }})
+                            {% endif %}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <small>
+                    Select the program first.
+                </small>
+
+            </div>
+
+
+            <!-- ==================================================
+                 CLASS
+            =================================================== -->
+
+            <div class="exam-result-export-field">
+
+                <label for="exportExamClass">
+
+                    <i class="fa-solid fa-school"></i>
+
+                    Class
+
+                    <span>*</span>
+
+                </label>
+
+
+                <select
+                    id="exportExamClass"
+                    class="exam-result-export-select"
+                    disabled
+                >
+
+                    <option value="">
+                        Select Class
+                    </option>
+
+                </select>
+
+
+                <small>
+                    Only classes belonging to the selected
+                    program will appear.
+                </small>
+
+            </div>
+
+
+            <!-- ==================================================
+                 EXAM
+            =================================================== -->
+
+            <div class="exam-result-export-field">
+
+                <label for="exportExamExam">
+
+                    <i class="fa-solid fa-file-signature"></i>
+
+                    Examination
+
+                    <span>*</span>
+
+                </label>
+
+
+                <select
+                    id="exportExamExam"
+                    class="exam-result-export-select"
+                    disabled
+                >
+
+                    <option value="">
+                        Select Examination
+                    </option>
+
+                </select>
+
+
+                <small>
+                    Select the examination to export.
+                </small>
+
+            </div>
+
+
+            <!-- ==================================================
+                 STATUS
+            =================================================== -->
+
+            <div
+                class="exam-result-export-status"
+                id="exportExamResultStatus"
+                hidden
+                aria-live="polite"
+            >
+
+                <i
+                    class="fa-solid fa-circle-info"
+                    id="exportExamResultStatusIcon"
+                ></i>
+
+                <span
+                    id="exportExamResultStatusText"
+                ></span>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             FOOTER
+        ===================================================== -->
+
+        <div class="exam-result-export-footer">
+
+            <button
+                type="button"
+                class="exam-result-export-btn exam-result-export-btn-cancel"
+                id="cancelExportExamResult"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+                Cancel
+
+            </button>
+
+
+            <button
+                type="button"
+                class="exam-result-export-btn exam-result-export-btn-submit"
+                id="submitExportExamResult"
+                disabled
+            >
+
+                <i
+                    class="fa-solid fa-file-excel"
+                    id="exportExamResultButtonIcon"
+                ></i>
+
+                <span id="exportExamResultButtonText">
+                    Export Exam Results
+                </span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+/* ============================================================
+   EXPORT EXAM RESULTS MODAL
+============================================================ */
+
+.exam-result-export-modal {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 99999;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+}
+
+
+/* IMPORTANT:
+   JS uses is-open and CSS also uses is-open
+*/
+
+.exam-result-export-modal.is-open {
+
+    display: flex;
+
+}
+
+
+/* ============================================================
+   BODY LOCK
+============================================================ */
+
+body.export-modal-open {
+
+    overflow: hidden;
+
+}
+
+
+/* ============================================================
+   OVERLAY
+============================================================ */
+
+.exam-result-export-overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        rgba(6, 36, 95, 0.58);
+
+    backdrop-filter: blur(5px);
+
+    -webkit-backdrop-filter: blur(5px);
+
+}
+
+
+/* ============================================================
+   DIALOG
+============================================================ */
+
+.exam-result-export-dialog {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: min(560px, 100%);
+
+    max-height: calc(100vh - 40px);
+
+    overflow-y: auto;
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 25px 70px
+        rgba(6, 36, 95, 0.25);
+
+    animation:
+        exportExamModalIn
+        0.22s
+        ease-out;
+
+}
+
+
+@keyframes exportExamModalIn {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(18px)
+            scale(0.97);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.exam-result-export-header {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 22px 24px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #06245f 0%,
+            #123b86 100%
+        );
+
+    color: #ffffff;
+
+}
+
+
+.exam-result-export-header-left {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    min-width: 0;
+
+}
+
+
+.exam-result-export-icon {
+
+    width: 46px;
+
+    height: 46px;
+
+    flex: 0 0 46px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.14);
+
+    color: #ffffff;
+
+    font-size: 20px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.18);
+
+}
+
+
+.exam-result-export-header h2 {
+
+    margin: 0;
+
+    font-size: 20px;
+
+    font-weight: 750;
+
+    line-height: 1.25;
+
+}
+
+
+.exam-result-export-header p {
+
+    margin: 5px 0 0;
+
+    font-size: 13px;
+
+    color:
+        rgba(255, 255, 255, 0.78);
+
+    line-height: 1.5;
+
+}
+
+
+/* ============================================================
+   CLOSE
+============================================================ */
+
+.exam-result-export-close {
+
+    width: 36px;
+
+    height: 36px;
+
+    flex: 0 0 36px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background:
+        rgba(255, 255, 255, 0.10);
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    transition:
+        background 0.18s ease,
+        transform 0.18s ease;
+
+}
+
+
+.exam-result-export-close:hover {
+
+    background:
+        rgba(255, 255, 255, 0.18);
+
+    transform: rotate(4deg);
+
+}
+
+
+/* ============================================================
+   BODY
+============================================================ */
+
+.exam-result-export-body {
+
+    padding: 24px;
+
+}
+
+
+/* ============================================================
+   FIELD
+============================================================ */
+
+.exam-result-export-field {
+
+    margin-bottom: 19px;
+
+}
+
+
+.exam-result-export-field:last-child {
+
+    margin-bottom: 0;
+
+}
+
+
+.exam-result-export-field label {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-bottom: 8px;
+
+    color: #1d2939;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+}
+
+
+.exam-result-export-field label i {
+
+    color: #06245f;
+
+    width: 16px;
+
+    text-align: center;
+
+}
+
+
+.exam-result-export-field label span {
+
+    color: #d92d20;
+
+}
+
+
+/* ============================================================
+   SELECT
+============================================================ */
+
+.exam-result-export-select {
+
+    width: 100%;
+
+    height: 46px;
+
+    padding:
+        0 42px 0 13px;
+
+    border:
+        1px solid
+        #d0d5dd;
+
+    border-radius: 10px;
+
+    background-color: #ffffff;
+
+    color: #1d2939;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    outline: none;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+
+}
+
+
+.exam-result-export-select:hover:not(:disabled) {
+
+    border-color: #98a2b3;
+
+}
+
+
+.exam-result-export-select:focus {
+
+    border-color: #06245f;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(6, 36, 95, 0.10);
+
+}
+
+
+.exam-result-export-select:disabled {
+
+    background: #f2f4f7;
+
+    color: #98a2b3;
+
+    cursor: not-allowed;
+
+}
+
+
+.exam-result-export-field small {
+
+    display: block;
+
+    margin-top: 6px;
+
+    color: #667085;
+
+    font-size: 11px;
+
+    line-height: 1.4;
+
+}
+
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+.exam-result-export-status {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 9px;
+
+    margin-top: 18px;
+
+    padding: 11px 13px;
+
+    border-radius: 9px;
+
+    background: #f2f4f7;
+
+    color: #475467;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+
+}
+
+
+.exam-result-export-status[hidden] {
+
+    display: none;
+
+}
+
+
+.exam-result-export-status i {
+
+    margin-top: 2px;
+
+    color: #06245f;
+
+}
+
+
+.exam-result-export-status.success {
+
+    background: #ecfdf3;
+
+    color: #027a48;
+
+}
+
+
+.exam-result-export-status.success i {
+
+    color: #12b76a;
+
+}
+
+
+.exam-result-export-status.error {
+
+    background: #fef3f2;
+
+    color: #b42318;
+
+}
+
+
+.exam-result-export-status.error i {
+
+    color: #d92d20;
+
+}
+
+
+.exam-result-export-status.warning {
+
+    background: #fffaeb;
+
+    color: #b54708;
+
+}
+
+
+.exam-result-export-status.warning i {
+
+    color: #f79009;
+
+}
+
+
+.exam-result-export-status.info {
+
+    background: #eff8ff;
+
+    color: #175cd3;
+
+}
+
+
+.exam-result-export-status.info i {
+
+    color: #1570ef;
+
+}
+
+
+/* ============================================================
+   FOOTER
+============================================================ */
+
+.exam-result-export-footer {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding: 17px 24px;
+
+    border-top:
+        1px solid
+        #eaecf0;
+
+    background: #fcfcfd;
+
+}
+
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+
+.exam-result-export-btn {
+
+    min-height: 42px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    padding:
+        0 16px;
+
+    border-radius: 9px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    border:
+        1px solid
+        transparent;
+
+    transition:
+        all 0.18s ease;
+
+}
+
+
+/* ============================================================
+   CANCEL
+============================================================ */
+
+.exam-result-export-btn-cancel {
+
+    background: #ffffff;
+
+    color: #344054;
+
+    border-color: #d0d5dd;
+
+}
+
+
+.exam-result-export-btn-cancel:hover {
+
+    background: #f9fafb;
+
+    border-color: #98a2b3;
+
+}
+
+
+/* ============================================================
+   SUBMIT
+============================================================ */
+
+.exam-result-export-btn-submit {
+
+    background: #32b73a;
+
+    color: #ffffff;
+
+    border-color: #32b73a;
+
+    box-shadow:
+        0 4px 10px
+        rgba(50, 183, 58, 0.18);
+
+}
+
+
+.exam-result-export-btn-submit:hover:not(:disabled) {
+
+    background: #27972f;
+
+    border-color: #27972f;
+
+    transform:
+        translateY(-1px);
+
+}
+
+
+.exam-result-export-btn-submit:disabled {
+
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+    box-shadow: none;
+
+}
+
+
+/* ============================================================
+   LOADING
+============================================================ */
+
+.exam-result-export-btn-submit.is-loading {
+
+    pointer-events: none;
+
+    opacity: 0.75;
+
+}
+
+
+.exam-result-export-btn-submit.is-loading
+i {
+
+    animation:
+        exportExamSpin
+        0.8s
+        linear
+        infinite;
+
+}
+
+
+@keyframes exportExamSpin {
+
+    from {
+
+        transform:
+            rotate(0deg);
+
+    }
+
+    to {
+
+        transform:
+            rotate(360deg);
+
+    }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 600px) {
+
+    .exam-result-export-modal {
+
+        padding: 10px;
+
+    }
+
+
+    .exam-result-export-dialog {
+
+        border-radius: 14px;
+
+        max-height:
+            calc(100vh - 20px);
+
+    }
+
+
+    .exam-result-export-header {
+
+        padding: 18px;
+
+    }
+
+
+    .exam-result-export-body {
+
+        padding: 18px;
+
+    }
+
+
+    .exam-result-export-footer {
+
+        padding:
+            14px 18px;
+
+        flex-direction:
+            column-reverse;
+
+    }
+
+
+    .exam-result-export-btn {
+
+        width: 100%;
+
+    }
+
+}
+
+</style>
+
+
+<script>
+
+(function () {
+
+    "use strict";
+
+
+    /* ========================================================
+       ROUTES
+    ======================================================== */
+
+    const optionsUrl =
+        "{{ url_for('main.export_exam_result_options') }}";
+
+    const exportUrl =
+        "{{ url_for('main.export_exam_result') }}";
+
+
+    /* ========================================================
+       ELEMENTS
+    ======================================================== */
+
+    const openModalButton =
+        document.getElementById(
+            "openExportExamResultModal"
+        );
+
+
+    const modal =
+        document.getElementById(
+            "exportExamResultModal"
+        );
+
+
+    const overlay =
+        document.getElementById(
+            "exportExamResultOverlay"
+        );
+
+
+    const closeModalButton =
+        document.getElementById(
+            "closeExportExamResultModal"
+        );
+
+
+    const cancelButton =
+        document.getElementById(
+            "cancelExportExamResult"
+        );
+
+
+    const programSelect =
+        document.getElementById(
+            "exportExamProgram"
+        );
+
+
+    const classSelect =
+        document.getElementById(
+            "exportExamClass"
+        );
+
+
+    const examSelect =
+        document.getElementById(
+            "exportExamExam"
+        );
+
+
+    const submitButton =
+        document.getElementById(
+            "submitExportExamResult"
+        );
+
+
+    const buttonText =
+        document.getElementById(
+            "exportExamResultButtonText"
+        );
+
+
+    const buttonIcon =
+        document.getElementById(
+            "exportExamResultButtonIcon"
+        );
+
+
+    const statusBox =
+        document.getElementById(
+            "exportExamResultStatus"
+        );
+
+
+    const statusText =
+        document.getElementById(
+            "exportExamResultStatusText"
+        );
+
+
+    const statusIcon =
+        document.getElementById(
+            "exportExamResultStatusIcon"
+        );
+
+
+    /* ========================================================
+       STATE
+    ======================================================== */
+
+    let isExporting = false;
+
+    let optionsController = null;
+
+
+    /* ========================================================
+       STATUS ICONS
+    ======================================================== */
+
+    function setStatusIcon(type) {
+
+        if (!statusIcon) {
+            return;
+        }
+
+
+        statusIcon.className =
+            "fa-solid";
+
+
+        if (type === "success") {
+
+            statusIcon.classList.add(
+                "fa-circle-check"
+            );
+
+            return;
+        }
+
+
+        if (type === "error") {
+
+            statusIcon.classList.add(
+                "fa-circle-exclamation"
+            );
+
+            return;
+        }
+
+
+        if (type === "warning") {
+
+            statusIcon.classList.add(
+                "fa-triangle-exclamation"
+            );
+
+            return;
+        }
+
+
+        statusIcon.classList.add(
+            "fa-circle-info"
+        );
+
+    }
+
+
+    /* ========================================================
+       SHOW STATUS
+    ======================================================== */
+
+    function showStatus(
+        message,
+        type = "info"
+    ) {
+
+        if (
+            !statusBox ||
+            !statusText
+        ) {
+            return;
+        }
+
+
+        statusBox.hidden = false;
+
+
+        statusBox.classList.remove(
+            "success",
+            "error",
+            "warning",
+            "info"
+        );
+
+
+        statusBox.classList.add(
+            type
+        );
+
+
+        statusText.textContent =
+            message;
+
+
+        setStatusIcon(type);
+
+    }
+
+
+    /* ========================================================
+       HIDE STATUS
+    ======================================================== */
+
+    function hideStatus() {
+
+        if (!statusBox) {
+            return;
+        }
+
+
+        statusBox.hidden = true;
+
+
+        statusBox.classList.remove(
+            "success",
+            "error",
+            "warning",
+            "info"
+        );
+
+
+        if (statusText) {
+
+            statusText.textContent = "";
+
+        }
+
+    }
+
+
+    /* ========================================================
+       OPEN MODAL
+    ======================================================== */
+
+    function openExportModal() {
+
+        if (!modal) {
+
+            console.error(
+                "Export modal not found."
+            );
+
+            return;
+        }
+
+
+        modal.classList.add(
+            "is-open"
+        );
+
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+
+        document.body.classList.add(
+            "export-modal-open"
+        );
+
+
+        resetDependentFields();
+
+
+        hideStatus();
+
+
+        if (programSelect) {
+
+            setTimeout(
+                function () {
+
+                    programSelect.focus();
+
+                },
+                50
+            );
+
+        }
+
+    }
+
+
+    /* ========================================================
+       CLOSE MODAL
+    ======================================================== */
+
+    function closeExportModal() {
+
+        if (isExporting) {
+            return;
+        }
+
+
+        if (!modal) {
+            return;
+        }
+
+
+        modal.classList.remove(
+            "is-open"
+        );
+
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+
+        document.body.classList.remove(
+            "export-modal-open"
+        );
+
+    }
+
+
+    /* ========================================================
+       RESET DEPENDENT FIELDS
+    ======================================================== */
+
+    function resetDependentFields() {
+
+        if (classSelect) {
+
+            classSelect.innerHTML = `
+                <option value="">
+                    Select Class
+                </option>
+            `;
+
+
+            classSelect.disabled =
+                true;
+
+        }
+
+
+        if (examSelect) {
+
+            examSelect.innerHTML = `
+                <option value="">
+                    Select Examination
+                </option>
+            `;
+
+
+            examSelect.disabled =
+                true;
+
+        }
+
+
+        updateExportButton();
+
+    }
+
+
+    /* ========================================================
+       RESET EVERYTHING
+    ======================================================== */
+
+    function resetExportForm() {
+
+        if (programSelect) {
+
+            programSelect.value = "";
+
+        }
+
+
+        resetDependentFields();
+
+
+        hideStatus();
+
+    }
+
+
+    /* ========================================================
+       SET LOADING STATE
+    ======================================================== */
+
+    function setLoading(
+        loading
+    ) {
+
+        isExporting =
+            loading;
+
+
+        if (!submitButton) {
+            return;
+        }
+
+
+        submitButton.disabled =
+            loading;
+
+
+        if (loading) {
+
+            submitButton.classList.add(
+                "is-loading"
+            );
+
+
+            if (buttonText) {
+
+                buttonText.textContent =
+                    "Preparing CSV...";
+
+            }
+
+
+            if (buttonIcon) {
+
+                buttonIcon.className =
+                    "fa-solid fa-spinner";
+
+            }
+
+        } else {
+
+            submitButton.classList.remove(
+                "is-loading"
+            );
+
+
+            if (buttonText) {
+
+                buttonText.textContent =
+                    "Export Exam Results";
+
+            }
+
+
+            if (buttonIcon) {
+
+                buttonIcon.className =
+                    "fa-solid fa-file-excel";
+
+            }
+
+        }
+
+    }
+
+
+    /* ========================================================
+       UPDATE EXPORT BUTTON
+    ======================================================== */
+
+    function updateExportButton() {
+
+        if (!submitButton) {
+            return;
+        }
+
+
+        const programId =
+            programSelect
+                ? programSelect.value
+                : "";
+
+
+        const classId =
+            classSelect
+                ? classSelect.value
+                : "";
+
+
+        const examId =
+            examSelect
+                ? examSelect.value
+                : "";
+
+
+        submitButton.disabled =
+            (
+                !programId ||
+                !classId ||
+                !examId ||
+                isExporting
+            );
+
+    }
+
+
+    /* ========================================================
+       ADD OPTION
+    ======================================================== */
+
+    function addOption(
+        select,
+        value,
+        text,
+        extra = {}
+    ) {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+
+        option.value =
+            String(value);
+
+
+        option.textContent =
+            text;
+
+
+        Object.keys(extra)
+            .forEach(
+                function (key) {
+
+                    option.dataset[key] =
+                        extra[key];
+
+                }
+            );
+
+
+        select.appendChild(
+            option
+        );
+
+    }
+
+
+    /* ========================================================
+       NORMALIZE JSON
+    ======================================================== */
+
+    function getJsonArray(
+        data,
+        key
+    ) {
+
+        if (
+            data &&
+            Array.isArray(data[key])
+        ) {
+
+            return data[key];
+
+        }
+
+
+        return [];
+
+    }
+
+
+    /* ========================================================
+       LOAD CLASSES + EXAMS
+    ======================================================== */
+
+    async function loadExportOptions() {
+
+        const programId =
+            programSelect
+                ? programSelect.value
+                : "";
+
+
+        if (!programId) {
+
+            resetDependentFields();
+
+            return;
+
+        }
+
+
+        if (optionsController) {
+
+            optionsController.abort();
+
+        }
+
+
+        optionsController =
+            new AbortController();
+
+
+        /* ----------------------------------------------------
+           RESET
+        ---------------------------------------------------- */
+
+        if (classSelect) {
+
+            classSelect.disabled =
+                true;
+
+
+            classSelect.innerHTML = `
+                <option value="">
+                    Loading classes...
+                </option>
+            `;
+
+        }
+
+
+        if (examSelect) {
+
+            examSelect.disabled =
+                true;
+
+
+            examSelect.innerHTML = `
+                <option value="">
+                    Loading examinations...
+                </option>
+            `;
+
+        }
+
+
+        updateExportButton();
+
+
+        showStatus(
+            "Loading classes and examinations...",
+            "info"
+        );
+
+
+        try {
+
+            const url =
+                new URL(
+                    optionsUrl,
+                    window.location.origin
+                );
+
+
+            url.searchParams.set(
+                "program_id",
+                programId
+            );
+
+
+            console.log(
+                "Export options URL:",
+                url.toString()
+            );
+
+
+            const response =
+                await fetch(
+                    url.toString(),
+                    {
+                        method: "GET",
+
+                        credentials:
+                            "same-origin",
+
+                        headers: {
+
+                            "Accept":
+                                "application/json",
+
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+
+                        },
+
+                        cache:
+                            "no-store",
+
+                        signal:
+                            optionsController.signal
+                    }
+                );
+
+
+            console.log(
+                "Options response:",
+                response.status
+            );
+
+
+            if (!response.ok) {
+
+                const text =
+                    await response.text();
+
+
+                console.error(
+                    "Options error:",
+                    text
+                );
+
+
+                throw new Error(
+                    "Unable to load classes and examinations."
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            console.log(
+                "Export options JSON:",
+                data
+            );
+
+
+            if (
+                data &&
+                data.success === false
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Unable to load export options."
+                );
+
+            }
+
+
+            const classes =
+                getJsonArray(
+                    data,
+                    "classes"
+                );
+
+
+            const exams =
+                getJsonArray(
+                    data,
+                    "exams"
+                );
+
+
+            /* ------------------------------------------------
+               CLASSES
+            ------------------------------------------------ */
+
+            if (classSelect) {
+
+                classSelect.innerHTML = `
+                    <option value="">
+                        Select Class
+                    </option>
+                `;
+
+
+                classes.forEach(
+                    function (item) {
+
+                        const name =
+                            item.name ||
+                            item.title ||
+                            `Class ${item.id}`;
+
+
+                        let label =
+                            name;
+
+
+                        if (item.code) {
+
+                            label +=
+                                ` (${item.code})`;
+
+                        }
+
+
+                        addOption(
+                            classSelect,
+                            item.id,
+                            label
+                        );
+
+                    }
+                );
+
+
+                classSelect.disabled =
+                    classes.length === 0;
+
+            }
+
+
+            /* ------------------------------------------------
+               EXAMS
+            ------------------------------------------------ */
+
+            if (examSelect) {
+
+                examSelect.innerHTML = `
+                    <option value="">
+                        Select Examination
+                    </option>
+                `;
+
+
+                exams.forEach(
+                    function (item) {
+
+                        const title =
+                            item.title ||
+                            item.name ||
+                            `Exam ${item.id}`;
+
+
+                        let label =
+                            title;
+
+
+                        if (item.code) {
+
+                            label +=
+                                ` (${item.code})`;
+
+                        }
+
+
+                        if (
+                            item.exam_type
+                        ) {
+
+                            label +=
+                                ` - ${item.exam_type}`;
+
+                        }
+
+
+                        addOption(
+                            examSelect,
+                            item.id,
+                            label
+                        );
+
+                    }
+                );
+
+
+                examSelect.disabled =
+                    exams.length === 0;
+
+            }
+
+
+            /* ------------------------------------------------
+               NO DATA
+            ------------------------------------------------ */
+
+            if (
+                classes.length === 0 &&
+                exams.length === 0
+            ) {
+
+                showStatus(
+                    "No classes or examinations were found for this program.",
+                    "warning"
+                );
+
+                updateExportButton();
+
+                return;
+
+            }
+
+
+            if (
+                classes.length === 0
+            ) {
+
+                showStatus(
+                    "No classes were found for this program.",
+                    "warning"
+                );
+
+            } else if (
+                exams.length === 0
+            ) {
+
+                showStatus(
+                    "No examinations were found for this program.",
+                    "warning"
+                );
+
+            } else {
+
+                hideStatus();
+
+            }
+
+
+            updateExportButton();
+
+        } catch (error) {
+
+            if (
+                error &&
+                error.name ===
+                "AbortError"
+            ) {
+
+                return;
+
+            }
+
+
+            console.error(
+                "Export options error:",
+                error
+            );
+
+
+            if (classSelect) {
+
+                classSelect.innerHTML = `
+                    <option value="">
+                        Select Class
+                    </option>
+                `;
+
+
+                classSelect.disabled =
+                    true;
+
+            }
+
+
+            if (examSelect) {
+
+                examSelect.innerHTML = `
+                    <option value="">
+                        Select Examination
+                    </option>
+                `;
+
+
+                examSelect.disabled =
+                    true;
+
+            }
+
+
+            showStatus(
+                error.message ||
+                "Failed to load classes and examinations.",
+                "error"
+            );
+
+
+            updateExportButton();
+
+        }
+
+    }
+
+
+    /* ========================================================
+       BUILD EXPORT URL
+    ======================================================== */
+
+    function buildExportUrl() {
+
+        const url =
+            new URL(
+                exportUrl,
+                window.location.origin
+            );
+
+
+        const programId =
+            programSelect
+                ? programSelect.value
+                : "";
+
+
+        const classId =
+            classSelect
+                ? classSelect.value
+                : "";
+
+
+        const examId =
+            examSelect
+                ? examSelect.value
+                : "";
+
+
+        if (programId) {
+
+            url.searchParams.set(
+                "program_id",
+                programId
+            );
+
+        }
+
+
+        if (classId) {
+
+            url.searchParams.set(
+                "class_id",
+                classId
+            );
+
+        }
+
+
+        if (examId) {
+
+            url.searchParams.set(
+                "exam_id",
+                examId
+            );
+
+        }
+
+
+        return url.toString();
+
+    }
+
+
+    /* ========================================================
+       FILENAME FROM RESPONSE
+    ======================================================== */
+
+    function getFilenameFromResponse(
+        response
+    ) {
+
+        const disposition =
+            response.headers.get(
+                "Content-Disposition"
+            );
+
+
+        if (!disposition) {
+
+            return "exam_results.csv";
+
+        }
+
+
+        const utf8Match =
+            disposition.match(
+                /filename\*\s*=\s*UTF-8''([^;]+)/i
+            );
+
+
+        if (
+            utf8Match &&
+            utf8Match[1]
+        ) {
+
+            try {
+
+                return decodeURIComponent(
+                    utf8Match[1]
+                );
+
+            } catch (error) {
+
+                return utf8Match[1];
+
+            }
+
+        }
+
+
+        const quotedMatch =
+            disposition.match(
+                /filename\s*=\s*"([^"]+)"/i
+            );
+
+
+        if (
+            quotedMatch &&
+            quotedMatch[1]
+        ) {
+
+            return quotedMatch[1];
+
+        }
+
+
+        const normalMatch =
+            disposition.match(
+                /filename\s*=\s*([^;]+)/i
+            );
+
+
+        if (
+            normalMatch &&
+            normalMatch[1]
+        ) {
+
+            return normalMatch[1].trim();
+
+        }
+
+
+        return "exam_results.csv";
+
+    }
+
+
+    /* ========================================================
+       SAFE FILENAME
+    ======================================================== */
+
+    function safeFilename(
+        filename
+    ) {
+
+        if (!filename) {
+
+            return "exam_results.csv";
+
+        }
+
+
+        let clean =
+            filename
+                .replace(
+                    /[<>:"/\\|?*\x00-\x1F]/g,
+                    "_"
+                )
+                .trim();
+
+
+        if (
+            !clean
+                .toLowerCase()
+                .endsWith(".csv")
+        ) {
+
+            clean += ".csv";
+
+        }
+
+
+        return clean;
+
+    }
+
+
+    /* ========================================================
+       DOWNLOAD BLOB
+    ======================================================== */
+
+    function downloadBlob(
+        blob,
+        filename
+    ) {
+
+        const blobUrl =
+            window.URL.createObjectURL(
+                blob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href =
+            blobUrl;
+
+
+        link.download =
+            safeFilename(
+                filename
+            );
+
+
+        link.style.display =
+            "none";
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        setTimeout(
+            function () {
+
+                link.remove();
+
+                window.URL.revokeObjectURL(
+                    blobUrl
+                );
+
+            },
+            1500
+        );
+
+    }
+
+
+    /* ========================================================
+       EXPORT CSV
+    ======================================================== */
+
+    async function exportExamResults() {
+
+        if (isExporting) {
+
+            return;
+
+        }
+
+
+        const programId =
+            programSelect
+                ? programSelect.value
+                : "";
+
+
+        const classId =
+            classSelect
+                ? classSelect.value
+                : "";
+
+
+        const examId =
+            examSelect
+                ? examSelect.value
+                : "";
+
+
+        /* ----------------------------------------------------
+           VALIDATION
+        ---------------------------------------------------- */
+
+        if (!programId) {
+
+            showStatus(
+                "Please select a program.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+
+        if (!classId) {
+
+            showStatus(
+                "Please select a class.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+
+        if (!examId) {
+
+            showStatus(
+                "Please select an examination.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+
+        /* ----------------------------------------------------
+           BUILD URL
+        ---------------------------------------------------- */
+
+        const url =
+            buildExportUrl();
+
+
+        console.log(
+            "===================================="
+        );
+
+
+        console.log(
+            "EXAM RESULT CSV EXPORT"
+        );
+
+
+        console.log(
+            "Program:",
+            programId
+        );
+
+
+        console.log(
+            "Class:",
+            classId
+        );
+
+
+        console.log(
+            "Exam:",
+            examId
+        );
+
+
+        console.log(
+            "URL:",
+            url
+        );
+
+
+        console.log(
+            "===================================="
+        );
+
+
+        setLoading(true);
+
+
+        showStatus(
+            "Preparing exam results CSV...",
+            "info"
+        );
+
+
+        try {
+
+            /* ------------------------------------------------
+               FETCH CSV
+            ------------------------------------------------ */
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        method: "GET",
+
+                        credentials:
+                            "same-origin",
+
+                        headers: {
+
+                            "Accept":
+                                "text/csv, text/plain, */*",
+
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+
+                        },
+
+                        cache:
+                            "no-store",
+
+                        redirect:
+                            "follow"
+                    }
+                );
+
+
+            console.log(
+                "Export HTTP status:",
+                response.status
+            );
+
+
+            const contentType =
+                (
+                    response.headers.get(
+                        "Content-Type"
+                    ) || ""
+                ).toLowerCase();
+
+
+            console.log(
+                "Export Content-Type:",
+                contentType
+            );
+
+
+            /* ------------------------------------------------
+               HTTP ERROR
+            ------------------------------------------------ */
+
+            if (!response.ok) {
+
+                let message =
+                    `Export failed (${response.status}).`;
+
+
+                try {
+
+                    const errorText =
+                        await response.text();
+
+
+                    console.error(
+                        "Export error response:",
+                        errorText
+                    );
+
+
+                    if (
+                        errorText &&
+                        errorText.trim()
+                    ) {
+
+                        const clean =
+                            errorText
+                                .replace(
+                                    /<[^>]*>/g,
+                                    " "
+                                )
+                                .replace(
+                                    /\s+/g,
+                                    " "
+                                )
+                                .trim();
+
+
+                        if (clean) {
+
+                            message =
+                                clean.length > 300
+                                    ? clean.substring(
+                                        0,
+                                        300
+                                    ) + "..."
+                                    : clean;
+
+                        }
+
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "Could not read error response:",
+                        error
+                    );
+
+                }
+
+
+                throw new Error(
+                    message
+                );
+
+            }
+
+
+            /* ------------------------------------------------
+               LOGIN / HTML CHECK
+            ------------------------------------------------ */
+
+            if (
+                contentType.includes(
+                    "text/html"
+                )
+            ) {
+
+                const html =
+                    await response.text();
+
+
+                console.error(
+                    "CSV expected but HTML received:",
+                    html.substring(
+                        0,
+                        1000
+                    )
+                );
+
+
+                throw new Error(
+                    "The server returned HTML instead of CSV. Your login/session may have expired."
+                );
+
+            }
+
+
+            /* ------------------------------------------------
+               GET BLOB
+            ------------------------------------------------ */
+
+            const blob =
+                await response.blob();
+
+
+            console.log(
+                "CSV blob size:",
+                blob.size
+            );
+
+
+            if (
+                !blob ||
+                blob.size <= 0
+            ) {
+
+                throw new Error(
+                    "The CSV file returned by the server is empty."
+                );
+
+            }
+
+
+            /* ------------------------------------------------
+               FILENAME
+            ------------------------------------------------ */
+
+            const filename =
+                safeFilename(
+                    getFilenameFromResponse(
+                        response
+                    )
+                );
+
+
+            console.log(
+                "CSV filename:",
+                filename
+            );
+
+
+            /* ------------------------------------------------
+               DOWNLOAD
+            ------------------------------------------------ */
+
+            downloadBlob(
+                blob,
+                filename
+            );
+
+
+            /* ------------------------------------------------
+               SUCCESS
+            ------------------------------------------------ */
+
+            showStatus(
+                "Exam results CSV downloaded successfully.",
+                "success"
+            );
+
+
+            if (buttonText) {
+
+                buttonText.textContent =
+                    "Downloaded";
+
+            }
+
+
+            if (buttonIcon) {
+
+                buttonIcon.className =
+                    "fa-solid fa-circle-check";
+
+            }
+
+
+            /* ------------------------------------------------
+               RESET AFTER DOWNLOAD
+            ------------------------------------------------ */
+
+            setTimeout(
+                function () {
+
+                    setLoading(false);
+
+                    closeExportModal();
+
+                },
+                1200
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Exam result CSV export error:",
+                error
+            );
+
+
+            showStatus(
+                error.message ||
+                "Unable to download the CSV file.",
+                "error"
+            );
+
+
+            setLoading(false);
+
+        }
+
+    }
+
+
+    /* ========================================================
+       PROGRAM CHANGE
+    ======================================================== */
+
+    if (programSelect) {
+
+        programSelect.addEventListener(
+            "change",
+            function () {
+
+                loadExportOptions();
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       CLASS CHANGE
+    ======================================================== */
+
+    if (classSelect) {
+
+        classSelect.addEventListener(
+            "change",
+            function () {
+
+                updateExportButton();
+
+                hideStatus();
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       EXAM CHANGE
+    ======================================================== */
+
+    if (examSelect) {
+
+        examSelect.addEventListener(
+            "change",
+            function () {
+
+                updateExportButton();
+
+                hideStatus();
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       OPEN BUTTON
+    ======================================================== */
+
+    if (openModalButton) {
+
+        openModalButton.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                openExportModal();
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       CLOSE BUTTON
+    ======================================================== */
+
+    if (closeModalButton) {
+
+        closeModalButton.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                closeExportModal();
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       CANCEL
+    ======================================================== */
+
+    if (cancelButton) {
+
+        cancelButton.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                closeExportModal();
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       OVERLAY
+    ======================================================== */
+
+    if (overlay) {
+
+        overlay.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target === overlay
+                ) {
+
+                    closeExportModal();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       SUBMIT
+    ======================================================== */
+
+    if (submitButton) {
+
+        submitButton.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                exportExamResults();
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       ESC KEY
+    ======================================================== */
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape" &&
+                modal &&
+                modal.classList.contains(
+                    "is-open"
+                )
+            ) {
+
+                closeExportModal();
+
+            }
+
+        }
+    );
+
+
+    /* ========================================================
+       INITIAL
+    ======================================================== */
+
+    updateExportButton();
+
+
+})();
+</script>
+
+
+
+<!-- =====================================================
+     PRINT ALL EXAM RESULT
+====================================================== -->
+
+<button
+    type="button"
+    class="exam-results-btn exam-results-btn-light"
+    id="openPrintAllExamResultModal"
+>
+    <i class="fa-solid fa-print"></i>
+    Print All Exam Result
+</button>
+
+
+<!-- ============================================================
+     PRINT ALL EXAM RESULT MODAL
+============================================================ -->
+
+<div
+    class="exam-print-modal"
+    id="printAllExamResultModal"
+    aria-hidden="true"
+>
+
+    <div class="exam-print-modal-overlay" data-close-print-modal></div>
+
+    <div
+        class="exam-print-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="printAllExamResultTitle"
+    >
+
+        <!-- ====================================================
+             MODAL HEADER
+        ==================================================== -->
+
+        <div class="exam-print-modal-header">
+
+            <div class="exam-print-modal-title-wrap">
+
+                <div class="exam-print-modal-icon">
+                    <i class="fa-solid fa-print"></i>
+                </div>
+
+                <div>
+                    <h2 id="printAllExamResultTitle">
+                        Print All Exam Result
+                    </h2>
+
+                    <p>
+                        Select program, class and examination
+                        to print the complete class result.
+                    </p>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                class="exam-print-modal-close"
+                id="closePrintAllExamResultModal"
+                aria-label="Close"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <!-- ====================================================
+             MODAL BODY
+        ==================================================== -->
+
+        <div class="exam-print-modal-body">
+
+            <form
+                method="GET"
+                action="{{ url_for('main.print_all_exam_result') }}"
+                id="printAllExamResultForm"
+            >
+
+                <!-- ============================================
+                     PROGRAM
+                ============================================ -->
+
+                <div class="exam-print-form-group">
+
+                    <label for="printProgramId">
+                        Program
+                    </label>
+
+                    <select
+                        name="program_id"
+                        id="printProgramId"
+                        required
+                    >
+
+                        <option value="">
+                            Select Program
+                        </option>
+
+                        {% for program in programs %}
+
+                            <option value="{{ program.id }}">
+                                {{ program.name }}
+                                {% if program.code %}
+                                    ({{ program.code }})
+                                {% endif %}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                    <small>
+                        Select the program first.
+                    </small>
+
+                </div>
+
+
+                <!-- ============================================
+                     CLASS
+                ============================================ -->
+
+                <div class="exam-print-form-group">
+
+                    <label for="printClassId">
+                        Class
+                    </label>
+
+                    <select
+                        name="class_id"
+                        id="printClassId"
+                        required
+                        disabled
+                    >
+
+                        <option value="">
+                            Select Program First
+                        </option>
+
+                    </select>
+
+                    <small>
+                        Only classes belonging to the selected
+                        program will be displayed.
+                    </small>
+
+                </div>
+
+
+                <!-- ============================================
+                     EXAM
+                ============================================ -->
+
+                <div class="exam-print-form-group">
+
+                    <label for="printExamId">
+                        Examination
+                    </label>
+
+                    <select
+                        name="exam_id"
+                        id="printExamId"
+                        required
+                        disabled
+                    >
+
+                        <option value="">
+                            Select Program First
+                        </option>
+
+                    </select>
+
+                    <small>
+                        Select the examination whose results
+                        should be printed.
+                    </small>
+
+                </div>
+
+
+                <!-- ============================================
+                     PREVIEW INFO
+                ============================================ -->
+
+                <div
+                    class="exam-print-selection-preview"
+                    id="printSelectionPreview"
+                >
+
+                    <div class="exam-print-preview-icon">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Result Print
+                        </strong>
+
+                        <span id="printSelectionText">
+                            Select a program, class and exam.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================================
+                     MODAL ACTIONS
+                ============================================ -->
+
+                <div class="exam-print-modal-actions">
+
+                    <button
+                        type="button"
+                        class="exam-print-cancel-btn"
+                        data-close-print-modal
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="exam-print-submit-btn"
+                        id="printAllExamResultSubmit"
+                        disabled
+                    >
+                        <i class="fa-solid fa-print"></i>
+                        Print Result
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+/* ============================================================
+   PRINT ALL EXAM RESULT MODAL
+============================================================ */
+
+.exam-print-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity .2s ease,
+        visibility .2s ease;
+}
+
+.exam-print-modal.is-open {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+}
+
+
+/* ============================================================
+   OVERLAY
+============================================================ */
+
+.exam-print-modal-overlay {
+    position: absolute;
+    inset: 0;
+
+    background: rgba(3, 18, 48, .68);
+
+    backdrop-filter: blur(4px);
+}
+
+
+/* ============================================================
+   DIALOG
+============================================================ */
+
+.exam-print-modal-dialog {
+    position: relative;
+    z-index: 2;
+
+    width: min(560px, 100%);
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, .25);
+
+    overflow: hidden;
+
+    transform: translateY(10px) scale(.98);
+
+    transition:
+        transform .2s ease;
+}
+
+.exam-print-modal.is-open
+.exam-print-modal-dialog {
+    transform: translateY(0) scale(1);
+}
+
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.exam-print-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 22px 24px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #06245f,
+            #33206f
+        );
+
+    color: #ffffff;
+}
+
+.exam-print-modal-title-wrap {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 14px;
+}
+
+.exam-print-modal-icon {
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    background: rgba(255,255,255,.15);
+
+    font-size: 18px;
+}
+
+.exam-print-modal-header h2 {
+    margin: 0;
+
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.exam-print-modal-header p {
+    margin: 5px 0 0;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    color: rgba(255,255,255,.82);
+}
+
+
+/* ============================================================
+   CLOSE
+============================================================ */
+
+.exam-print-modal-close {
+    width: 36px;
+    height: 36px;
+
+    flex: 0 0 36px;
+
+    border: 0;
+    border-radius: 9px;
+
+    background: rgba(255,255,255,.12);
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 17px;
+
+    transition:
+        background .2s ease,
+        transform .2s ease;
+}
+
+.exam-print-modal-close:hover {
+    background: rgba(255,255,255,.22);
+    transform: rotate(5deg);
+}
+
+
+/* ============================================================
+   BODY
+============================================================ */
+
+.exam-print-modal-body {
+    padding: 24px;
+}
+
+
+/* ============================================================
+   FORM GROUP
+============================================================ */
+
+.exam-print-form-group {
+    margin-bottom: 18px;
+}
+
+.exam-print-form-group label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #172033;
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.exam-print-form-group select {
+    width: 100%;
+
+    height: 46px;
+
+    padding: 0 13px;
+
+    border: 1px solid #d8deea;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: #172033;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+.exam-print-form-group select:focus {
+    border-color: #06245f;
+
+    box-shadow:
+        0 0 0 3px rgba(6,36,95,.10);
+}
+
+.exam-print-form-group select:disabled {
+    background: #f4f6fa;
+
+    color: #8a94a6;
+
+    cursor: not-allowed;
+}
+
+.exam-print-form-group small {
+    display: block;
+
+    margin-top: 6px;
+
+    color: #7b8494;
+
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   PREVIEW
+============================================================ */
+
+.exam-print-selection-preview {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 12px;
+
+    margin-top: 8px;
+    margin-bottom: 22px;
+
+    padding: 13px 14px;
+
+    border: 1px solid #e1e6ef;
+
+    border-radius: 11px;
+
+    background: #f8fafc;
+}
+
+.exam-print-preview-icon {
+    color: #06245f;
+
+    font-size: 17px;
+
+    padding-top: 1px;
+}
+
+.exam-print-selection-preview strong {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #172033;
+
+    font-size: 13px;
+}
+
+.exam-print-selection-preview span {
+    display: block;
+
+    color: #6c7483;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   ACTIONS
+============================================================ */
+
+.exam-print-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding-top: 4px;
+}
+
+.exam-print-cancel-btn,
+.exam-print-submit-btn {
+    min-height: 43px;
+
+    padding: 0 17px;
+
+    border-radius: 9px;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease,
+        background .15s ease;
+}
+
+.exam-print-cancel-btn {
+    border: 1px solid #d9dee8;
+
+    background: #ffffff;
+
+    color: #4e596b;
+}
+
+.exam-print-cancel-btn:hover {
+    background: #f5f7fa;
+}
+
+.exam-print-submit-btn {
+    border: 0;
+
+    background: #06245f;
+
+    color: #ffffff;
+}
+
+.exam-print-submit-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 7px 18px rgba(6,36,95,.20);
+}
+
+.exam-print-submit-btn:disabled {
+    opacity: .45;
+
+    cursor: not-allowed;
+}
+
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 600px) {
+
+    .exam-print-modal {
+        padding: 12px;
+    }
+
+    .exam-print-modal-header {
+        padding: 18px;
+    }
+
+    .exam-print-modal-body {
+        padding: 18px;
+    }
+
+    .exam-print-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .exam-print-cancel-btn,
+    .exam-print-submit-btn {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ========================================================
+       ELEMENTS
+    ======================================================== */
+
+    const modal =
+        document.getElementById(
+            "printAllExamResultModal"
+        );
+
+    const openButton =
+        document.getElementById(
+            "openPrintAllExamResultModal"
+        );
+
+    const closeButton =
+        document.getElementById(
+            "closePrintAllExamResultModal"
+        );
+
+    const programSelect =
+        document.getElementById(
+            "printProgramId"
+        );
+
+    const classSelect =
+        document.getElementById(
+            "printClassId"
+        );
+
+    const examSelect =
+        document.getElementById(
+            "printExamId"
+        );
+
+    const submitButton =
+        document.getElementById(
+            "printAllExamResultSubmit"
+        );
+
+    const selectionText =
+        document.getElementById(
+            "printSelectionText"
+        );
+
+
+    /* ========================================================
+       URLS
+    ======================================================== */
+
+    const optionsUrl =
+        "{{ url_for('main.print_all_exam_result_options') }}";
+
+
+    /* ========================================================
+       OPEN MODAL
+    ======================================================== */
+
+    function openModal() {
+
+        modal.classList.add("is-open");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.style.overflow = "hidden";
+
+        setTimeout(function () {
+
+            programSelect.focus();
+
+        }, 100);
+
+    }
+
+
+    /* ========================================================
+       CLOSE MODAL
+    ======================================================== */
+
+    function closeModal() {
+
+        modal.classList.remove("is-open");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        document.body.style.overflow = "";
+
+    }
+
+
+    /* ========================================================
+       OPEN
+    ======================================================== */
+
+    if (openButton) {
+
+        openButton.addEventListener(
+            "click",
+            openModal
+        );
+
+    }
+
+
+    /* ========================================================
+       CLOSE
+    ======================================================== */
+
+    if (closeButton) {
+
+        closeButton.addEventListener(
+            "click",
+            closeModal
+        );
+
+    }
+
+
+    document.querySelectorAll(
+        "[data-close-print-modal]"
+    ).forEach(function (element) {
+
+        element.addEventListener(
+            "click",
+            closeModal
+        );
+
+    });
+
+
+    /* ========================================================
+       ESC KEY
+    ======================================================== */
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape" &&
+                modal.classList.contains("is-open")
+            ) {
+
+                closeModal();
+
+            }
+
+        }
+    );
+
+
+    /* ========================================================
+       RESET CLASS
+    ======================================================== */
+
+    function resetClassSelect() {
+
+        classSelect.innerHTML =
+            '<option value="">Select Program First</option>';
+
+        classSelect.disabled = true;
+
+    }
+
+
+    /* ========================================================
+       RESET EXAM
+    ======================================================== */
+
+    function resetExamSelect() {
+
+        examSelect.innerHTML =
+            '<option value="">Select Program First</option>';
+
+        examSelect.disabled = true;
+
+    }
+
+
+    /* ========================================================
+       UPDATE SUBMIT
+    ======================================================== */
+
+    function updateSubmitState() {
+
+        const ready =
+            programSelect.value &&
+            classSelect.value &&
+            examSelect.value;
+
+        submitButton.disabled = !ready;
+
+    }
+
+
+    /* ========================================================
+       PROGRAM CHANGE
+    ======================================================== */
+
+    programSelect.addEventListener(
+        "change",
+        async function () {
+
+            const programId =
+                this.value;
+
+            resetClassSelect();
+            resetExamSelect();
+
+            updateSubmitState();
+
+            if (!programId) {
+
+                selectionText.textContent =
+                    "Select a program, class and exam.";
+
+                return;
+
+            }
+
+
+            classSelect.innerHTML =
+                '<option value="">Loading classes...</option>';
+
+            classSelect.disabled = true;
+
+
+            examSelect.innerHTML =
+                '<option value="">Loading examinations...</option>';
+
+            examSelect.disabled = true;
+
+
+            selectionText.textContent =
+                "Loading classes and examinations...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        optionsUrl +
+                        "?program_id=" +
+                        encodeURIComponent(programId),
+                        {
+                            method: "GET",
+                            headers: {
+                                "Accept": "application/json",
+                                "X-Requested-With": "XMLHttpRequest"
+                            }
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to load program information."
+                    );
+
+                }
+
+
+                /* ============================================
+                   CLASSES
+                ============================================ */
+
+                classSelect.innerHTML =
+                    '<option value="">Select Class</option>';
+
+
+                if (
+                    Array.isArray(data.classes) &&
+                    data.classes.length
+                ) {
+
+                    data.classes.forEach(function (item) {
+
+                        const option =
+                            document.createElement("option");
+
+                        option.value =
+                            item.id;
+
+                        option.textContent =
+                            item.name +
+                            (
+                                item.code
+                                    ? " (" + item.code + ")"
+                                    : ""
+                            );
+
+                        classSelect.appendChild(
+                            option
+                        );
+
+                    });
+
+                    classSelect.disabled = false;
+
+                } else {
+
+                    classSelect.innerHTML =
+                        '<option value="">No classes found</option>';
+
+                    classSelect.disabled = true;
+
+                }
+
+
+                /* ============================================
+                   EXAMS
+                ============================================ */
+
+                examSelect.innerHTML =
+                    '<option value="">Select Examination</option>';
+
+
+                if (
+                    Array.isArray(data.exams) &&
+                    data.exams.length
+                ) {
+
+                    data.exams.forEach(function (item) {
+
+                        const option =
+                            document.createElement("option");
+
+                        option.value =
+                            item.id;
+
+                        let label =
+                            item.title ||
+                            item.name ||
+                            item.code ||
+                            "Examination";
+
+                        if (item.code && item.title) {
+
+                            label =
+                                item.title +
+                                " (" +
+                                item.code +
+                                ")";
+
+                        }
+
+                        if (item.exam_type) {
+
+                            label +=
+                                " — " +
+                                item.exam_type;
+
+                        }
+
+                        examSelect.appendChild(
+                            Object.assign(
+                                option,
+                                {
+                                    textContent: label
+                                }
+                            )
+                        );
+
+                    });
+
+                    examSelect.disabled = false;
+
+                } else {
+
+                    examSelect.innerHTML =
+                        '<option value="">No examinations found</option>';
+
+                    examSelect.disabled = true;
+
+                }
+
+
+                selectionText.textContent =
+                    "Program selected. Now select the class and examination.";
+
+
+            } catch (error) {
+
+                resetClassSelect();
+                resetExamSelect();
+
+                selectionText.textContent =
+                    error.message ||
+                    "Unable to load classes and examinations.";
+
+            }
+
+
+            updateSubmitState();
+
+        }
+    );
+
+
+    /* ========================================================
+       CLASS CHANGE
+    ======================================================== */
+
+    classSelect.addEventListener(
+        "change",
+        function () {
+
+            updateSubmitState();
+
+            const programText =
+                programSelect.options[
+                    programSelect.selectedIndex
+                ]?.text || "";
+
+            const classText =
+                classSelect.options[
+                    classSelect.selectedIndex
+                ]?.text || "";
+
+            if (
+                programSelect.value &&
+                classSelect.value &&
+                examSelect.value
+            ) {
+
+                const examText =
+                    examSelect.options[
+                        examSelect.selectedIndex
+                    ]?.text || "";
+
+                selectionText.textContent =
+                    programText +
+                    " → " +
+                    classText +
+                    " → " +
+                    examText;
+
+            } else {
+
+                selectionText.textContent =
+                    "Select the examination.";
+
+            }
+
+        }
+    );
+
+
+    /* ========================================================
+       EXAM CHANGE
+    ======================================================== */
+
+    examSelect.addEventListener(
+        "change",
+        function () {
+
+            updateSubmitState();
+
+            const programText =
+                programSelect.options[
+                    programSelect.selectedIndex
+                ]?.text || "";
+
+            const classText =
+                classSelect.options[
+                    classSelect.selectedIndex
+                ]?.text || "";
+
+            const examText =
+                examSelect.options[
+                    examSelect.selectedIndex
+                ]?.text || "";
+
+
+            if (
+                programSelect.value &&
+                classSelect.value &&
+                examSelect.value
+            ) {
+
+                selectionText.textContent =
+                    programText +
+                    " → " +
+                    classText +
+                    " → " +
+                    examText;
+
+            }
+
+        }
+    );
+
+
+    /* ========================================================
+       FORM SUBMIT
+    ======================================================== */
+
+    document
+        .getElementById(
+            "printAllExamResultForm"
+        )
+        .addEventListener(
+            "submit",
+            function () {
+
+                if (
+                    !programSelect.value ||
+                    !classSelect.value ||
+                    !examSelect.value
+                ) {
+
+                    return false;
+
+                }
+
+                submitButton.disabled = true;
+
+                submitButton.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> ' +
+                    'Preparing...';
+
+            }
+        );
+
+});
+
+</script>
+
+
+    <!-- =====================================================
+         ADD EXAM MARK
+    ====================================================== -->
+
+    <a
+        href="{{ url_for('main.add_exam_result') }}"
+        class="exam-results-btn exam-results-btn-light"
+    >
+        <i class="fa-solid fa-plus"></i>
+        Add Exam Mark
+    </a>
+
+
+    <!-- =====================================================
+         IMPORT EXAM MARK
+    ====================================================== -->
+
+    <form
+        method="POST"
+        action="{{ url_for('main.import_exam_result') }}"
+        enctype="multipart/form-data"
+        class="exam-results-import-form"
+    >
+
+        <input
+            type="file"
+            name="exam_result_file"
+            id="exam_result_file"
+            class="exam-results-file-input"
+            accept=".xlsx,.xls"
+            required
+        >
+
+        <button
+            type="submit"
+            class="exam-results-btn exam-results-btn-light"
+        >
+            <i class="fa-solid fa-file-import"></i>
+            Import Exam Mark
+        </button>
+
+    </form>
+
+</div>
+
+
+
 
     </div>
 
@@ -2994,6 +7170,25 @@ Exam Results
                                         >
 
                                             <i class="fa-solid fa-pen"></i>
+
+                                        </a>
+
+                                        <!-- EDIT -->
+
+                                        <a
+                                            href="{{ url_for(
+                                                'main.print_student_exam_result',
+                                                result_id=result.id
+                                            ) }}"
+                                            class="
+                                                exam-result-action
+                                                exam-result-action-edit
+                                            "
+                                            title="Edit Result"
+                                            aria-label="Edit Result"
+                                        >
+
+                                            <i class="fa-solid fa-print"></i>
 
                                         </a>
 
