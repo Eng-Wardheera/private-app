@@ -1,4 +1,3 @@
-
 {% extends "backend/teacher/home/index.html" %}
 
 {% block title %}
@@ -13,7 +12,6 @@ Enter Exam Marks
    SOOYAAL - TEACHER ENTER EXAM MARKS
    PURE CSS
    NO BOOTSTRAP
-   SWEETALERT-STYLE UI
 ============================================================ */
 
 :root {
@@ -30,8 +28,15 @@ Enter Exam Marks
     --marks-white: #ffffff;
 
     --marks-danger: #dc2626;
+    --marks-danger-dark: #b91c1c;
+    --marks-danger-bg: #fef2f2;
+    --marks-danger-border: #fca5a5;
+
     --marks-warning: #f59e0b;
     --marks-success: #10b981;
+    --marks-exempted: #7c3aed;
+    --marks-exempted-bg: #f5f3ff;
+    --marks-required-bg: #ecfdf5;
 
     --marks-shadow:
         0 10px 35px rgba(15, 23, 42, .08);
@@ -42,7 +47,7 @@ Enter Exam Marks
 
 
 /* ============================================================
-   GLOBAL PAGE
+   GLOBAL
 ============================================================ */
 
 .marks-page {
@@ -112,13 +117,11 @@ Enter Exam Marks
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
-
     transition:
         background .2s ease,
         color .2s ease,
         box-shadow .2s ease,
         transform .15s ease;
-
     box-sizing: border-box;
     white-space: nowrap;
 }
@@ -140,7 +143,6 @@ Enter Exam Marks
 .btn-success {
     background: var(--marks-green);
     color: #ffffff;
-
     box-shadow:
         0 5px 15px rgba(50, 183, 58, .20);
 }
@@ -207,10 +209,8 @@ Enter Exam Marks
     display: flex;
     align-items: flex-start;
     gap: 13px;
-
     padding: 15px 17px;
     margin-bottom: 20px;
-
     border-radius: 12px;
     box-sizing: border-box;
 }
@@ -218,15 +218,11 @@ Enter Exam Marks
 .submission-status-icon {
     width: 36px;
     height: 36px;
-
     flex: 0 0 36px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
-
     font-size: 18px;
     font-weight: 900;
 }
@@ -278,16 +274,11 @@ Enter Exam Marks
     display: inline-flex;
     align-items: center;
     gap: 6px;
-
     margin-top: 10px;
-
     padding: 6px 10px;
-
     border-radius: 999px;
-
     font-size: 10px;
     font-weight: 800;
-
     text-transform: uppercase;
     letter-spacing: .45px;
 }
@@ -312,18 +303,12 @@ Enter Exam Marks
 .exam-card,
 .marks-card {
     width: 100%;
-
     background: var(--marks-white);
-
     border: 1px solid var(--marks-border);
-
     border-radius: 15px;
-
     overflow: hidden;
-
     box-shadow:
         0 5px 18px rgba(15, 23, 42, .05);
-
     box-sizing: border-box;
 }
 
@@ -343,26 +328,20 @@ Enter Exam Marks
             var(--marks-blue) 0%,
             var(--marks-purple) 100%
         );
-
     color: #ffffff;
-
     padding: 20px 24px;
 }
 
 .exam-card-header h2 {
     margin: 0;
-
     font-size: 21px;
     font-weight: 800;
-
     line-height: 1.3;
 }
 
 .exam-card-header p {
     margin: 6px 0 0;
-
     font-size: 13px;
-
     opacity: .88;
 }
 
@@ -373,21 +352,16 @@ Enter Exam Marks
 
 .exam-info {
     width: 100%;
-
     display: grid;
-
     grid-template-columns:
         repeat(4, minmax(0, 1fr));
 }
 
 .info-item {
     min-width: 0;
-
     padding: 16px 18px;
-
     border-right: 1px solid var(--marks-border);
     border-bottom: 1px solid var(--marks-border);
-
     box-sizing: border-box;
 }
 
@@ -397,24 +371,18 @@ Enter Exam Marks
 
 .info-label {
     margin-bottom: 5px;
-
     color: #94a3b8;
-
     font-size: 10px;
     font-weight: 800;
-
     text-transform: uppercase;
     letter-spacing: .55px;
 }
 
 .info-value {
     color: var(--marks-text);
-
     font-size: 14px;
     font-weight: 750;
-
     line-height: 1.45;
-
     overflow-wrap: anywhere;
 }
 
@@ -425,49 +393,35 @@ Enter Exam Marks
 
 .summary-grid {
     width: 100%;
-
     display: grid;
-
     grid-template-columns:
-        repeat(4, minmax(0, 1fr));
-
-    gap: 16px;
-
+        repeat(5, minmax(0, 1fr));
+    gap: 14px;
     margin-bottom: 20px;
 }
 
 .summary-card {
     min-width: 0;
-
     background: #ffffff;
-
     border: 1px solid var(--marks-border);
-
     border-radius: 13px;
-
     padding: 17px 19px;
-
     box-shadow:
         0 3px 12px rgba(15, 23, 42, .04);
-
     box-sizing: border-box;
 }
 
 .summary-label {
     color: var(--marks-muted);
-
     font-size: 11px;
     font-weight: 700;
-
     margin-bottom: 6px;
 }
 
 .summary-value {
     color: var(--marks-blue);
-
     font-size: 24px;
     font-weight: 800;
-
     line-height: 1.2;
 }
 
@@ -477,6 +431,10 @@ Enter Exam Marks
 
 .summary-value.pending-value {
     color: #d97706;
+}
+
+.summary-value.exempted-value {
+    color: var(--marks-exempted);
 }
 
 
@@ -490,17 +448,12 @@ Enter Exam Marks
 
 .marks-card-header {
     width: 100%;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 18px;
-
     padding: 18px 22px;
-
     border-bottom: 1px solid var(--marks-border);
-
     box-sizing: border-box;
 }
 
@@ -510,42 +463,73 @@ Enter Exam Marks
 
 .marks-card-title h3 {
     margin: 0;
-
     color: var(--marks-blue);
-
     font-size: 18px;
     font-weight: 800;
 }
 
 .marks-card-title p {
     margin: 4px 0 0;
-
     color: var(--marks-muted);
-
     font-size: 12px;
 }
 
 .limit-badge {
     flex-shrink: 0;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     white-space: nowrap;
-
     background: #eef4ff;
-
     color: var(--marks-blue);
-
     border: 1px solid #d7e3ff;
-
     border-radius: 999px;
-
     padding: 7px 12px;
-
     font-size: 11px;
     font-weight: 800;
+}
+
+
+/* ============================================================
+   LEGEND
+============================================================ */
+
+.marks-legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    padding: 12px 20px;
+    background: #fafbfc;
+    border-bottom: 1px solid var(--marks-border);
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.legend-required {
+    color: #047857;
+    background: var(--marks-required-bg);
+    border: 1px solid #a7f3d0;
+}
+
+.legend-exempted {
+    color: var(--marks-exempted);
+    background: var(--marks-exempted-bg);
+    border: 1px solid #ddd6fe;
+}
+
+.legend-absent {
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
 }
 
 
@@ -555,81 +539,56 @@ Enter Exam Marks
 
 .student-toolbar {
     width: 100%;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 18px;
-
     padding: 14px 20px;
-
     border-bottom: 1px solid var(--marks-border);
-
     background: #fafbfc;
-
     box-sizing: border-box;
 }
 
 .student-search {
     position: relative;
-
     width: 340px;
     max-width: 100%;
 }
 
 .student-search input {
     width: 100%;
-
     height: 41px;
-
     padding: 0 13px 0 39px;
-
     border: 1px solid #d1d5db;
-
     border-radius: 9px;
-
     outline: none;
-
     background: #ffffff;
-
     color: var(--marks-text);
-
     font-size: 13px;
-
     box-sizing: border-box;
-
     transition: .2s ease;
 }
 
 .student-search input:focus {
     border-color: var(--marks-blue);
-
     box-shadow:
         0 0 0 3px rgba(6, 36, 95, .08);
 }
 
 .student-search-icon {
     position: absolute;
-
     left: 13px;
     top: 50%;
-
     transform: translateY(-50%);
-
     color: #94a3b8;
-
     font-size: 14px;
-
     pointer-events: none;
 }
 
 .student-count {
     color: var(--marks-muted);
-
     font-size: 12px;
     font-weight: 700;
-
     white-space: nowrap;
 }
 
@@ -643,7 +602,8 @@ Enter Exam Marks
 }
 
 .marks-locked .mark-input,
-.marks-locked .absent-box {
+.marks-locked .absent-box,
+.marks-locked .exempted-box {
     opacity: .72;
 }
 
@@ -658,56 +618,57 @@ Enter Exam Marks
 
 .table-wrapper {
     width: 100%;
-
     overflow-x: auto;
     overflow-y: hidden;
-
     -webkit-overflow-scrolling: touch;
 }
 
 .marks-table {
     width: 100%;
-
-    min-width: 720px;
-
+    min-width: 1050px;
     border-collapse: collapse;
-
     table-layout: fixed;
 }
 
 .marks-table thead th {
     background: #f8fafc;
-
     color: #475569;
-
     padding: 13px 18px;
-
     border-bottom: 1px solid var(--marks-border);
-
     font-size: 10px;
     font-weight: 800;
-
     text-transform: uppercase;
     letter-spacing: .5px;
-
     text-align: left;
-
     white-space: nowrap;
 }
 
 .marks-table thead th:first-child {
-    width: 65px;
+    width: 60px;
     text-align: center;
 }
 
+.marks-table thead th:nth-child(2) {
+    width: 28%;
+}
+
 .marks-table thead th:nth-child(3) {
-    width: 150px;
+    width: 120px;
     text-align: center;
 }
 
 .marks-table thead th:nth-child(4) {
-    width: 180px;
+    width: 135px;
     text-align: center;
+}
+
+.marks-table thead th:nth-child(5) {
+    width: 150px;
+    text-align: center;
+}
+
+.marks-table thead th:nth-child(6) {
+    width: 250px;
 }
 
 .marks-table tbody tr {
@@ -720,13 +681,9 @@ Enter Exam Marks
 
 .marks-table tbody td {
     padding: 14px 18px;
-
     border-bottom: 1px solid #eef2f7;
-
     color: #374151;
-
     font-size: 13px;
-
     vertical-align: middle;
 }
 
@@ -737,9 +694,7 @@ Enter Exam Marks
 
 .number-cell {
     text-align: center;
-
     color: #94a3b8 !important;
-
     font-weight: 800;
 }
 
@@ -750,32 +705,22 @@ Enter Exam Marks
 
 .student-info {
     display: flex;
-
     align-items: center;
-
     gap: 12px;
-
     min-width: 0;
 }
 
 .student-avatar {
     width: 40px;
     height: 40px;
-
     flex: 0 0 40px;
-
     border-radius: 50%;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     overflow: hidden;
-
     background: #e8eef9;
-
     color: var(--marks-blue);
-
     font-size: 14px;
     font-weight: 800;
 }
@@ -783,83 +728,76 @@ Enter Exam Marks
 .student-avatar img {
     width: 100%;
     height: 100%;
-
     object-fit: cover;
 }
 
 .student-name {
     min-width: 0;
-
     color: var(--marks-text);
-
     font-size: 14px;
     font-weight: 800;
-
     overflow: hidden;
-
     text-overflow: ellipsis;
-
     white-space: nowrap;
 }
 
 
 /* ============================================================
-   ABSENT
+   STATUS CELLS
 ============================================================ */
 
-.absent-cell {
+.status-cell {
     text-align: center;
 }
 
-.absent-toggle {
+.status-option {
     display: inline-flex;
-
     align-items: center;
     justify-content: center;
-
     cursor: pointer;
 }
 
-.absent-toggle input {
+.status-option input {
     display: none;
 }
 
-.absent-box {
-    width: 19px;
-    height: 19px;
-
-    border: 2px solid #cbd5e1;
-
-    border-radius: 5px;
-
-    position: relative;
-
+.status-box {
+    min-width: 92px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 800;
     transition: .2s ease;
-
     box-sizing: border-box;
 }
 
-.absent-toggle input:checked + .absent-box {
-    background: #dc2626;
-
-    border-color: #dc2626;
+.status-box:hover {
+    border-color: #94a3b8;
 }
 
-.absent-toggle input:checked + .absent-box::after {
-    content: "✓";
+.status-option input:checked + .status-box.absent-box-ui {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
 
-    position: absolute;
+.status-option input:checked + .status-box.exempted-box-ui {
+    background: var(--marks-exempted-bg);
+    border-color: #c4b5fd;
+    color: var(--marks-exempted);
+}
 
-    left: 50%;
-    top: 50%;
-
-    transform:
-        translate(-50%, -54%);
-
-    color: #ffffff;
-
-    font-size: 12px;
-    font-weight: 900;
+.status-option input:disabled + .status-box {
+    cursor: not-allowed;
+    opacity: .65;
 }
 
 
@@ -874,48 +812,146 @@ Enter Exam Marks
 .mark-input {
     width: 115px;
     height: 41px;
-
     padding: 0 10px;
-
     border: 1px solid #d1d5db;
-
     border-radius: 8px;
-
     outline: none;
-
     color: var(--marks-text);
-
     background: #ffffff;
-
     font-size: 14px;
     font-weight: 800;
-
     text-align: center;
-
     box-sizing: border-box;
-
-    transition: .2s ease;
+    transition:
+        border-color .2s ease,
+        background .2s ease,
+        color .2s ease,
+        box-shadow .2s ease;
 }
+
+
+/* ============================================================
+   REQUIRED MARK
+   CASAN
+============================================================ */
+
+/*
+   Required field:
+   - Mark input-ka required marka uu yahay required
+   - Border casaan
+   - Background khafiif casaan
+   - Focus-na casaan
+*/
+
+.mark-input.required-mark {
+    border-color: var(--marks-danger);
+    background: #fffafa;
+    color: #991b1b;
+}
+
+.mark-input.required-mark:focus {
+    border-color: var(--marks-danger-dark);
+    background: #ffffff;
+    color: var(--marks-text);
+    box-shadow:
+        0 0 0 3px rgba(220, 38, 38, .13);
+}
+
+
+/* ============================================================
+   REQUIRED EMPTY MARK
+   CASAADAN XOOGGAN
+============================================================ */
+
+.mark-input.required-mark.required-empty {
+    border-color: var(--marks-danger);
+    background: var(--marks-danger-bg);
+    color: var(--marks-danger-dark);
+    box-shadow:
+        0 0 0 2px rgba(220, 38, 38, .06);
+}
+
+.mark-input.required-mark.required-empty:focus {
+    border-color: var(--marks-danger-dark);
+    background: #ffffff;
+    box-shadow:
+        0 0 0 3px rgba(220, 38, 38, .16);
+}
+
+
+/* ============================================================
+   REQUIRED MARK WITH VALUE
+   MARK LA GELIYEY
+============================================================ */
+
+.mark-input.required-mark:not(:placeholder-shown) {
+    background: #ffffff;
+}
+
+
+/* ============================================================
+   MARK FOCUS
+============================================================ */
 
 .mark-input:focus {
     border-color: var(--marks-blue);
-
     box-shadow:
         0 0 0 3px rgba(6, 36, 95, .09);
 }
 
+
+/*
+   Required field-ka focus-ga waa inuu casaan ahaadaa,
+   sidaas darteed selector-kan ayaa ka xoog badan focus-ka guud.
+*/
+
+.mark-input.required-mark:focus {
+    border-color: var(--marks-danger-dark);
+    box-shadow:
+        0 0 0 3px rgba(220, 38, 38, .14);
+}
+
+
+/* ============================================================
+   DISABLED MARK
+   ABSENT / EXEMPTED
+============================================================ */
+
 .mark-input:disabled {
     background: #f1f5f9;
-
     color: #94a3b8;
-
+    border-color: #dbe2ea;
     cursor: not-allowed;
+    box-shadow: none;
 }
+
+
+/*
+   Marka absent/exempted yahay:
+   - required red style-ka waa laga qaadaa
+   - mark-ku wuxuu noqonayaa disabled neutral
+*/
+
+.mark-input.exempted-mark:disabled {
+    background: var(--marks-exempted-bg);
+    color: #8b5cf6;
+    border-color: #ddd6fe;
+}
+
+.mark-input.absent-mark:disabled {
+    background: #fef2f2;
+    color: #f87171;
+    border-color: #fecaca;
+}
+
+
+/* ============================================================
+   NUMBER INPUT SPINNERS
+============================================================ */
 
 .mark-input::-webkit-outer-spin-button,
 .mark-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
-
     margin: 0;
 }
 
@@ -925,89 +961,188 @@ Enter Exam Marks
 
 
 /* ============================================================
+   REMARKS
+============================================================ */
+
+.remarks-input {
+    width: 100%;
+    height: 39px;
+    padding: 0 11px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    color: var(--marks-text);
+    background: #ffffff;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+.remarks-input:focus {
+    border-color: var(--marks-blue);
+    box-shadow:
+        0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.remarks-input:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+}
+
+
+/* ============================================================
+   STUDENT RESULT STATUS BADGE
+============================================================ */
+
+.student-result-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.student-result-status.required {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.student-result-status.exempted {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+
+.student-result-status.absent {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+
+/* ============================================================
+   PAGE SIZE
+============================================================ */
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.page-size-label {
+    color: var(--marks-muted);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.page-size-select {
+    min-width: 82px;
+    height: 35px;
+    padding: 0 30px 0 10px;
+    border: 1px solid #dbe2ea;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    outline: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.page-size-select:focus {
+    border-color: var(--marks-blue);
+    box-shadow:
+        0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+@media (max-width: 600px) {
+
+    .pagination-area {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pagination-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .pagination {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+
+/* ============================================================
    PAGINATION
 ============================================================ */
 
 .pagination-area {
     display: flex;
-
     align-items: center;
     justify-content: space-between;
-
     gap: 15px;
-
     padding: 15px 20px;
-
     border-top: 1px solid var(--marks-border);
-
     background: #fafbfc;
 }
 
 .pagination-info {
     color: var(--marks-muted);
-
     font-size: 12px;
     font-weight: 600;
 }
 
 .pagination {
     display: flex;
-
     align-items: center;
     justify-content: flex-end;
-
     gap: 5px;
-
     flex-wrap: wrap;
 }
 
 .page-btn {
     min-width: 35px;
     height: 35px;
-
     padding: 0 9px;
-
     border: 1px solid #dbe2ea;
-
     border-radius: 7px;
-
     background: #ffffff;
-
     color: #475569;
-
     font-size: 12px;
     font-weight: 700;
-
     cursor: pointer;
-
     transition: .2s ease;
 }
 
 .page-btn:hover:not(:disabled) {
     border-color: var(--marks-blue);
-
     color: var(--marks-blue);
-
     background: #f8faff;
 }
 
 .page-btn.active {
     background: var(--marks-blue);
-
     border-color: var(--marks-blue);
-
     color: #ffffff;
 }
 
 .page-btn:disabled {
     opacity: .45;
-
     cursor: not-allowed;
 }
 
 .page-dots {
     color: #94a3b8;
-
     padding: 0 2px;
 }
 
@@ -1018,20 +1153,13 @@ Enter Exam Marks
 
 .form-footer {
     width: 100%;
-
     display: flex;
-
     align-items: center;
     justify-content: flex-end;
-
     gap: 9px;
-
     padding: 16px 20px;
-
     border-top: 1px solid var(--marks-border);
-
     background: #ffffff;
-
     box-sizing: border-box;
 }
 
@@ -1046,28 +1174,18 @@ Enter Exam Marks
 
 .already-submitted-btn {
     display: inline-flex;
-
     align-items: center;
     justify-content: center;
-
     gap: 7px;
-
     min-height: 42px;
     min-width: 170px;
-
     padding: 10px 16px;
-
     border-radius: 9px;
-
     background: #ecfdf5;
-
     color: #047857;
-
     border: 1px solid #a7f3d0;
-
     font-size: 13px;
     font-weight: 800;
-
     box-sizing: border-box;
 }
 
@@ -1078,72 +1196,51 @@ Enter Exam Marks
 
 .empty-state {
     padding: 60px 20px;
-
     text-align: center;
 }
 
 .empty-icon {
     width: 62px;
     height: 62px;
-
     margin: 0 auto 14px;
-
     border-radius: 50%;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     background: #eef2f7;
-
     font-size: 25px;
 }
 
 .empty-state h3 {
     margin: 0 0 7px;
-
     color: #1f2937;
-
     font-size: 17px;
 }
 
 .empty-state p {
     margin: 0;
-
     color: var(--marks-muted);
-
     font-size: 13px;
 }
 
 
 /* ============================================================
-   SOOYAAL SWEETALERT-STYLE MODAL
+   SWEETALERT STYLE
 ============================================================ */
 
 .swa-overlay {
     position: fixed;
-
     inset: 0;
-
     z-index: 999999;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     padding: 20px;
-
-    background:
-        rgba(2, 6, 23, .62);
-
+    background: rgba(2, 6, 23, .62);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-
     opacity: 0;
     visibility: hidden;
-
     transition:
         opacity .22s ease,
         visibility .22s ease;
@@ -1157,21 +1254,14 @@ Enter Exam Marks
 .swa-modal {
     width: 100%;
     max-width: 430px;
-
     background: #ffffff;
-
     border-radius: 20px;
-
     padding: 30px 28px 25px;
-
     text-align: center;
-
     box-shadow: var(--marks-modal-shadow);
-
     transform:
         translateY(15px)
         scale(.96);
-
     transition:
         transform .25s ease;
 }
@@ -1182,116 +1272,75 @@ Enter Exam Marks
         scale(1);
 }
 
-
-/* ============================================================
-   MODAL ICON
-============================================================ */
-
 .swa-icon {
     width: 72px;
     height: 72px;
-
     margin: 0 auto 17px;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
-
     font-size: 31px;
     font-weight: 900;
 }
 
 .swa-icon.warning {
     background: #fff7ed;
-
     color: #f59e0b;
-
     box-shadow:
         0 0 0 8px #fffaf3;
 }
 
 .swa-icon.loading {
     background: #eff6ff;
-
     color: var(--marks-blue);
-
     box-shadow:
         0 0 0 8px #f5f8ff;
 }
 
 .swa-icon.success {
     background: #ecfdf5;
-
     color: #059669;
-
     box-shadow:
         0 0 0 8px #f3fdf8;
 }
 
 .swa-icon.error {
     background: #fef2f2;
-
     color: #dc2626;
-
     box-shadow:
         0 0 0 8px #fff7f7;
 }
 
-
-/* ============================================================
-   SPINNER
-============================================================ */
-
 .swa-spinner {
     width: 32px;
     height: 32px;
-
     border-radius: 50%;
-
     border: 3px solid rgba(6, 36, 95, .14);
-
     border-top-color: var(--marks-blue);
-
     animation:
         swaSpin .8s linear infinite;
 }
 
 @keyframes swaSpin {
-
     to {
         transform: rotate(360deg);
     }
-
 }
-
-
-/* ============================================================
-   MODAL TEXT
-============================================================ */
 
 .swa-title {
     margin: 0 0 8px;
-
     color: #111827;
-
     font-size: 21px;
     font-weight: 800;
-
     line-height: 1.3;
 }
 
 .swa-text {
     margin: 0 auto;
-
     max-width: 350px;
-
     color: #64748b;
-
     font-size: 13px;
-
     line-height: 1.6;
 }
 
@@ -1299,38 +1348,23 @@ Enter Exam Marks
     color: #334155;
 }
 
-
-/* ============================================================
-   MODAL ACTIONS
-============================================================ */
-
 .swa-actions {
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     gap: 10px;
-
     margin-top: 23px;
 }
 
 .swa-btn {
     min-width: 120px;
-
     min-height: 43px;
-
     padding: 10px 17px;
-
     border-radius: 9px;
-
     border: 0;
-
     font-size: 13px;
     font-weight: 800;
-
     cursor: pointer;
-
     transition: .2s ease;
 }
 
@@ -1340,9 +1374,7 @@ Enter Exam Marks
 
 .swa-btn-cancel {
     background: #f1f5f9;
-
     color: #475569;
-
     border: 1px solid #e2e8f0;
 }
 
@@ -1352,9 +1384,7 @@ Enter Exam Marks
 
 .swa-btn-confirm {
     background: var(--marks-green);
-
     color: #ffffff;
-
     box-shadow:
         0 5px 14px rgba(50, 183, 58, .20);
 }
@@ -1363,31 +1393,18 @@ Enter Exam Marks
     background: var(--marks-green-dark);
 }
 
-
-/* ============================================================
-   SUCCESS CHECK
-============================================================ */
-
 .swa-success-check {
     width: 38px;
     height: 38px;
-
     border-radius: 50%;
-
     background: var(--marks-green);
-
     color: #ffffff;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     font-size: 21px;
     font-weight: 900;
-
     margin: auto;
-
     animation:
         swaPop .35s ease;
 }
@@ -1407,37 +1424,23 @@ Enter Exam Marks
         transform: scale(1);
         opacity: 1;
     }
-
 }
-
-
-/* ============================================================
-   LOADING BAR
-============================================================ */
 
 .swa-loading-line {
     width: 100%;
     height: 4px;
-
     margin-top: 21px;
-
     overflow: hidden;
-
     border-radius: 999px;
-
     background: #eaf0f8;
 }
 
 .swa-loading-line::before {
     content: "";
-
     display: block;
-
     width: 40%;
     height: 100%;
-
     border-radius: inherit;
-
     background:
         linear-gradient(
             90deg,
@@ -1445,7 +1448,6 @@ Enter Exam Marks
             var(--marks-green),
             var(--marks-purple)
         );
-
     animation:
         swaLoading 1.1s ease-in-out infinite;
 }
@@ -1463,55 +1465,11 @@ Enter Exam Marks
     100% {
         transform: translateX(280%);
     }
-
 }
 
 
 /* ============================================================
-   MOBILE MODAL
-============================================================ */
-
-@media (max-width: 500px) {
-
-    .swa-overlay {
-        padding: 14px;
-    }
-
-    .swa-modal {
-        max-width: 100%;
-
-        padding:
-            26px
-            20px
-            21px;
-
-        border-radius: 17px;
-    }
-
-    .swa-icon {
-        width: 64px;
-        height: 64px;
-
-        font-size: 27px;
-    }
-
-    .swa-title {
-        font-size: 19px;
-    }
-
-    .swa-actions {
-        flex-direction: column-reverse;
-    }
-
-    .swa-btn {
-        width: 100%;
-    }
-
-}
-
-
-/* ============================================================
-   LARGE DESKTOP
+   RESPONSIVE
 ============================================================ */
 
 @media (min-width: 1500px) {
@@ -1526,13 +1484,8 @@ Enter Exam Marks
         padding-left: 22px;
         padding-right: 22px;
     }
-
 }
 
-
-/* ============================================================
-   DESKTOP
-============================================================ */
 
 @media (max-width: 1200px) {
 
@@ -1545,15 +1498,15 @@ Enter Exam Marks
     }
 
     .marks-table {
-        min-width: 680px;
+        min-width: 1000px;
     }
 
+    .summary-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
 }
 
-
-/* ============================================================
-   TABLET
-============================================================ */
 
 @media (max-width: 950px) {
 
@@ -1581,16 +1534,10 @@ Enter Exam Marks
     .summary-grid {
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
-
         gap: 12px;
     }
-
 }
 
-
-/* ============================================================
-   SMALL TABLET
-============================================================ */
 
 @media (max-width: 760px) {
 
@@ -1633,12 +1580,11 @@ Enter Exam Marks
         align-self: flex-start;
     }
 
+    .marks-legend {
+        padding: 11px 14px;
+    }
 }
 
-
-/* ============================================================
-   MOBILE
-============================================================ */
 
 @media (max-width: 650px) {
 
@@ -1692,7 +1638,7 @@ Enter Exam Marks
     }
 
     .summary-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 9px;
     }
 
@@ -1745,15 +1691,10 @@ Enter Exam Marks
 
     .marks-table tbody tr {
         background: #ffffff;
-
         border: 1px solid var(--marks-border);
-
         border-radius: 12px;
-
         margin-bottom: 10px;
-
         padding: 12px;
-
         box-shadow:
             0 2px 8px rgba(15, 23, 42, .03);
     }
@@ -1773,9 +1714,7 @@ Enter Exam Marks
 
     .student-info {
         padding-bottom: 11px;
-
         margin-bottom: 10px;
-
         border-bottom:
             1px solid #eef2f7;
     }
@@ -1783,7 +1722,6 @@ Enter Exam Marks
     .student-avatar {
         width: 42px;
         height: 42px;
-
         flex-basis: 42px;
     }
 
@@ -1791,55 +1729,68 @@ Enter Exam Marks
         font-size: 14px;
     }
 
-    .absent-cell {
+    .status-cell {
         display: flex !important;
-
         align-items: center;
         justify-content: space-between;
-
-        padding: 9px 0 !important;
-
+        padding: 8px 0 !important;
         border-bottom:
             1px solid #eef2f7 !important;
     }
 
-    .absent-cell::before {
-        content: "Absent";
-
+    .status-cell::before {
         color: var(--marks-muted);
-
         font-size: 12px;
         font-weight: 700;
+    }
+
+    .absent-status-cell::before {
+        content: "Absent";
+    }
+
+    .exempted-status-cell::before {
+        content: "Exempted";
     }
 
     .mark-cell {
         display: flex !important;
-
         align-items: center;
         justify-content: space-between;
-
-        padding-top: 10px !important;
+        padding: 10px 0 !important;
+        border-bottom:
+            1px solid #eef2f7 !important;
     }
 
     .mark-cell::before {
         content: "Mark";
-
         color: var(--marks-muted);
-
         font-size: 12px;
         font-weight: 700;
     }
 
-    .mark-input {
-        width: 115px;
-        height: 42px;
+    .remarks-cell {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding-top: 10px !important;
+    }
+
+    .remarks-cell::before {
+        content: "Remarks";
+        color: var(--marks-muted);
+        font-size: 12px;
+        font-weight: 700;
+        flex: 0 0 auto;
+    }
+
+    .remarks-input {
+        max-width: 60%;
     }
 
     .pagination-area {
         flex-direction: column;
-
         align-items: stretch;
-
         padding: 13px;
     }
 
@@ -1853,7 +1804,6 @@ Enter Exam Marks
 
     .form-footer {
         padding: 13px;
-
         flex-direction: column-reverse;
     }
 
@@ -1862,13 +1812,8 @@ Enter Exam Marks
         width: 100%;
         min-width: 0;
     }
-
 }
 
-
-/* ============================================================
-   VERY SMALL MOBILE
-============================================================ */
 
 @media (max-width: 400px) {
 
@@ -1886,6 +1831,10 @@ Enter Exam Marks
         border-right: 0;
     }
 
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
     .marks-table tbody {
         padding: 8px;
     }
@@ -1897,18 +1846,11 @@ Enter Exam Marks
     .page-btn {
         min-width: 31px;
         height: 31px;
-
         padding: 0 7px;
-
         font-size: 11px;
     }
-
 }
 
-
-/* ============================================================
-   EXTRA SMALL
-============================================================ */
 
 @media (max-width: 330px) {
 
@@ -1927,7 +1869,6 @@ Enter Exam Marks
     .student-avatar {
         width: 38px;
         height: 38px;
-
         flex-basis: 38px;
     }
 
@@ -1939,13 +1880,15 @@ Enter Exam Marks
         width: 100px;
     }
 
+    .status-box {
+        min-width: 82px;
+    }
 }
 
 </style>
 
-
 <!-- ============================================================
-     SWEETALERT-STYLE OVERLAY
+     SWEETALERT OVERLAY
 ============================================================ -->
 
 <div
@@ -1954,60 +1897,382 @@ Enter Exam Marks
     aria-hidden="true"
 >
 
+
+<div
+    class="swa-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="swaTitle"
+    tabindex="-1"
+>
+
     <div
-        class="swa-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="swaTitle"
+        class="swa-icon warning"
+        id="swaIcon"
+    >
+        !
+    </div>
+
+    <h2
+        class="swa-title"
+        id="swaTitle"
+    >
+        Submit Exam Marks?
+    </h2>
+
+    <p
+        class="swa-text"
+        id="swaText"
+    >
+        Are you sure you want to submit these marks?
+        <br>
+        <strong>
+            Submitted marks cannot be edited again.
+        </strong>
+    </p>
+
+    <div
+        class="swa-actions"
+        id="swaActions"
     >
 
-        <div
-            class="swa-icon warning"
-            id="swaIcon"
+        <button
+            type="button"
+            class="swa-btn swa-btn-cancel"
+            id="swaCancel"
         >
+            Cancel
+        </button>
+
+        <button
+            type="button"
+            class="swa-btn swa-btn-confirm"
+            id="swaConfirm"
+        >
+            ✓ Yes, Submit
+        </button>
+
+    </div>
+
+</div>
+
+
+</div>
+
+<div class="marks-page">
+
+
+<!-- ========================================================
+     PAGE HEADER
+========================================================= -->
+
+<div class="page-header">
+
+    <div class="page-title">
+
+        <h1>
+            Enter Exam Marks
+        </h1>
+
+        <p>
+
+            {{ subject.name if subject else 'Exam Subject' }}
+
+            {% if selected_class %}
+                · {{ selected_class.name }}
+            {% endif %}
+
+            {% if selected_section %}
+                · {{ selected_section.name }}
+            {% endif %}
+
+        </p>
+
+    </div>
+
+
+    <div class="header-actions">
+
+        <a
+            href="{{ url_for('main.teacher_my_exams') }}"
+            class="btn btn-secondary"
+        >
+            ← My Exams
+        </a>
+
+        <a
+            href="{{ url_for('main.teacher_dashboard') }}"
+            class="btn btn-secondary"
+        >
+            Dashboard
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     FLASH
+========================================================= -->
+
+<div class="flash-area">
+
+    {% with messages =
+        get_flashed_messages(with_categories=true)
+    %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+</div>
+
+
+<!-- ========================================================
+     SUBMISSION STATUS
+========================================================= -->
+
+{% if marks_locked %}
+
+    <div class="submission-status submitted">
+
+        <div class="submission-status-icon">
+            ✓
+        </div>
+
+        <div class="submission-status-content">
+
+            <p class="submission-status-title">
+                Already Submitted
+            </p>
+
+            <p class="submission-status-text">
+
+                Marks for
+                <strong>
+                    {{ subject.name if subject else 'this subject' }}
+                </strong>
+                have already been submitted.
+
+                You can view the marks, but you cannot edit
+                or submit them again.
+
+            </p>
+
+        </div>
+
+    </div>
+
+{% else %}
+
+    <div class="submission-status pending">
+
+        <div class="submission-status-icon">
             !
         </div>
 
+        <div class="submission-status-content">
 
-        <h2
-            class="swa-title"
-            id="swaTitle"
-        >
-            Submit Exam Marks?
+            <p class="submission-status-title">
+                Marks Pending Submission
+            </p>
+
+            <p class="submission-status-text">
+
+                Enter marks for required students.
+                Students who are absent or exempted do not
+                require a mark.
+
+            </p>
+
+        </div>
+
+    </div>
+
+{% endif %}
+
+
+<!-- ========================================================
+     EXAM INFORMATION
+========================================================= -->
+
+<div class="exam-card">
+
+    <div class="exam-card-header">
+
+        <h2>
+            {{ exam.name or 'Exam' }}
         </h2>
 
+        <p>
 
-        <p
-            class="swa-text"
-            id="swaText"
-        >
-            Are you sure you want to submit these marks?
-            <br>
-            <strong>Submitted marks cannot be edited again.</strong>
+            {% if exam.code %}
+                Exam Code: {{ exam.code }}
+            {% endif %}
+
+            {% if exam.exam_type %}
+                · {{ exam.exam_type|replace('_', ' ')|title }}
+            {% endif %}
+
         </p>
 
 
-        <div
-            class="swa-actions"
-            id="swaActions"
-        >
+        {% set current_exam_status =
+            (exam.status|string|lower|trim)
+        %}
 
-            <button
-                type="button"
-                class="swa-btn swa-btn-cancel"
-                id="swaCancel"
-            >
-                Cancel
-            </button>
+        {% if current_exam_status == 'draft' %}
+
+            <span class="exam-status-badge exam-status-draft">
+                ● Draft — Marks Entry Allowed
+            </span>
+
+        {% elif current_exam_status in ['active', 'open'] %}
+
+            <span class="exam-status-badge exam-status-active">
+                ● Open — Marks Entry Allowed
+            </span>
+
+        {% endif %}
+
+    </div>
 
 
-            <button
-                type="button"
-                class="swa-btn swa-btn-confirm"
-                id="swaConfirm"
-            >
-                ✓ Yes, Submit
-            </button>
+    <div class="exam-info">
+
+        <div class="info-item">
+
+            <div class="info-label">
+                Subject
+            </div>
+
+            <div class="info-value">
+
+                {{ subject.name if subject else '—' }}
+
+                {% if subject and subject.code %}
+                    ({{ subject.code }})
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                Program
+            </div>
+
+            <div class="info-value">
+                {{ program.name if program else '—' }}
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                Class
+            </div>
+
+            <div class="info-value">
+
+                {% if selected_class %}
+                    {{ selected_class.name }}
+                {% else %}
+                    All Classes
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                Section
+            </div>
+
+            <div class="info-value">
+
+                {% if selected_section %}
+                    {{ selected_section.name }}
+                {% else %}
+                    All Sections
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                Academic Year
+            </div>
+
+            <div class="info-value">
+                {{ exam.academic_year.name
+                    if exam.academic_year
+                    else '—' }}
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                Term
+            </div>
+
+            <div class="info-value">
+                {{ exam.term.name
+                    if exam.term
+                    else '—' }}
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                Maximum Marks
+            </div>
+
+            <div class="info-value">
+                {{ max_marks }}
+            </div>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <div class="info-label">
+                Pass Marks
+            </div>
+
+            <div class="info-value">
+                {{ pass_marks }}
+            </div>
 
         </div>
 
@@ -2016,630 +2281,372 @@ Enter Exam Marks
 </div>
 
 
-<div class="marks-page">
+<!-- ========================================================
+     SUMMARY
+========================================================= -->
 
-    <!-- =====================================================
-         HEADER
-    ====================================================== -->
+<div class="summary-grid">
 
-    <div class="page-header">
+    <div class="summary-card">
 
-        <div class="page-title">
-
-            <h1>
-                Enter Exam Marks
-            </h1>
-
-            <p>
-
-                {{ subject.name if subject else 'Exam Subject' }}
-
-                {% if selected_class %}
-                    · {{ selected_class.name }}
-                {% endif %}
-
-                {% if selected_section %}
-                    · {{ selected_section.name }}
-                {% endif %}
-
-            </p>
-
+        <div class="summary-label">
+            Students
         </div>
-
-
-        <div class="header-actions">
-
-            <a
-                href="{{ url_for('main.teacher_my_exams') }}"
-                class="btn btn-secondary"
-            >
-                ← My Exams
-            </a>
-
-            <a
-                href="{{ url_for('main.teacher_dashboard') }}"
-                class="btn btn-secondary"
-            >
-                Dashboard
-            </a>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         FLASH
-    ====================================================== -->
-
-    <div class="flash-area">
-
-        {% with messages =
-            get_flashed_messages(with_categories=true)
-        %}
-
-            {% if messages %}
-
-                {% for category, message in messages %}
-
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
-                    </div>
-
-                {% endfor %}
-
-            {% endif %}
-
-        {% endwith %}
-
-    </div>
-
-
-    <!-- =====================================================
-         SUBMISSION STATUS
-    ====================================================== -->
-
-    {% if marks_locked %}
-
-        <div class="submission-status submitted">
-
-            <div class="submission-status-icon">
-                ✓
-            </div>
-
-            <div class="submission-status-content">
-
-                <p class="submission-status-title">
-                    Already Submitted
-                </p>
-
-                <p class="submission-status-text">
-
-                    Marks for
-                    <strong>
-                        {{ subject.name if subject else 'this subject' }}
-                    </strong>
-                    have already been submitted.
-
-                    You can view the marks, but you cannot edit
-                    or submit them again.
-
-                </p>
-
-            </div>
-
-        </div>
-
-    {% else %}
-
-        <div class="submission-status pending">
-
-            <div class="submission-status-icon">
-                !
-            </div>
-
-            <div class="submission-status-content">
-
-                <p class="submission-status-title">
-                    Marks Pending Submission
-                </p>
-
-                <p class="submission-status-text">
-
-                    Enter marks for all students and click
-                    <strong>Save &amp; Submit Marks</strong>.
-
-                </p>
-
-            </div>
-
-        </div>
-
-    {% endif %}
-
-
-    <!-- =====================================================
-         EXAM INFORMATION
-    ====================================================== -->
-
-    <div class="exam-card">
-
-        <div class="exam-card-header">
-
-            <h2>
-                {{ exam.name or 'Exam' }}
-            </h2>
-
-            <p>
-
-                {% if exam.code %}
-                    Exam Code: {{ exam.code }}
-                {% endif %}
-
-                {% if exam.exam_type %}
-                    · {{ exam.exam_type|replace('_', ' ')|title }}
-                {% endif %}
-
-            </p>
-
-
-            {% set current_exam_status =
-                (exam.status|string|lower|trim)
-            %}
-
-            {% if current_exam_status == 'draft' %}
-
-                <span class="exam-status-badge exam-status-draft">
-                    ● Draft — Marks Entry Allowed
-                </span>
-
-            {% elif current_exam_status in ['active', 'open'] %}
-
-                <span class="exam-status-badge exam-status-active">
-                    ● Open — Marks Entry Allowed
-                </span>
-
-            {% endif %}
-
-        </div>
-
-
-        <div class="exam-info">
-
-            <div class="info-item">
-
-                <div class="info-label">
-                    Subject
-                </div>
-
-                <div class="info-value">
-
-                    {{ subject.name if subject else '—' }}
-
-                    {% if subject and subject.code %}
-                        ({{ subject.code }})
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <div class="info-label">
-                    Program
-                </div>
-
-                <div class="info-value">
-                    {{ program.name if program else '—' }}
-                </div>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <div class="info-label">
-                    Class
-                </div>
-
-                <div class="info-value">
-
-                    {% if selected_class %}
-                        {{ selected_class.name }}
-                    {% else %}
-                        All Classes
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <div class="info-label">
-                    Section
-                </div>
-
-                <div class="info-value">
-
-                    {% if selected_section %}
-                        {{ selected_section.name }}
-                    {% else %}
-                        All Sections
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <div class="info-label">
-                    Academic Year
-                </div>
-
-                <div class="info-value">
-                    {{ exam.academic_year.name
-                        if exam.academic_year
-                        else '—' }}
-                </div>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <div class="info-label">
-                    Term
-                </div>
-
-                <div class="info-value">
-                    {{ exam.term.name
-                        if exam.term
-                        else '—' }}
-                </div>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <div class="info-label">
-                    Maximum Marks
-                </div>
-
-                <div class="info-value">
-                    {{ max_marks }}
-                </div>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <div class="info-label">
-                    Pass Marks
-                </div>
-
-                <div class="info-value">
-                    {{ pass_marks }}
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         SUMMARY
-    ====================================================== -->
-
-    <div class="summary-grid">
-
-        <div class="summary-card">
-
-            <div class="summary-label">
-                Students
-            </div>
-
-            <div
-                class="summary-value"
-                id="totalStudents"
-            >
-                {{ student_count }}
-            </div>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <div class="summary-label">
-                Submitted
-            </div>
-
-            <div
-                class="summary-value submitted-value"
-                id="submittedStudents"
-            >
-                {{ submitted_count }}
-            </div>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <div class="summary-label">
-                Maximum Mark
-            </div>
-
-            <div class="summary-value">
-                {{ max_marks }}
-            </div>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <div class="summary-label">
-                Pass Mark
-            </div>
-
-            <div class="summary-value">
-                {{ pass_marks }}
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         FORM
-    ====================================================== -->
-
-    <form
-        method="POST"
-        action="{{ url_for(
-            'main.teacher_enter_marks',
-            exam_subject_id=exam_subject.id
-        ) }}"
-        id="marksForm"
-        autocomplete="off"
-    >
 
         <div
-            class="marks-card
-            {% if marks_locked %}marks-locked{% endif %}"
+            class="summary-value"
+            id="totalStudents"
         >
+            {{ student_count }}
+        </div>
 
-            <div class="marks-card-header">
+    </div>
 
-                <div class="marks-card-title">
 
-                    <h3>
-                        Student Marks
-                    </h3>
+    <div class="summary-card">
 
-                    <p>
+        <div class="summary-label">
+            Submitted
+        </div>
 
-                        {% if marks_locked %}
+        <div
+            class="summary-value submitted-value"
+            id="submittedStudents"
+        >
+            {{ submitted_count }}
+        </div>
 
-                            Marks have already been submitted.
-                            Viewing is allowed, editing is locked.
+    </div>
 
-                        {% else %}
 
-                            Enter marks for each student.
+    <div class="summary-card">
 
-                        {% endif %}
+        <div class="summary-label">
+            Required
+        </div>
 
-                    </p>
+        <div
+            class="summary-value pending-value"
+            id="requiredStudents"
+        >
+            {{ student_count }}
+        </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+        <div class="summary-label">
+            Exempted
+        </div>
+
+        <div
+            class="summary-value exempted-value"
+            id="exemptedStudents"
+        >
+            0
+        </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+        <div class="summary-label">
+            Maximum Mark
+        </div>
+
+        <div class="summary-value">
+            {{ max_marks }}
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     FORM
+========================================================= -->
+
+<form
+    method="POST"
+    action="{{ url_for(
+        'main.teacher_enter_marks',
+        exam_subject_id=exam_subject.id
+    ) }}"
+    id="marksForm"
+    autocomplete="off"
+>
+
+    <div
+        class="marks-card
+        {% if marks_locked %}marks-locked{% endif %}"
+    >
+
+
+        <!-- =================================================
+             HEADER
+        ================================================== -->
+
+        <div class="marks-card-header">
+
+            <div class="marks-card-title">
+
+                <h3>
+                    Student Marks
+                </h3>
+
+                <p>
+
+                    {% if marks_locked %}
+
+                        Marks have already been submitted.
+                        Viewing is allowed, editing is locked.
+
+                    {% else %}
+
+                        Required students must receive a mark.
+                        Use <strong>Exempted</strong> when this
+                        subject does not count for the student.
+
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+
+            <div class="limit-badge">
+                Maximum: {{ max_marks }}
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             LEGEND
+        ================================================== -->
+
+        <div class="marks-legend">
+
+            <span class="legend-item legend-required">
+                ✓ Required
+            </span>
+
+            <span class="legend-item legend-exempted">
+                ⊘ Exempted
+            </span>
+
+            <span class="legend-item legend-absent">
+                ! Absent
+            </span>
+
+        </div>
+
+
+        {% if students %}
+
+
+            <!-- =================================================
+                 SEARCH
+            ================================================== -->
+
+            <div class="student-toolbar">
+
+                <div class="student-search">
+
+                    <span class="student-search-icon">
+                        🔎
+                    </span>
+
+                    <input
+                        type="search"
+                        id="studentSearch"
+                        placeholder="Search student..."
+                        autocomplete="off"
+                        aria-label="Search students"
+                    >
 
                 </div>
 
 
-                <div class="limit-badge">
-                    Maximum: {{ max_marks }}
+                <div
+                    class="student-count"
+                    id="visibleCount"
+                >
+                    {{ student_count }}
+
+                    {% if student_count == 1 %}
+                        student
+                    {% else %}
+                        students
+                    {% endif %}
+
                 </div>
 
             </div>
 
 
-            {% if students %}
+            <!-- =================================================
+                 TABLE
+            ================================================== -->
 
-                <!-- =================================================
-                     SEARCH
-                ================================================== -->
+            <div class="table-wrapper">
 
-                <div class="student-toolbar">
+                <table
+                    class="marks-table"
+                    id="marksTable"
+                >
 
-                    <div class="student-search">
+                    <thead>
 
-                        <span class="student-search-icon">
-                            🔎
-                        </span>
+                        <tr>
 
-                        <input
-                            type="search"
-                            id="studentSearch"
-                            placeholder="Search student..."
-                            autocomplete="off"
-                            aria-label="Search students"
-                        >
+                            <th>
+                                #
+                            </th>
 
-                    </div>
+                            <th>
+                                Student
+                            </th>
 
+                            <th>
+                                Absent
+                            </th>
 
-                    <div
-                        class="student-count"
-                        id="visibleCount"
-                    >
+                            <th>
+                                Exempted
+                            </th>
 
-                        {{ student_count }}
+                            <th>
+                                Mark
+                            </th>
 
-                        {% if student_count == 1 %}
-                            student
-                        {% else %}
-                            students
-                        {% endif %}
+                            <!-- <th>
+                                Remarks
+                            </th> -->
 
-                    </div>
+                        </tr>
 
-                </div>
-
-
-                <!-- =================================================
-                     TABLE
-                ================================================== -->
-
-                <div class="table-wrapper">
-
-                    <table
-                        class="marks-table"
-                        id="marksTable"
-                    >
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    #
-                                </th>
-
-                                <th>
-                                    Student
-                                </th>
-
-                                <th>
-                                    Absent
-                                </th>
-
-                                <th>
-                                    Mark
-                                </th>
-
-                            </tr>
-
-                        </thead>
+                    </thead>
 
 
-                        <tbody id="studentTableBody">
+                    <tbody id="studentTableBody">
 
-                            {% for row in students %}
+                        {% for row in students %}
 
-                                {% set student = row.student %}
+                            {% set student = row.student %}
 
-                                <tr
-                                    class="student-row"
-                                    data-name="{{ student.full_name|lower }}"
-                                >
+                            <tr
+                                class="student-row"
+                                data-name="{{ student.full_name|lower }}"
+                                data-student-id="{{ student.id }}"
+                            >
 
-                                    <td class="number-cell">
-                                        {{ loop.index }}
-                                    </td>
+                                <!-- =================================
+                                     NUMBER
+                                ================================== -->
+
+                                <td class="number-cell">
+                                    {{ loop.index }}
+                                </td>
 
 
-                                    <td>
+                                <!-- =================================
+                                     STUDENT
+                                ================================== -->
 
-                                        <div class="student-info">
+                                <td>
 
-                                            <div class="student-avatar">
+                                    <div class="student-info">
 
-                                                {% if student.photo %}
+                                        <div class="student-avatar">
 
-                                                    <img
-                                                        src="{{ url_for(
-                                                            'static',
-                                                            filename=student.photo
-                                                        ) }}"
-                                                        alt="{{ student.full_name }}"
-                                                        loading="lazy"
-                                                    >
+                                            {% if student.photo %}
 
-                                                {% else %}
+                                                <img
+                                                    src="{{ url_for(
+                                                        'static',
+                                                        filename=student.photo
+                                                    ) }}"
+                                                    alt="{{ student.full_name }}"
+                                                    loading="lazy"
+                                                >
 
-                                                    {{
-                                                        (
-                                                            student.full_name[:1]
-                                                            if student.full_name
-                                                            else '?'
-                                                        )|upper
-                                                    }}
+                                            {% else %}
 
-                                                {% endif %}
+                                                {{
+                                                    (
+                                                        student.full_name[:1]
+                                                        if student.full_name
+                                                        else '?'
+                                                    )|upper
+                                                }}
 
-                                            </div>
+                                            {% endif %}
 
+                                        </div>
+
+
+                                        <div>
 
                                             <div class="student-name">
                                                 {{ student.full_name }}
                                             </div>
 
+                                            {% if row.is_exempted %}
+
+                                                <span class="student-result-status exempted">
+                                                    ⊘ Exempted
+                                                </span>
+
+                                            {% elif row.is_absent %}
+
+                                                <span class="student-result-status absent">
+                                                    ! Absent
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="student-result-status required">
+                                                    ✓ Required
+                                                </span>
+
+                                            {% endif %}
+
                                         </div>
 
-                                    </td>
+                                    </div>
+
+                                </td>
 
 
-                                    <td class="absent-cell">
+                                <!-- =================================
+                                     ABSENT
+                                ================================== -->
 
-                                        <label
-                                            class="absent-toggle"
-                                            title="Mark student as absent"
-                                        >
+                                <td
+                                    class="
+                                        status-cell
+                                        absent-status-cell
+                                    "
+                                >
 
-                                            <input
-                                                type="checkbox"
-                                                name="absent_{{ student.id }}"
-                                                value="1"
-                                                class="absent-checkbox"
-
-                                                {% if row.is_absent %}
-                                                    checked
-                                                {% endif %}
-
-                                                {% if marks_locked %}
-                                                    disabled
-                                                {% endif %}
-                                            >
-
-                                            <span class="absent-box"></span>
-
-                                        </label>
-
-                                    </td>
-
-
-                                    <td class="mark-cell">
+                                    <label
+                                        class="status-option"
+                                        title="Mark student as absent"
+                                    >
 
                                         <input
-                                            type="number"
-                                            class="mark-input"
+                                            type="checkbox"
+                                            name="absent_{{ student.id }}"
+                                            value="1"
+                                            class="absent-checkbox"
 
-                                            name="marks_{{ student.id }}"
-
-                                            value="{% if row.marks_obtained is not none %}{{ row.marks_obtained }}{% endif %}"
-
-                                            min="0"
-                                            max="{{ max_marks }}"
-                                            step="0.01"
-
-                                            placeholder="0 - {{ max_marks }}"
-
-                                            inputmode="decimal"
-
-                                            {% if row.is_absent
-                                                or row.is_exempted %}
-                                                disabled
+                                            {% if row.is_absent %}
+                                                checked
                                             {% endif %}
 
                                             {% if marks_locked %}
@@ -2647,32 +2654,168 @@ Enter Exam Marks
                                             {% endif %}
                                         >
 
-                                    </td>
+                                        <span
+                                            class="
+                                                status-box
+                                                absent-box-ui
+                                            "
+                                        >
+                                            ! Absent
+                                        </span>
 
-                                </tr>
+                                    </label>
 
-                            {% endfor %}
+                                </td>
 
-                        </tbody>
 
-                    </table>
+                                <!-- =================================
+                                     EXEMPTED
+                                ================================== -->
 
+                                <td
+                                    class="
+                                        status-cell
+                                        exempted-status-cell
+                                    "
+                                >
+
+                                    <label
+                                        class="status-option"
+                                        title="Exclude this subject from the student's required subjects"
+                                    >
+
+                                        <input
+                                            type="checkbox"
+                                            name="exempted_{{ student.id }}"
+                                            value="1"
+                                            class="exempted-checkbox"
+
+                                            {% if row.is_exempted %}
+                                                checked
+                                            {% endif %}
+
+                                            {% if marks_locked %}
+                                                disabled
+                                            {% endif %}
+                                        >
+
+                                        <span
+                                            class="
+                                                status-box
+                                                exempted-box-ui
+                                            "
+                                        >
+                                            ⊘ Exempted
+                                        </span>
+
+                                    </label>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     MARK
+                                ================================== -->
+
+                                <td class="mark-cell">
+
+                                    <input
+                                        type="number"
+                                        class="mark-input"
+
+                                        name="marks_{{ student.id }}"
+
+                                        value="{% if row.marks_obtained is not none %}{{ row.marks_obtained }}{% endif %}"
+
+                                        min="0"
+                                        max="{{ max_marks }}"
+                                        step="0.01"
+
+                                        placeholder="0 - {{ max_marks }}"
+
+                                        inputmode="decimal"
+
+                                        {% if row.is_absent
+                                            or row.is_exempted %}
+                                            disabled
+                                        {% endif %}
+
+                                        {% if marks_locked %}
+                                            disabled
+                                        {% endif %}
+                                    >
+
+                                </td>
+
+
+                                <!-- =================================
+                                     REMARKS
+                                ================================== -->
+
+                                <!-- <td class="remarks-cell">
+
+                                    <input
+                                        type="text"
+                                        class="remarks-input"
+
+                                        name="remarks_{{ student.id }}"
+
+                                        value="{{ row.remarks or '' }}"
+
+                                        placeholder="Optional remarks..."
+
+                                        maxlength="500"
+
+                                        {% if marks_locked %}
+                                            disabled
+                                        {% endif %}
+                                    >
+
+                                </td> -->
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- =================================================
+                 PAGINATION
+            ================================================== -->
+
+            <div class="pagination-area">
+
+                <div
+                    class="pagination-info"
+                    id="paginationInfo"
+                >
+                    Showing 1–{{ student_count }} of {{ student_count }}
                 </div>
 
+                <div class="pagination-controls">
 
-                <!-- =================================================
-                     PAGINATION
-                ================================================== -->
-
-                <div class="pagination-area">
-
-                    <div
-                        class="pagination-info"
-                        id="paginationInfo"
+                    <label
+                        class="page-size-label"
+                        for="pageSize"
                     >
-                        Showing 1–{{ student_count }}
-                    </div>
+                        Show
+                    </label>
 
+                    <select
+                        class="page-size-select"
+                        id="pageSize"
+                        aria-label="Students per page"
+                    >
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="all">All</option>
+                    </select>
 
                     <div
                         class="pagination"
@@ -2681,65 +2824,69 @@ Enter Exam Marks
 
                 </div>
 
-
-                <!-- =================================================
-                     FOOTER
-                ================================================== -->
-
-                <div class="form-footer">
-
-                    <a
-                        href="{{ url_for('main.teacher_my_exams') }}"
-                        class="btn btn-secondary"
-                    >
-                        ← My Exams
-                    </a>
+            </div>
 
 
-                    {% if marks_locked %}
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
 
-                        <div class="already-submitted-btn">
-                            ✓ Already Submitted
-                        </div>
+            <div class="form-footer">
 
-                    {% else %}
+                <a
+                    href="{{ url_for('main.teacher_my_exams') }}"
+                    class="btn btn-secondary"
+                >
+                    ← My Exams
+                </a>
 
-                        <button
-                            type="submit"
-                            class="btn btn-success"
-                            id="saveMarksBtn"
-                        >
-                            ✓ Save &amp; Submit Marks
-                        </button>
 
-                    {% endif %}
+                {% if marks_locked %}
 
-                </div>
-
-            {% else %}
-
-                <div class="empty-state">
-
-                    <div class="empty-icon">
-                        👨‍🎓
+                    <div class="already-submitted-btn">
+                        ✓ Already Submitted
                     </div>
 
-                    <h3>
-                        No Students Found
-                    </h3>
+                {% else %}
 
-                    <p>
-                        No active students are enrolled
-                        for this exam.
-                    </p>
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                        id="saveMarksBtn"
+                    >
+                        ✓ Save &amp; Submit Marks
+                    </button>
 
+                {% endif %}
+
+            </div>
+
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    👨‍🎓
                 </div>
 
-            {% endif %}
+                <h3>
+                    No Students Found
+                </h3>
 
-        </div>
+                <p>
+                    No active students are enrolled
+                    for this exam.
+                </p>
 
-    </form>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</form>
+
 
 </div>
 
@@ -2766,16 +2913,25 @@ document.addEventListener(
         const submittedStudents =
             {{ submitted_count|int }};
 
+        const maxMarks =
+            parseFloat(
+                "{{ max_marks }}"
+            );
+
 
         /* =====================================================
            ELEMENTS
         ====================================================== */
 
         const form =
-            document.getElementById("marksForm");
+            document.getElementById(
+                "marksForm"
+            );
 
         const searchInput =
-            document.getElementById("studentSearch");
+            document.getElementById(
+                "studentSearch"
+            );
 
         const rows =
             Array.from(
@@ -2785,7 +2941,9 @@ document.addEventListener(
             );
 
         const pagination =
-            document.getElementById("pagination");
+            document.getElementById(
+                "pagination"
+            );
 
         const paginationInfo =
             document.getElementById(
@@ -2797,15 +2955,24 @@ document.addEventListener(
                 "visibleCount"
             );
 
+        const pageSizeSelect =
+            document.getElementById(
+                "pageSize"
+            );
+
         const saveButton =
             document.getElementById(
                 "saveMarksBtn"
             );
 
+        const requiredStudents =
+            document.getElementById(
+                "requiredStudents"
+            );
 
-        const maxMarks =
-            parseFloat(
-                "{{ max_marks }}"
+        const exemptedStudents =
+            document.getElementById(
+                "exemptedStudents"
             );
 
 
@@ -2817,13 +2984,6 @@ document.addEventListener(
             document.getElementById(
                 "swaOverlay"
             );
-
-        const swaModal =
-            swaOverlay
-                ? swaOverlay.querySelector(
-                    ".swa-modal"
-                )
-                : null;
 
         const swaIcon =
             document.getElementById(
@@ -2845,22 +3005,12 @@ document.addEventListener(
                 "swaActions"
             );
 
-        const swaCancel =
-            document.getElementById(
-                "swaCancel"
-            );
-
-        const swaConfirm =
-            document.getElementById(
-                "swaConfirm"
-            );
-
 
         /* =====================================================
            SETTINGS
         ====================================================== */
 
-        const perPage = 10;
+        let perPage = 10;
 
         let currentPage = 1;
 
@@ -2868,9 +3018,551 @@ document.addEventListener(
 
         let isSubmitting = false;
 
+        let suppressAutoFocus = false;
+
 
         /* =====================================================
-           SWEETALERT OPEN
+           CURRENT FOCUS STATE
+        ====================================================== */
+
+        let lastFocusedMarkInput = null;
+
+        let focusTimer = null;
+
+
+        /* =====================================================
+           REQUIRED FIELD VISUAL STYLE
+        ====================================================== */
+
+        const focusStyle =
+            document.createElement(
+                "style"
+            );
+
+        focusStyle.textContent = `
+
+            .student-row .mark-input.soo-focus-visible {
+                outline: 3px solid #32b73a !important;
+                outline-offset: 2px !important;
+                border-color: #32b73a !important;
+                box-shadow:
+                    0 0 0 3px rgba(50,183,58,.16),
+                    0 4px 14px rgba(6,36,95,.12) !important;
+                background-color: #ffffff !important;
+                position: relative;
+                z-index: 5;
+            }
+
+            .student-row .mark-input.soo-focus-visible::selection {
+                background: #06245f;
+                color: #ffffff;
+            }
+
+        `;
+
+        document.head.appendChild(
+            focusStyle
+        );
+
+
+        /* =====================================================
+           HELPER
+        ====================================================== */
+
+        function getMarkInput(row) {
+
+            if (!row) {
+                return null;
+            }
+
+            return row.querySelector(
+                ".mark-input"
+            );
+
+        }
+
+
+        function getAbsentCheckbox(row) {
+
+            if (!row) {
+                return null;
+            }
+
+            return row.querySelector(
+                ".absent-checkbox"
+            );
+
+        }
+
+
+        function getExemptedCheckbox(row) {
+
+            if (!row) {
+                return null;
+            }
+
+            return row.querySelector(
+                ".exempted-checkbox"
+            );
+
+        }
+
+
+        function isRequiredRow(row) {
+
+            if (!row) {
+                return false;
+            }
+
+            const absent =
+                getAbsentCheckbox(row);
+
+            const exempted =
+                getExemptedCheckbox(row);
+
+            const markInput =
+                getMarkInput(row);
+
+            if (
+                !markInput ||
+                !absent ||
+                !exempted
+            ) {
+                return false;
+            }
+
+            return (
+                !absent.checked &&
+                !exempted.checked &&
+                !markInput.disabled
+            );
+
+        }
+
+
+        /* =====================================================
+           GET REQUIRED ROWS
+        ====================================================== */
+
+        function getRequiredRows(
+            sourceRows = rows
+        ) {
+
+            return sourceRows.filter(
+                function (row) {
+
+                    return isRequiredRow(
+                        row
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           CLEAR OLD VISUAL FOCUS
+        ====================================================== */
+
+        function clearMarkVisualFocus() {
+
+            rows.forEach(
+                function (row) {
+
+                    const input =
+                        getMarkInput(row);
+
+                    if (input) {
+
+                        input.classList.remove(
+                            "soo-focus-visible"
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           FOCUS / SELECT REQUIRED MARK
+        ====================================================== */
+
+        function focusRequiredMark(
+            row,
+            selectValue = true,
+            scrollToField = true
+        ) {
+
+            if (
+                marksLocked ||
+                !row
+            ) {
+                return false;
+            }
+
+            const markInput =
+                getMarkInput(row);
+
+            if (
+                !markInput ||
+                markInput.disabled
+            ) {
+                return false;
+            }
+
+
+            if (focusTimer) {
+
+                clearTimeout(
+                    focusTimer
+                );
+
+                focusTimer = null;
+
+            }
+
+
+            clearMarkVisualFocus();
+
+
+            /* =================================================
+               MAKE ROW VISIBLE FIRST
+            ================================================== */
+
+            row.style.display = "";
+
+
+            /* =================================================
+               FOCUS
+            ================================================== */
+
+            try {
+
+                markInput.focus({
+                    preventScroll: true
+                });
+
+            } catch (error) {
+
+                markInput.focus();
+
+            }
+
+
+            /* =================================================
+               SELECT EXISTING VALUE
+            ================================================== */
+
+            if (selectValue) {
+
+                try {
+
+                    markInput.select();
+
+                } catch (error) {
+
+                    try {
+
+                        markInput.setSelectionRange(
+                            0,
+                            markInput.value.length
+                        );
+
+                    } catch (
+                        selectionError
+                    ) {
+                        /* Ignore */
+                    }
+
+                }
+
+            }
+
+
+            /* =================================================
+               STRONG VISUAL FOCUS
+            ================================================== */
+
+            markInput.classList.add(
+                "soo-focus-visible"
+            );
+
+            lastFocusedMarkInput =
+                markInput;
+
+
+            /* =================================================
+               SCROLL FIELD INTO VIEW
+            ================================================== */
+
+            if (scrollToField) {
+
+                focusTimer =
+                    setTimeout(
+                        function () {
+
+                            try {
+
+                                markInput.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "center",
+                                    inline: "nearest"
+                                });
+
+                            } catch (error) {
+
+                                markInput.scrollIntoView();
+
+                            }
+
+
+                            /*
+                             * Re-focus after scroll.
+                             * This prevents browsers from
+                             * losing selection/focus.
+                             */
+
+                            setTimeout(
+                                function () {
+
+                                    try {
+
+                                        markInput.focus({
+                                            preventScroll: true
+                                        });
+
+                                        if (
+                                            selectValue
+                                        ) {
+
+                                            markInput.select();
+
+                                        }
+
+                                        markInput.classList.add(
+                                            "soo-focus-visible"
+                                        );
+
+                                    } catch (error) {
+
+                                        markInput.focus();
+
+                                    }
+
+                                },
+                                250
+                            );
+
+                        },
+                        80
+                    );
+
+            }
+
+            return true;
+
+        }
+
+
+        /* =====================================================
+           FOCUS FIRST REQUIRED STUDENT
+        ====================================================== */
+
+        function focusFirstRequired(
+            sourceRows = filteredRows,
+            selectValue = true,
+            scrollToField = true
+        ) {
+
+            if (marksLocked) {
+                return;
+            }
+
+            const requiredRows =
+                getRequiredRows(
+                    sourceRows
+                );
+
+            if (
+                !requiredRows.length
+            ) {
+                return;
+            }
+
+            focusRequiredMark(
+                requiredRows[0],
+                selectValue,
+                scrollToField
+            );
+
+        }
+
+
+        /* =====================================================
+           FOCUS NEXT REQUIRED STUDENT
+        ====================================================== */
+
+        function focusNextRequired(
+            currentRow,
+            selectValue = true
+        ) {
+
+            if (
+                marksLocked ||
+                !currentRow
+            ) {
+                return;
+            }
+
+
+            let currentIndex =
+                filteredRows.indexOf(
+                    currentRow
+                );
+
+
+            if (currentIndex < 0) {
+
+                currentIndex =
+                    rows.indexOf(
+                        currentRow
+                    );
+
+            }
+
+
+            const sourceRows =
+                currentIndex >= 0 &&
+                filteredRows.includes(
+                    currentRow
+                )
+                    ? filteredRows
+                    : rows;
+
+
+            const startIndex =
+                sourceRows.indexOf(
+                    currentRow
+                );
+
+
+            /* =================================================
+               FIND NEXT REQUIRED
+            ================================================== */
+
+            for (
+                let i =
+                    Math.max(
+                        startIndex + 1,
+                        0
+                    );
+
+                i <
+                sourceRows.length;
+
+                i++
+            ) {
+
+                const candidate =
+                    sourceRows[i];
+
+
+                if (
+                    isRequiredRow(
+                        candidate
+                    )
+                ) {
+
+                    moveRowToVisiblePage(
+                        candidate
+                    );
+
+
+                    setTimeout(
+                        function () {
+
+                            focusRequiredMark(
+                                candidate,
+                                selectValue,
+                                true
+                            );
+
+                        },
+                        80
+                    );
+
+                    return true;
+
+                }
+
+            }
+
+
+            return false;
+
+        }
+
+
+        /* =====================================================
+           MOVE ROW TO ITS PAGE
+        ====================================================== */
+
+        function moveRowToVisiblePage(
+            row
+        ) {
+
+            if (
+                !row ||
+                !filteredRows.includes(
+                    row
+                )
+            ) {
+                return;
+            }
+
+
+            const effectivePerPage =
+                perPage === "all"
+                    ? Math.max(
+                        filteredRows.length,
+                        1
+                    )
+                    : Number(
+                        perPage
+                    );
+
+
+            const index =
+                filteredRows.indexOf(
+                    row
+                );
+
+
+            if (index < 0) {
+                return;
+            }
+
+
+            currentPage =
+                Math.floor(
+                    index /
+                    effectivePerPage
+                ) + 1;
+
+
+            renderPagination();
+
+            renderRows();
+
+        }
+
+
+        /* =====================================================
+           OPEN MODAL
         ====================================================== */
 
         function openSweetAlert() {
@@ -2895,7 +3587,7 @@ document.addEventListener(
 
 
         /* =====================================================
-           SWEETALERT CLOSE
+           CLOSE MODAL
         ====================================================== */
 
         function closeSweetAlert() {
@@ -2920,193 +3612,118 @@ document.addEventListener(
 
 
         /* =====================================================
-           CONFIRMATION MODAL
+           UPDATE SUMMARY
         ====================================================== */
 
-        function showConfirmation() {
+        function updateSummary() {
 
-            if (
-                !swaOverlay ||
-                !swaIcon ||
-                !swaTitle ||
-                !swaText ||
-                !swaActions
-            ) {
+            let exemptedCount = 0;
 
-                return Promise.resolve(
-                    window.confirm(
-                        "Are you sure you want to submit these marks?"
-                    )
-                );
-
-            }
+            let absentCount = 0;
 
 
-            swaIcon.className =
-                "swa-icon warning";
+            rows.forEach(
+                function (row) {
 
-            swaIcon.innerHTML =
-                "!";
+                    const exemptedCheckbox =
+                        getExemptedCheckbox(
+                            row
+                        );
 
-
-            swaTitle.textContent =
-                "Submit Exam Marks?";
-
-
-            swaText.innerHTML =
-                "Are you sure you want to submit these marks?" +
-                "<br>" +
-                "<strong>Submitted marks cannot be edited again.</strong>";
+                    const absentCheckbox =
+                        getAbsentCheckbox(
+                            row
+                        );
 
 
-            swaActions.innerHTML = "";
+                    if (
+                        exemptedCheckbox &&
+                        exemptedCheckbox.checked
+                    ) {
+
+                        exemptedCount++;
+
+                    }
 
 
-            const cancelButton =
-                document.createElement(
-                    "button"
-                );
+                    if (
+                        absentCheckbox &&
+                        absentCheckbox.checked
+                    ) {
 
-            cancelButton.type =
-                "button";
+                        absentCount++;
 
-            cancelButton.className =
-                "swa-btn swa-btn-cancel";
-
-            cancelButton.textContent =
-                "Cancel";
-
-
-            const confirmButton =
-                document.createElement(
-                    "button"
-                );
-
-            confirmButton.type =
-                "button";
-
-            confirmButton.className =
-                "swa-btn swa-btn-confirm";
-
-            confirmButton.textContent =
-                "✓ Yes, Submit";
-
-
-            swaActions.appendChild(
-                cancelButton
-            );
-
-            swaActions.appendChild(
-                confirmButton
-            );
-
-
-            openSweetAlert();
-
-
-            return new Promise(
-                function (resolve) {
-
-                    cancelButton.focus();
-
-
-                    cancelButton.addEventListener(
-                        "click",
-                        function () {
-
-                            closeSweetAlert();
-
-                            resolve(false);
-
-                        },
-                        {
-                            once: true
-                        }
-                    );
-
-
-                    confirmButton.addEventListener(
-                        "click",
-                        function () {
-
-                            closeSweetAlert();
-
-                            resolve(true);
-
-                        },
-                        {
-                            once: true
-                        }
-                    );
+                    }
 
                 }
             );
 
-        }
+
+            const requiredCount =
+                Math.max(
+                    0,
+                    rows.length -
+                    exemptedCount -
+                    absentCount
+                );
 
 
-        /* =====================================================
-           LOADING MODAL
-        ====================================================== */
+            if (requiredStudents) {
 
-        function showLoading() {
+                requiredStudents.textContent =
+                    requiredCount;
 
-            if (!swaOverlay) {
-                return;
             }
 
 
-            swaIcon.className =
-                "swa-icon loading";
+            if (exemptedStudents) {
 
+                exemptedStudents.textContent =
+                    exemptedCount;
 
-            swaIcon.innerHTML =
-                '<div class="swa-spinner"></div>';
-
-
-            swaTitle.textContent =
-                "Submitting Marks...";
-
-
-            swaText.innerHTML =
-                "Please wait while the student marks are being saved." +
-                "<br>" +
-                "<strong>Do not close or refresh this page.</strong>";
-
-
-            swaActions.innerHTML =
-                '<div class="swa-loading-line"></div>';
-
-
-            openSweetAlert();
+            }
 
         }
 
 
         /* =====================================================
-           UPDATE ROW
+           UPDATE ROW STATE
         ====================================================== */
 
-        function updateRow(row) {
+        function updateRow(
+            row,
+            moveFocus = false
+        ) {
 
             const markInput =
-                row.querySelector(
-                    ".mark-input"
-                );
+                getMarkInput(row);
 
             const absentCheckbox =
-                row.querySelector(
-                    ".absent-checkbox"
-                );
+                getAbsentCheckbox(row);
+
+            const exemptedCheckbox =
+                getExemptedCheckbox(row);
+
+            const remarksInput =
+                row
+                    ? row.querySelector(
+                        ".remarks-input"
+                    )
+                    : null;
 
 
             if (
                 !markInput ||
-                !absentCheckbox
+                !absentCheckbox ||
+                !exemptedCheckbox
             ) {
                 return;
             }
 
+
+            /* =================================================
+               LOCKED
+            ================================================= */
 
             if (marksLocked) {
 
@@ -3116,24 +3733,273 @@ document.addEventListener(
                 absentCheckbox.disabled =
                     true;
 
+                exemptedCheckbox.disabled =
+                    true;
+
+                markInput.required =
+                    false;
+
+                if (remarksInput) {
+
+                    remarksInput.disabled =
+                        true;
+
+                }
+
                 return;
 
             }
 
 
-            if (absentCheckbox.checked) {
+            /* =================================================
+               EXEMPTED
+            ================================================= */
+
+            if (
+                exemptedCheckbox.checked
+            ) {
+
+                absentCheckbox.checked =
+                    false;
+
+                absentCheckbox.disabled =
+                    true;
+
+                exemptedCheckbox.disabled =
+                    false;
+
+                markInput.value =
+                    "";
 
                 markInput.disabled =
                     true;
 
-                markInput.value = "";
+                markInput.required =
+                    false;
 
-            } else {
+
+                if (remarksInput) {
+
+                    remarksInput.disabled =
+                        false;
+
+                }
+
+
+                updateStatusLabel(
+                    row
+                );
+
+                updateSummary();
+
+
+                if (moveFocus) {
+
+                    focusNextRequired(
+                        row,
+                        true
+                    );
+
+                }
+
+                return;
+
+            }
+
+
+            /* =================================================
+               ABSENT
+            ================================================= */
+
+            absentCheckbox.disabled =
+                false;
+
+
+            if (
+                absentCheckbox.checked
+            ) {
+
+                exemptedCheckbox.checked =
+                    false;
+
+                exemptedCheckbox.disabled =
+                    true;
+
+                markInput.value =
+                    "";
 
                 markInput.disabled =
+                    true;
+
+                markInput.required =
+                    false;
+
+
+                if (remarksInput) {
+
+                    remarksInput.disabled =
+                        false;
+
+                }
+
+
+                updateStatusLabel(
+                    row
+                );
+
+                updateSummary();
+
+
+                if (moveFocus) {
+
+                    focusNextRequired(
+                        row,
+                        true
+                    );
+
+                }
+
+                return;
+
+            }
+
+
+            /* =================================================
+               REQUIRED
+            ================================================= */
+
+            exemptedCheckbox.disabled =
+                false;
+
+            absentCheckbox.disabled =
+                false;
+
+            markInput.disabled =
+                false;
+
+            markInput.required =
+                true;
+
+            markInput.setAttribute(
+                "aria-required",
+                "true"
+            );
+
+
+            if (remarksInput) {
+
+                remarksInput.disabled =
                     false;
 
             }
+
+
+            updateStatusLabel(
+                row
+            );
+
+            updateSummary();
+
+        }
+
+
+        /* =====================================================
+           STATUS LABEL
+        ====================================================== */
+
+        function updateStatusLabel(
+            row
+        ) {
+
+            if (!row) {
+                return;
+            }
+
+
+            const statusContainer =
+                row.querySelector(
+                    ".student-info > div:last-child"
+                );
+
+
+            if (!statusContainer) {
+                return;
+            }
+
+
+            const oldBadge =
+                statusContainer.querySelector(
+                    ".student-result-status"
+                );
+
+
+            if (oldBadge) {
+
+                oldBadge.remove();
+
+            }
+
+
+            const absent =
+                getAbsentCheckbox(
+                    row
+                );
+
+            const exempted =
+                getExemptedCheckbox(
+                    row
+                );
+
+
+            const badge =
+                document.createElement(
+                    "span"
+                );
+
+
+            badge.className =
+                "student-result-status";
+
+
+            if (
+                exempted &&
+                exempted.checked
+            ) {
+
+                badge.classList.add(
+                    "exempted"
+                );
+
+                badge.textContent =
+                    "⊘ Exempted";
+
+            } else if (
+                absent &&
+                absent.checked
+            ) {
+
+                badge.classList.add(
+                    "absent"
+                );
+
+                badge.textContent =
+                    "! Absent";
+
+            } else {
+
+                badge.classList.add(
+                    "required"
+                );
+
+                badge.textContent =
+                    "✓ Required";
+
+            }
+
+
+            statusContainer.appendChild(
+                badge
+            );
 
         }
 
@@ -3146,10 +4012,24 @@ document.addEventListener(
             function (row) {
 
                 const absentCheckbox =
-                    row.querySelector(
-                        ".absent-checkbox"
+                    getAbsentCheckbox(
+                        row
                     );
 
+                const exemptedCheckbox =
+                    getExemptedCheckbox(
+                        row
+                    );
+
+                const markInput =
+                    getMarkInput(
+                        row
+                    );
+
+
+                /* =============================================
+                   ABSENT CHANGE
+                ============================================== */
 
                 if (absentCheckbox) {
 
@@ -3157,7 +4037,46 @@ document.addEventListener(
                         "change",
                         function () {
 
-                            updateRow(row);
+                            const wasChecked =
+                                this.checked;
+
+
+                            updateRow(
+                                row,
+                                wasChecked
+                            );
+
+                            updateStatusLabel(
+                                row
+                            );
+
+                            updateSummary();
+
+
+                            /*
+                             * If this row became required,
+                             * show its mark field clearly.
+                             */
+
+                            if (
+                                !wasChecked &&
+                                isRequiredRow(row)
+                            ) {
+
+                                setTimeout(
+                                    function () {
+
+                                        focusRequiredMark(
+                                            row,
+                                            true,
+                                            true
+                                        );
+
+                                    },
+                                    80
+                                );
+
+                            }
 
                         }
                     );
@@ -3165,10 +4084,290 @@ document.addEventListener(
                 }
 
 
-                updateRow(row);
+                /* =============================================
+                   EXEMPTED CHANGE
+                ============================================== */
+
+                if (exemptedCheckbox) {
+
+                    exemptedCheckbox.addEventListener(
+                        "change",
+                        function () {
+
+                            const wasChecked =
+                                this.checked;
+
+
+                            updateRow(
+                                row,
+                                wasChecked
+                            );
+
+                            updateStatusLabel(
+                                row
+                            );
+
+                            updateSummary();
+
+
+                            /*
+                             * If exempted was unchecked,
+                             * return cursor to the required field.
+                             */
+
+                            if (
+                                !wasChecked &&
+                                isRequiredRow(row)
+                            ) {
+
+                                setTimeout(
+                                    function () {
+
+                                        focusRequiredMark(
+                                            row,
+                                            true,
+                                            true
+                                        );
+
+                                    },
+                                    80
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+
+
+                /* =============================================
+                   MARK INPUT
+                ============================================== */
+
+                if (markInput) {
+
+                    markInput.addEventListener(
+                        "focus",
+                        function () {
+
+                            clearMarkVisualFocus();
+
+                            this.classList.add(
+                                "soo-focus-visible"
+                            );
+
+                            lastFocusedMarkInput =
+                                this;
+
+                        }
+                    );
+
+
+                    markInput.addEventListener(
+                        "blur",
+                        function () {
+
+                            /*
+                             * Keep visual focus only if another
+                             * mark field has not taken focus.
+                             */
+
+                            if (
+                                document.activeElement !==
+                                this
+                            ) {
+
+                                this.classList.remove(
+                                    "soo-focus-visible"
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    /*
+                     * Enter = next required.
+                     */
+
+                    markInput.addEventListener(
+                        "keydown",
+                        function (event) {
+
+                            if (
+                                event.key ===
+                                "Enter"
+                            ) {
+
+                                event.preventDefault();
+
+                                focusNextRequired(
+                                    row,
+                                    true
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    /*
+                     * ArrowDown = next required.
+                     */
+
+                    markInput.addEventListener(
+                        "keydown",
+                        function (event) {
+
+                            if (
+                                event.key ===
+                                "ArrowDown"
+                            ) {
+
+                                event.preventDefault();
+
+                                focusNextRequired(
+                                    row,
+                                    true
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    /*
+                     * ArrowUp = previous required.
+                     */
+
+                    markInput.addEventListener(
+                        "keydown",
+                        function (event) {
+
+                            if (
+                                event.key !==
+                                "ArrowUp"
+                            ) {
+                                return;
+                            }
+
+                            event.preventDefault();
+
+
+                            focusPreviousRequired(
+                                row,
+                                true
+                            );
+
+                        }
+                    );
+
+                }
+
+
+                updateRow(
+                    row,
+                    false
+                );
+
+                updateStatusLabel(
+                    row
+                );
 
             }
         );
+
+
+        updateSummary();
+
+
+        /* =====================================================
+           PREVIOUS REQUIRED STUDENT
+        ====================================================== */
+
+        function focusPreviousRequired(
+            currentRow,
+            selectValue = true
+        ) {
+
+            if (
+                marksLocked ||
+                !currentRow
+            ) {
+                return;
+            }
+
+
+            const sourceRows =
+                filteredRows.includes(
+                    currentRow
+                )
+                    ? filteredRows
+                    : rows;
+
+
+            const currentIndex =
+                sourceRows.indexOf(
+                    currentRow
+                );
+
+
+            if (currentIndex <= 0) {
+                return;
+            }
+
+
+            for (
+                let i =
+                    currentIndex - 1;
+
+                i >= 0;
+
+                i--
+            ) {
+
+                const candidate =
+                    sourceRows[i];
+
+
+                if (
+                    isRequiredRow(
+                        candidate
+                    )
+                ) {
+
+                    moveRowToVisiblePage(
+                        candidate
+                    );
+
+
+                    setTimeout(
+                        function () {
+
+                            focusRequiredMark(
+                                candidate,
+                                selectValue,
+                                true
+                            );
+
+                        },
+                        80
+                    );
+
+                    return true;
+
+                }
+
+            }
+
+
+            return false;
+
+        }
 
 
         /* =====================================================
@@ -3190,11 +4389,28 @@ document.addEventListener(
                     function (row) {
 
                         const name =
-                            row.dataset.name ||
-                            "";
+                            (
+                                row.dataset.name ||
+                                ""
+                            )
+                            .toLowerCase();
 
-                        return name.includes(
-                            search
+
+                        const studentId =
+                            (
+                                row.dataset.studentId ||
+                                ""
+                            )
+                            .toLowerCase();
+
+
+                        return (
+                            name.includes(
+                                search
+                            ) ||
+                            studentId.includes(
+                                search
+                            )
                         );
 
                     }
@@ -3203,9 +4419,43 @@ document.addEventListener(
 
             currentPage = 1;
 
+
             renderPagination();
 
             renderRows();
+
+
+            /*
+             * IMPORTANT:
+             *
+             * Do NOT automatically steal focus from the
+             * search box while the user is typing.
+             *
+             * Only focus a mark field when:
+             * - search result is exactly one student
+             *
+             * This makes the dynamic search usable.
+             */
+
+            if (
+                search !== "" &&
+                filteredRows.length === 1
+            ) {
+
+                setTimeout(
+                    function () {
+
+                        focusFirstRequired(
+                            filteredRows,
+                            true,
+                            true
+                        );
+
+                    },
+                    100
+                );
+
+            }
 
         }
 
@@ -3226,13 +4476,51 @@ document.addEventListener(
             );
 
 
+            const totalFiltered =
+                filteredRows.length;
+
+
+            const effectivePerPage =
+                perPage === "all"
+                    ? Math.max(
+                        totalFiltered,
+                        1
+                    )
+                    : Number(
+                        perPage
+                    );
+
+
+            const totalPages =
+                totalFiltered === 0
+                    ? 1
+                    : Math.ceil(
+                        totalFiltered /
+                        effectivePerPage
+                    );
+
+
+            if (
+                currentPage >
+                totalPages
+            ) {
+
+                currentPage =
+                    totalPages;
+
+            }
+
+
             const start =
                 (currentPage - 1) *
-                perPage;
+                effectivePerPage;
 
 
             const end =
-                start + perPage;
+                perPage === "all"
+                    ? totalFiltered
+                    : start +
+                        effectivePerPage;
 
 
             const pageRows =
@@ -3252,23 +4540,111 @@ document.addEventListener(
             );
 
 
-            if (visibleCount) {
+            /* =================================================
+               NO RESULTS ROW
+            ================================================== */
 
-                visibleCount.textContent =
-                    filteredRows.length +
-                    (
-                        filteredRows.length === 1
-                            ? " student"
-                            : " students"
+            const tbody =
+                document.querySelector(
+                    "#marksForm tbody"
+                );
+
+
+            if (tbody) {
+
+                const oldNoResults =
+                    tbody.querySelector(
+                        ".js-no-results-row"
                     );
+
+
+                if (oldNoResults) {
+
+                    oldNoResults.remove();
+
+                }
+
+
+                if (
+                    totalFiltered === 0
+                ) {
+
+                    const noResultsRow =
+                        document.createElement(
+                            "tr"
+                        );
+
+                    noResultsRow.className =
+                        "js-no-results-row";
+
+
+                    noResultsRow.innerHTML = `
+                        <td
+                            colspan="5"
+                            style="
+                                text-align:center;
+                                padding:35px 20px;
+                                color:#64748b;
+                                font-weight:600;
+                            "
+                        >
+                            No matching students found.
+                        </td>
+                    `;
+
+
+                    tbody.appendChild(
+                        noResultsRow
+                    );
+
+                }
 
             }
 
 
+            /* =================================================
+               VISIBLE COUNT
+            ================================================== */
+
+            if (visibleCount) {
+
+                if (
+                    totalFiltered === 0
+                ) {
+
+                    visibleCount.textContent =
+                        "0 students";
+
+                } else if (
+                    perPage === "all"
+                ) {
+
+                    visibleCount.textContent =
+                        totalFiltered +
+                        (
+                            totalFiltered === 1
+                                ? " student"
+                                : " students"
+                        );
+
+                } else {
+
+                    visibleCount.textContent =
+                        `${pageRows.length} of ${totalFiltered} students`;
+
+                }
+
+            }
+
+
+            /* =================================================
+               PAGINATION INFO
+            ================================================== */
+
             if (paginationInfo) {
 
                 if (
-                    filteredRows.length === 0
+                    totalFiltered === 0
                 ) {
 
                     paginationInfo.textContent =
@@ -3282,11 +4658,12 @@ document.addEventListener(
                     const last =
                         Math.min(
                             end,
-                            filteredRows.length
+                            totalFiltered
                         );
 
+
                     paginationInfo.textContent =
-                        `Showing ${first}–${last} of ${filteredRows.length}`;
+                        `Showing ${first}–${last} of ${totalFiltered}`;
 
                 }
 
@@ -3334,25 +4711,103 @@ document.addEventListener(
             }
 
 
-            button.addEventListener(
-                "click",
-                function () {
+            if (
+                label !== "..."
+            ) {
 
-                    currentPage =
-                        page;
+                button.addEventListener(
+                    "click",
+                    function (event) {
 
-                    renderPagination();
-
-                    renderRows();
+                        event.preventDefault();
 
 
-                    window.scrollTo({
-                        top: 0,
-                        behavior: "smooth"
-                    });
+                        if (
+                            disabled ||
+                            page < 1
+                        ) {
+                            return;
+                        }
 
-                }
-            );
+
+                        const currentScrollY =
+                            window.scrollY;
+
+
+                        currentPage =
+                            page;
+
+
+                        renderPagination();
+
+                        renderRows();
+
+
+                        requestAnimationFrame(
+                            function () {
+
+                                window.scrollTo(
+                                    0,
+                                    currentScrollY
+                                );
+
+                            }
+                        );
+
+
+                        /*
+                         * Focus first required field
+                         * on the new page.
+                         */
+
+                        setTimeout(
+                            function () {
+
+                                const effective =
+                                    perPage === "all"
+                                        ? Math.max(
+                                            filteredRows.length,
+                                            1
+                                        )
+                                        : Number(
+                                            perPage
+                                        );
+
+
+                                const start =
+                                    (
+                                        currentPage -
+                                        1
+                                    ) *
+                                    effective;
+
+
+                                const end =
+                                    start +
+                                    effective;
+
+
+                                const pageRows =
+                                    filteredRows.slice(
+                                        start,
+                                        end
+                                    );
+
+
+                                focusFirstRequired(
+                                    pageRows,
+                                    true,
+                                    true
+                                );
+
+                            },
+                            100
+                        );
+
+                    }
+                );
+
+            }
 
 
             return button;
@@ -3375,15 +4830,33 @@ document.addEventListener(
                 "";
 
 
+            const effectivePerPage =
+                perPage === "all"
+                    ? Math.max(
+                        filteredRows.length,
+                        1
+                    )
+                    : Number(
+                        perPage
+                    );
+
+
             const totalPages =
-                Math.ceil(
-                    filteredRows.length /
-                    perPage
-                );
+                filteredRows.length === 0
+                    ? 1
+                    : Math.ceil(
+                        filteredRows.length /
+                        effectivePerPage
+                    );
 
 
-            if (totalPages <= 1) {
+            if (
+                perPage === "all" ||
+                totalPages <= 1
+            ) {
+
                 return;
+
             }
 
 
@@ -3399,7 +4872,9 @@ document.addEventListener(
             let pages = [];
 
 
-            if (totalPages <= 7) {
+            if (
+                totalPages <= 7
+            ) {
 
                 for (
                     let i = 1;
@@ -3407,16 +4882,22 @@ document.addEventListener(
                     i++
                 ) {
 
-                    pages.push(i);
+                    pages.push(
+                        i
+                    );
 
                 }
 
             } else {
 
-                pages.push(1);
+                pages.push(
+                    1
+                );
 
 
-                if (currentPage > 4) {
+                if (
+                    currentPage > 4
+                ) {
 
                     pages.push(
                         "..."
@@ -3445,7 +4926,9 @@ document.addEventListener(
                     i++
                 ) {
 
-                    pages.push(i);
+                    pages.push(
+                        i
+                    );
 
                 }
 
@@ -3472,12 +4955,15 @@ document.addEventListener(
             pages.forEach(
                 function (page) {
 
-                    if (page === "...") {
+                    if (
+                        page === "..."
+                    ) {
 
                         const dots =
                             document.createElement(
                                 "span"
                             );
+
 
                         dots.className =
                             "page-dots";
@@ -3485,9 +4971,11 @@ document.addEventListener(
                         dots.textContent =
                             "…";
 
+
                         pagination.appendChild(
                             dots
                         );
+
 
                         return;
 
@@ -3519,15 +5007,417 @@ document.addEventListener(
 
 
         /* =====================================================
-           SEARCH
+           PAGE SIZE
+        ====================================================== */
+
+        if (pageSizeSelect) {
+
+            pageSizeSelect.value =
+                String(
+                    perPage
+                );
+
+
+            pageSizeSelect.addEventListener(
+                "change",
+                function () {
+
+                    const selected =
+                        pageSizeSelect.value;
+
+
+                    perPage =
+                        selected === "all"
+                            ? "all"
+                            : parseInt(
+                                selected,
+                                10
+                            );
+
+
+                    currentPage = 1;
+
+
+                    renderPagination();
+
+                    renderRows();
+
+
+                    setTimeout(
+                        function () {
+
+                            focusFirstRequired(
+                                filteredRows,
+                                true,
+                                true
+                            );
+
+                        },
+                        100
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           DYNAMIC SEARCH EVENT
         ====================================================== */
 
         if (searchInput) {
 
             searchInput.addEventListener(
                 "input",
-                filterRows
+                function () {
+
+                    filterRows();
+
+                }
             );
+
+
+            /*
+             * Escape clears search.
+             */
+
+            searchInput.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (
+                        event.key ===
+                        "Escape"
+                    ) {
+
+                        if (
+                            searchInput.value
+                        ) {
+
+                            searchInput.value =
+                                "";
+
+                            filterRows();
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           CONFIRMATION
+        ====================================================== */
+
+        function showConfirmation() {
+
+            if (!swaOverlay) {
+
+                return Promise.resolve(
+                    window.confirm(
+                        "Are you sure you want to submit these marks?"
+                    )
+                );
+
+            }
+
+
+            swaIcon.className =
+                "swa-icon warning";
+
+
+            swaIcon.innerHTML =
+                "!";
+
+
+            swaTitle.textContent =
+                "Submit Exam Marks?";
+
+
+            swaText.innerHTML =
+                "Are you sure you want to submit these marks?" +
+                "<br>" +
+                "<strong>" +
+                "Submitted marks cannot be edited again." +
+                "</strong>";
+
+
+            swaActions.innerHTML =
+                "";
+
+
+            const cancelButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            cancelButton.type =
+                "button";
+
+            cancelButton.className =
+                "swa-btn swa-btn-cancel";
+
+            cancelButton.textContent =
+                "Cancel";
+
+
+            const confirmButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            confirmButton.type =
+                "button";
+
+            confirmButton.className =
+                "swa-btn swa-btn-confirm";
+
+            confirmButton.textContent =
+                "✓ Yes, Submit";
+
+
+            swaActions.appendChild(
+                cancelButton
+            );
+
+
+            swaActions.appendChild(
+                confirmButton
+            );
+
+
+            openSweetAlert();
+
+
+            return new Promise(
+                function (resolve) {
+
+                    cancelButton.focus();
+
+
+                    cancelButton.addEventListener(
+                        "click",
+                        function () {
+
+                            closeSweetAlert();
+
+                            resolve(
+                                false
+                            );
+
+                        },
+                        {
+                            once: true
+                        }
+                    );
+
+
+                    confirmButton.addEventListener(
+                        "click",
+                        function () {
+
+                            closeSweetAlert();
+
+                            resolve(
+                                true
+                            );
+
+                        },
+                        {
+                            once: true
+                        }
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           LOADING
+        ====================================================== */
+
+        function showLoading() {
+
+            if (!swaOverlay) {
+                return;
+            }
+
+
+            swaIcon.className =
+                "swa-icon loading";
+
+
+            swaIcon.innerHTML =
+                '<div class="swa-spinner"></div>';
+
+
+            swaTitle.textContent =
+                "Submitting Marks...";
+
+
+            swaText.innerHTML =
+                "Please wait while the student marks are being saved." +
+                "<br>" +
+                "<strong>" +
+                "Do not close or refresh this page." +
+                "</strong>";
+
+
+            swaActions.innerHTML =
+                '<div class="swa-loading-line"></div>';
+
+
+            openSweetAlert();
+
+        }
+
+
+        /* =====================================================
+           VALIDATION
+        ====================================================== */
+
+        function validateRows() {
+
+            let invalid =
+                false;
+
+            let firstInvalidInput =
+                null;
+
+
+            rows.forEach(
+                function (row) {
+
+                    const markInput =
+                        getMarkInput(
+                            row
+                        );
+
+                    const absentCheckbox =
+                        getAbsentCheckbox(
+                            row
+                        );
+
+                    const exemptedCheckbox =
+                        getExemptedCheckbox(
+                            row
+                        );
+
+
+                    if (
+                        !markInput ||
+                        !absentCheckbox ||
+                        !exemptedCheckbox
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    /* =========================================
+                       EXEMPTED
+                    ========================================== */
+
+                    if (
+                        exemptedCheckbox.checked
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    /* =========================================
+                       ABSENT
+                    ========================================== */
+
+                    if (
+                        absentCheckbox.checked
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    /* =========================================
+                       REQUIRED
+                    ========================================== */
+
+                    const value =
+                        markInput.value.trim();
+
+
+                    if (
+                        value === ""
+                    ) {
+
+                        invalid =
+                            true;
+
+
+                        if (
+                            !firstInvalidInput
+                        ) {
+
+                            firstInvalidInput =
+                                markInput;
+
+                        }
+
+
+                        return;
+
+                    }
+
+
+                    const number =
+                        parseFloat(
+                            value
+                        );
+
+
+                    if (
+                        Number.isNaN(
+                            number
+                        ) ||
+                        number < 0 ||
+                        number > maxMarks
+                    ) {
+
+                        invalid =
+                            true;
+
+
+                        if (
+                            !firstInvalidInput
+                        ) {
+
+                            firstInvalidInput =
+                                markInput;
+
+                        }
+
+                    }
+
+                }
+            );
+
+
+            return {
+                invalid,
+                firstInvalidInput
+            };
 
         }
 
@@ -3545,20 +5435,18 @@ document.addEventListener(
                     event.preventDefault();
 
 
-                    /* -------------------------------------------
-                       DOUBLE SUBMISSION PROTECTION
-                    -------------------------------------------- */
+                    if (
+                        isSubmitting
+                    ) {
 
-                    if (isSubmitting) {
                         return false;
+
                     }
 
 
-                    /* -------------------------------------------
-                       LOCKED
-                    -------------------------------------------- */
-
-                    if (marksLocked) {
+                    if (
+                        marksLocked
+                    ) {
 
                         showLockedAlert();
 
@@ -3567,155 +5455,152 @@ document.addEventListener(
                     }
 
 
-                    /* -------------------------------------------
-                       VALIDATION
-                    -------------------------------------------- */
-
-                    let invalid =
-                        false;
-
-                    let firstInvalidInput =
-                        null;
+                    const validation =
+                        validateRows();
 
 
-                    rows.forEach(
-                        function (row) {
-
-                            const markInput =
-                                row.querySelector(
-                                    ".mark-input"
-                                );
-
-                            const absentCheckbox =
-                                row.querySelector(
-                                    ".absent-checkbox"
-                                );
-
-
-                            if (
-                                !markInput ||
-                                !absentCheckbox
-                            ) {
-                                return;
-                            }
-
-
-                            if (
-                                absentCheckbox.checked
-                            ) {
-                                return;
-                            }
-
-
-                            const value =
-                                markInput.value.trim();
-
-
-                            if (
-                                value === ""
-                            ) {
-
-                                invalid =
-                                    true;
-
-                                if (
-                                    !firstInvalidInput
-                                ) {
-
-                                    firstInvalidInput =
-                                        markInput;
-
-                                }
-
-                                return;
-
-                            }
-
-
-                            const number =
-                                parseFloat(
-                                    value
-                                );
-
-
-                            if (
-                                Number.isNaN(number) ||
-                                number < 0 ||
-                                number > maxMarks
-                            ) {
-
-                                invalid =
-                                    true;
-
-                                if (
-                                    !firstInvalidInput
-                                ) {
-
-                                    firstInvalidInput =
-                                        markInput;
-
-                                }
-
-                            }
-
-                        }
-                    );
-
-
-                    /* -------------------------------------------
-                       INVALID
-                    -------------------------------------------- */
-
-                    if (invalid) {
+                    if (
+                        validation.invalid
+                    ) {
 
                         showValidationAlert();
 
 
-                        if (
-                            firstInvalidInput
-                        ) {
+                        const input =
+                            validation.firstInvalidInput;
+
+
+                        if (input) {
 
                             const invalidRow =
-                                firstInvalidInput.closest(
+                                input.closest(
                                     ".student-row"
                                 );
 
 
                             if (invalidRow) {
 
-                                const index =
-                                    filteredRows.indexOf(
+                                /*
+                                 * If hidden by search,
+                                 * clear search first.
+                                 */
+
+                                if (
+                                    !filteredRows.includes(
                                         invalidRow
-                                    );
+                                    )
+                                ) {
+
+                                    if (
+                                        searchInput
+                                    ) {
+
+                                        searchInput.value =
+                                            "";
+
+                                    }
 
 
-                                if (index >= 0) {
+                                    filteredRows =
+                                        [...rows];
 
                                     currentPage =
-                                        Math.floor(
-                                            index /
-                                            perPage
-                                        ) + 1;
-
-                                    renderPagination();
-
-                                    renderRows();
+                                        1;
 
                                 }
 
 
+                                /*
+                                 * Find correct page.
+                                 */
+
+                                if (
+                                    filteredRows.includes(
+                                        invalidRow
+                                    )
+                                ) {
+
+                                    const index =
+                                        filteredRows.indexOf(
+                                            invalidRow
+                                        );
+
+
+                                    const validationPerPage =
+                                        perPage === "all"
+                                            ? Math.max(
+                                                filteredRows.length,
+                                                1
+                                            )
+                                            : Number(
+                                                perPage
+                                            );
+
+
+                                    currentPage =
+                                        Math.floor(
+                                            index /
+                                            validationPerPage
+                                        ) + 1;
+
+                                }
+
+
+                                renderPagination();
+
+                                renderRows();
+
+
+                                /*
+                                 * Give browser time to
+                                 * render the correct page.
+                                 */
+
                                 setTimeout(
                                     function () {
 
-                                        firstInvalidInput.focus();
+                                        focusRequiredMark(
+                                            invalidRow,
+                                            true,
+                                            true
+                                        );
 
-                                        firstInvalidInput.scrollIntoView({
-                                            behavior: "smooth",
-                                            block: "center"
-                                        });
+
+                                        /*
+                                         * Keep focus after
+                                         * smooth scrolling.
+                                         */
+
+                                        setTimeout(
+                                            function () {
+
+                                                try {
+
+                                                    input.focus({
+                                                        preventScroll:
+                                                            true
+                                                    });
+
+                                                    input.select();
+
+                                                    input.classList.add(
+                                                        "soo-focus-visible"
+                                                    );
+
+                                                } catch (
+                                                    error
+                                                ) {
+
+                                                    input.focus();
+
+                                                }
+
+                                            },
+                                            350
+                                        );
 
                                     },
-                                    100
+                                    120
                                 );
 
                             }
@@ -3728,33 +5613,30 @@ document.addEventListener(
                     }
 
 
-                    /* -------------------------------------------
-                       CONFIRM
-                    -------------------------------------------- */
-
                     const confirmed =
                         await showConfirmation();
 
 
-                    if (!confirmed) {
+                    if (
+                        !confirmed
+                    ) {
 
                         return false;
 
                     }
 
 
-                    /* -------------------------------------------
-                       SUBMITTING
-                    -------------------------------------------- */
-
                     isSubmitting =
                         true;
 
 
-                    if (saveButton) {
+                    if (
+                        saveButton
+                    ) {
 
                         saveButton.disabled =
                             true;
+
 
                         saveButton.innerHTML =
                             '<span class="swa-spinner" style="width:15px;height:15px;border-width:2px;border-color:rgba(255,255,255,.35);border-top-color:#fff;"></span> Submitting...';
@@ -3765,15 +5647,18 @@ document.addEventListener(
                     showLoading();
 
 
-                    /*
-                     * Give the loading modal enough time to paint
-                     * before submitting the actual POST request.
-                     */
-
                     setTimeout(
                         function () {
 
-                            form.submit();
+                            /*
+                             * Native submit.
+                             * This prevents the submit event
+                             * from recursively triggering.
+                             */
+
+                            HTMLFormElement.prototype.submit.call(
+                                form
+                            );
 
                         },
                         180
@@ -3805,6 +5690,7 @@ document.addEventListener(
             swaIcon.className =
                 "swa-icon success";
 
+
             swaIcon.innerHTML =
                 '<div class="swa-success-check">✓</div>';
 
@@ -3816,7 +5702,9 @@ document.addEventListener(
             swaText.innerHTML =
                 "These marks have already been submitted." +
                 "<br>" +
-                "<strong>You can view them, but they cannot be edited.</strong>";
+                "<strong>" +
+                "You can view them, but they cannot be edited." +
+                "</strong>";
 
 
             swaActions.innerHTML =
@@ -3835,6 +5723,7 @@ document.addEventListener(
             if (closeButton) {
 
                 closeButton.focus();
+
 
                 closeButton.addEventListener(
                     "click",
@@ -3858,7 +5747,7 @@ document.addEventListener(
             if (!swaOverlay) {
 
                 alert(
-                    "Please enter valid marks for every student."
+                    "Please enter valid marks for every required student."
                 );
 
                 return;
@@ -3869,6 +5758,7 @@ document.addEventListener(
             swaIcon.className =
                 "swa-icon error";
 
+
             swaIcon.innerHTML =
                 "×";
 
@@ -3878,9 +5768,11 @@ document.addEventListener(
 
 
             swaText.innerHTML =
-                "Please enter valid marks for every student." +
+                "Please enter valid marks for every required student." +
                 "<br>" +
-                `<strong>Marks must be between 0 and ${maxMarks}.</strong>`;
+                "<strong>" +
+                "Use Absent or Exempted when a mark is not required." +
+                "</strong>";
 
 
             swaActions.innerHTML =
@@ -3900,9 +5792,14 @@ document.addEventListener(
 
                 closeButton.focus();
 
+
                 closeButton.addEventListener(
                     "click",
-                    closeSweetAlert,
+                    function () {
+
+                        closeSweetAlert();
+
+                    },
                     {
                         once: true
                     }
@@ -3914,7 +5811,7 @@ document.addEventListener(
 
 
         /* =====================================================
-           ESC KEY
+           ESCAPE
         ====================================================== */
 
         document.addEventListener(
@@ -3922,7 +5819,8 @@ document.addEventListener(
             function (event) {
 
                 if (
-                    event.key === "Escape" &&
+                    event.key ===
+                    "Escape" &&
                     swaOverlay &&
                     swaOverlay.classList.contains(
                         "show"
@@ -3939,7 +5837,7 @@ document.addEventListener(
 
 
         /* =====================================================
-           CLICK OUTSIDE MODAL
+           CLICK OUTSIDE
         ====================================================== */
 
         if (swaOverlay) {
@@ -3972,11 +5870,55 @@ document.addEventListener(
 
         renderRows();
 
+        updateSummary();
+
+
+        /* =====================================================
+           INITIAL REQUIRED FIELD FOCUS
+        ====================================================== */
+
+        if (
+            !marksLocked &&
+            rows.length
+        ) {
+
+            setTimeout(
+                function () {
+
+                    /*
+                     * Find first required field.
+                     */
+
+                    const requiredRows =
+                        getRequiredRows(
+                            filteredRows
+                        );
+
+
+                    if (
+                        requiredRows.length
+                    ) {
+
+                        focusRequiredMark(
+                            requiredRows[0],
+                            true,
+                            true
+                        );
+
+                    }
+
+                },
+                250
+            );
+
+        }
+
     }
 
 );
 
 </script>
 
-{% endblock %}
 
+
+{% endblock %}

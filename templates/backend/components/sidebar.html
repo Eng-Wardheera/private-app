@@ -5,227 +5,227 @@
 <div class="sidebar" data-background-color="dark">
 
 
-<!-- ========================================================
+    <!-- ========================================================
      SIDEBAR LOGO
      ======================================================== -->
 
-<div class="sidebar-logo">
+    <div class="sidebar-logo">
 
-    <div
-        class="logo-header"
-        data-background-color="dark"
-        style="
-            background:#ffffff;
-        "
-    >
-
-        <a
-            href="{{ url_for('main.dashboard') }}"
-            class="logo"
+        <div
+            class="logo-header"
+            data-background-color="dark"
             style="
-                display:flex;
-                align-items:center;
-                min-width:0;
-                text-decoration:none;
+                background:#ffffff;
             "
         >
 
-            <!-- =================================================
-                 BRANCH
-                 Branch logo + branch name
-                 Institution name underneath
-                 ================================================= -->
+            <a
+                href="{{ url_for('main.dashboard') }}"
+                class="logo"
+                style="
+                    display:flex;
+                    align-items:center;
+                    min-width:0;
+                    text-decoration:none;
+                "
+            >
 
-            {% if branch is defined and branch %}
+                <!-- =================================================
+                    BRANCH
+                    Branch logo + branch name
+                    Institution name underneath
+                    ================================================= -->
 
-                {% if branch.main_logo %}
+                {% if branch is defined and branch %}
 
-                    <img
-                        src="{{ branch.main_logo }}"
-                        alt="{{ branch.name }}"
-                        class="navbar-brand"
+                    {% if branch.main_logo %}
+
+                        <img
+                            src="{{ branch.main_logo }}"
+                            alt="{{ branch.name }}"
+                            class="navbar-brand"
+                            style="
+                                height:38px;
+                                width:38px;
+                                object-fit:contain;
+                                flex:0 0 38px;
+                                background:#ffffff;
+                                border-radius:4px;
+                                margin-right:9px;
+                            "
+                        >
+
+                    {% elif institution is defined and institution.main_logo %}
+
+                        <!-- Institution logo fallback -->
+
+                        <img
+                            src="{{ institution.main_logo }}"
+                            alt="{{ branch.name }}"
+                            class="navbar-brand"
+                            style="
+                                height:38px;
+                                width:38px;
+                                object-fit:contain;
+                                flex:0 0 38px;
+                                background:#ffffff;
+                                border-radius:4px;
+                                margin-right:9px;
+                            "
+                        >
+
+                    {% endif %}
+
+
+                    <!-- Branch Name + Institution -->
+
+                    <span
                         style="
-                            height:38px;
-                            width:38px;
-                            object-fit:contain;
-                            flex:0 0 38px;
-                            background:#ffffff;
-                            border-radius:4px;
-                            margin-right:9px;
+                            display:flex;
+                            flex-direction:column;
+                            justify-content:center;
+                            min-width:0;
+                            line-height:1.15;
+                            
                         "
                     >
 
-                {% elif institution is defined and institution.main_logo %}
+                        <span
+                            style="
+                                color:#fff;
+                                font-size:14px;
+                                font-weight:800;
+                                white-space:nowrap;
+                                overflow:hidden;
+                                text-overflow:ellipsis;
+                            "
+                            title="{{ branch.name }}"
+                        >
+                            {{ branch.name }}
+                        </span>
 
-                    <!-- Institution logo fallback -->
+                        {% if institution is defined and institution.name %}
 
-                    <img
-                        src="{{ institution.main_logo }}"
-                        alt="{{ branch.name }}"
-                        class="navbar-brand"
-                        style="
-                            height:38px;
-                            width:38px;
-                            object-fit:contain;
-                            flex:0 0 38px;
-                            background:#ffffff;
-                            border-radius:4px;
-                            margin-right:9px;
-                        "
-                    >
+                            <span
+                                style="
+                                    color:#6b7280;
+                                    font-size:10px;
+                                    font-weight:600;
+                                    margin-top:2px;
+                                    white-space:nowrap;
+                                    overflow:hidden;
+                                    text-overflow:ellipsis;
+                                "
+                                title="{{ institution.name }}"
+                            >
+                                {{ institution.name }}
+                            </span>
 
-                {% endif %}
+                        {% endif %}
+
+                    </span>
 
 
-                <!-- Branch Name + Institution -->
+                <!-- =================================================
+                    INSTITUTION
+                    Institution logo + institution name
+                    ================================================= -->
 
-                <span
-                    style="
-                        display:flex;
-                        flex-direction:column;
-                        justify-content:center;
-                        min-width:0;
-                        line-height:1.15;
-                        
-                    "
-                >
+                {% elif institution is defined and institution %}
+
+                    {% if institution.main_logo %}
+
+                        <img
+                            src="{{ institution.main_logo }}"
+                            alt="{{ institution.name or 'Institution' }}"
+                            class="navbar-brand"
+                            style="
+                                height:38px;
+                                width:38px;
+                                object-fit:contain;
+                                flex:0 0 38px;
+                                background:#ffffff;
+                                border-radius:4px;
+                                margin-right:9px;
+                            "
+                        >
+
+                    {% endif %}
+
 
                     <span
                         style="
                             color:#fff;
                             font-size:14px;
                             font-weight:800;
+                            line-height:1.15;
                             white-space:nowrap;
                             overflow:hidden;
                             text-overflow:ellipsis;
                         "
-                        title="{{ branch.name }}"
+                        title="{{ institution.name }}"
                     >
-                        {{ branch.name }}
+                        {{ institution.name }}
                     </span>
 
-                    {% if institution is defined and institution.name %}
 
-                        <span
-                            style="
-                                color:#6b7280;
-                                font-size:10px;
-                                font-weight:600;
-                                margin-top:2px;
-                                white-space:nowrap;
-                                overflow:hidden;
-                                text-overflow:ellipsis;
-                            "
-                            title="{{ institution.name }}"
-                        >
-                            {{ institution.name }}
-                        </span>
+                <!-- =================================================
+                    FALLBACK
+                    ================================================= -->
 
-                    {% endif %}
+                {% else %}
 
-                </span>
-
-
-            <!-- =================================================
-                 INSTITUTION
-                 Institution logo + institution name
-                 ================================================= -->
-
-            {% elif institution is defined and institution %}
-
-                {% if institution.main_logo %}
-
-                    <img
-                        src="{{ institution.main_logo }}"
-                        alt="{{ institution.name or 'Institution' }}"
-                        class="navbar-brand"
+                    <span
                         style="
-                            height:38px;
-                            width:38px;
-                            object-fit:contain;
-                            flex:0 0 38px;
-                            background:#ffffff;
-                            border-radius:4px;
-                            margin-right:9px;
+                            color:#fff;
+                            font-size:16px;
+                            font-weight:800;
+                            letter-spacing:.5px;
+                            white-space:nowrap;
                         "
                     >
+                        PRIVATE INSTITUTION
+                    </span>
 
                 {% endif %}
 
+            </a>
 
-                <span
-                    style="
-                        color:#fff;
-                        font-size:14px;
-                        font-weight:800;
-                        line-height:1.15;
-                        white-space:nowrap;
-                        overflow:hidden;
-                        text-overflow:ellipsis;
-                    "
-                    title="{{ institution.name }}"
+
+            <!-- ====================================================
+                SIDEBAR CONTROLS
+                AS-IS — NOT CHANGED
+                ==================================================== -->
+
+            <div class="nav-toggle">
+
+                <button
+                    class="btn btn-toggle toggle-sidebar"
+                    type="button"
                 >
-                    {{ institution.name }}
-                </span>
+                    <i class="gg-menu-right"></i>
+                </button>
 
-
-            <!-- =================================================
-                 FALLBACK
-                 ================================================= -->
-
-            {% else %}
-
-                <span
-                    style="
-                        color:#fff;
-                        font-size:16px;
-                        font-weight:800;
-                        letter-spacing:.5px;
-                        white-space:nowrap;
-                    "
+                <button
+                    class="btn btn-toggle sidenav-toggler"
+                    type="button"
                 >
-                    PRIVATE INSTITUTION
-                </span>
+                    <i class="gg-menu-left"></i>
+                </button>
 
-            {% endif %}
+            </div>
 
-        </a>
-
-
-        <!-- ====================================================
-             SIDEBAR CONTROLS
-             AS-IS — NOT CHANGED
-             ==================================================== -->
-
-        <div class="nav-toggle">
 
             <button
-                class="btn btn-toggle toggle-sidebar"
+                class="topbar-toggler more"
                 type="button"
             >
-                <i class="gg-menu-right"></i>
-            </button>
-
-            <button
-                class="btn btn-toggle sidenav-toggler"
-                type="button"
-            >
-                <i class="gg-menu-left"></i>
+                <i class="gg-more-vertical-alt"></i>
             </button>
 
         </div>
 
-
-        <button
-            class="topbar-toggler more"
-            type="button"
-        >
-            <i class="gg-more-vertical-alt"></i>
-        </button>
-
     </div>
-
-</div>
 
 
 

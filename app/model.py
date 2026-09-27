@@ -324,6 +324,13 @@ class User(UserMixin, db.Model):
         foreign_keys=[branch_id]
     )
 
+    entered_marks = db.relationship(
+        "Mark",
+        foreign_keys="Mark.entered_by_user_id",
+        back_populates="entered_by_user",
+        lazy="dynamic"
+    )
+
     # ========================================================
     # PASSWORD METHODS
     # ========================================================
@@ -3262,9 +3269,9 @@ class Teacher(db.Model):
 
     entered_marks = db.relationship(
         "Mark",
-        foreign_keys="Mark.entered_by",
+        foreign_keys="Mark.entered_by_teacher_id",
         back_populates="entered_by_teacher",
-        passive_deletes=True
+        lazy="dynamic"
     )
 
     # ========================================================
@@ -5462,6 +5469,11 @@ class ExamSubject(db.Model):
 # PostgreSQL / Neon
 # ============================================================
 
+# ============================================================
+# MARK MODEL
+# PostgreSQL / Neon
+# ============================================================
+
 class Mark(db.Model):
 
     __tablename__ = "marks"
@@ -5506,6 +5518,23 @@ class Mark(db.Model):
 
     # ========================================================
     # MARKS OBTAINED
+    # ========================================================
+    #
+    # NORMAL:
+    #     marks_obtained = 80
+    #     is_absent = False
+    #     is_exempted = False
+    #
+    # ABSENT:
+    #     marks_obtained = NULL
+    #     is_absent = True
+    #     is_exempted = False
+    #
+    # EXEMPTED:
+    #     marks_obtained = NULL
+    #     is_absent = False
+    #     is_exempted = True
+    #
     # ========================================================
 
     marks_obtained = db.Column(
@@ -5561,11 +5590,45 @@ class Mark(db.Model):
     # ========================================================
     # ENTERED BY TEACHER
     # ========================================================
+    #
+    # Teacher login uses:
+    #
+    #     g.teacher
+    #
+    # Therefore teacher marks are stored here:
+    #
+    #     entered_by_teacher_id -> teachers.id
+    #
+    # ========================================================
 
-    entered_by = db.Column(
+    entered_by_teacher_id = db.Column(
         db.BigInteger,
         db.ForeignKey(
             "teachers.id",
+            ondelete="SET NULL"
+        ),
+        nullable=True,
+        index=True
+    )
+
+    # ========================================================
+    # ENTERED BY USER
+    # ========================================================
+    #
+    # Admin login uses:
+    #
+    #     current_user
+    #
+    # Therefore admin marks are stored here:
+    #
+    #     entered_by_user_id -> users.id
+    #
+    # ========================================================
+
+    entered_by_user_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey(
+            "users.id",
             ondelete="SET NULL"
         ),
         nullable=True,
@@ -5619,19 +5682,41 @@ class Mark(db.Model):
     # RELATIONSHIPS
     # ========================================================
 
+    # --------------------------------------------------------
+    # EXAM SUBJECT
+    # --------------------------------------------------------
+
     exam_subject = db.relationship(
         "ExamSubject",
         back_populates="marks"
     )
+
+    # --------------------------------------------------------
+    # STUDENT
+    # --------------------------------------------------------
 
     student = db.relationship(
         "Student",
         back_populates="marks"
     )
 
+    # --------------------------------------------------------
+    # TEACHER WHO ENTERED THE MARK
+    # --------------------------------------------------------
+
     entered_by_teacher = db.relationship(
         "Teacher",
-        foreign_keys=[entered_by],
+        foreign_keys=[entered_by_teacher_id],
+        back_populates="entered_marks"
+    )
+
+    # --------------------------------------------------------
+    # USER WHO ENTERED THE MARK
+    # --------------------------------------------------------
+
+    entered_by_user = db.relationship(
+        "User",
+        foreign_keys=[entered_by_user_id],
         back_populates="entered_marks"
     )
 
@@ -5661,6 +5746,50 @@ class Mark(db.Model):
         ),
 
         # ----------------------------------------------------
+        # ABSENT AND EXEMPTED CANNOT BOTH BE TRUE
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "NOT (is_absent = TRUE AND is_exempted = TRUE)",
+            name="ck_mark_absent_not_exempted"
+        ),
+
+        # ----------------------------------------------------
+        # MARK MUST HAVE ONE ENTRY ACTOR
+        #
+        # Either:
+        #
+        #     Teacher
+        #
+        # OR:
+        #
+        #     User
+        #
+        # But not both.
+        #
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            """
+            (
+                entered_by_teacher_id IS NOT NULL
+                AND entered_by_user_id IS NULL
+            )
+            OR
+            (
+                entered_by_teacher_id IS NULL
+                AND entered_by_user_id IS NOT NULL
+            )
+            OR
+            (
+                entered_by_teacher_id IS NULL
+                AND entered_by_user_id IS NULL
+            )
+            """,
+            name="ck_mark_single_entry_actor"
+        ),
+
+        # ----------------------------------------------------
         # INDEX
         # ----------------------------------------------------
 
@@ -5684,8 +5813,11 @@ class Mark(db.Model):
             f"exam_subject_id={self.exam_subject_id} "
             f"student_id={self.student_id} "
             f"marks_obtained={self.marks_obtained} "
-            f"status='{self.status}'>"
+            f"status='{self.status}' "
+            f"teacher_id={self.entered_by_teacher_id} "
+            f"user_id={self.entered_by_user_id}>"
         )
+
 
 
 # ============================================================

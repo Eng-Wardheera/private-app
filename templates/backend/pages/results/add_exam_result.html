@@ -1,7 +1,7 @@
 {% extends "backend/home/base.html" %}
 
 {% block title %}
-    Add Exam Result
+Add Exam Result
 {% endblock %}
 
 {% block content %}
@@ -285,6 +285,19 @@
     opacity: .45;
     pointer-events: none;
     cursor: default;
+}
+
+
+/* ============================================================
+   FILTER ACTIONS
+============================================================ */
+
+.filter-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 18px;
 }
 
 
@@ -1175,7 +1188,6 @@
 
 </style>
 
-
 <!-- ============================================================
      ROOT
 ============================================================ -->
@@ -1188,32 +1200,32 @@
 
 <div class="exam-result-container">
 
-
 <!-- ============================================================
      HEADER
 ============================================================ -->
 
 <div class="exam-result-header">
 
-    <div class="exam-result-title-area">
 
-        <h1>
-            Add Exam Result
-        </h1>
+<div class="exam-result-title-area">
 
-        <p>
-            Select an examination, choose the student scope,
-            then enter the missing subject marks.
-        </p>
+    <h1>
+        Add Exam Result
+    </h1>
 
-    </div>
-
-    <div class="exam-result-header-badge">
-        ● Result Entry
-    </div>
+    <p>
+        Select an examination, choose the student scope,
+        then enter the missing subject marks.
+    </p>
 
 </div>
 
+<div class="exam-result-header-badge">
+    ● Result Entry
+</div>
+
+
+</div>
 
 <!-- ============================================================
      FILTER / EXAM SELECTION
@@ -1221,42 +1233,244 @@
 
 <div class="result-card">
 
-    <div class="result-card-header">
 
-        <h2>
-            Examination & Student Selection
-        </h2>
+<div class="result-card-header">
 
-        <p>
-            Select the examination and student scope first.
-        </p>
+    <h2>
+        Examination & Student Selection
+    </h2>
 
-    </div>
+    <p>
+        Select the examination and student scope first.
+    </p>
+
+</div>
 
 
-    <div class="result-card-body">
+<div class="result-card-body">
 
-        <form
-            method="GET"
-            action="{{ url_for('main.add_exam_result') }}"
-            id="resultFilterForm"
-        >
+    <form
+        method="GET"
+        action="{{ url_for('main.add_exam_result') }}"
+        id="resultFilterForm"
+    >
 
-            <div class="filter-grid">
+        <div class="filter-grid">
+
+
+            <!-- ==================================================
+                 EXAM
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="exam_id"
+                    class="form-label"
+                >
+
+                    Examination
+
+                    <span class="required">
+                        *
+                    </span>
+
+                </label>
+
+
+                <select
+                    name="exam_id"
+                    id="exam_id"
+                    class="form-select"
+                    required
+                >
+
+                    <option value="">
+                        Select examination
+                    </option>
+
+
+                    {% for item in exams %}
+
+                    <option
+                        value="{{ item.id }}"
+                        {% if exam and item.id == exam.id %}
+                            selected
+                        {% endif %}
+                    >
+
+                        {{ item.code or ('Exam #' ~ item.id) }}
+
+                        -
+
+                        {{ item.exam_type|replace('_', ' ')|title
+                           if item.exam_type
+                           else 'Examination'
+                        }}
+
+                        {% if item.status %}
+
+                            (
+                            {{ item.status|replace('_', ' ')|title }}
+                            )
+
+                        {% endif %}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <div class="form-help">
+                    Select the examination.
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 SCOPE
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="scope_type"
+                    class="form-label"
+                >
+
+                    Student Scope
+
+                    <span class="required">
+                        *
+                    </span>
+
+                </label>
+
+
+                <select
+                    name="scope_type"
+                    id="scope_type"
+                    class="form-select"
+                    {% if not exam %}
+                        disabled
+                    {% endif %}
+                >
+
+                    <option value="">
+                        Select scope
+                    </option>
+
+
+                    <option
+                        value="class"
+                        {% if scope_type == "class" %}
+                            selected
+                        {% endif %}
+                    >
+                        Class
+                    </option>
+
+
+                    <option
+                        value="section"
+                        {% if scope_type == "section" %}
+                            selected
+                        {% endif %}
+                    >
+                        Section
+                    </option>
+
+
+                    <option
+                        value="all_students"
+                        {% if scope_type == "all_students" %}
+                            selected
+                        {% endif %}
+                    >
+                        All Students
+                    </option>
+
+
+                    <option
+                        value="all_program"
+                        {% if scope_type == "all_program" %}
+                            selected
+                        {% endif %}
+                    >
+                        All Program
+                    </option>
+
+                </select>
+
+
+                <div class="form-help">
+                    Choose how students should be filtered.
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 STATUS
+            ================================================== -->
+
+            {% if exam %}
+
+            <div class="form-group">
+
+                <label class="form-label">
+                    Examination Status
+                </label>
+
+
+                <input
+                    type="text"
+                    class="form-control"
+                    readonly
+                    value="{{ exam.status|replace('_', ' ')|title if exam.status else '—' }}"
+                >
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- ========================================================
+             SCOPE TARGETS
+        ========================================================= -->
+
+        {% if exam %}
+
+        <div class="scope-box">
+
+            <h3 class="scope-box-title">
+                Scope Target
+            </h3>
+
+
+            <div class="scope-grid">
 
 
                 <!-- ==================================================
-                     EXAM
+                     CLASS
                 ================================================== -->
 
-                <div class="form-group">
+                <div
+                    class="form-group hidden"
+                    id="classGroup"
+                >
 
                     <label
-                        for="exam_id"
+                        for="class_id"
                         class="form-label"
                     >
 
-                        Examination
+                        Class
 
                         <span class="required">
                             *
@@ -1266,41 +1480,30 @@
 
 
                     <select
-                        name="exam_id"
-                        id="exam_id"
+                        name="class_id"
+                        id="class_id"
                         class="form-select"
-                        required
                     >
 
                         <option value="">
-                            Select examination
+                            Select class
                         </option>
 
 
-                        {% for item in exams %}
+                        {% for item in classes %}
 
                         <option
                             value="{{ item.id }}"
-                            {% if exam and item.id == exam.id %}
+                            {% if selected_class_id is not none
+                                  and selected_class_id|string == item.id|string %}
                                 selected
                             {% endif %}
                         >
 
-                            {{ item.code or ('Exam #' ~ item.id) }}
+                            {{ item.name }}
 
-                            -
-
-                            {{ item.exam_type|replace('_', ' ')|title
-                               if item.exam_type
-                               else 'Examination'
-                            }}
-
-                            {% if item.status %}
-
-                                (
-                                {{ item.status|replace('_', ' ')|title }}
-                                )
-
+                            {% if item.code %}
+                                ({{ item.code }})
                             {% endif %}
 
                         </option>
@@ -1311,24 +1514,27 @@
 
 
                     <div class="form-help">
-                        Select the examination.
+                        Required for Class and Section scope.
                     </div>
 
                 </div>
 
 
                 <!-- ==================================================
-                     SCOPE
+                     SECTION
                 ================================================== -->
 
-                <div class="form-group">
+                <div
+                    class="form-group hidden"
+                    id="sectionGroup"
+                >
 
                     <label
-                        for="scope_type"
+                        for="section_id"
                         class="form-label"
                     >
 
-                        Student Scope
+                        Section
 
                         <span class="required">
                             *
@@ -1338,347 +1544,153 @@
 
 
                     <select
-                        name="scope_type"
-                        id="scope_type"
+                        name="section_id"
+                        id="section_id"
                         class="form-select"
-                        {% if not exam %}
-                            disabled
-                        {% endif %}
                     >
 
                         <option value="">
-                            Select scope
+                            Select section
                         </option>
 
 
+                        {% for item in sections %}
+
                         <option
-                            value="class"
-                            {% if scope_type == "class" %}
+                            value="{{ item.id }}"
+                            data-class-id="{{ item.class_id }}"
+                            {% if selected_section_id is not none
+                                  and selected_section_id|string == item.id|string %}
                                 selected
                             {% endif %}
                         >
-                            Class
-                        </option>
 
+                            {{ item.name }}
 
-                        <option
-                            value="section"
-                            {% if scope_type == "section" %}
-                                selected
+                            {% if item.code %}
+                                ({{ item.code }})
                             {% endif %}
-                        >
-                            Section
+
                         </option>
 
-
-                        <option
-                            value="all_students"
-                            {% if scope_type == "all_students" %}
-                                selected
-                            {% endif %}
-                        >
-                            All Students
-                        </option>
-
-
-                        <option
-                            value="all_program"
-                            {% if scope_type == "all_program" %}
-                                selected
-                            {% endif %}
-                        >
-                            All Program
-                        </option>
+                        {% endfor %}
 
                     </select>
 
 
                     <div class="form-help">
-                        Choose how students should be filtered.
+                        Required only for Section scope.
                     </div>
 
                 </div>
 
 
                 <!-- ==================================================
-                     STATUS
+                     PROGRAM
                 ================================================== -->
 
-                {% if exam %}
+                <div
+                    class="form-group hidden"
+                    id="programGroup"
+                >
 
-                <div class="form-group">
+                    <label
+                        for="program_id"
+                        class="form-label"
+                    >
 
-                    <label class="form-label">
-                        Examination Status
+                        Program
+
+                        <span class="required">
+                            *
+                        </span>
+
                     </label>
 
 
-                    <input
-                        type="text"
-                        class="form-control"
-                        readonly
-                        value="{{ exam.status|replace('_', ' ')|title if exam.status else '—' }}"
+                    <select
+                        name="program_id"
+                        id="program_id"
+                        class="form-select"
                     >
+
+                        <option value="">
+                            Select program
+                        </option>
+
+
+                        {% for item in programs %}
+
+                        <option
+                            value="{{ item.id }}"
+                            {% if selected_program_id is not none
+                                  and selected_program_id|string == item.id|string %}
+                                selected
+                            {% endif %}
+                        >
+
+                            {{ item.name }}
+
+                            {% if item.code %}
+                                ({{ item.code }})
+                            {% endif %}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+
+                    <div class="form-help">
+                        Required only for All Program scope.
+                    </div>
 
                 </div>
 
-                {% endif %}
-
             </div>
 
+        </div>
 
-            <!-- ========================================================
-                 SCOPE TARGETS
-            ========================================================= -->
+        {% endif %}
+
+
+        <!-- ========================================================
+             ACTIONS
+        ========================================================= -->
+
+        <div class="filter-actions">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                id="resetExamResultButton"
+            >
+                Reset
+            </button>
+
 
             {% if exam %}
 
-            <div class="scope-box">
-
-                <h3 class="scope-box-title">
-                    Scope Target
-                </h3>
-
-
-                <div class="scope-grid">
-
-
-                    <!-- ==================================================
-                         CLASS
-                    ================================================== -->
-
-                    <div
-                        class="form-group hidden"
-                        id="classGroup"
-                    >
-
-                        <label
-                            for="class_id"
-                            class="form-label"
-                        >
-
-                            Class
-
-                            <span class="required">
-                                *
-                            </span>
-
-                        </label>
-
-
-                        <select
-                            name="class_id"
-                            id="class_id"
-                            class="form-select"
-                        >
-
-                            <option value="">
-                                Select class
-                            </option>
-
-
-                            {% for item in classes %}
-
-                            <option
-                                value="{{ item.id }}"
-                                {% if selected_class_id is not none
-                                      and selected_class_id|string == item.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-
-                                {{ item.name }}
-
-                                {% if item.code %}
-                                    ({{ item.code }})
-                                {% endif %}
-
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-
-                        <div class="form-help">
-                            Required for Class and Section scope.
-                        </div>
-
-                    </div>
-
-
-                    <!-- ==================================================
-                         SECTION
-                    ================================================== -->
-
-                    <div
-                        class="form-group hidden"
-                        id="sectionGroup"
-                    >
-
-                        <label
-                            for="section_id"
-                            class="form-label"
-                        >
-
-                            Section
-
-                            <span class="required">
-                                *
-                            </span>
-
-                        </label>
-
-
-                        <select
-                            name="section_id"
-                            id="section_id"
-                            class="form-select"
-                        >
-
-                            <option value="">
-                                Select section
-                            </option>
-
-
-                            {% for item in sections %}
-
-                            <option
-                                value="{{ item.id }}"
-                                data-class-id="{{ item.class_id }}"
-                                {% if selected_section_id is not none
-                                      and selected_section_id|string == item.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-
-                                {{ item.name }}
-
-                                {% if item.code %}
-                                    ({{ item.code }})
-                                {% endif %}
-
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-
-                        <div class="form-help">
-                            Required only for Section scope.
-                        </div>
-
-                    </div>
-
-
-                    <!-- ==================================================
-                         PROGRAM
-                    ================================================== -->
-
-                    <div
-                        class="form-group hidden"
-                        id="programGroup"
-                    >
-
-                        <label
-                            for="program_id"
-                            class="form-label"
-                        >
-
-                            Program
-
-                            <span class="required">
-                                *
-                            </span>
-
-                        </label>
-
-
-                        <select
-                            name="program_id"
-                            id="program_id"
-                            class="form-select"
-                        >
-
-                            <option value="">
-                                Select program
-                            </option>
-
-
-                            {% for item in programs %}
-
-                            <option
-                                value="{{ item.id }}"
-                                {% if selected_program_id is not none
-                                      and selected_program_id|string == item.id|string %}
-                                    selected
-                                {% endif %}
-                            >
-
-                                {{ item.name }}
-
-                                {% if item.code %}
-                                    ({{ item.code }})
-                                {% endif %}
-
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-
-                        <div class="form-help">
-                            Required only for All Program scope.
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Load Students
+            </button>
 
             {% endif %}
 
+        </div>
 
-            <!-- ========================================================
-                 ACTIONS
-            ========================================================= -->
-
-            <div class="filter-actions">
-
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    id="resetExamResultButton"
-                >
-                    Reset
-                </button>
-
-
-                {% if exam %}
-
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
-                    Load Students
-                </button>
-
-                {% endif %}
-
-            </div>
-
-        </form>
-
-    </div>
+    </form>
 
 </div>
 
 
-{% if exam %}
+</div>
 
+{% if exam %}
 
 <!-- ============================================================
      EXAM INFORMATION
@@ -1686,80 +1698,79 @@
 
 <div class="result-card">
 
-    <div class="result-card-header">
 
-        <h2>
-            Examination Information
-        </h2>
+<div class="result-card-header">
 
-    </div>
+    <h2>
+        Examination Information
+    </h2>
 
-
-    <div class="result-card-body">
-
-        <div class="exam-info">
+</div>
 
 
-            <div class="exam-info-item">
+<div class="result-card-body">
 
-                <span class="exam-info-label">
-                    Examination
-                </span>
-
-                <span class="exam-info-value">
-                    {{ exam.code or ('Exam #' ~ exam.id) }}
-                </span>
-
-            </div>
+    <div class="exam-info">
 
 
-            <div class="exam-info-item">
+        <div class="exam-info-item">
 
-                <span class="exam-info-label">
-                    Type
-                </span>
+            <span class="exam-info-label">
+                Examination
+            </span>
 
-                <span class="exam-info-value">
+            <span class="exam-info-value">
+                {{ exam.code or ('Exam #' ~ exam.id) }}
+            </span>
 
-                    {{ exam.exam_type|replace('_', ' ')|title
-                       if exam.exam_type
-                       else '—'
-                    }}
-
-                </span>
-
-            </div>
+        </div>
 
 
-            <div class="exam-info-item">
+        <div class="exam-info-item">
 
-                <span class="exam-info-label">
-                    Subjects
-                </span>
+            <span class="exam-info-label">
+                Type
+            </span>
 
-                <span class="exam-info-value">
-                    {{ exam_subjects|length }}
-                </span>
+            <span class="exam-info-value">
 
-            </div>
+                {{ exam.exam_type|replace('_', ' ')|title
+                   if exam.exam_type
+                   else '—'
+                }}
+
+            </span>
+
+        </div>
 
 
-            <div class="exam-info-item">
+        <div class="exam-info-item">
 
-                <span class="exam-info-label">
-                    Status
-                </span>
+            <span class="exam-info-label">
+                Subjects
+            </span>
 
-                <span class="exam-info-value">
+            <span class="exam-info-value">
+                {{ exam_subjects|length }}
+            </span>
 
-                    {{ exam.status|replace('_', ' ')|title
-                       if exam.status
-                       else '—'
-                    }}
+        </div>
 
-                </span>
 
-            </div>
+        <div class="exam-info-item">
+
+            <span class="exam-info-label">
+                Status
+            </span>
+
+            <span class="exam-info-value">
+
+                {{ exam.status|replace('_', ' ')|title
+                   if exam.status
+                   else '—'
+                }}
+
+            </span>
 
         </div>
 
@@ -1767,6 +1778,8 @@
 
 </div>
 
+
+</div>
 
 <!-- ============================================================
      STATISTICS
@@ -1775,58 +1788,58 @@
 <div class="stats-grid">
 
 
-    <div class="stat-card">
+<div class="stat-card">
 
-        <div class="stat-label">
-            Incomplete Students
-        </div>
-
-        <div class="stat-value">
-            {{ total_students or 0 }}
-        </div>
-
-        <div class="stat-description">
-            Students requiring missing marks.
-        </div>
-
+    <div class="stat-label">
+        Incomplete Students
     </div>
 
-
-    <div class="stat-card">
-
-        <div class="stat-label">
-            Missing Subject Marks
-        </div>
-
-        <div class="stat-value">
-            {{ missing_subject_count or 0 }}
-        </div>
-
-        <div class="stat-description">
-            Missing subject entries.
-        </div>
-
+    <div class="stat-value">
+        {{ total_students or 0 }}
     </div>
 
-
-    <div class="stat-card">
-
-        <div class="stat-label">
-            Exam Subjects
-        </div>
-
-        <div class="stat-value">
-            {{ exam_subjects|length }}
-        </div>
-
-        <div class="stat-description">
-            Subjects assigned to this examination.
-        </div>
-
+    <div class="stat-description">
+        Students requiring missing marks.
     </div>
 
 </div>
 
+
+<div class="stat-card">
+
+    <div class="stat-label">
+        Missing Subject Marks
+    </div>
+
+    <div class="stat-value">
+        {{ missing_subject_count or 0 }}
+    </div>
+
+    <div class="stat-description">
+        Missing subject entries.
+    </div>
+
+</div>
+
+
+<div class="stat-card">
+
+    <div class="stat-label">
+        Exam Subjects
+    </div>
+
+    <div class="stat-value">
+        {{ exam_subjects|length }}
+    </div>
+
+    <div class="stat-description">
+        Subjects assigned to this examination.
+    </div>
+
+</div>
+
+
+</div>
 
 <!-- ============================================================
      STUDENT LIST
@@ -1836,217 +1849,218 @@
 
 <div class="result-card">
 
-    <div class="result-card-header">
 
-        <h2>
-            Select Student
-        </h2>
+<div class="result-card-header">
 
-        <p>
-            Choose the student whose missing marks you want to enter.
-        </p>
+    <h2>
+        Select Student
+    </h2>
+
+    <p>
+        Choose the student whose missing marks you want to enter.
+    </p>
+
+</div>
+
+
+<div class="result-card-body">
+
+    <div class="student-list-toolbar">
+
+        <div class="student-list-title">
+
+            <h2>
+                Students Requiring Results
+            </h2>
+
+            <p>
+
+                {{ total_students or 0 }}
+
+                incomplete student{% if (total_students or 0) != 1 %}s{% endif %}
+
+            </p>
+
+        </div>
+
+
+        <div class="student-tools">
+
+            <input
+                type="search"
+                id="studentSearch"
+                class="form-control student-search"
+                placeholder="Search student name, admission no..."
+                autocomplete="off"
+            >
+
+        </div>
 
     </div>
 
 
-    <div class="result-card-body">
+    <div class="student-table-wrapper">
 
-        <div class="student-list-toolbar">
+        <table
+            class="student-table"
+            id="studentTable"
+        >
 
-            <div class="student-list-title">
+            <thead>
 
-                <h2>
-                    Students Requiring Results
-                </h2>
+                <tr>
 
-                <p>
+                    <th>
+                        #
+                    </th>
 
-                    {{ total_students or 0 }}
+                    <th>
+                        Student
+                    </th>
 
-                    incomplete student{% if (total_students or 0) != 1 %}s{% endif %}
+                    <th>
+                        Admission No
+                    </th>
 
-                </p>
+                    <th>
+                        Roll No
+                    </th>
 
-            </div>
+                    <th>
+                        Missing
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
 
 
-            <div class="student-tools">
+            <tbody id="studentTableBody">
 
-                <input
-                    type="search"
-                    id="studentSearch"
-                    class="form-control student-search"
-                    placeholder="Search student name, admission no..."
-                    autocomplete="off"
+                {% for item in students %}
+
+                {% set st = item.student %}
+
+                <tr
+                    class="student-row"
+                    data-student-id="{{ st.id }}"
+                    data-search="{{ (
+                        (st.full_name or '')
+                        ~ ' '
+                        ~ (st.admission_no or '')
+                        ~ ' '
+                        ~ (st.roll_no or '')
+                        ~ ' '
+                        ~ (st.username or '')
+                    )|lower|trim }}"
                 >
 
-            </div>
-
-        </div>
-
-
-        <div class="student-table-wrapper">
-
-            <table
-                class="student-table"
-                id="studentTable"
-            >
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            #
-                        </th>
-
-                        <th>
-                            Student
-                        </th>
-
-                        <th>
-                            Admission No
-                        </th>
-
-                        <th>
-                            Roll No
-                        </th>
-
-                        <th>
-                            Missing
-                        </th>
-
-                        <th>
-                            Action
-                        </th>
-
-                    </tr>
-
-                </thead>
+                    <td class="student-number">
+                        {{ loop.index }}
+                    </td>
 
 
-                <tbody id="studentTableBody">
+                    <td class="student-name-cell">
 
-                    {% for item in students %}
+                        <div class="student-name-main">
+                            {{ st.full_name or 'Unnamed Student' }}
+                        </div>
 
-                    {% set st = item.student %}
+                        <div class="student-name-sub">
 
-                    <tr
-                        class="student-row"
-                        data-student-id="{{ st.id }}"
-                        data-search="{{ (
-                            (st.full_name or '')
-                            ~ ' '
-                            ~ (st.admission_no or '')
-                            ~ ' '
-                            ~ (st.roll_no or '')
-                            ~ ' '
-                            ~ (st.username or '')
-                        )|lower|trim }}"
-                    >
+                            {% if st.username %}
+                                {{ st.username }}
+                            {% else %}
+                                Student
+                            {% endif %}
 
-                        <td class="student-number">
-                            {{ loop.index }}
-                        </td>
+                        </div>
+
+                    </td>
 
 
-                        <td class="student-name-cell">
-
-                            <div class="student-name-main">
-                                {{ st.full_name or 'Unnamed Student' }}
-                            </div>
-
-                            <div class="student-name-sub">
-
-                                {% if st.username %}
-                                    {{ st.username }}
-                                {% else %}
-                                    Student
-                                {% endif %}
-
-                            </div>
-
-                        </td>
+                    <td class="student-code">
+                        {{ st.admission_no or '—' }}
+                    </td>
 
 
-                        <td class="student-code">
-                            {{ st.admission_no or '—' }}
-                        </td>
+                    <td class="student-code">
+                        {{ st.roll_no or '—' }}
+                    </td>
 
 
-                        <td class="student-code">
-                            {{ st.roll_no or '—' }}
-                        </td>
+                    <td>
+
+                        <span class="missing-count">
+                            {{ item.missing_count or 0 }}
+                        </span>
+
+                    </td>
 
 
-                        <td>
+                    <td>
 
-                            <span class="missing-count">
-                                {{ item.missing_count or 0 }}
-                            </span>
-
-                        </td>
-
-
-                        <td>
-
-                            <button
-                                type="button"
-                                class="btn btn-primary student-select-btn"
-                                data-student-id="{{ st.id }}"
-                            >
-                                Select Student
-                            </button>
-
-                        </td>
-
-                    </tr>
-
-                    {% else %}
-
-                    <tr>
-
-                        <td
-                            colspan="6"
-                            class="empty-table-cell"
+                        <button
+                            type="button"
+                            class="btn btn-primary student-select-btn"
+                            data-student-id="{{ st.id }}"
                         >
-                            No students found.
-                        </td>
+                            Select Student
+                        </button>
 
-                    </tr>
+                    </td>
 
-                    {% endfor %}
+                </tr>
 
-                </tbody>
+                {% else %}
 
-            </table>
+                <tr>
 
+                    <td
+                        colspan="6"
+                        class="empty-table-cell"
+                    >
+                        No students found.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <div class="student-pagination">
+
+        <div
+            class="pagination-info"
+            id="paginationInfo"
+        >
+            Showing students
         </div>
 
 
-        <div class="student-pagination">
-
-            <div
-                class="pagination-info"
-                id="paginationInfo"
-            >
-                Showing students
-            </div>
-
-
-            <div
-                class="pagination-buttons"
-                id="paginationButtons"
-            ></div>
-
-        </div>
+        <div
+            class="pagination-buttons"
+            id="paginationButtons"
+        ></div>
 
     </div>
 
 </div>
 
-{% endif %}
 
+</div>
+
+{% endif %}
 
 <!-- ============================================================
      SELECTED STUDENT
@@ -2055,100 +2069,80 @@
 {% if selected_student %}
 
 {% set resolved_prev_student_id =
-    prev_student_id
-    if prev_student_id is defined
-    else (
-        previous_student.id
-        if previous_student is defined and previous_student
-        else none
-    )
+prev_student_id
+if prev_student_id is defined
+else (
+previous_student.id
+if previous_student is defined and previous_student
+else none
+)
 %}
-
 
 {% set resolved_next_student_id =
-    next_student_id
-    if next_student_id is defined
-    else (
-        next_student.id
-        if next_student is defined and next_student
-        else none
-    )
+next_student_id
+if next_student_id is defined
+else (
+next_student.id
+if next_student is defined and next_student
+else none
+)
 %}
-
 
 <div class="result-card">
 
-    <div class="result-card-header">
 
-        <h2>
-            Student Result Entry
-        </h2>
+<div class="result-card-header">
 
-        <p>
-            Enter the missing subject marks for this student.
-        </p>
+    <h2>
+        Student Result Entry
+    </h2>
 
-    </div>
+    <p>
+        Enter the missing subject marks for this student.
+    </p>
 
-
-    <div class="result-card-body">
+</div>
 
 
-        <!-- ========================================================
-             STUDENT INFORMATION
-        ========================================================= -->
-
-        <div
-            class="student-info"
-            data-selected-student-id="{{ selected_student.id }}"
-        >
-
-            <div class="student-info-top">
-
-                <div>
-
-                    <div class="student-name">
-                        {{ selected_student.full_name or 'Unnamed Student' }}
-                    </div>
+<div class="result-card-body">
 
 
-                    <div class="student-meta">
+    <!-- ========================================================
+         STUDENT INFORMATION
+    ========================================================= -->
+
+    <div
+        class="student-info"
+        data-selected-student-id="{{ selected_student.id }}"
+    >
+
+        <div class="student-info-top">
+
+            <div>
+
+                <div class="student-name">
+                    {{ selected_student.full_name or 'Unnamed Student' }}
+                </div>
+
+
+                <div class="student-meta">
+
+                    {% if selected_student.admission_no %}
+
+                        Admission No:
+                        {{ selected_student.admission_no }}
+
+                    {% endif %}
+
+
+                    {% if selected_student.roll_no %}
 
                         {% if selected_student.admission_no %}
-
-                            Admission No:
-                            {{ selected_student.admission_no }}
-
+                            &nbsp; • &nbsp;
                         {% endif %}
 
-
-                        {% if selected_student.roll_no %}
-
-                            {% if selected_student.admission_no %}
-                                &nbsp; • &nbsp;
-                            {% endif %}
-
-                            Roll No:
-                            {{ selected_student.roll_no }}
-
-                        {% endif %}
-
-                    </div>
-
-                </div>
-
-
-                <div class="missing-badge">
-
-                    {% if selected_missing_count %}
-
-                        {{ selected_missing_count }}
-
-                        Missing Subject{% if selected_missing_count != 1 %}s{% endif %}
-
-                    {% else %}
-
-                        Complete
+                        Roll No:
+                        {{ selected_student.roll_no }}
 
                     {% endif %}
 
@@ -2157,492 +2151,47 @@
             </div>
 
 
-            {% if selected_enrollment %}
+            <div class="missing-badge">
 
-            <div class="student-meta">
+                {% if selected_missing_count %}
 
-                {% if selected_enrollment.class_id %}
+                    {{ selected_missing_count }}
 
-                    Class ID:
-                    {{ selected_enrollment.class_id }}
+                    Missing Subject{% if selected_missing_count != 1 %}s{% endif %}
 
-                {% endif %}
+                {% else %}
 
-
-                {% if selected_enrollment.section_id %}
-
-                    {% if selected_enrollment.class_id %}
-                        &nbsp; • &nbsp;
-                    {% endif %}
-
-                    Section ID:
-                    {{ selected_enrollment.section_id }}
+                    Complete
 
                 {% endif %}
 
             </div>
+
+        </div>
+
+
+        {% if selected_enrollment %}
+
+        <div class="student-meta">
+
+            {% if selected_enrollment.class_id %}
+
+                Class ID:
+                {{ selected_enrollment.class_id }}
 
             {% endif %}
 
-        </div>
 
+            {% if selected_enrollment.section_id %}
 
-        <!-- ========================================================
-             PREVIOUS / NEXT
-        ========================================================= -->
-
-        <div class="student-navigation">
-
-
-            <div class="navigation-left">
-
-                {% if resolved_prev_student_id %}
-
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-prev-student-id="{{ resolved_prev_student_id }}"
-                >
-                    ← Previous
-                </button>
-
-                {% else %}
-
-                <span class="btn btn-secondary btn-disabled">
-                    ← Previous
-                </span>
-
+                {% if selected_enrollment.class_id %}
+                    &nbsp; • &nbsp;
                 {% endif %}
 
-            </div>
+                Section ID:
+                {{ selected_enrollment.section_id }}
 
-
-            <div class="navigation-center">
-
-                {% if total_students %}
-
-                    Student
-
-                    {% if current_student_index is defined
-                          and current_student_index is not none %}
-
-                        {{ current_student_index + 1 }}
-                        /
-                        {{ total_students }}
-
-                    {% else %}
-
-                        —
-
-                    {% endif %}
-
-                {% else %}
-
-                    Student
-
-                {% endif %}
-
-            </div>
-
-
-            <div class="navigation-right">
-
-                {% if resolved_next_student_id %}
-
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    data-next-student-id="{{ resolved_next_student_id }}"
-                >
-                    Next →
-                </button>
-
-                {% else %}
-
-                <span class="btn btn-primary btn-disabled">
-                    Next →
-                </span>
-
-                {% endif %}
-
-            </div>
-
-        </div>
-
-
-        <!-- ========================================================
-             SUBJECTS
-        ========================================================= -->
-
-        {% if selected_subject_rows %}
-
-        <div class="subject-section">
-
-            <div class="subject-section-header">
-
-                <h2>
-                    Missing Subject Marks
-                </h2>
-
-                <span>
-
-                    {{ selected_subject_rows|length }}
-
-                    subject{% if selected_subject_rows|length != 1 %}s{% endif %}
-
-                    remaining
-
-                </span>
-
-            </div>
-
-
-            <!-- ====================================================
-                 SAVE FORM
-            ==================================================== -->
-
-            <form
-                method="POST"
-                action="{{ url_for('main.add_exam_result') }}"
-                id="examResultForm"
-                novalidate
-            >
-
-                <input
-                    type="hidden"
-                    name="exam_id"
-                    value="{{ exam.id }}"
-                >
-
-                <input
-                    type="hidden"
-                    name="scope_type"
-                    value="{{ scope_type or '' }}"
-                >
-
-                <input
-                    type="hidden"
-                    name="class_id"
-                    value="{{ selected_class_id or '' }}"
-                >
-
-                <input
-                    type="hidden"
-                    name="section_id"
-                    value="{{ selected_section_id or '' }}"
-                >
-
-                <input
-                    type="hidden"
-                    name="program_id"
-                    value="{{ selected_program_id or '' }}"
-                >
-
-                <input
-                    type="hidden"
-                    name="student_id"
-                    id="student_id"
-                    value="{{ selected_student.id }}"
-                >
-
-
-                <!-- ==================================================
-                     SUBJECT LIST
-                ================================================== -->
-
-                <div class="subject-list">
-
-                    {% for row in selected_subject_rows %}
-
-                    {% set es = row.exam_subject %}
-                    {% set mark = row.mark %}
-
-                    <div
-                        class="subject-card"
-                        data-exam-subject-id="{{ es.id }}"
-                    >
-
-
-                        <div class="subject-card-header">
-
-                            <h3 class="subject-title">
-
-                                {{ row.subject_name or 'Subject' }}
-
-                            </h3>
-
-
-                            <div class="subject-subtitle">
-
-                                {% if row.teacher_name %}
-
-                                    Teacher:
-                                    {{ row.teacher_name }}
-
-                                {% else %}
-
-                                    Teacher: —
-
-                                {% endif %}
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="subject-card-body">
-
-
-                            <!-- ========================================
-                                 SUBJECT META
-                            ========================================= -->
-
-                            <div class="subject-meta-grid">
-
-
-                                <div class="subject-meta-item">
-
-                                    <span class="subject-meta-label">
-                                        Maximum Marks
-                                    </span>
-
-                                    <span class="subject-meta-value">
-                                        {{ row.max_marks if row.max_marks is not none else 0 }}
-                                    </span>
-
-                                </div>
-
-
-                                <div class="subject-meta-item">
-
-                                    <span class="subject-meta-label">
-                                        Pass Marks
-                                    </span>
-
-                                    <span class="subject-meta-value">
-                                        {{ row.pass_marks if row.pass_marks is not none else 0 }}
-                                    </span>
-
-                                </div>
-
-
-                                <div class="subject-meta-item">
-
-                                    <span class="subject-meta-label">
-                                        Subject ID
-                                    </span>
-
-                                    <span class="subject-meta-value">
-                                        {{ es.subject_id }}
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- ========================================
-                                 INPUTS
-                            ========================================= -->
-
-                            <div class="subject-inputs">
-
-
-                                <!-- =====================================
-                                     MARK
-                                ====================================== -->
-
-                                <div class="input-block">
-
-                                    <label
-                                        for="mark_{{ es.id }}"
-                                    >
-                                        Marks Obtained
-                                    </label>
-
-
-                                    <input
-                                        type="number"
-                                        class="form-control mark-input"
-                                        id="mark_{{ es.id }}"
-                                        name="mark_{{ es.id }}"
-                                        value="{% if mark and mark.marks_obtained is not none %}{{ mark.marks_obtained }}{% endif %}"
-                                        min="0"
-                                        max="{{ row.max_marks if row.max_marks is not none else 100 }}"
-                                        step="0.01"
-                                        placeholder="Enter marks"
-                                        {% if mark and (
-                                            mark.is_absent
-                                            or
-                                            mark.is_exempted
-                                        ) %}
-                                            disabled
-                                        {% endif %}
-                                    >
-
-                                </div>
-
-
-                                <!-- =====================================
-                                     STATUS
-                                ====================================== -->
-
-                                <div class="input-block">
-
-                                    <label>
-                                        Result Status
-                                    </label>
-
-
-                                    <div class="status-options">
-
-
-                                        <label
-                                            class="status-option"
-                                            for="absent_{{ es.id }}"
-                                        >
-
-                                            <input
-                                                type="checkbox"
-                                                id="absent_{{ es.id }}"
-                                                name="absent_{{ es.id }}"
-                                                value="1"
-                                                {% if mark and mark.is_absent %}
-                                                    checked
-                                                {% endif %}
-                                            >
-
-                                            <span>
-                                                Student Absent
-                                            </span>
-
-                                        </label>
-
-
-                                        <label
-                                            class="status-option"
-                                            for="exempted_{{ es.id }}"
-                                        >
-
-                                            <input
-                                                type="checkbox"
-                                                id="exempted_{{ es.id }}"
-                                                name="exempted_{{ es.id }}"
-                                                value="1"
-                                                {% if mark and mark.is_exempted %}
-                                                    checked
-                                                {% endif %}
-                                            >
-
-                                            <span>
-                                                Student Exempted
-                                            </span>
-
-                                        </label>
-
-                                    </div>
-
-                                </div>
-
-
-                                <!-- =====================================
-                                     REMARK
-                                ====================================== -->
-
-                                <div class="input-block">
-
-                                    <label
-                                        for="remark_{{ es.id }}"
-                                    >
-                                        Remark
-                                    </label>
-
-
-                                    <textarea
-                                        class="form-control remark-input"
-                                        id="remark_{{ es.id }}"
-                                        name="remark_{{ es.id }}"
-                                        placeholder="Optional remark..."
-                                    >{% if mark and mark.remarks %}{{ mark.remarks }}{% endif %}</textarea>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    {% endfor %}
-
-                </div>
-
-
-                <!-- ==================================================
-                     SAVE AREA
-                ================================================== -->
-
-                <div class="save-area">
-
-
-                    <div class="save-left">
-
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            id="studentListButton"
-                        >
-                            ← Student List
-                        </button>
-
-                    </div>
-
-
-                    <div class="save-right">
-
-                        <button
-                            type="submit"
-                            class="btn btn-green"
-                            id="saveResultButton"
-                        >
-                            ✓ Save Marks
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </form>
-
-        </div>
-
-
-        {% else %}
-
-
-        <!-- ========================================================
-             COMPLETE
-        ========================================================= -->
-
-        <div class="complete-state">
-
-            <div class="complete-state-icon">
-                ✓
-            </div>
-
-            <h3>
-                All Subject Marks Are Complete
-            </h3>
-
-            <p>
-
-                This student has no missing subject marks
-                for this examination.
-
-                Use Previous or Next to navigate to another
-                incomplete student.
-
-            </p>
+            {% endif %}
 
         </div>
 
@@ -2650,11 +2199,472 @@
 
     </div>
 
+
+    <!-- ========================================================
+         PREVIOUS / NEXT
+    ========================================================= -->
+
+    <div class="student-navigation">
+
+
+        <div class="navigation-left">
+
+            {% if resolved_prev_student_id %}
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                data-prev-student-id="{{ resolved_prev_student_id }}"
+            >
+                ← Previous
+            </button>
+
+            {% else %}
+
+            <span class="btn btn-secondary btn-disabled">
+                ← Previous
+            </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="navigation-center">
+
+            {% if total_students %}
+
+                Student
+
+                {% if current_student_index is defined
+                      and current_student_index is not none %}
+
+                    {{ current_student_index + 1 }}
+                    /
+                    {{ total_students }}
+
+                {% else %}
+
+                    — / {{ total_students }}
+
+                {% endif %}
+
+            {% else %}
+
+                Student
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="navigation-right">
+
+            {% if resolved_next_student_id %}
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                data-next-student-id="{{ resolved_next_student_id }}"
+            >
+                Next →
+            </button>
+
+            {% else %}
+
+            <span class="btn btn-primary btn-disabled">
+                Next →
+            </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         SUBJECTS
+    ========================================================= -->
+
+    {% if selected_subject_rows %}
+
+    <div class="subject-section">
+
+        <div class="subject-section-header">
+
+            <h2>
+                Missing Subject Marks
+            </h2>
+
+            <span>
+
+                {{ selected_subject_rows|length }}
+
+                subject{% if selected_subject_rows|length != 1 %}s{% endif %}
+
+                remaining
+
+            </span>
+
+        </div>
+
+
+        <!-- ====================================================
+             SAVE FORM
+        ==================================================== -->
+
+        <form
+            method="POST"
+            action="{{ url_for('main.add_exam_result') }}"
+            id="examResultForm"
+            novalidate
+        >
+
+            <input
+                type="hidden"
+                name="exam_id"
+                value="{{ exam.id }}"
+            >
+
+            <input
+                type="hidden"
+                name="scope_type"
+                value="{{ scope_type or '' }}"
+            >
+
+            <input
+                type="hidden"
+                name="class_id"
+                value="{{ selected_class_id or '' }}"
+            >
+
+            <input
+                type="hidden"
+                name="section_id"
+                value="{{ selected_section_id or '' }}"
+            >
+
+            <input
+                type="hidden"
+                name="program_id"
+                value="{{ selected_program_id or '' }}"
+            >
+
+            <input
+                type="hidden"
+                name="student_id"
+                id="student_id"
+                value="{{ selected_student.id }}"
+            >
+
+
+            <!-- ==================================================
+                 SUBJECT LIST
+            ================================================== -->
+
+            <div class="subject-list">
+
+                {% for row in selected_subject_rows %}
+
+                {% set es = row.exam_subject %}
+                {% set mark = row.mark %}
+
+                <div
+                    class="subject-card"
+                    data-exam-subject-id="{{ es.id }}"
+                >
+
+
+                    <div class="subject-card-header">
+
+                        <h3 class="subject-title">
+                            {{ row.subject_name or 'Subject' }}
+                        </h3>
+
+
+                        <div class="subject-subtitle">
+
+                            {% if row.teacher_name %}
+
+                                Teacher:
+                                {{ row.teacher_name }}
+
+                            {% else %}
+
+                                Teacher: —
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="subject-card-body">
+
+
+                        <!-- ========================================
+                             SUBJECT META
+                        ========================================= -->
+
+                        <div class="subject-meta-grid">
+
+
+                            <div class="subject-meta-item">
+
+                                <span class="subject-meta-label">
+                                    Maximum Marks
+                                </span>
+
+                                <span class="subject-meta-value">
+                                    {{ row.max_marks if row.max_marks is not none else 0 }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="subject-meta-item">
+
+                                <span class="subject-meta-label">
+                                    Pass Marks
+                                </span>
+
+                                <span class="subject-meta-value">
+                                    {{ row.pass_marks if row.pass_marks is not none else 0 }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="subject-meta-item">
+
+                                <span class="subject-meta-label">
+                                    Subject ID
+                                </span>
+
+                                <span class="subject-meta-value">
+                                    {{ es.subject_id }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ========================================
+                             INPUTS
+                        ========================================= -->
+
+                        <div class="subject-inputs">
+
+
+                            <!-- =====================================
+                                 MARK
+                            ====================================== -->
+
+                            <div class="input-block">
+
+                                <label
+                                    for="mark_{{ es.id }}"
+                                >
+                                    Marks Obtained
+                                </label>
+
+
+                                <input
+                                    type="number"
+                                    class="form-control mark-input"
+                                    id="mark_{{ es.id }}"
+                                    name="mark_{{ es.id }}"
+                                    value="{% if mark and mark.marks_obtained is not none %}{{ mark.marks_obtained }}{% endif %}"
+                                    min="0"
+                                    max="{{ row.max_marks if row.max_marks is not none else 100 }}"
+                                    step="0.01"
+                                    placeholder="Enter marks"
+                                    {% if mark and (
+                                        mark.is_absent
+                                        or
+                                        mark.is_exempted
+                                    ) %}
+                                        disabled
+                                    {% endif %}
+                                >
+
+                            </div>
+
+
+                            <!-- =====================================
+                                 STATUS
+                            ====================================== -->
+
+                            <div class="input-block">
+
+                                <label>
+                                    Result Status
+                                </label>
+
+
+                                <div class="status-options">
+
+
+                                    <label
+                                        class="status-option"
+                                        for="absent_{{ es.id }}"
+                                    >
+
+                                        <input
+                                            type="checkbox"
+                                            id="absent_{{ es.id }}"
+                                            name="absent_{{ es.id }}"
+                                            value="1"
+                                            {% if mark and mark.is_absent %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <span>
+                                            Student Absent
+                                        </span>
+
+                                    </label>
+
+
+                                    <label
+                                        class="status-option"
+                                        for="exempted_{{ es.id }}"
+                                    >
+
+                                        <input
+                                            type="checkbox"
+                                            id="exempted_{{ es.id }}"
+                                            name="exempted_{{ es.id }}"
+                                            value="1"
+                                            {% if mark and mark.is_exempted %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <span>
+                                            Student Exempted
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- =====================================
+                                 REMARK
+                            ====================================== -->
+
+                            <div class="input-block">
+
+                                <label
+                                    for="remark_{{ es.id }}"
+                                >
+                                    Remark
+                                </label>
+
+
+                                <textarea
+                                    class="form-control remark-input"
+                                    id="remark_{{ es.id }}"
+                                    name="remark_{{ es.id }}"
+                                    placeholder="Optional remark..."
+                                >{% if mark and mark.remarks %}{{ mark.remarks }}{% endif %}</textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- ==================================================
+                 SAVE AREA
+            ================================================== -->
+
+            <div class="save-area">
+
+
+                <div class="save-left">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="studentListButton"
+                    >
+                        ← Student List
+                    </button>
+
+                </div>
+
+
+                <div class="save-right">
+
+                    <button
+                        type="submit"
+                        class="btn btn-green"
+                        id="saveResultButton"
+                    >
+                        ✓ Save Marks
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    {% else %}
+
+
+    <!-- ========================================================
+         COMPLETE
+    ========================================================= -->
+
+    <div class="complete-state">
+
+        <div class="complete-state-icon">
+            ✓
+        </div>
+
+        <h3>
+            All Subject Marks Are Complete
+        </h3>
+
+        <p>
+
+            This student has no missing subject marks
+            for this examination.
+
+            Use Previous or Next to navigate to another
+            incomplete student.
+
+        </p>
+
+    </div>
+
+    {% endif %}
+
 </div>
 
 
-{% elif scope_type and not students %}
+</div>
 
+{% elif scope_type and not students %}
 
 <!-- ============================================================
      NO STUDENTS
@@ -2662,34 +2672,34 @@
 
 <div class="result-card">
 
-    <div class="result-card-body">
 
-        <div class="empty-state">
+<div class="result-card-body">
 
-            <div class="empty-icon">
-                ✓
-            </div>
+    <div class="empty-state">
 
-            <h3>
-                No Incomplete Students Found
-            </h3>
-
-            <p>
-
-                No active/enrolled student matching the selected
-                examination and scope has missing subject marks.
-
-            </p>
-
+        <div class="empty-icon">
+            ✓
         </div>
+
+        <h3>
+            No Incomplete Students Found
+        </h3>
+
+        <p>
+
+            No active/enrolled student matching the selected
+            examination and scope has missing subject marks.
+
+        </p>
 
     </div>
 
 </div>
 
 
-{% elif not scope_type %}
+</div>
 
+{% elif not scope_type %}
 
 <!-- ============================================================
      SELECT SCOPE
@@ -2697,36 +2707,36 @@
 
 <div class="result-card">
 
-    <div class="result-card-body">
 
-        <div class="empty-state">
+<div class="result-card-body">
 
-            <div class="empty-icon">
-                📚
-            </div>
+    <div class="empty-state">
 
-            <h3>
-                Select Student Scope
-            </h3>
-
-            <p>
-
-                Select Class, Section, All Students, or All Program
-                to load the students who require missing marks.
-
-            </p>
-
+        <div class="empty-icon">
+            📚
         </div>
+
+        <h3>
+            Select Student Scope
+        </h3>
+
+        <p>
+
+            Select Class, Section, All Students, or All Program
+            to load the students who require missing marks.
+
+        </p>
 
     </div>
 
 </div>
 
+
+</div>
+
 {% endif %}
 
-
 {% else %}
-
 
 <!-- ============================================================
      NO EXAM
@@ -2734,40 +2744,41 @@
 
 <div class="result-card">
 
-    <div class="result-card-body">
 
-        <div class="empty-state">
+<div class="result-card-body">
 
-            <div class="empty-icon">
-                📝
-            </div>
+    <div class="empty-state">
 
-            <h3>
-                Select an Examination
-            </h3>
-
-            <p>
-
-                Select an examination above to load its
-                classes, sections, subjects, and students.
-
-            </p>
-
+        <div class="empty-icon">
+            📝
         </div>
+
+        <h3>
+            Select an Examination
+        </h3>
+
+        <p>
+
+            Select an examination above to load its
+            classes, sections, subjects, and students.
+
+        </p>
 
     </div>
 
 </div>
 
+
+</div>
+
 {% endif %}
 
-
 </div>
 </div>
-
 
 <!-- ============================================================
      JAVASCRIPT
+     SOOYAAL - EXAM RESULT ENTRY
 ============================================================ -->
 
 <script>
@@ -2777,13 +2788,14 @@
 
 
     /* ============================================================
-       CONFIG
+       CONFIGURATION
     ============================================================ */
 
     const EXAM_RESULT_URL =
         "{{ url_for('main.add_exam_result') }}";
 
     const STUDENTS_PER_PAGE = 20;
+
 
     let activeNavigationController = null;
     let activeSaveController = null;
@@ -2799,10 +2811,8 @@
     function getRoot() {
 
         return (
-            document.getElementById("examResultPage")
-            ||
-            document.querySelector("[data-exam-result-root]")
-            ||
+            document.getElementById("examResultPage") ||
+            document.querySelector("[data-exam-result-root]") ||
             document.querySelector(".exam-result-page")
         );
 
@@ -2818,19 +2828,18 @@
 
     function escapeHtml(value) {
 
-        const div = document.createElement("div");
-
-        div.textContent = value == null
-            ? ""
-            : String(value);
-
-        return div.innerHTML;
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
 
     }
 
 
     /* ============================================================
-       MESSAGE
+       DYNAMIC MESSAGE
     ============================================================ */
 
     function showDynamicMessage(
@@ -2839,13 +2848,11 @@
         duration = 4000
     ) {
 
-        const oldMessage =
-            document.querySelector(
-                ".dynamic-result-message"
-            );
+        const previous =
+            document.querySelector(".dynamic-result-message");
 
-        if (oldMessage) {
-            oldMessage.remove();
+        if (previous) {
+            previous.remove();
         }
 
 
@@ -2853,9 +2860,13 @@
             document.createElement("div");
 
         box.className =
-            "dynamic-result-message " + type;
+            "dynamic-result-message " +
+            (type || "info");
 
-        box.textContent = message;
+
+        box.innerHTML =
+            escapeHtml(message);
+
 
         document.body.appendChild(box);
 
@@ -2879,7 +2890,10 @@
        LOADING
     ============================================================ */
 
-    function setLoading(isLoading, text) {
+    function setLoading(
+        isLoading,
+        text = "Loading..."
+    ) {
 
         const root = getRoot();
 
@@ -2888,59 +2902,54 @@
         }
 
 
+        root.classList.toggle(
+            "is-loading",
+            Boolean(isLoading)
+        );
+
+
+        let loadingBox =
+            document.querySelector(
+                ".dynamic-loading-box"
+            );
+
+
         if (isLoading) {
 
-            root.classList.add("is-loading");
+            if (!loadingBox) {
 
-
-            let loader =
-                document.querySelector(
-                    ".dynamic-loading-box"
-                );
-
-
-            if (!loader) {
-
-                loader =
+                loadingBox =
                     document.createElement("div");
 
-                loader.className =
+                loadingBox.className =
                     "dynamic-loading-box";
 
-                loader.innerHTML = `
+                loadingBox.innerHTML = `
                     <span class="dynamic-loading-spinner"></span>
                     <span class="dynamic-loading-text"></span>
                 `;
 
-                document.body.appendChild(loader);
+                document.body.appendChild(
+                    loadingBox
+                );
 
             }
 
 
             const textElement =
-                loader.querySelector(
+                loadingBox.querySelector(
                     ".dynamic-loading-text"
                 );
 
+
             if (textElement) {
-
-                textElement.textContent =
-                    text || "Loading...";
-
+                textElement.textContent = text;
             }
 
         } else {
 
-            root.classList.remove("is-loading");
-
-
-            const loader =
-                document.querySelector(
-                    ".dynamic-loading-box"
-                );
-
-            if (loader) {
-                loader.remove();
+            if (loadingBox) {
+                loadingBox.remove();
             }
 
         }
@@ -2949,106 +2958,106 @@
 
 
     /* ============================================================
-       QUERY PARAMETERS
+       CURRENT URL PARAMS
     ============================================================ */
 
     function getCurrentParams() {
 
-        const params =
-            new URLSearchParams(
-                window.location.search
-            );
-
-        return params;
+        return new URLSearchParams(
+            window.location.search
+        );
 
     }
 
 
-    function buildExamResultParams(options = {}) {
+    /* ============================================================
+       BUILD EXAM RESULT PARAMS
+    ============================================================ */
 
-        const params =
+    function buildExamResultParams(
+        options = {}
+    ) {
+
+        const current =
+            getCurrentParams();
+
+
+        const fields = [
+            "exam_id",
+            "scope_type",
+            "class_id",
+            "section_id",
+            "program_id",
+            "student_id"
+        ];
+
+
+        const result =
             new URLSearchParams();
 
 
-        const examId =
-            options.exam_id
-            ??
-            getElement("exam_id")?.value
-            ??
-            getCurrentParams().get("exam_id");
+        fields.forEach(function (field) {
+
+            let value =
+                options[field];
 
 
-        const scopeType =
-            options.scope_type
-            ??
-            getElement("scope_type")?.value
-            ??
-            getCurrentParams().get("scope_type");
+            if (
+                value === undefined ||
+                value === null
+            ) {
+
+                const element =
+                    getElement(field);
 
 
-        const classId =
-            options.class_id
-            ??
-            getElement("class_id")?.value
-            ??
-            getCurrentParams().get("class_id");
+                if (element) {
+                    value = element.value;
+                }
+
+            }
 
 
-        const sectionId =
-            options.section_id
-            ??
-            getElement("section_id")?.value
-            ??
-            getCurrentParams().get("section_id");
+            if (
+                value === undefined ||
+                value === null ||
+                value === ""
+            ) {
+
+                value =
+                    current.get(field) || "";
+
+            }
 
 
-        const programId =
-            options.program_id
-            ??
-            getElement("program_id")?.value
-            ??
-            getCurrentParams().get("program_id");
+            if (
+                value !== undefined &&
+                value !== null &&
+                String(value).trim() !== ""
+            ) {
+
+                result.set(
+                    field,
+                    String(value)
+                );
+
+            }
+
+        });
 
 
-        const studentId =
-            options.student_id
-            ??
-            getElement("student_id")?.value
-            ??
-            getCurrentParams().get("student_id");
-
-
-        if (examId) {
-            params.set("exam_id", examId);
-        }
-
-        if (scopeType) {
-            params.set("scope_type", scopeType);
-        }
-
-        if (classId) {
-            params.set("class_id", classId);
-        }
-
-        if (sectionId) {
-            params.set("section_id", sectionId);
-        }
-
-        if (programId) {
-            params.set("program_id", programId);
-        }
-
-        if (studentId) {
-            params.set("student_id", studentId);
-        }
-
-
-        return params;
+        return result;
 
     }
 
 
-    function buildExamResultUrl(options = {}) {
+    /* ============================================================
+       BUILD URL
+    ============================================================ */
+
+    function buildExamResultUrl(
+        options = {}
+    ) {
 
         const params =
             buildExamResultParams(options);
@@ -3059,14 +3068,14 @@
 
 
         return query
-            ? `${EXAM_RESULT_URL}?${query}`
+            ? EXAM_RESULT_URL + "?" + query
             : EXAM_RESULT_URL;
 
     }
 
 
     /* ============================================================
-       UPDATE BROWSER URL
+       BROWSER URL
     ============================================================ */
 
     function updateBrowserUrl(
@@ -3079,9 +3088,7 @@
             if (mode === "replace") {
 
                 window.history.replaceState(
-                    {
-                        examResult: true
-                    },
+                    {},
                     "",
                     url
                 );
@@ -3089,9 +3096,7 @@
             } else {
 
                 window.history.pushState(
-                    {
-                        examResult: true
-                    },
+                    {},
                     "",
                     url
                 );
@@ -3111,15 +3116,23 @@
 
 
     /* ============================================================
-       REPLACE PAGE CONTENT
+       REPLACE ROOT
     ============================================================ */
 
     function replaceExamResultRoot(html) {
 
+        if (!html) {
+            throw new Error(
+                "Empty response received."
+            );
+        }
+
+
         const parser =
             new DOMParser();
 
-        const documentObject =
+
+        const documentFragment =
             parser.parseFromString(
                 html,
                 "text/html"
@@ -3127,15 +3140,13 @@
 
 
         const newRoot =
-            documentObject.querySelector(
+            documentFragment.querySelector(
                 "#examResultPage"
-            )
-            ||
-            documentObject.querySelector(
+            ) ||
+            documentFragment.querySelector(
                 "[data-exam-result-root]"
-            )
-            ||
-            documentObject.querySelector(
+            ) ||
+            documentFragment.querySelector(
                 ".exam-result-page"
             );
 
@@ -3144,7 +3155,7 @@
             getRoot();
 
 
-        if (!newRoot || !currentRoot) {
+        if (!newRoot) {
 
             throw new Error(
                 "Exam result page root was not found."
@@ -3153,15 +3164,31 @@
         }
 
 
+        if (!currentRoot) {
+
+            throw new Error(
+                "Current exam result page root was not found."
+            );
+
+        }
+
+
+        const clonedRoot =
+            newRoot.cloneNode(true);
+
+
         currentRoot.replaceWith(
-            newRoot.cloneNode(true)
+            clonedRoot
         );
+
+
+        return clonedRoot;
 
     }
 
 
     /* ============================================================
-       FETCH HTML
+       FETCH EXAM RESULT HTML
     ============================================================ */
 
     async function fetchExamResultHtml(
@@ -3169,26 +3196,29 @@
         options = {}
     ) {
 
-        const isSave =
-            options.method &&
-            options.method.toUpperCase() === "POST";
+        const method =
+            String(
+                options.method || "GET"
+            ).toUpperCase();
 
 
-        const controller =
-            new AbortController();
+        let controller;
 
 
-        if (isSave) {
+        if (method === "POST") {
 
             if (activeSaveController) {
 
                 try {
                     activeSaveController.abort();
-                } catch (error) {
-                    // ignore
-                }
+                } catch (error) {}
 
             }
+
+
+            controller =
+                new AbortController();
+
 
             activeSaveController =
                 controller;
@@ -3199,11 +3229,14 @@
 
                 try {
                     activeNavigationController.abort();
-                } catch (error) {
-                    // ignore
-                }
+                } catch (error) {}
 
             }
+
+
+            controller =
+                new AbortController();
+
 
             activeNavigationController =
                 controller;
@@ -3211,155 +3244,189 @@
         }
 
 
-        const headers =
-            new Headers(
-                options.headers || {}
-            );
-
-
-        headers.set(
-            "X-Requested-With",
-            "XMLHttpRequest"
-        );
-
-        headers.set(
-            "Accept",
-            "text/html, */*"
-        );
-
-
         const fetchOptions = {
-            ...options,
 
-            credentials: "same-origin",
+            method: method,
 
-            headers: headers,
+            headers: {
 
-            signal: controller.signal
+                "X-Requested-With":
+                    "XMLHttpRequest",
+
+                "Accept":
+                    "text/html, */*"
+
+            },
+
+            credentials:
+                "same-origin",
+
+            signal:
+                controller.signal
+
         };
+
+
+        if (
+            options.body !== undefined
+        ) {
+
+            fetchOptions.body =
+                options.body;
+
+        }
+
+
+        if (
+            method === "POST" &&
+            options.redirect === "manual"
+        ) {
+
+            fetchOptions.redirect =
+                "manual";
+
+        }
+
+
+        let response;
 
 
         try {
 
-            const response =
+            response =
                 await fetch(
                     url,
                     fetchOptions
                 );
 
-
-            /*
-             * IMPORTANT
-             *
-             * POST save route normally returns:
-             *
-             * 302 -> redirect
-             *
-             * With redirect:"manual", browsers can return
-             * an opaque redirect response.
-             *
-             * This is NOT a save failure.
-             */
-
-            const isOpaqueRedirect =
-                response.type ===
-                "opaqueredirect";
-
-
-            const isHttpRedirect =
-                response.status >= 300 &&
-                response.status < 400;
-
-
-            if (
-                options.allowRedirect
-                &&
-                (
-                    isOpaqueRedirect
-                    ||
-                    isHttpRedirect
-                )
-            ) {
-
-                return {
-                    response: response,
-                    html: "",
-                    redirected: true,
-                    opaqueRedirect:
-                        isOpaqueRedirect
-                };
-
-            }
-
-
-            if (!response.ok) {
-
-                let errorText = "";
-
-                try {
-
-                    errorText =
-                        await response.text();
-
-                } catch (error) {
-
-                    errorText = "";
-
-                }
-
-
-                const error =
-                    new Error(
-                        `HTTP ${response.status}`
-                    );
-
-                error.status =
-                    response.status;
-
-                error.body =
-                    errorText;
-
-                throw error;
-
-            }
-
-
-            const html =
-                await response.text();
-
-
-            return {
-                response: response,
-                html: html,
-                redirected:
-                    response.redirected,
-                opaqueRedirect: false
-            };
-
         } finally {
 
             if (
-                isSave
-                &&
+                method === "POST" &&
                 activeSaveController === controller
             ) {
 
-                activeSaveController = null;
+                activeSaveController =
+                    null;
 
             }
 
 
             if (
-                !isSave
-                &&
+                method !== "POST" &&
                 activeNavigationController === controller
             ) {
 
-                activeNavigationController = null;
+                activeNavigationController =
+                    null;
 
             }
 
         }
+
+
+        const redirected =
+            Boolean(
+                response.redirected
+            );
+
+
+        const opaqueRedirect =
+            response.type ===
+            "opaqueredirect";
+
+
+        const status =
+            Number(
+                response.status || 0
+            );
+
+
+        const isThreeHundred =
+            status >= 300 &&
+            status < 400;
+
+
+        if (
+            method === "POST" &&
+            options.allowRedirect &&
+            (
+                redirected ||
+                opaqueRedirect ||
+                isThreeHundred
+            )
+        ) {
+
+            return {
+
+                response:
+                    response,
+
+                html:
+                    "",
+
+                redirected:
+                    redirected,
+
+                opaqueRedirect:
+                    opaqueRedirect
+
+            };
+
+        }
+
+
+        if (!response.ok) {
+
+            let bodyText = "";
+
+            try {
+
+                bodyText =
+                    await response.text();
+
+            } catch (error) {}
+
+
+            const error =
+                new Error(
+                    "HTTP " +
+                    response.status
+                );
+
+
+            error.status =
+                response.status;
+
+
+            error.body =
+                bodyText;
+
+
+            throw error;
+
+        }
+
+
+        const html =
+            await response.text();
+
+
+        return {
+
+            response:
+                response,
+
+            html:
+                html,
+
+            redirected:
+                redirected,
+
+            opaqueRedirect:
+                opaqueRedirect
+
+        };
 
     }
 
@@ -3370,15 +3437,12 @@
 
     async function navigateExamResult(
         url,
-        options = {}
-    ) {
-
-        const {
+        {
             history = true,
             historyMode = "push",
             message = null
-        } = options;
-
+        } = {}
+    ) {
 
         setLoading(
             true,
@@ -3392,8 +3456,7 @@
                 await fetchExamResultHtml(
                     url,
                     {
-                        method: "GET",
-                        redirect: "follow"
+                        method: "GET"
                     }
                 );
 
@@ -3406,7 +3469,7 @@
             if (history) {
 
                 updateBrowserUrl(
-                    result.response.url || url,
+                    url,
                     historyMode
                 );
 
@@ -3437,8 +3500,8 @@
         } catch (error) {
 
             if (
-                error.name ===
-                "AbortError"
+                error &&
+                error.name === "AbortError"
             ) {
 
                 return false;
@@ -3447,15 +3510,14 @@
 
 
             console.error(
-                "Exam result navigation error:",
+                "Exam result navigation failed:",
                 error
             );
 
 
             showDynamicMessage(
                 "Unable to load the exam result page. Please try again.",
-                "error",
-                6000
+                "error"
             );
 
 
@@ -3463,7 +3525,9 @@
 
         } finally {
 
-            setLoading(false);
+            setLoading(
+                false
+            );
 
         }
 
@@ -3471,7 +3535,7 @@
 
 
     /* ============================================================
-       FILTER FORM URL
+       FILTER URL
     ============================================================ */
 
     function getFilterUrl() {
@@ -3487,79 +3551,90 @@
         }
 
 
-        const formData =
-            new FormData(form);
+        const exam =
+            getElement("exam_id");
+
+
+        const scope =
+            getElement("scope_type");
+
+
+        const classElement =
+            getElement("class_id");
+
+
+        const section =
+            getElement("section_id");
+
+
+        const program =
+            getElement("program_id");
 
 
         const params =
             new URLSearchParams();
 
 
-        const examId =
-            formData.get("exam_id");
-
-
-        const scopeType =
-            formData.get("scope_type");
-
-
-        const classId =
-            formData.get("class_id");
-
-
-        const sectionId =
-            formData.get("section_id");
-
-
-        const programId =
-            formData.get("program_id");
-
-
-        if (examId) {
+        if (
+            exam &&
+            exam.value
+        ) {
 
             params.set(
                 "exam_id",
-                examId
+                exam.value
             );
 
         }
 
 
-        if (scopeType) {
+        if (
+            scope &&
+            scope.value
+        ) {
 
             params.set(
                 "scope_type",
-                scopeType
+                scope.value
             );
 
         }
 
 
-        if (classId) {
+        if (
+            classElement &&
+            classElement.value
+        ) {
 
             params.set(
                 "class_id",
-                classId
+                classElement.value
             );
 
         }
 
 
-        if (sectionId) {
+        if (
+            section &&
+            section.value
+        ) {
 
             params.set(
                 "section_id",
-                sectionId
+                section.value
             );
 
         }
 
 
-        if (programId) {
+        if (
+            program &&
+            program.value
+        ) {
 
             params.set(
                 "program_id",
-                programId
+                program.value
             );
 
         }
@@ -3570,7 +3645,7 @@
 
 
         return query
-            ? `${EXAM_RESULT_URL}?${query}`
+            ? EXAM_RESULT_URL + "?" + query
             : EXAM_RESULT_URL;
 
     }
@@ -3582,28 +3657,29 @@
 
     async function submitExamSelection() {
 
-        const examSelect =
+        const exam =
             getElement("exam_id");
 
 
-        if (!examSelect) {
+        if (!exam) {
             return;
         }
 
 
         const examId =
-            examSelect.value;
+            exam.value;
 
 
         if (!examId) {
 
+            const url =
+                EXAM_RESULT_URL;
+
+
             await navigateExamResult(
-                EXAM_RESULT_URL,
-                {
-                    history: true,
-                    historyMode: "push"
-                }
+                url
             );
+
 
             return;
 
@@ -3612,33 +3688,55 @@
 
         const url =
             buildExamResultUrl({
-                exam_id: examId
+                exam_id:
+                    examId,
+
+                scope_type:
+                    "",
+
+                class_id:
+                    "",
+
+                section_id:
+                    "",
+
+                program_id:
+                    "",
+
+                student_id:
+                    ""
             });
 
 
         await navigateExamResult(
-            url,
-            {
-                history: true,
-                historyMode: "push"
-            }
+            url
         );
 
     }
 
 
     /* ============================================================
-       SCOPE CHANGE
+       SCOPE SELECTION
     ============================================================ */
 
     async function submitScopeSelection() {
+
+        const exam =
+            getElement("exam_id");
+
 
         const scope =
             getElement("scope_type");
 
 
-        if (!scope) {
+        if (
+            !exam ||
+            !exam.value ||
+            !scope
+        ) {
+
             return;
+
         }
 
 
@@ -3650,17 +3748,30 @@
 
             const url =
                 buildExamResultUrl({
-                    student_id: ""
+                    exam_id:
+                        exam.value,
+
+                    scope_type:
+                        "",
+
+                    class_id:
+                        "",
+
+                    section_id:
+                        "",
+
+                    program_id:
+                        "",
+
+                    student_id:
+                        ""
                 });
 
 
             await navigateExamResult(
-                url,
-                {
-                    history: true,
-                    historyMode: "push"
-                }
+                url
             );
+
 
             return;
 
@@ -3669,20 +3780,30 @@
 
         const url =
             buildExamResultUrl({
-                scope_type: scopeType,
-                class_id: "",
-                section_id: "",
-                program_id: "",
-                student_id: ""
+
+                exam_id:
+                    exam.value,
+
+                scope_type:
+                    scopeType,
+
+                class_id:
+                    "",
+
+                section_id:
+                    "",
+
+                program_id:
+                    "",
+
+                student_id:
+                    ""
+
             });
 
 
         await navigateExamResult(
-            url,
-            {
-                history: true,
-                historyMode: "push"
-            }
+            url
         );
 
     }
@@ -3694,12 +3815,34 @@
 
     async function submitScopeTarget() {
 
+        const exam =
+            getElement("exam_id");
+
+
         const scope =
             getElement("scope_type");
 
 
-        if (!scope) {
+        const classElement =
+            getElement("class_id");
+
+
+        const section =
+            getElement("section_id");
+
+
+        const program =
+            getElement("program_id");
+
+
+        if (
+            !exam ||
+            !exam.value ||
+            !scope
+        ) {
+
             return;
+
         }
 
 
@@ -3707,52 +3850,125 @@
             scope.value;
 
 
-        const classId =
-            getElement("class_id")?.value
-            || "";
+        let classId =
+            classElement
+                ? classElement.value
+                : "";
 
 
-        const sectionId =
-            getElement("section_id")?.value
-            || "";
+        let sectionId =
+            section
+                ? section.value
+                : "";
 
 
-        const programId =
-            getElement("program_id")?.value
-            || "";
+        let programId =
+            program
+                ? program.value
+                : "";
 
 
         if (
             scopeType === "class"
-            &&
-            !classId
         ) {
 
-            return;
+            if (!classId) {
+
+                showDynamicMessage(
+                    "Please select a class.",
+                    "warning"
+                );
+
+                return;
+
+            }
+
+
+            sectionId =
+                "";
+
+            programId =
+                "";
 
         }
 
 
-        if (
+        else if (
             scopeType === "section"
-            &&
-            (
-                !classId
-                ||
-                !sectionId
-            )
         ) {
 
-            return;
+            if (!classId) {
+
+                showDynamicMessage(
+                    "Please select a class first.",
+                    "warning"
+                );
+
+                return;
+
+            }
+
+
+            if (!sectionId) {
+
+                showDynamicMessage(
+                    "Please select a section.",
+                    "warning"
+                );
+
+                return;
+
+            }
+
+
+            programId =
+                "";
 
         }
 
 
-        if (
+        else if (
             scopeType === "all_program"
-            &&
-            !programId
         ) {
+
+            if (!programId) {
+
+                showDynamicMessage(
+                    "Please select a program.",
+                    "warning"
+                );
+
+                return;
+
+            }
+
+
+            classId =
+                "";
+
+            sectionId =
+                "";
+
+        }
+
+
+        else if (
+            scopeType === "all_students"
+        ) {
+
+            classId =
+                "";
+
+            sectionId =
+                "";
+
+            programId =
+                "";
+
+        }
+
+
+        else {
 
             return;
 
@@ -3761,30 +3977,30 @@
 
         const url =
             buildExamResultUrl({
-                scope_type: scopeType,
+
+                exam_id:
+                    exam.value,
+
+                scope_type:
+                    scopeType,
+
                 class_id:
-                    scopeType === "class"
-                    || scopeType === "section"
-                        ? classId
-                        : "",
+                    classId,
+
                 section_id:
-                    scopeType === "section"
-                        ? sectionId
-                        : "",
+                    sectionId,
+
                 program_id:
-                    scopeType === "all_program"
-                        ? programId
-                        : "",
-                student_id: ""
+                    programId,
+
+                student_id:
+                    ""
+
             });
 
 
         await navigateExamResult(
-            url,
-            {
-                history: true,
-                historyMode: "push"
-            }
+            url
         );
 
     }
@@ -3794,7 +4010,9 @@
        FILTER SUBMIT
     ============================================================ */
 
-    async function handleFilterSubmit(event) {
+    async function handleFilterSubmit(
+        event
+    ) {
 
         event.preventDefault();
 
@@ -3804,11 +4022,7 @@
 
 
         await navigateExamResult(
-            url,
-            {
-                history: true,
-                historyMode: "push"
-            }
+            url
         );
 
     }
@@ -3824,9 +4038,7 @@
 
             try {
                 activeNavigationController.abort();
-            } catch (error) {
-                // ignore
-            }
+            } catch (error) {}
 
         }
 
@@ -3835,36 +4047,47 @@
 
             try {
                 activeSaveController.abort();
-            } catch (error) {
-                // ignore
-            }
+            } catch (error) {}
 
         }
 
 
-        setLoading(
-            true,
-            "Resetting..."
+        showDynamicMessage(
+            "Resetting exam result page...",
+            "info",
+            1500
         );
+
+
+        const url =
+            EXAM_RESULT_URL;
 
 
         try {
 
-            window.history.pushState(
-                {
-                    examResult: true
-                },
-                "",
-                EXAM_RESULT_URL
+            updateBrowserUrl(
+                url,
+                "push"
             );
 
 
-            window.location.reload();
+            await navigateExamResult(
+                url,
+                {
+                    history: false
+                }
+            );
 
         } catch (error) {
 
+            console.error(
+                "Reset failed:",
+                error
+            );
+
+
             window.location.href =
-                EXAM_RESULT_URL;
+                url;
 
         }
 
@@ -3872,7 +4095,7 @@
 
 
     /* ============================================================
-       SHOW / HIDE SCOPE FIELDS
+       SCOPE VISIBILITY
     ============================================================ */
 
     function updateScopeVisibility() {
@@ -3893,18 +4116,8 @@
             getElement("programGroup");
 
 
-        if (
-            !scope
-            ||
-            !classGroup
-            ||
-            !sectionGroup
-            ||
-            !programGroup
-        ) {
-
+        if (!scope) {
             return;
-
         }
 
 
@@ -3912,51 +4125,32 @@
             scope.value;
 
 
-        classGroup.classList.add(
-            "hidden"
-        );
+        if (classGroup) {
 
-        sectionGroup.classList.add(
-            "hidden"
-        );
-
-        programGroup.classList.add(
-            "hidden"
-        );
-
-
-        if (
-            scopeType === "class"
-        ) {
-
-            classGroup.classList.remove(
-                "hidden"
+            classGroup.classList.toggle(
+                "hidden",
+                scopeType !== "class" &&
+                scopeType !== "section"
             );
 
         }
 
 
-        if (
-            scopeType === "section"
-        ) {
+        if (sectionGroup) {
 
-            classGroup.classList.remove(
-                "hidden"
-            );
-
-            sectionGroup.classList.remove(
-                "hidden"
+            sectionGroup.classList.toggle(
+                "hidden",
+                scopeType !== "section"
             );
 
         }
 
 
-        if (
-            scopeType === "all_program"
-        ) {
+        if (programGroup) {
 
-            programGroup.classList.remove(
-                "hidden"
+            programGroup.classList.toggle(
+                "hidden",
+                scopeType !== "all_program"
             );
 
         }
@@ -3965,23 +4159,22 @@
 
 
     /* ============================================================
-       FILTER SECTION OPTIONS BY CLASS
+       FILTER SECTIONS BY CLASS
     ============================================================ */
 
     function filterSectionsByClass() {
 
-        const classSelect =
+        const classElement =
             getElement("class_id");
 
 
-        const sectionSelect =
+        const section =
             getElement("section_id");
 
 
         if (
-            !classSelect
-            ||
-            !sectionSelect
+            !classElement ||
+            !section
         ) {
 
             return;
@@ -3989,69 +4182,72 @@
         }
 
 
-        const selectedClass =
+        const selectedClassId =
             String(
-                classSelect.value || ""
+                classElement.value || ""
             );
 
 
         const options =
-            sectionSelect.querySelectorAll(
-                "option[data-class-id]"
+            section.querySelectorAll(
+                "option"
             );
 
 
-        options.forEach(
-            function (option) {
+        options.forEach(function (option) {
 
-                const optionClass =
-                    String(
-                        option.dataset.classId
-                        || ""
-                    );
+            if (!option.value) {
 
+                option.hidden =
+                    false;
 
-                if (
-                    !selectedClass
-                    ||
-                    optionClass === selectedClass
-                ) {
-
-                    option.hidden = false;
-
-                } else {
-
-                    option.hidden = true;
-
-
-                    if (
-                        option.selected
-                    ) {
-
-                        option.selected =
-                            false;
-
-                    }
-
-                }
+                return;
 
             }
-        );
+
+
+            const optionClassId =
+                String(
+                    option.dataset.classId || ""
+                );
+
+
+            const shouldShow =
+                !selectedClassId ||
+                optionClassId ===
+                    selectedClassId;
+
+
+            option.hidden =
+                !shouldShow;
+
+
+            if (
+                !shouldShow &&
+                option.selected
+            ) {
+
+                option.selected =
+                    false;
+
+            }
+
+        });
 
     }
 
 
     /* ============================================================
-       STUDENT URL
+       SELECT STUDENT
     ============================================================ */
 
-    function selectStudent(studentId) {
+    async function selectStudent(
+        studentId
+    ) {
 
         if (
-            studentId === undefined
-            ||
-            studentId === null
-            ||
+            studentId === undefined ||
+            studentId === null ||
             String(studentId).trim() === ""
         ) {
 
@@ -4060,19 +4256,46 @@
         }
 
 
+        const currentParams =
+            getCurrentParams();
+
+
         const url =
             buildExamResultUrl({
+
+                exam_id:
+                    currentParams.get(
+                        "exam_id"
+                    ) || "",
+
+                scope_type:
+                    currentParams.get(
+                        "scope_type"
+                    ) || "",
+
+                class_id:
+                    currentParams.get(
+                        "class_id"
+                    ) || "",
+
+                section_id:
+                    currentParams.get(
+                        "section_id"
+                    ) || "",
+
+                program_id:
+                    currentParams.get(
+                        "program_id"
+                    ) || "",
+
                 student_id:
-                    String(studentId)
+                    studentId
+
             });
 
 
-        navigateExamResult(
-            url,
-            {
-                history: true,
-                historyMode: "push"
-            }
+        await navigateExamResult(
+            url
         );
 
     }
@@ -4082,27 +4305,55 @@
        LOAD STUDENT LIST
     ============================================================ */
 
-    function loadStudentList() {
+    async function loadStudentList() {
+
+        const currentParams =
+            getCurrentParams();
+
 
         const url =
             buildExamResultUrl({
-                student_id: ""
+
+                exam_id:
+                    currentParams.get(
+                        "exam_id"
+                    ) || "",
+
+                scope_type:
+                    currentParams.get(
+                        "scope_type"
+                    ) || "",
+
+                class_id:
+                    currentParams.get(
+                        "class_id"
+                    ) || "",
+
+                section_id:
+                    currentParams.get(
+                        "section_id"
+                    ) || "",
+
+                program_id:
+                    currentParams.get(
+                        "program_id"
+                    ) || "",
+
+                student_id:
+                    ""
+
             });
 
 
-        navigateExamResult(
-            url,
-            {
-                history: true,
-                historyMode: "push"
-            }
+        await navigateExamResult(
+            url
         );
 
     }
 
 
     /* ============================================================
-       STUDENT SEARCH
+       STUDENT ROWS
     ============================================================ */
 
     function getStudentRows() {
@@ -4116,41 +4367,43 @@
     }
 
 
+    /* ============================================================
+       FILTERED STUDENT ROWS
+    ============================================================ */
+
     function getFilteredStudentRows() {
 
         const rows =
             getStudentRows();
 
 
-        const search =
-            studentSearchTerm
-                .trim()
-                .toLowerCase();
+        const term =
+            String(
+                studentSearchTerm || ""
+            )
+            .trim()
+            .toLowerCase();
 
 
-        if (!search) {
-
+        if (!term) {
             return rows;
-
         }
 
 
         return rows.filter(
             function (row) {
 
-                const text =
-                    (
-                        row.dataset.search
-                        ||
-                        row.textContent
-                        ||
+                const searchable =
+                    String(
+                        row.dataset.search ||
+                        row.textContent ||
                         ""
                     )
                     .toLowerCase();
 
 
-                return text.includes(
-                    search
+                return searchable.includes(
+                    term
                 );
 
             }
@@ -4158,6 +4411,10 @@
 
     }
 
+
+    /* ============================================================
+       PAGINATION
+    ============================================================ */
 
     function renderStudentPagination() {
 
@@ -4181,8 +4438,13 @@
             );
 
 
-        if (!info || !buttons) {
+        if (
+            !info ||
+            !buttons
+        ) {
+
             return;
+
         }
 
 
@@ -4211,9 +4473,28 @@
         }
 
 
+        if (
+            studentCurrentPage < 1
+        ) {
+
+            studentCurrentPage =
+                1;
+
+        }
+
+
+        rows.forEach(function (row) {
+
+            row.style.display =
+                "none";
+
+        });
+
+
         const start =
             (
-                studentCurrentPage - 1
+                studentCurrentPage -
+                1
             ) *
             STUDENTS_PER_PAGE;
 
@@ -4221,40 +4502,33 @@
         const end =
             Math.min(
                 start +
-                STUDENTS_PER_PAGE,
+                    STUDENTS_PER_PAGE,
                 total
             );
 
 
-        rows.forEach(
-            function (row) {
+        filteredRows
+            .slice(
+                start,
+                end
+            )
+            .forEach(function (row) {
 
                 row.style.display =
-                    "none";
+                    "";
 
-            }
-        );
-
-
-        filteredRows
-            .slice(start, end)
-            .forEach(
-                function (row) {
-
-                    row.style.display =
-                        "";
-
-                }
-            );
+            });
 
 
         if (!total) {
 
             info.textContent =
-                "No students match your search.";
+                "No students found";
+
 
             buttons.innerHTML =
                 "";
+
 
             return;
 
@@ -4262,184 +4536,181 @@
 
 
         info.textContent =
-            `Showing ${start + 1}-${end} of ${total} student${total === 1 ? "" : "s"}`;
+            "Showing " +
+            (start + 1) +
+            "-" +
+            end +
+            " of " +
+            total +
+            " students";
 
 
         buttons.innerHTML =
             "";
 
 
-        function createPageButton(
-            label,
-            page,
-            disabled,
-            active
-        ) {
+        const createButton =
+            function (
+                label,
+                page,
+                disabled = false,
+                active = false
+            ) {
 
-            const button =
-                document.createElement(
-                    "button"
+                const button =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                button.type =
+                    "button";
+
+
+                button.className =
+                    "page-btn";
+
+
+                if (disabled) {
+
+                    button.classList.add(
+                        "disabled"
+                    );
+
+                }
+
+
+                if (active) {
+
+                    button.classList.add(
+                        "active"
+                    );
+
+                }
+
+
+                button.textContent =
+                    label;
+
+
+                if (!disabled) {
+
+                    button.addEventListener(
+                        "click",
+                        function () {
+
+                            studentCurrentPage =
+                                page;
+
+
+                            renderStudentPagination();
+
+                        }
+                    );
+
+                }
+
+
+                buttons.appendChild(
+                    button
                 );
 
-
-            button.type =
-                "button";
+            };
 
 
-            button.className =
-                "page-btn";
-
-
-            if (disabled) {
-
-                button.classList.add(
-                    "disabled"
-                );
-
-            }
-
-
-            if (active) {
-
-                button.classList.add(
-                    "active"
-                );
-
-            }
-
-
-            button.textContent =
-                label;
-
-
-            if (!disabled) {
-
-                button.addEventListener(
-                    "click",
-                    function () {
-
-                        studentCurrentPage =
-                            page;
-
-                        renderStudentPagination();
-
-                    }
-                );
-
-            }
-
-
-            return button;
-
-        }
-
-
-        buttons.appendChild(
-            createPageButton(
-                "‹",
-                studentCurrentPage - 1,
-                studentCurrentPage <= 1,
-                false
-            )
+        createButton(
+            "‹",
+            studentCurrentPage - 1,
+            studentCurrentPage <= 1
         );
 
 
-        const maxVisiblePages = 7;
-
-        let pageStart =
+        let startPage =
             Math.max(
                 1,
-                studentCurrentPage -
-                Math.floor(
-                    maxVisiblePages / 2
-                )
+                studentCurrentPage - 3
             );
 
 
-        let pageEnd =
+        let endPage =
             Math.min(
                 totalPages,
-                pageStart +
-                maxVisiblePages -
-                1
+                startPage + 6
             );
 
 
         if (
-            pageEnd -
-            pageStart +
-            1 <
-            maxVisiblePages
+            endPage -
+            startPage <
+            6
         ) {
 
-            pageStart =
+            startPage =
                 Math.max(
                     1,
-                    pageEnd -
-                    maxVisiblePages +
-                    1
+                    endPage - 6
                 );
 
         }
 
 
         for (
-            let page = pageStart;
-            page <= pageEnd;
+            let page = startPage;
+            page <= endPage;
             page++
         ) {
 
-            buttons.appendChild(
-                createPageButton(
-                    String(page),
-                    page,
-                    false,
-                    page ===
-                    studentCurrentPage
-                )
+            createButton(
+                String(page),
+                page,
+                false,
+                page === studentCurrentPage
             );
 
         }
 
 
-        buttons.appendChild(
-            createPageButton(
-                "›",
-                studentCurrentPage + 1,
-                studentCurrentPage >= totalPages,
-                false
-            )
+        createButton(
+            "›",
+            studentCurrentPage + 1,
+            studentCurrentPage >= totalPages
         );
 
     }
 
 
+    /* ============================================================
+       STUDENT SEARCH
+    ============================================================ */
+
     function initializeStudentSearch() {
 
-        const search =
+        const input =
             getElement(
                 "studentSearch"
             );
 
 
-        if (!search) {
+        if (!input) {
             return;
         }
 
 
-        search.value =
+        input.value =
             studentSearchTerm;
 
 
-        search.addEventListener(
+        input.addEventListener(
             "input",
             function () {
 
                 studentSearchTerm =
-                    search.value || "";
+                    this.value || "";
+
 
                 studentCurrentPage =
                     1;
+
 
                 renderStudentPagination();
 
@@ -4463,19 +4734,22 @@
 
         const markInput =
             getElement(
-                `mark_${examSubjectId}`
+                "mark_" +
+                examSubjectId
             );
 
 
-        const absent =
+        const absentInput =
             getElement(
-                `absent_${examSubjectId}`
+                "absent_" +
+                examSubjectId
             );
 
 
-        const exempted =
+        const exemptedInput =
             getElement(
-                `exempted_${examSubjectId}`
+                "exempted_" +
+                examSubjectId
             );
 
 
@@ -4484,17 +4758,17 @@
         }
 
 
-        if (status === "absent") {
+        if (
+            status === "absent" &&
+            absentInput
+        ) {
 
             if (
-                absent
-                &&
-                absent.checked
-                &&
-                exempted
+                absentInput.checked &&
+                exemptedInput
             ) {
 
-                exempted.checked =
+                exemptedInput.checked =
                     false;
 
             }
@@ -4502,17 +4776,17 @@
         }
 
 
-        if (status === "exempted") {
+        if (
+            status === "exempted" &&
+            exemptedInput
+        ) {
 
             if (
-                exempted
-                &&
-                exempted.checked
-                &&
-                absent
+                exemptedInput.checked &&
+                absentInput
             ) {
 
-                absent.checked =
+                absentInput.checked =
                     false;
 
             }
@@ -4521,33 +4795,32 @@
 
 
         const isAbsent =
-            absent
-            &&
-            absent.checked;
+            Boolean(
+                absentInput &&
+                absentInput.checked
+            );
 
 
         const isExempted =
-            exempted
-            &&
-            exempted.checked;
+            Boolean(
+                exemptedInput &&
+                exemptedInput.checked
+            );
 
 
-        if (
-            isAbsent
-            ||
-            isExempted
-        ) {
+        const disabled =
+            isAbsent ||
+            isExempted;
+
+
+        markInput.disabled =
+            disabled;
+
+
+        if (disabled) {
 
             markInput.value =
                 "";
-
-            markInput.disabled =
-                true;
-
-        } else {
-
-            markInput.disabled =
-                false;
 
         }
 
@@ -4555,7 +4828,7 @@
 
 
     /* ============================================================
-       VALIDATE MARKS
+       VALIDATE EXAM RESULT FIELDS
     ============================================================ */
 
     function validateExamResultFields() {
@@ -4569,15 +4842,19 @@
         if (!form) {
 
             return {
-                valid: true
+                valid: false,
+                message:
+                    "Result form was not found."
             };
 
         }
 
 
         const cards =
-            form.querySelectorAll(
-                ".subject-card"
+            Array.from(
+                form.querySelectorAll(
+                    ".subject-card"
+                )
             );
 
 
@@ -4586,14 +4863,10 @@
             return {
                 valid: false,
                 message:
-                    "There are no subject marks to save."
+                    "There are no subject entries to save."
             };
 
         }
-
-
-        let firstInvalid =
-            null;
 
 
         for (
@@ -4606,42 +4879,55 @@
 
             const markInput =
                 getElement(
-                    `mark_${examSubjectId}`
+                    "mark_" +
+                    examSubjectId
                 );
 
 
-            const absent =
+            const absentInput =
                 getElement(
-                    `absent_${examSubjectId}`
+                    "absent_" +
+                    examSubjectId
                 );
 
 
-            const exempted =
+            const exemptedInput =
                 getElement(
-                    `exempted_${examSubjectId}`
+                    "exempted_" +
+                    examSubjectId
                 );
-
-
-            if (!markInput) {
-                continue;
-            }
 
 
             const isAbsent =
-                absent
-                &&
-                absent.checked;
+                Boolean(
+                    absentInput &&
+                    absentInput.checked
+                );
 
 
             const isExempted =
-                exempted
-                &&
-                exempted.checked;
+                Boolean(
+                    exemptedInput &&
+                    exemptedInput.checked
+                );
 
 
             if (
-                isAbsent
-                ||
+                isAbsent &&
+                isExempted
+            ) {
+
+                return {
+                    valid: false,
+                    message:
+                        "A subject cannot be both Absent and Exempted."
+                };
+
+            }
+
+
+            if (
+                isAbsent ||
                 isExempted
             ) {
 
@@ -4650,24 +4936,36 @@
             }
 
 
-            const raw =
+            if (!markInput) {
+
+                return {
+                    valid: false,
+                    message:
+                        "A subject mark field is missing."
+                };
+
+            }
+
+
+            const rawValue =
                 String(
                     markInput.value || ""
                 ).trim();
 
 
-            if (!raw) {
+            if (!rawValue) {
 
-                firstInvalid =
-                    markInput;
-
-                break;
+                return {
+                    valid: false,
+                    message:
+                        "Please enter valid marks for every subject, or select Absent/Exempted."
+                };
 
             }
 
 
             const value =
-                Number(raw);
+                Number(rawValue);
 
 
             const max =
@@ -4677,77 +4975,62 @@
 
 
             if (
-                !Number.isFinite(value)
-                ||
-                value < 0
+                !Number.isFinite(value) ||
+                value < 0 ||
+                (
+                    Number.isFinite(max) &&
+                    value > max
+                )
             ) {
 
-                firstInvalid =
-                    markInput;
-
-                break;
-
-            }
-
-
-            if (
-                Number.isFinite(max)
-                &&
-                value > max
-            ) {
-
-                firstInvalid =
-                    markInput;
-
-                break;
+                return {
+                    valid: false,
+                    message:
+                        "Please enter valid marks for every subject, or select Absent/Exempted."
+                };
 
             }
-
-        }
-
-
-        if (firstInvalid) {
-
-            firstInvalid.focus();
-
-
-            return {
-                valid: false,
-                message:
-                    "Please enter valid marks for every subject, or select Absent/Exempted."
-            };
 
         }
 
 
         return {
-            valid: true
+            valid: true,
+            message: ""
         };
 
     }
 
 
     /* ============================================================
-       NEXT STUDENT
+       NEXT STUDENT BEFORE SAVE
     ============================================================ */
 
     function getNextStudentIdBeforeSave() {
 
-        const nextButton =
-            document.querySelector(
-                "[data-next-student-id]"
-            );
+        const root =
+            getRoot();
 
 
-        if (
-            nextButton
-            &&
-            nextButton.dataset.nextStudentId
-        ) {
+        if (root) {
 
-            return String(
-                nextButton.dataset.nextStudentId
-            );
+            const explicitNext =
+                root.querySelector(
+                    "[data-next-student-id]"
+                );
+
+
+            if (
+                explicitNext &&
+                explicitNext.dataset.nextStudentId
+            ) {
+
+                return (
+                    explicitNext.dataset
+                        .nextStudentId
+                );
+
+            }
 
         }
 
@@ -4761,48 +5044,66 @@
         }
 
 
-        const currentStudentId =
-            getElement(
-                "student_id"
-            )?.value;
+        const currentStudentElement =
+            document.querySelector(
+                "[data-selected-student-id]"
+            );
 
 
-        const ids =
-            rows.map(
+        if (
+            !currentStudentElement
+        ) {
+
+            return null;
+
+        }
+
+
+        const currentId =
+            String(
+                currentStudentElement.dataset
+                    .selectedStudentId ||
+                ""
+            );
+
+
+        const currentIndex =
+            rows.findIndex(
                 function (row) {
 
                     return String(
-                        row.dataset.studentId
-                        || ""
-                    );
+                        row.dataset.studentId ||
+                        ""
+                    ) === currentId;
 
                 }
             );
 
 
-        const currentIndex =
-            ids.indexOf(
-                String(
-                    currentStudentId || ""
-                )
-            );
-
-
         if (
-            currentIndex >= 0
-            &&
-            currentIndex <
-                ids.length - 1
+            currentIndex === -1
         ) {
 
-            return ids[
-                currentIndex + 1
-            ];
+            return null;
 
         }
 
 
-        return null;
+        const nextRow =
+            rows[
+                currentIndex + 1
+            ];
+
+
+        if (!nextRow) {
+            return null;
+        }
+
+
+        return (
+            nextRow.dataset.studentId ||
+            null
+        );
 
     }
 
@@ -4811,14 +5112,14 @@
        BUILD POST URL
     ============================================================ */
 
-    function buildPostUrl(form) {
-
-        const params =
-            new URLSearchParams();
-
+    function buildPostUrl(
+        form
+    ) {
 
         const formData =
-            new FormData(form);
+            new FormData(
+                form
+            );
 
 
         const fields = [
@@ -4831,28 +5132,30 @@
         ];
 
 
-        fields.forEach(
-            function (field) {
-
-                const value =
-                    formData.get(field);
+        const params =
+            new URLSearchParams();
 
 
-                if (
-                    value !== null
-                    &&
-                    String(value).trim() !== ""
-                ) {
+        fields.forEach(function (field) {
 
-                    params.set(
-                        field,
-                        String(value)
-                    );
+            const value =
+                formData.get(field);
 
-                }
+
+            if (
+                value !== null &&
+                value !== undefined &&
+                String(value).trim() !== ""
+            ) {
+
+                params.set(
+                    field,
+                    String(value)
+                );
 
             }
-        );
+
+        });
 
 
         const query =
@@ -4860,14 +5163,14 @@
 
 
         return query
-            ? `${EXAM_RESULT_URL}?${query}`
+            ? EXAM_RESULT_URL + "?" + query
             : EXAM_RESULT_URL;
 
     }
 
 
     /* ============================================================
-       HANDLE SAVE
+       SAVE EXAM RESULT
     ============================================================ */
 
     async function handleExamResultSubmit(
@@ -4881,11 +5184,6 @@
             event.currentTarget;
 
 
-        if (!form) {
-            return false;
-        }
-
-
         const validation =
             validateExamResultFields();
 
@@ -4894,13 +5192,112 @@
 
             showDynamicMessage(
                 validation.message,
-                "warning",
-                6000
+                "warning"
             );
 
-            return false;
+            return;
 
         }
+
+
+        const studentInput =
+            getElement(
+                "student_id"
+            );
+
+
+        const currentStudentId =
+            studentInput
+                ? String(
+                    studentInput.value || ""
+                )
+                : "";
+
+
+        /*
+         * IMPORTANT:
+         *
+         * Capture the next student BEFORE POST.
+         *
+         * After a successful save the current student
+         * may disappear from the incomplete-student list.
+         */
+
+        const nextStudentId =
+            getNextStudentIdBeforeSave();
+
+
+        const formData =
+            new FormData(
+                form
+            );
+
+
+        /*
+         * Synchronize hidden filter values
+         * with the currently loaded page.
+         */
+
+        const currentParams =
+            getCurrentParams();
+
+
+        const synchronizedFields = [
+            "exam_id",
+            "scope_type",
+            "class_id",
+            "section_id",
+            "program_id",
+            "student_id"
+        ];
+
+
+        synchronizedFields.forEach(
+            function (field) {
+
+                const element =
+                    getElement(field);
+
+
+                if (
+                    element &&
+                    element.value !== undefined
+                ) {
+
+                    formData.set(
+                        field,
+                        element.value
+                    );
+
+                } else {
+
+                    const currentValue =
+                        currentParams.get(
+                            field
+                        );
+
+
+                    if (
+                        currentValue !== null
+                    ) {
+
+                        formData.set(
+                            field,
+                            currentValue
+                        );
+
+                    }
+
+                }
+
+            }
+        );
+
+
+        const postUrl =
+            buildPostUrl(
+                form
+            );
 
 
         const saveButton =
@@ -4909,116 +5306,10 @@
             );
 
 
-        const originalText =
+        const originalButtonText =
             saveButton
                 ? saveButton.textContent
-                : "";
-
-
-        const currentStudentId =
-            getElement(
-                "student_id"
-            )?.value
-            || "";
-
-
-        /*
-         * Capture the next student BEFORE POST.
-         *
-         * This is important because after successful save,
-         * the selected student can disappear from the incomplete
-         * student list.
-         */
-
-        const nextStudentId =
-            getNextStudentIdBeforeSave();
-
-
-        const postUrl =
-            buildPostUrl(form);
-
-
-        const formData =
-            new FormData(form);
-
-
-        /*
-         * Make sure the hidden values are always synchronized.
-         */
-
-        const examId =
-            getElement(
-                "exam_id"
-            )?.value
-            || "";
-
-
-        const scopeType =
-            getElement(
-                "scope_type"
-            )?.value
-            || "";
-
-
-        const classId =
-            getElement(
-                "class_id"
-            )?.value
-            || "";
-
-
-        const sectionId =
-            getElement(
-                "section_id"
-            )?.value
-            || "";
-
-
-        const programId =
-            getElement(
-                "program_id"
-            )?.value
-            || "";
-
-
-        if (examId) {
-            formData.set(
-                "exam_id",
-                examId
-            );
-        }
-
-
-        if (scopeType) {
-            formData.set(
-                "scope_type",
-                scopeType
-            );
-        }
-
-
-        formData.set(
-            "class_id",
-            classId
-        );
-
-
-        formData.set(
-            "section_id",
-            sectionId
-        );
-
-
-        formData.set(
-            "program_id",
-            programId
-        );
-
-
-        formData.set(
-            "student_id",
-            currentStudentId
-        );
+                : "✓ Save Marks";
 
 
         if (saveButton) {
@@ -5040,28 +5331,13 @@
 
         try {
 
-            /*
-             * CRITICAL FIX:
-             *
-             * Do NOT follow the Flask redirect here.
-             *
-             * If Flask commits successfully and then redirects
-             * to the result page, a problem on the redirected GET
-             * could previously make JavaScript think the POST failed.
-             *
-             * We only care about the POST response first.
-             */
-
             const result =
                 await fetchExamResultHtml(
                     postUrl,
                     {
                         method: "POST",
-
                         body: formData,
-
                         redirect: "manual",
-
                         allowRedirect: true
                     }
                 );
@@ -5071,79 +5347,109 @@
                 result.response;
 
 
-            const saveWasRedirected =
-                result.redirected
-                ||
-                result.opaqueRedirect
-                ||
-                response.redirected
-                ||
-                (
-                    response.status >= 300
-                    &&
-                    response.status < 400
+            const isSuccessfulRedirect =
+                Boolean(
+                    result.redirected ||
+                    result.opaqueRedirect ||
+                    (
+                        response &&
+                        response.status >= 300 &&
+                        response.status < 400
+                    )
                 );
 
 
-            /* ========================================================
-               SUCCESSFUL POST / REDIRECT
-            ======================================================== */
-
-            if (saveWasRedirected) {
+            if (isSuccessfulRedirect) {
 
                 /*
-                 * Flask add_exam_result normally redirects back to
-                 * the same page with the selected student.
+                 * Do not depend on the Location header.
                  *
-                 * We already know the exact URL from the submitted
-                 * form, so we do not depend on the browser exposing
-                 * the Location header of a manual redirect.
+                 * The POST response may be an opaque redirect
+                 * depending on browser/server configuration.
                  */
 
                 const savedUrl =
                     buildExamResultUrl({
-                        exam_id: examId,
-                        scope_type: scopeType,
-                        class_id: classId,
-                        section_id: sectionId,
-                        program_id: programId,
+
+                        exam_id:
+                            formData.get(
+                                "exam_id"
+                            ) || "",
+
+                        scope_type:
+                            formData.get(
+                                "scope_type"
+                            ) || "",
+
+                        class_id:
+                            formData.get(
+                                "class_id"
+                            ) || "",
+
+                        section_id:
+                            formData.get(
+                                "section_id"
+                            ) || "",
+
+                        program_id:
+                            formData.get(
+                                "program_id"
+                            ) || "",
+
                         student_id:
                             currentStudentId
+
                     });
 
 
                 /*
-                 * If there is another incomplete student,
-                 * load that student after the save.
+                 * If another student exists,
+                 * immediately load that student.
                  */
 
                 if (
-                    nextStudentId
-                    &&
-                    String(nextStudentId)
-                    !==
+                    nextStudentId &&
+                    String(nextStudentId) !==
                     String(currentStudentId)
                 ) {
 
                     const nextUrl =
                         buildExamResultUrl({
-                            exam_id: examId,
-                            scope_type: scopeType,
-                            class_id: classId,
-                            section_id: sectionId,
-                            program_id: programId,
+
+                            exam_id:
+                                formData.get(
+                                    "exam_id"
+                                ) || "",
+
+                            scope_type:
+                                formData.get(
+                                    "scope_type"
+                                ) || "",
+
+                            class_id:
+                                formData.get(
+                                    "class_id"
+                                ) || "",
+
+                            section_id:
+                                formData.get(
+                                    "section_id"
+                                ) || "",
+
+                            program_id:
+                                formData.get(
+                                    "program_id"
+                                ) || "",
+
                             student_id:
                                 nextStudentId
+
                         });
 
 
                     const nextLoaded =
                         await navigateExamResult(
-                            nextUrl,
-                            {
-                                history: true,
-                                historyMode: "push"
-                            }
+                            nextUrl
                         );
 
 
@@ -5151,179 +5457,144 @@
 
                         showDynamicMessage(
                             "Marks saved successfully. Next student loaded.",
-                            "success",
-                            4500
-                        );
-
-                        return false;
-
-                    }
-
-
-                    /*
-                     * Next student failed to load.
-                     *
-                     * The marks were already saved, so load the
-                     * saved student instead of displaying
-                     * "Unable to save".
-                     */
-
-                    const savedLoaded =
-                        await navigateExamResult(
-                            savedUrl,
-                            {
-                                history: true,
-                                historyMode: "push"
-                            }
-                        );
-
-
-                    if (savedLoaded) {
-
-                        showDynamicMessage(
-                            "Marks were saved successfully, but the next student could not be loaded.",
-                            "success",
-                            6000
+                            "success"
                         );
 
                     } else {
 
-                        showDynamicMessage(
-                            "Marks were saved successfully. Please refresh the page to continue.",
-                            "success",
-                            7000
-                        );
+                        const currentLoaded =
+                            await navigateExamResult(
+                                savedUrl,
+                                {
+                                    historyMode:
+                                        "replace"
+                                }
+                            );
+
+
+                        if (currentLoaded) {
+
+                            showDynamicMessage(
+                                "Marks saved successfully, but the next student could not be loaded.",
+                                "warning"
+                            );
+
+                        }
 
                     }
 
 
-                    return false;
-
-                }
-
-
-                /*
-                 * No next student.
-                 *
-                 * Reload the saved student/page dynamically.
-                 */
-
-                const savedLoaded =
-                    await navigateExamResult(
-                        savedUrl,
-                        {
-                            history: true,
-                            historyMode: "replace"
-                        }
-                    );
-
-
-                if (savedLoaded) {
-
-                    showDynamicMessage(
-                        "Marks saved successfully.",
-                        "success",
-                        4500
-                    );
-
                 } else {
 
-                    showDynamicMessage(
-                        "Marks were saved successfully. Please refresh the page to continue.",
-                        "success",
-                        7000
-                    );
+                    /*
+                     * No next student.
+                     *
+                     * Reload current student using replace history
+                     * so duplicate history entries are avoided.
+                     */
+
+                    const currentLoaded =
+                        await navigateExamResult(
+                            savedUrl,
+                            {
+                                historyMode:
+                                    "replace"
+                            }
+                        );
+
+
+                    if (currentLoaded) {
+
+                        showDynamicMessage(
+                            "Marks saved successfully.",
+                            "success"
+                        );
+
+                    }
 
                 }
 
 
-                return false;
+                return;
 
             }
 
 
-            /* ========================================================
-               HTTP 200 WITHOUT REDIRECT
-            ======================================================== */
+            /*
+             * Some server configurations return the
+             * rendered HTML directly with HTTP 200.
+             */
 
-            if (response.ok) {
+            if (
+                response &&
+                response.ok
+            ) {
 
-                /*
-                 * This normally means Flask returned the form directly
-                 * instead of redirecting.
-                 *
-                 * Do not show the old false:
-                 *
-                 * "Unable to save the exam result."
-                 */
-
-                if (result.html) {
+                if (
+                    result.html &&
+                    result.html.trim()
+                ) {
 
                     replaceExamResultRoot(
                         result.html
                     );
 
 
-                    updateBrowserUrl(
-                        response.url
-                        ||
-                        postUrl,
-                        "replace"
+                    initializeExamResultPage();
+
+
+                    showDynamicMessage(
+                        "Marks saved successfully.",
+                        "success"
                     );
 
+                } else {
 
-                    initializeExamResultPage();
+                    showDynamicMessage(
+                        "The server returned an empty result page.",
+                        "warning"
+                    );
 
                 }
 
 
-                showDynamicMessage(
-                    "The server returned the result form. Please check the message shown on the page.",
-                    "info",
-                    6000
-                );
-
-
-                return false;
+                return;
 
             }
 
 
             throw new Error(
-                `Unable to save result. HTTP ${response.status}`
+                "The result could not be saved."
             );
-
 
         } catch (error) {
 
             if (
-                error.name ===
-                "AbortError"
+                error &&
+                error.name === "AbortError"
             ) {
 
-                return false;
+                return;
 
             }
 
 
             console.error(
-                "Exam result save error:",
+                "Exam result save failed:",
                 error
             );
 
 
             showDynamicMessage(
                 "Unable to save the exam result. Please try again.",
-                "error",
-                7000
+                "error"
             );
-
-
-            return false;
 
         } finally {
 
-            setLoading(false);
+            setLoading(
+                false
+            );
 
 
             if (saveButton) {
@@ -5331,9 +5602,9 @@
                 saveButton.disabled =
                     false;
 
+
                 saveButton.textContent =
-                    originalText
-                    ||
+                    originalButtonText ||
                     "✓ Save Marks";
 
             }
@@ -5355,126 +5626,157 @@
             );
 
 
-        cards.forEach(
-            function (card) {
+        cards.forEach(function (card) {
 
-                const id =
-                    card.dataset.examSubjectId;
-
-
-                const absent =
-                    getElement(
-                        `absent_${id}`
-                    );
+            const examSubjectId =
+                card.dataset.examSubjectId;
 
 
-                const exempted =
-                    getElement(
-                        `exempted_${id}`
-                    );
+            const markInput =
+                getElement(
+                    "mark_" +
+                    examSubjectId
+                );
 
 
-                const markInput =
-                    getElement(
-                        `mark_${id}`
-                    );
+            const absentInput =
+                getElement(
+                    "absent_" +
+                    examSubjectId
+                );
 
+
+            const exemptedInput =
+                getElement(
+                    "exempted_" +
+                    examSubjectId
+                );
+
+
+            if (!markInput) {
+                return;
+            }
+
+
+            function syncStatus() {
+
+                /*
+                 * Make the two status options mutually exclusive.
+                 */
 
                 if (
-                    !markInput
+                    absentInput &&
+                    exemptedInput
                 ) {
 
-                    return;
-
-                }
-
-
-                function syncStatus() {
-
-                    /*
-                     * Only one status can be active.
-                     */
-
                     if (
-                        absent
-                        &&
-                        exempted
+                        absentInput.checked
                     ) {
 
-                        if (
-                            absent.checked
-                        ) {
-
-                            exempted.checked =
-                                false;
-
-                        }
-
-
-                        if (
-                            exempted.checked
-                        ) {
-
-                            absent.checked =
-                                false;
-
-                        }
+                        exemptedInput.checked =
+                            false;
 
                     }
 
 
-                    const disabled =
-                        (
-                            absent
-                            &&
-                            absent.checked
-                        )
-                        ||
-                        (
-                            exempted
-                            &&
-                            exempted.checked
-                        );
+                    if (
+                        exemptedInput.checked
+                    ) {
 
-
-                    markInput.disabled =
-                        disabled;
-
-
-                    if (disabled) {
-
-                        markInput.value =
-                            "";
+                        absentInput.checked =
+                            false;
 
                     }
 
                 }
 
 
-                if (absent) {
-
-                    absent.addEventListener(
-                        "change",
-                        syncStatus
+                const isAbsent =
+                    Boolean(
+                        absentInput &&
+                        absentInput.checked
                     );
 
-                }
 
-
-                if (exempted) {
-
-                    exempted.addEventListener(
-                        "change",
-                        syncStatus
+                const isExempted =
+                    Boolean(
+                        exemptedInput &&
+                        exemptedInput.checked
                     );
 
+
+                const disabled =
+                    isAbsent ||
+                    isExempted;
+
+
+                markInput.disabled =
+                    disabled;
+
+
+                if (disabled) {
+
+                    markInput.value =
+                        "";
+
                 }
-
-
-                syncStatus();
 
             }
-        );
+
+
+            if (absentInput) {
+
+                absentInput.addEventListener(
+                    "change",
+                    function () {
+
+                        if (
+                            this.checked &&
+                            exemptedInput
+                        ) {
+
+                            exemptedInput.checked =
+                                false;
+
+                        }
+
+
+                        syncStatus();
+
+                    }
+                );
+
+            }
+
+
+            if (exemptedInput) {
+
+                exemptedInput.addEventListener(
+                    "change",
+                    function () {
+
+                        if (
+                            this.checked &&
+                            absentInput
+                        ) {
+
+                            absentInput.checked =
+                                false;
+
+                        }
+
+
+                        syncStatus();
+
+                    }
+                );
+
+            }
+
+
+            syncStatus();
+
+        });
 
     }
 
@@ -5498,13 +5800,16 @@
                     "click",
                     function () {
 
-                        const id =
-                            button.dataset.prevStudentId;
+                        const studentId =
+                            this.dataset
+                                .prevStudentId;
 
 
-                        if (id) {
+                        if (studentId) {
 
-                            selectStudent(id);
+                            selectStudent(
+                                studentId
+                            );
 
                         }
 
@@ -5528,13 +5833,16 @@
                     "click",
                     function () {
 
-                        const id =
-                            button.dataset.nextStudentId;
+                        const studentId =
+                            this.dataset
+                                .nextStudentId;
 
 
-                        if (id) {
+                        if (studentId) {
 
-                            selectStudent(id);
+                            selectStudent(
+                                studentId
+                            );
 
                         }
 
@@ -5548,7 +5856,7 @@
 
 
     /* ============================================================
-       STUDENT SELECT BUTTONS
+       STUDENT BUTTONS
     ============================================================ */
 
     function initializeStudentButtons() {
@@ -5559,34 +5867,35 @@
             );
 
 
-        buttons.forEach(
-            function (button) {
+        buttons.forEach(function (button) {
 
-                button.addEventListener(
-                    "click",
-                    function () {
+            button.addEventListener(
+                "click",
+                function () {
 
-                        const id =
-                            button.dataset.studentId;
+                    const studentId =
+                        this.dataset
+                            .studentId;
 
 
-                        if (id) {
+                    if (studentId) {
 
-                            selectStudent(id);
-
-                        }
+                        selectStudent(
+                            studentId
+                        );
 
                     }
-                );
 
-            }
-        );
+                }
+            );
+
+        });
 
     }
 
 
     /* ============================================================
-       FORM EVENTS
+       FILTER FORM
     ============================================================ */
 
     function initializeFilterForm() {
@@ -5608,15 +5917,13 @@
         );
 
 
-        const examSelect =
-            getElement(
-                "exam_id"
-            );
+        const exam =
+            getElement("exam_id");
 
 
-        if (examSelect) {
+        if (exam) {
 
-            examSelect.addEventListener(
+            exam.addEventListener(
                 "change",
                 function () {
 
@@ -5628,17 +5935,19 @@
         }
 
 
-        const scopeSelect =
+        const scope =
             getElement(
                 "scope_type"
             );
 
 
-        if (scopeSelect) {
+        if (scope) {
 
-            scopeSelect.addEventListener(
+            scope.addEventListener(
                 "change",
                 function () {
+
+                    updateScopeVisibility();
 
                     submitScopeSelection();
 
@@ -5648,46 +5957,40 @@
         }
 
 
-        const classSelect =
+        const classElement =
             getElement(
                 "class_id"
             );
 
 
-        if (classSelect) {
+        if (classElement) {
 
-            classSelect.addEventListener(
+            classElement.addEventListener(
                 "change",
-                function () {
+                async function () {
 
                     filterSectionsByClass();
 
-                    const scope =
-                        getElement(
-                            "scope_type"
-                        )?.value;
 
+                    const scopeType =
+                        scope
+                            ? scope.value
+                            : "";
 
-                    /*
-                     * Only automatically load when Class or Section
-                     * scope is actually ready.
-                     */
 
                     if (
-                        scope === "class"
-                        &&
-                        classSelect.value
+                        scopeType === "class" &&
+                        this.value
                     ) {
 
-                        submitScopeTarget();
+                        await submitScopeTarget();
 
                     }
 
 
-                    if (
-                        scope === "section"
-                        &&
-                        classSelect.value
+                    else if (
+                        scopeType === "section" &&
+                        this.value
                     ) {
 
                         const section =
@@ -5697,12 +6000,11 @@
 
 
                         if (
-                            section
-                            &&
+                            section &&
                             section.value
                         ) {
 
-                            submitScopeTarget();
+                            await submitScopeTarget();
 
                         }
 
@@ -5714,28 +6016,27 @@
         }
 
 
-        const sectionSelect =
+        const section =
             getElement(
                 "section_id"
             );
 
 
-        if (sectionSelect) {
+        if (section) {
 
-            sectionSelect.addEventListener(
+            section.addEventListener(
                 "change",
                 function () {
 
-                    const scope =
-                        getElement(
-                            "scope_type"
-                        )?.value;
+                    const scopeType =
+                        scope
+                            ? scope.value
+                            : "";
 
 
                     if (
-                        scope === "section"
-                        &&
-                        sectionSelect.value
+                        scopeType === "section" &&
+                        this.value
                     ) {
 
                         submitScopeTarget();
@@ -5748,28 +6049,27 @@
         }
 
 
-        const programSelect =
+        const program =
             getElement(
                 "program_id"
             );
 
 
-        if (programSelect) {
+        if (program) {
 
-            programSelect.addEventListener(
+            program.addEventListener(
                 "change",
                 function () {
 
-                    const scope =
-                        getElement(
-                            "scope_type"
-                        )?.value;
+                    const scopeType =
+                        scope
+                            ? scope.value
+                            : "";
 
 
                     if (
-                        scope === "all_program"
-                        &&
-                        programSelect.value
+                        scopeType === "all_program" &&
+                        this.value
                     ) {
 
                         submitScopeTarget();
@@ -5780,6 +6080,11 @@
             );
 
         }
+
+
+        updateScopeVisibility();
+
+        filterSectionsByClass();
 
     }
 
@@ -5868,7 +6173,7 @@
 
 
     /* ============================================================
-       INITIALIZE PAGE
+       INITIALIZE COMPLETE PAGE
     ============================================================ */
 
     function initializeExamResultPage() {
@@ -5876,11 +6181,6 @@
         studentCurrentPage =
             1;
 
-
-        /*
-         * Do not clear search term during dynamic navigation if
-         * the student table is being re-rendered.
-         */
 
         updateScopeVisibility();
 
@@ -5911,14 +6211,10 @@
 
     window.addEventListener(
         "popstate",
-        async function () {
+        function () {
 
-            const url =
-                window.location.href;
-
-
-            await navigateExamResult(
-                url,
+            navigateExamResult(
+                window.location.href,
                 {
                     history: false
                 }
@@ -5929,8 +6225,7 @@
 
 
     /* ============================================================
-       GLOBAL FUNCTIONS
-       Needed for compatibility with existing template calls.
+       GLOBAL COMPATIBILITY FUNCTIONS
     ============================================================ */
 
     window.submitExamSelection =
@@ -5983,7 +6278,6 @@
         initializeExamResultPage();
 
     }
-
 
 })();
 </script>
