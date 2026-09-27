@@ -1,0 +1,3919 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   VIEW PARENT PAGE
+   ============================================================ */
+
+.view-parent-page {
+    width: 100%;
+    max-width: 1550px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.parent-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.parent-header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.parent-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #33206f
+    );
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    box-shadow:
+        0 8px 20px rgba(6, 36, 95, .18);
+    flex-shrink: 0;
+}
+
+.parent-header-title h1 {
+    margin: 0 0 5px;
+    font-size: 26px;
+    font-weight: 800;
+    color: #16213e;
+}
+
+.parent-header-title p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.parent-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 9px;
+    font-size: 12px;
+    color: #8b95a7;
+}
+
+.parent-breadcrumb a {
+    color: #06245f;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.parent-breadcrumb i {
+    font-size: 9px;
+}
+
+
+/* ============================================================
+   HEADER ACTIONS
+   ============================================================ */
+
+.parent-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.parent-action {
+    height: 42px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid #dfe5ef;
+    background: #fff;
+    color: #334155;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.parent-action:hover {
+    border-color: #06245f;
+    color: #06245f;
+    transform: translateY(-1px);
+}
+
+.parent-action.primary {
+    background: #06245f;
+    border-color: #06245f;
+    color: #fff;
+}
+
+.parent-action.primary:hover {
+    background: #041d4d;
+    color: #fff;
+}
+
+
+/* ============================================================
+   FLASH MESSAGES
+   ============================================================ */
+
+.flash-container {
+    margin-bottom: 20px;
+}
+
+.flash-message {
+    padding: 13px 16px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid transparent;
+}
+
+.flash-message.success {
+    background: #edf9f0;
+    color: #167536;
+    border-color: #c9ebd1;
+}
+
+.flash-message.error {
+    background: #fff1f1;
+    color: #b42318;
+    border-color: #f2cccc;
+}
+
+.flash-message.warning {
+    background: #fff8e8;
+    color: #9a6700;
+    border-color: #f0dfad;
+}
+
+.flash-message.info {
+    background: #eef5ff;
+    color: #174ea6;
+    border-color: #cbdcf8;
+}
+
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+
+.parent-layout {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        360px;
+    gap: 24px;
+    align-items: start;
+}
+
+
+/* ============================================================
+   MAIN CARD
+   ============================================================ */
+
+.parent-main-card {
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 16px;
+    box-shadow:
+        0 7px 25px rgba(15, 23, 42, .06);
+    overflow: hidden;
+}
+
+.parent-section {
+    padding: 26px 28px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.parent-section:last-child {
+    border-bottom: 0;
+}
+
+.parent-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.section-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.parent-section-header h2 {
+    margin: 0;
+    font-size: 16px;
+    color: #182338;
+    font-weight: 800;
+}
+
+.parent-section-header p {
+    margin: 3px 0 0;
+    color: #8993a5;
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   INFORMATION GRID
+   ============================================================ */
+
+.info-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.info-item {
+    min-width: 0;
+}
+
+.info-item.full {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 7px;
+    color: #7a8496;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .45px;
+}
+
+.info-label i {
+    color: #06245f;
+    font-size: 11px;
+}
+
+.info-value {
+    min-height: 46px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid #e8edf3;
+    border-radius: 10px;
+    color: #202b3c;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    word-break: break-word;
+}
+
+.info-value.muted {
+    color: #8b95a7;
+    font-weight: 500;
+}
+
+
+/* ============================================================
+   PARENT IDENTITY
+   ============================================================ */
+
+.parent-name-value {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.parent-name-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #33206f
+    );
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+}
+
+.parent-name-text {
+    min-width: 0;
+}
+
+.parent-name-text strong {
+    display: block;
+    font-size: 15px;
+    color: #172033;
+    line-height: 1.3;
+}
+
+.parent-name-text span {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: #8993a5;
+}
+
+
+/* ============================================================
+   PARENT KEY
+   ============================================================ */
+
+.parent-key-box {
+    background: linear-gradient(
+        135deg,
+        #f4f7fc,
+        #f8f9fd
+    );
+    border: 1px dashed #b9c6dc;
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.parent-key-content {
+    min-width: 0;
+}
+
+.parent-key-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #8b95a7;
+    letter-spacing: .7px;
+    margin-bottom: 6px;
+}
+
+.parent-key-value {
+    font-family: "Courier New", monospace;
+    font-size: 15px;
+    font-weight: 800;
+    color: #06245f;
+    word-break: break-all;
+}
+
+.copy-key-btn {
+    border: 1px solid #d9e0eb;
+    background: #fff;
+    color: #06245f;
+    height: 40px;
+    padding: 0 13px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s ease;
+    flex-shrink: 0;
+}
+
+.copy-key-btn:hover {
+    background: #06245f;
+    border-color: #06245f;
+    color: #fff;
+}
+
+.copy-key-btn.copied {
+    background: #32b73a;
+    border-color: #32b73a;
+    color: #fff;
+}
+
+
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .35px;
+}
+
+.status-badge.active {
+    background: #eaf8ed;
+    color: #188038;
+}
+
+.status-badge.inactive {
+    background: #fff1f1;
+    color: #b42318;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+
+/* ============================================================
+   CHILDREN SUMMARY
+   ============================================================ */
+
+.children-summary {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.children-summary-box {
+    background: #f8fafc;
+    border: 1px solid #e8edf3;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.children-summary-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 9px;
+}
+
+.children-summary-number {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1c2940;
+}
+
+.children-summary-label {
+    margin-top: 3px;
+    color: #8993a5;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.children-summary-box.active .children-summary-icon {
+    background: #eaf8ed;
+    color: #188038;
+}
+
+.children-summary-box.inactive .children-summary-icon {
+    background: #fff1f1;
+    color: #b42318;
+}
+
+
+/* ============================================================
+   STUDENT TABLE
+   ============================================================ */
+
+.students-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e5eaf1;
+    border-radius: 12px;
+}
+
+.students-table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.students-table th {
+    background: #f6f8fc;
+    color: #697386;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .45px;
+    text-align: left;
+    padding: 13px 14px;
+    border-bottom: 1px solid #e5eaf1;
+    white-space: nowrap;
+}
+
+.students-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #edf0f5;
+    color: #344054;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.students-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.students-table tbody tr {
+    transition: .15s ease;
+}
+
+.students-table tbody tr:hover {
+    background: #fafcff;
+}
+
+
+/* ============================================================
+   STUDENT IDENTITY
+   ============================================================ */
+
+.student-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 190px;
+}
+
+.student-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #33206f
+    );
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 12px;
+}
+
+.student-name {
+    min-width: 0;
+}
+
+.student-name strong {
+    display: block;
+    color: #202b3c;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.student-name span {
+    display: block;
+    margin-top: 2px;
+    color: #8993a5;
+    font-size: 10px;
+}
+
+
+/* ============================================================
+   ADMISSION / ROLL
+   ============================================================ */
+
+.student-code {
+    font-family: "Courier New", monospace;
+    color: #06245f;
+    font-weight: 800;
+    font-size: 11px;
+}
+
+.student-roll {
+    color: #526070;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   RELATIONSHIP
+   ============================================================ */
+
+.relationship-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 9px;
+    border-radius: 8px;
+    background: #f3f5f9;
+    color: #526070;
+    border: 1px solid #e3e8ef;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+/* ============================================================
+   STUDENT STATUS
+   ============================================================ */
+
+.student-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.student-status.active {
+    background: #eaf8ed;
+    color: #188038;
+}
+
+.student-status.inactive {
+    background: #fff1f1;
+    color: #b42318;
+}
+
+.student-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+
+/* ============================================================
+   STUDENT ACTION
+   ============================================================ */
+
+.student-view-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #dfe5ef;
+    background: #fff;
+    color: #06245f;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.student-view-btn:hover {
+    background: #06245f;
+    color: #fff;
+    border-color: #06245f;
+}
+
+
+/* ============================================================
+   EMPTY STUDENTS
+   ============================================================ */
+
+.empty-students {
+    padding: 45px 20px;
+    text-align: center;
+}
+
+.empty-students-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 15px;
+    background: #f1f4f9;
+    color: #8993a5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 21px;
+}
+
+.empty-students h3 {
+    margin: 0;
+    color: #344054;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.empty-students p {
+    margin: 5px 0 0;
+    color: #8993a5;
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.parent-sidebar {
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+
+/* ============================================================
+   IDENTITY CARD
+   ============================================================ */
+
+.identity-card {
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 16px;
+    padding: 25px 22px;
+    box-shadow:
+        0 7px 25px rgba(15, 23, 42, .06);
+    text-align: center;
+}
+
+.identity-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: linear-gradient(
+        135deg,
+        #06245f,
+        #33206f
+    );
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    font-size: 28px;
+    box-shadow:
+        0 10px 25px rgba(6, 36, 95, .2);
+}
+
+.identity-card h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #182338;
+    font-weight: 800;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.identity-phone {
+    margin-top: 7px;
+    color: #06245f;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.identity-email {
+    margin-top: 3px;
+    color: #8993a5;
+    font-size: 11px;
+    word-break: break-word;
+}
+
+.identity-status {
+    margin-top: 14px;
+}
+
+
+/* ============================================================
+   SIDEBAR CARD
+   ============================================================ */
+
+.sidebar-card {
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow:
+        0 7px 25px rgba(15, 23, 42, .06);
+}
+
+.sidebar-card-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 15px;
+}
+
+.sidebar-card-title i {
+    color: #06245f;
+}
+
+.sidebar-card-title h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: #1b2639;
+}
+
+
+/* ============================================================
+   QUICK STATS
+   ============================================================ */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, 1fr);
+    gap: 10px;
+}
+
+.stat-box {
+    border: 1px solid #e8edf3;
+    background: #f8fafc;
+    border-radius: 11px;
+    padding: 13px 11px;
+}
+
+.stat-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.stat-icon.active {
+    background: #eaf8ed;
+    color: #188038;
+}
+
+.stat-icon.inactive {
+    background: #fff1f1;
+    color: #b42318;
+}
+
+.stat-number {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1c2940;
+}
+
+.stat-label {
+    margin-top: 2px;
+    color: #8993a5;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   CONTACT CARD
+   ============================================================ */
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 12px;
+    border-radius: 9px;
+    background: #f8fafc;
+    border: 1px solid #e8edf3;
+}
+
+.contact-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #eef3fb;
+    color: #06245f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.contact-content {
+    min-width: 0;
+}
+
+.contact-label {
+    display: block;
+    color: #8993a5;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.contact-value {
+    display: block;
+    margin-top: 2px;
+    color: #344054;
+    font-size: 11px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+
+/* ============================================================
+   TIPS
+   ============================================================ */
+
+.tips-card {
+    background: linear-gradient(
+        135deg,
+        #f3f6fc,
+        #fafbfe
+    );
+    border: 1px solid #dfe6f1;
+    border-radius: 16px;
+    padding: 19px;
+}
+
+.tips-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #06245f;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.tips-card ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.tips-card li {
+    color: #687386;
+    font-size: 11px;
+    line-height: 1.7;
+    margin-bottom: 5px;
+}
+
+.tips-card li:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ============================================================
+   SIDEBAR ACTIONS
+   ============================================================ */
+
+.sidebar-actions {
+    display: grid;
+    grid-template-columns:
+        1fr 1fr;
+    gap: 9px;
+}
+
+.sidebar-action {
+    min-height: 40px;
+    border-radius: 9px;
+    border: 1px solid #dfe5ef;
+    background: #fff;
+    color: #334155;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 800;
+    transition: .2s ease;
+    cursor: pointer;
+}
+
+.sidebar-action:hover {
+    border-color: #06245f;
+    color: #06245f;
+}
+
+.sidebar-action.primary {
+    background: #06245f;
+    border-color: #06245f;
+    color: #fff;
+}
+
+.sidebar-action.primary:hover {
+    background: #041d4d;
+    color: #fff;
+}
+
+.sidebar-action.danger {
+    color: #b42318;
+    border-color: #f0c9c5;
+}
+
+.sidebar-action.danger:hover {
+    background: #fff4f2;
+    border-color: #d92d20;
+    color: #b42318;
+}
+
+
+/* ============================================================
+   EMPTY VALUE
+   ============================================================ */
+
+.empty-value {
+    color: #98a1b1;
+    font-style: italic;
+    font-weight: 500;
+}
+
+
+/* ============================================================
+   DELETE MODAL
+   ============================================================ */
+
+.parent-delete-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .64);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 99999;
+    backdrop-filter: blur(3px);
+}
+
+.parent-delete-modal.show {
+    display: flex;
+}
+
+.delete-modal-card {
+    width: 100%;
+    max-width: 510px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 26px;
+    box-shadow:
+        0 25px 80px rgba(15, 23, 42, .28);
+    animation: parentDeleteModalIn .18s ease-out;
+}
+
+@keyframes parentDeleteModalIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.delete-modal-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+    background: #fff1f1;
+    color: #b42318;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    font-size: 21px;
+}
+
+.delete-modal-card h3 {
+    margin: 0;
+    color: #182338;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.delete-modal-card p {
+    margin: 9px 0 0;
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.delete-parent-name {
+    margin-top: 15px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e5eaf1;
+}
+
+.delete-parent-name-label {
+    display: block;
+    color: #8993a5;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 5px;
+}
+
+.delete-parent-name-value {
+    color: #182338;
+    font-size: 14px;
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.delete-warning {
+    margin-top: 14px;
+    padding: 13px 14px;
+    border-radius: 10px;
+    background: #fff1f1;
+    border: 1px solid #f3c8c5;
+    color: #8f2118;
+    font-size: 11px;
+    line-height: 1.65;
+}
+
+.delete-confirm-label {
+    display: block;
+    margin-top: 17px;
+    margin-bottom: 7px;
+    color: #344054;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.delete-confirm-input {
+    width: 100%;
+    height: 44px;
+    box-sizing: border-box;
+    padding: 0 13px;
+    border-radius: 10px;
+    border: 1px solid #d8dee9;
+    background: #fff;
+    color: #182338;
+    outline: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.delete-confirm-input::placeholder {
+    color: #a0a8b5;
+    font-weight: 500;
+}
+
+.delete-confirm-input:focus {
+    border-color: #06245f;
+    box-shadow:
+        0 0 0 3px rgba(6, 36, 95, .09);
+}
+
+.delete-confirm-input.valid {
+    border-color: #32b73a;
+    background: #f7fff8;
+}
+
+.delete-confirm-input.invalid {
+    border-color: #d92d20;
+    background: #fffafa;
+}
+
+.delete-confirm-help {
+    min-height: 17px;
+    margin-top: 6px;
+    color: #8993a5;
+    font-size: 10px;
+}
+
+.delete-confirm-help.valid {
+    color: #188038;
+}
+
+.delete-confirm-help.invalid {
+    color: #b42318;
+}
+
+.delete-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.delete-modal-btn {
+    height: 42px;
+    padding: 0 16px;
+    border-radius: 9px;
+    border: 1px solid #dfe5ef;
+    background: #fff;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.delete-modal-btn:hover {
+    border-color: #aeb8c8;
+}
+
+.delete-modal-btn.danger {
+    background: #b42318;
+    border-color: #b42318;
+    color: #fff;
+    min-width: 150px;
+}
+
+.delete-modal-btn.danger:hover:not(:disabled) {
+    background: #912018;
+    border-color: #912018;
+}
+
+.delete-modal-btn.danger:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.delete-modal-btn.loading {
+    cursor: wait;
+    opacity: .9;
+}
+
+.delete-modal-btn .delete-loading {
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+.delete-modal-btn.loading .delete-normal-text {
+    display: none;
+}
+
+.delete-modal-btn.loading .delete-loading {
+    display: inline-flex;
+}
+
+.delete-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: deleteSpin .7s linear infinite;
+}
+
+@keyframes deleteSpin {
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1150px) {
+
+    .parent-layout {
+        grid-template-columns:
+            minmax(0, 1fr);
+    }
+
+    .parent-sidebar {
+        position: static;
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .tips-card,
+    .sidebar-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+
+@media (max-width: 780px) {
+
+    .parent-page-header {
+        flex-direction: column;
+    }
+
+    .parent-header-actions {
+        width: 100%;
+    }
+
+    .parent-action {
+        flex: 1;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-item.full {
+        grid-column: auto;
+    }
+
+    .children-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .parent-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .tips-card,
+    .sidebar-actions {
+        grid-column: auto;
+    }
+
+    .parent-section {
+        padding: 22px 18px;
+    }
+
+    .parent-key-box {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .copy-key-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .view-parent-page {
+        padding-bottom: 20px;
+    }
+
+    .parent-header-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 17px;
+    }
+
+    .parent-header-title h1 {
+        font-size: 21px;
+    }
+
+    .parent-header-actions {
+        flex-direction: column;
+    }
+
+    .parent-action {
+        width: 100%;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .parent-section-header {
+        align-items: flex-start;
+    }
+
+    .identity-card {
+        padding: 22px 17px;
+    }
+
+    .sidebar-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .delete-modal-card {
+        padding: 21px;
+    }
+
+    .delete-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .delete-modal-btn {
+        width: 100%;
+    }
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    body {
+        background: #fff !important;
+    }
+
+    .parent-page-header,
+    .parent-sidebar,
+    .flash-container,
+    .student-action-column,
+    .parent-delete-modal {
+        display: none !important;
+    }
+
+    .view-parent-page {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .parent-layout {
+        display: block;
+    }
+
+    .parent-main-card {
+        border: 0;
+        box-shadow: none;
+    }
+
+    .parent-section {
+        padding: 18px 0;
+        page-break-inside: avoid;
+    }
+
+    .info-value,
+    .children-summary-box,
+    .students-table th,
+    .students-table td {
+        background: #fff !important;
+    }
+
+    .students-table-wrapper {
+        overflow: visible;
+        border: 1px solid #ddd;
+    }
+
+    .students-table {
+        min-width: 0;
+    }
+
+    .students-table th,
+    .students-table td {
+        font-size: 9px;
+        padding: 7px;
+    }
+}
+
+</style>
+
+
+<div class="view-parent-page">
+
+
+    <!-- ========================================================
+         PAGE HEADER
+         ======================================================== -->
+
+    <div class="parent-page-header">
+
+        <div class="parent-header-left">
+
+            <div class="parent-header-icon">
+                <i class="fa-solid fa-user-group"></i>
+            </div>
+
+            <div class="parent-header-title">
+
+                <h1>
+                    View Parent
+                </h1>
+
+                <p>
+                    View parent information and all students
+                    connected to this parent.
+                </p>
+
+                <div class="parent-breadcrumb">
+
+                    <a
+                        href="{{ url_for('main.dashboard') }}"
+                    >
+                        <i class="fa-solid fa-house"></i>
+                        Dashboard
+                    </a>
+
+                    <i class="fa-solid fa-chevron-right"></i>
+
+                    <a
+                        href="{{ url_for('main.all_parents') }}"
+                    >
+                        Parents
+                    </a>
+
+                    <i class="fa-solid fa-chevron-right"></i>
+
+                    <span>
+                        View Parent
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             HEADER ACTIONS
+             ==================================================== -->
+
+        <div class="parent-header-actions">
+
+            <button
+                type="button"
+                class="parent-action"
+                onclick="window.print()"
+            >
+                <i class="fa-solid fa-print"></i>
+                Print
+            </button>
+
+
+            <a
+                href="{{ url_for('main.all_parents') }}"
+                class="parent-action"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                Back
+            </a>
+
+
+            {% if parent.parent_key %}
+
+                <a
+                    href="{{ url_for(
+                        'main.edit_parent',
+                        parent_key=parent.parent_key
+                    ) }}"
+                    class="parent-action primary"
+                >
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit Parent
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         FLASH MESSAGES
+         ======================================================== -->
+
+    {% with messages = get_flashed_messages(
+        with_categories=true
+    ) %}
+
+        {% if messages %}
+
+            <div class="flash-container">
+
+                {% for category, message in messages %}
+
+                    <div
+                        class="flash-message {{ category }}"
+                    >
+
+                        {% if category == 'success' %}
+
+                            <i
+                                class="fa-solid fa-circle-check"
+                            ></i>
+
+                        {% elif category == 'error' %}
+
+                            <i
+                                class="fa-solid fa-circle-exclamation"
+                            ></i>
+
+                        {% elif category == 'warning' %}
+
+                            <i
+                                class="fa-solid fa-triangle-exclamation"
+                            ></i>
+
+                        {% else %}
+
+                            <i
+                                class="fa-solid fa-circle-info"
+                            ></i>
+
+                        {% endif %}
+
+                        <span>
+                            {{ message }}
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- ========================================================
+         MAIN LAYOUT
+         ======================================================== -->
+
+    <div class="parent-layout">
+
+
+        <!-- ====================================================
+             MAIN CARD
+             ==================================================== -->
+
+        <div class="parent-main-card">
+
+
+            <!-- ==================================================
+                 PARENT INFORMATION
+                 ================================================== -->
+
+            <section class="parent-section">
+
+                <div class="parent-section-header">
+
+                    <div class="section-icon">
+                        <i class="fa-solid fa-user-group"></i>
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            Parent Information
+                        </h2>
+
+                        <p>
+                            Contact and identification information
+                            stored in the Student records.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-grid">
+
+
+                    <!-- Parent Name -->
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+
+                            <i class="fa-solid fa-user"></i>
+
+                            Parent Name
+
+                        </div>
+
+
+                        <div class="info-value parent-name-value">
+
+                            <div class="parent-name-avatar">
+
+                                <i class="fa-solid fa-user"></i>
+
+                            </div>
+
+
+                            <div class="parent-name-text">
+
+                                <strong>
+
+                                    {% if parent.parent_name %}
+
+                                        {{ parent.parent_name }}
+
+                                    {% else %}
+
+                                        Unknown Parent
+
+                                    {% endif %}
+
+                                </strong>
+
+
+                                <span>
+
+                                    {{ parent.student_count }}
+
+                                    {{
+                                        'Student'
+                                        if parent.student_count == 1
+                                        else 'Students'
+                                    }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Phone -->
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+
+                            <i class="fa-solid fa-phone"></i>
+
+                            Phone
+
+                        </div>
+
+
+                        <div class="info-value">
+
+                            {% if parent.parent_phone %}
+
+                                {{ parent.parent_phone }}
+
+                            {% else %}
+
+                                <span class="empty-value">
+                                    Phone not provided
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Email -->
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+
+                            <i class="fa-solid fa-envelope"></i>
+
+                            Email
+
+                        </div>
+
+
+                        <div class="info-value">
+
+                            {% if parent.parent_email %}
+
+                                {{ parent.parent_email }}
+
+                            {% else %}
+
+                                <span class="empty-value">
+                                    Email not provided
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Relationship -->
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+
+                            <i class="fa-solid fa-people-arrows"></i>
+
+                            Relationship
+
+                        </div>
+
+
+                        <div class="info-value">
+
+                            {% if parent.relationship_to_student %}
+
+                                {{ parent.relationship_to_student }}
+
+                            {% else %}
+
+                                <span class="empty-value">
+                                    Not specified
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Address -->
+
+                    <div class="info-item full">
+
+                        <div class="info-label">
+
+                            <i class="fa-solid fa-location-dot"></i>
+
+                            Address
+
+                        </div>
+
+
+                        <div class="info-value">
+
+                            {% if parent.parent_address %}
+
+                                {{ parent.parent_address }}
+
+                            {% else %}
+
+                                <span class="empty-value">
+                                    Address not provided
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 PARENT KEY
+                 ================================================== -->
+
+            <section class="parent-section">
+
+                <div class="parent-section-header">
+
+                    <div class="section-icon">
+                        <i class="fa-solid fa-key"></i>
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            Parent Group Key
+                        </h2>
+
+                        <p>
+                            The identifier used to group this parent
+                            across Student records.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="parent-key-box">
+
+                    <div class="parent-key-content">
+
+                        <div class="parent-key-label">
+                            Parent Key
+                        </div>
+
+                        <div
+                            class="parent-key-value"
+                            id="parentKey"
+                        >
+                            {{ parent.parent_key }}
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="copy-key-btn"
+                        id="copyKeyBtn"
+                        onclick="copyParentKey()"
+                    >
+
+                        <i class="fa-regular fa-copy"></i>
+
+                        <span>
+                            Copy Key
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 STUDENT SUMMARY
+                 ================================================== -->
+
+            <section class="parent-section">
+
+                <div class="parent-section-header">
+
+                    <div class="section-icon">
+                        <i class="fa-solid fa-chart-simple"></i>
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            Children Overview
+                        </h2>
+
+                        <p>
+                            Summary of all students connected
+                            to this parent.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {% set active_count = parent.active_student_count|int %}
+                {% set total_count = parent.student_count|int %}
+                {% set inactive_count = (
+                    parent.inactive_student_count
+                    if parent.inactive_student_count is defined
+                    else (total_count - active_count)
+                )|int %}
+
+
+                <div class="children-summary">
+
+
+                    <!-- Total -->
+
+                    <div class="children-summary-box">
+
+                        <div class="children-summary-icon">
+
+                            <i class="fa-solid fa-users"></i>
+
+                        </div>
+
+                        <div class="children-summary-number">
+
+                            {{ total_count }}
+
+                        </div>
+
+                        <div class="children-summary-label">
+                            Total Students
+                        </div>
+
+                    </div>
+
+
+                    <!-- Active -->
+
+                    <div class="children-summary-box active">
+
+                        <div class="children-summary-icon">
+
+                            <i class="fa-solid fa-user-check"></i>
+
+                        </div>
+
+                        <div class="children-summary-number">
+
+                            {{ active_count }}
+
+                        </div>
+
+                        <div class="children-summary-label">
+                            Active Students
+                        </div>
+
+                    </div>
+
+
+                    <!-- Inactive -->
+
+                    <div class="children-summary-box inactive">
+
+                        <div class="children-summary-icon">
+
+                            <i class="fa-solid fa-user-xmark"></i>
+
+                        </div>
+
+                        <div class="children-summary-number">
+
+                            {{ inactive_count }}
+
+                        </div>
+
+                        <div class="children-summary-label">
+                            Inactive Students
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 ALL STUDENTS
+                 ================================================== -->
+
+            <section class="parent-section">
+
+                <div class="parent-section-header">
+
+                    <div class="section-icon">
+
+                        <i class="fa-solid fa-user-graduate"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            Students Connected to Parent
+                        </h2>
+
+                        <p>
+                            All students currently linked to
+                            this parent.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {% if students %}
+
+                    <div class="students-table-wrapper">
+
+                        <table class="students-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        #
+                                    </th>
+
+                                    <th>
+                                        Student
+                                    </th>
+
+                                    <th>
+                                        Admission No.
+                                    </th>
+
+                                    <th>
+                                        Roll No.
+                                    </th>
+
+                                    <th>
+                                        Relationship
+                                    </th>
+
+                                    <th>
+                                        Institution
+                                    </th>
+
+                                    <th>
+                                        Branch
+                                    </th>
+
+                                    <th>
+                                        Status
+                                    </th>
+
+                                    <th class="student-action-column">
+                                        Action
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for student in students %}
+
+                                    <tr>
+
+                                        <!-- Number -->
+
+                                        <td>
+                                            {{ loop.index }}
+                                        </td>
+
+
+                                        <!-- Student -->
+
+                                        <td>
+
+                                            <div class="student-identity">
+
+                                                <div class="student-avatar">
+
+                                                    <i class="
+                                                        fa-solid
+                                                        fa-user-graduate
+                                                    "></i>
+
+                                                </div>
+
+
+                                                <div class="student-name">
+
+                                                    <strong>
+
+                                                        {{
+                                                            student.full_name
+                                                            or
+                                                            'Unnamed Student'
+                                                        }}
+
+                                                    </strong>
+
+
+                                                    <span>
+
+                                                        {% if student.id %}
+
+                                                            Student #{{ student.id }}
+
+                                                        {% else %}
+
+                                                            —
+
+                                                        {% endif %}
+
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        </td>
+
+
+                                        <!-- Admission -->
+
+                                        <td>
+
+                                            {% if student.admission_no %}
+
+                                                <span class="student-code">
+                                                    {{ student.admission_no }}
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="empty-value">
+                                                    —
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- Roll -->
+
+                                        <td>
+
+                                            {% if student.roll_no %}
+
+                                                <span class="student-roll">
+                                                    {{ student.roll_no }}
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="empty-value">
+                                                    —
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- Relationship -->
+
+                                        <td>
+
+                                            {% if student.relationship_to_student %}
+
+                                                <span class="relationship-badge">
+
+                                                    <i class="
+                                                        fa-solid
+                                                        fa-people-arrows
+                                                    "></i>
+
+                                                    {{
+                                                        student.relationship_to_student
+                                                    }}
+
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="empty-value">
+                                                    Not specified
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- Institution -->
+
+                                        <td>
+
+                                            {% if student.institution %}
+
+                                                {{ student.institution.name }}
+
+                                            {% elif student.institution_id %}
+
+                                                #{{ student.institution_id }}
+
+                                            {% else %}
+
+                                                <span class="empty-value">
+                                                    —
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- Branch -->
+
+                                        <td>
+
+                                            {% if student.branch %}
+
+                                                {{ student.branch.name }}
+
+                                            {% elif student.branch_id %}
+
+                                                #{{ student.branch_id }}
+
+                                            {% else %}
+
+                                                <span class="empty-value">
+                                                    —
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- Status -->
+
+                                        <td>
+
+                                            {% if
+                                                student.status
+                                                and
+                                                student.status|string|lower
+                                                == 'active'
+                                            %}
+
+                                                <span class="
+                                                    student-status
+                                                    active
+                                                ">
+
+                                                    <span class="
+                                                        student-status-dot
+                                                    "></span>
+
+                                                    Active
+
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="
+                                                    student-status
+                                                    inactive
+                                                ">
+
+                                                    <span class="
+                                                        student-status-dot
+                                                    "></span>
+
+                                                    {{
+                                                        student.status
+                                                        or
+                                                        'Inactive'
+                                                    }}
+
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- Action -->
+
+                                        <td class="student-action-column">
+
+                                            {% if student.id %}
+
+                                                <a
+                                                    href="{{ url_for(
+                                                        'main.view_student',
+                                                        student_id=student.id
+                                                    ) }}"
+                                                    class="student-view-btn"
+                                                    title="View Student"
+                                                >
+
+                                                    <i class="
+                                                        fa-solid
+                                                        fa-eye
+                                                    "></i>
+
+                                                </a>
+
+                                            {% endif %}
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="empty-students">
+
+                        <div class="empty-students-icon">
+
+                            <i class="
+                                fa-solid
+                                fa-user-graduate
+                            "></i>
+
+                        </div>
+
+                        <h3>
+                            No Students Found
+                        </h3>
+
+                        <p>
+                            There are currently no students
+                            connected to this parent.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </section>
+
+        </div>
+
+
+        <!-- ====================================================
+             SIDEBAR
+             ==================================================== -->
+
+        <aside class="parent-sidebar">
+
+
+            <!-- ==================================================
+                 IDENTITY CARD
+                 ================================================== -->
+
+            <div class="identity-card">
+
+                <div class="identity-icon">
+
+                    <i class="fa-solid fa-user-group"></i>
+
+                </div>
+
+
+                <h3>
+
+                    {% if parent.parent_name %}
+
+                        {{ parent.parent_name }}
+
+                    {% else %}
+
+                        Unknown Parent
+
+                    {% endif %}
+
+                </h3>
+
+
+                {% if parent.parent_phone %}
+
+                    <div class="identity-phone">
+
+                        <i class="fa-solid fa-phone"></i>
+
+                        {{ parent.parent_phone }}
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if parent.parent_email %}
+
+                    <div class="identity-email">
+
+                        <i class="fa-solid fa-envelope"></i>
+
+                        {{ parent.parent_email }}
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="identity-status">
+
+                    {% if active_count > 0 %}
+
+                        <span class="status-badge active">
+
+                            <span class="status-dot"></span>
+
+                            Active Parent
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-badge inactive">
+
+                            <span class="status-dot"></span>
+
+                            No Active Students
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 QUICK STATS
+                 ================================================== -->
+
+            <div class="sidebar-card">
+
+                <div class="sidebar-card-title">
+
+                    <i class="fa-solid fa-chart-simple"></i>
+
+                    <h3>
+                        Quick Overview
+                    </h3>
+
+                </div>
+
+
+                <div class="stats-grid">
+
+
+                    <!-- Total -->
+
+                    <div class="stat-box">
+
+                        <div class="stat-icon">
+
+                            <i class="fa-solid fa-users"></i>
+
+                        </div>
+
+                        <div class="stat-number">
+                            {{ total_count }}
+                        </div>
+
+                        <div class="stat-label">
+                            Students
+                        </div>
+
+                    </div>
+
+
+                    <!-- Active -->
+
+                    <div class="stat-box">
+
+                        <div class="stat-icon active">
+
+                            <i class="fa-solid fa-user-check"></i>
+
+                        </div>
+
+                        <div class="stat-number">
+                            {{ active_count }}
+                        </div>
+
+                        <div class="stat-label">
+                            Active
+                        </div>
+
+                    </div>
+
+
+                    <!-- Inactive -->
+
+                    <div class="stat-box">
+
+                        <div class="stat-icon inactive">
+
+                            <i class="fa-solid fa-user-xmark"></i>
+
+                        </div>
+
+                        <div class="stat-number">
+                            {{ inactive_count }}
+                        </div>
+
+                        <div class="stat-label">
+                            Inactive
+                        </div>
+
+                    </div>
+
+
+                    <!-- Relationship -->
+
+                    <div class="stat-box">
+
+                        <div class="stat-icon">
+
+                            <i class="fa-solid fa-people-arrows"></i>
+
+                        </div>
+
+                        <div class="stat-number">
+
+                            {% if parent.relationship_to_student %}
+
+                                <span
+                                    style="
+                                        font-size:12px;
+                                        line-height:1.3;
+                                    "
+                                >
+                                    {{ parent.relationship_to_student }}
+                                </span>
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="stat-label">
+                            Relationship
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 CONTACT INFORMATION
+                 ================================================== -->
+
+            <div class="sidebar-card">
+
+                <div class="sidebar-card-title">
+
+                    <i class="fa-solid fa-address-card"></i>
+
+                    <h3>
+                        Contact Information
+                    </h3>
+
+                </div>
+
+
+                <div class="contact-list">
+
+
+                    <!-- Phone -->
+
+                    <div class="contact-item">
+
+                        <div class="contact-icon">
+
+                            <i class="fa-solid fa-phone"></i>
+
+                        </div>
+
+                        <div class="contact-content">
+
+                            <span class="contact-label">
+                                Phone
+                            </span>
+
+                            <span class="contact-value">
+
+                                {% if parent.parent_phone %}
+
+                                    {{ parent.parent_phone }}
+
+                                {% else %}
+
+                                    Not provided
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Email -->
+
+                    <div class="contact-item">
+
+                        <div class="contact-icon">
+
+                            <i class="fa-solid fa-envelope"></i>
+
+                        </div>
+
+                        <div class="contact-content">
+
+                            <span class="contact-label">
+                                Email
+                            </span>
+
+                            <span class="contact-value">
+
+                                {% if parent.parent_email %}
+
+                                    {{ parent.parent_email }}
+
+                                {% else %}
+
+                                    Not provided
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Address -->
+
+                    <div class="contact-item">
+
+                        <div class="contact-icon">
+
+                            <i class="fa-solid fa-location-dot"></i>
+
+                        </div>
+
+                        <div class="contact-content">
+
+                            <span class="contact-label">
+                                Address
+                            </span>
+
+                            <span class="contact-value">
+
+                                {% if parent.parent_address %}
+
+                                    {{ parent.parent_address }}
+
+                                {% else %}
+
+                                    Not provided
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 INFORMATION / TIPS
+                 ================================================== -->
+
+            <div class="tips-card">
+
+                <div class="tips-title">
+
+                    <i class="fa-solid fa-lightbulb"></i>
+
+                    Parent Information
+
+                </div>
+
+
+                <ul>
+
+                    <li>
+                        This parent is grouped from the
+                        Student table.
+                    </li>
+
+                    <li>
+                        The students shown above are all
+                        students connected to this parent
+                        within your permitted scope.
+                    </li>
+
+                    <li>
+                        Active Parent status is based on
+                        whether at least one connected student
+                        is active.
+                    </li>
+
+                    <li>
+                        Parent information is stored on the
+                        related Student records.
+                    </li>
+
+                    <li>
+                        Deleting this parent will permanently
+                        delete all students connected to this
+                        parent group.
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- ==================================================
+                 SIDEBAR ACTIONS
+                 ================================================== -->
+
+            <div class="sidebar-actions">
+
+
+                <button
+                    type="button"
+                    class="sidebar-action"
+                    onclick="window.print()"
+                >
+
+                    <i class="fa-solid fa-print"></i>
+
+                    Print
+
+                </button>
+
+
+                <a
+                    href="{{ url_for('main.all_parents') }}"
+                    class="sidebar-action"
+                >
+
+                    <i class="fa-solid fa-list"></i>
+
+                    All Parents
+
+                </a>
+
+
+                {% if parent.parent_key %}
+
+                    <a
+                        href="{{ url_for(
+                            'main.edit_parent',
+                            parent_key=parent.parent_key
+                        ) }}"
+                        class="
+                            sidebar-action
+                            primary
+                        "
+                    >
+
+                        <i class="fa-solid fa-pen"></i>
+
+                        Edit Parent
+
+                    </a>
+
+
+                    <button
+                        type="button"
+                        class="
+                            sidebar-action
+                            danger
+                        "
+                        onclick="openDeleteParentModal()"
+                    >
+
+                        <i class="fa-solid fa-trash"></i>
+
+                        Delete Parent
+
+                    </button>
+
+                {% endif %}
+
+            </div>
+
+
+        </aside>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     DELETE PARENT MODAL
+     ============================================================ -->
+
+<div
+    class="parent-delete-modal"
+    id="parentDeleteModal"
+    aria-hidden="true"
+>
+
+    <div
+        class="delete-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteParentTitle"
+    >
+
+        <div class="delete-modal-icon">
+
+            <i class="
+                fa-solid
+                fa-triangle-exclamation
+            "></i>
+
+        </div>
+
+
+        <h3 id="deleteParentTitle">
+            Delete Parent & Linked Students?
+        </h3>
+
+
+        <p>
+
+            You are about to permanently delete this parent
+            group and all student records connected to this
+            parent.
+
+        </p>
+
+
+        <!-- ====================================================
+             PARENT NAME TO CONFIRM
+             ==================================================== -->
+
+        <div class="delete-parent-name">
+
+            <span class="delete-parent-name-label">
+                Parent to be deleted
+            </span>
+
+            <span
+                class="delete-parent-name-value"
+                id="deleteParentDisplayName"
+            >
+                {{
+                    parent.parent_name
+                    or
+                    'Unknown Parent'
+                }}
+            </span>
+
+        </div>
+
+
+        <!-- ====================================================
+             DANGER WARNING
+             ==================================================== -->
+
+        <div class="delete-warning">
+
+            <strong>
+                Permanent action:
+            </strong>
+
+            This will delete the parent-linked
+            <strong>
+                {{ parent.student_count }}
+            </strong>
+            student record(s), including their Student records
+            themselves.
+
+            This action cannot be undone.
+
+        </div>
+
+
+        <!-- ====================================================
+             CONFIRMATION INPUT
+             ==================================================== -->
+
+        <label
+            for="deleteParentConfirmInput"
+            class="delete-confirm-label"
+        >
+            Type the parent name below to confirm deletion
+        </label>
+
+
+        <input
+            type="text"
+            id="deleteParentConfirmInput"
+            class="delete-confirm-input"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="{{ parent.parent_name or 'Parent name' }}"
+            data-confirm-name="{{ parent.parent_name or '' }}"
+            oninput="validateDeleteParentConfirmation()"
+        >
+
+
+        <div
+            class="delete-confirm-help"
+            id="deleteParentConfirmHelp"
+        >
+            Enter the exact parent name shown above.
+        </div>
+
+
+        <!-- ====================================================
+             DELETE FORM
+             ==================================================== -->
+
+        <form
+            method="POST"
+            id="deleteParentForm"
+            action="{{ url_for(
+                'main.delete_parent',
+                parent_key=parent.parent_key
+            ) }}"
+            onsubmit="return submitParentDeletion(event)"
+        >
+
+            <div class="delete-modal-actions">
+
+
+                <!-- CANCEL -->
+
+                <button
+                    type="button"
+                    class="delete-modal-btn"
+                    id="deleteParentCancelBtn"
+                    onclick="closeDeleteParentModal()"
+                >
+                    Cancel
+                </button>
+
+
+                <!-- DELETE -->
+
+                <button
+                    type="submit"
+                    class="delete-modal-btn danger"
+                    id="deleteParentSubmitBtn"
+                    disabled
+                >
+
+                    <span class="delete-normal-text">
+
+                        <i class="fa-solid fa-trash"></i>
+
+                        Delete Parent & Students
+
+                    </span>
+
+
+                    <span class="delete-loading">
+
+                        <span class="delete-spinner"></span>
+
+                        Deleting...
+
+                    </span>
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        "use strict";
+
+
+        /* =====================================================
+           ELEMENTS
+        ====================================================== */
+
+        const modal =
+            document.getElementById(
+                "parentDeleteModal"
+            );
+
+        const input =
+            document.getElementById(
+                "deleteParentConfirmInput"
+            );
+
+        const help =
+            document.getElementById(
+                "deleteParentConfirmHelp"
+            );
+
+        const submitButton =
+            document.getElementById(
+                "deleteParentSubmitBtn"
+            );
+
+        const form =
+            document.getElementById(
+                "deleteParentForm"
+            );
+
+
+        /* =====================================================
+           INITIAL VALIDATION
+        ====================================================== */
+
+        if (input) {
+            validateDeleteParentConfirmation();
+        }
+
+
+        /* =====================================================
+           ESCAPE KEY
+        ====================================================== */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape" &&
+                    modal &&
+                    modal.classList.contains("show")
+                ) {
+
+                    closeDeleteParentModal();
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           BACKGROUND CLICK
+        ====================================================== */
+
+        if (modal) {
+
+            modal.addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target === modal
+                    ) {
+
+                        closeDeleteParentModal();
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           FORM SUBMIT GUARD
+        ====================================================== */
+
+        if (form) {
+
+            form.addEventListener(
+                "submit",
+                function (event) {
+
+                    submitParentDeletion(event);
+
+                }
+            );
+
+        }
+
+    }
+);
+
+
+/* ============================================================
+   NORMALIZE CONFIRMATION VALUE
+   ============================================================ */
+
+function normalizeParentConfirmationValue(
+    value
+) {
+
+    return String(value || "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+
+}
+
+
+/* ============================================================
+   VALIDATE PARENT NAME
+   ============================================================ */
+
+function validateDeleteParentConfirmation() {
+
+    const input =
+        document.getElementById(
+            "deleteParentConfirmInput"
+        );
+
+    const help =
+        document.getElementById(
+            "deleteParentConfirmHelp"
+        );
+
+    const submitButton =
+        document.getElementById(
+            "deleteParentSubmitBtn"
+        );
+
+
+    if (
+        !input ||
+        !submitButton
+    ) {
+        return false;
+    }
+
+
+    const expectedName =
+        normalizeParentConfirmationValue(
+            input.dataset.confirmName
+        );
+
+
+    const enteredName =
+        normalizeParentConfirmationValue(
+            input.value
+        );
+
+
+    const isValid =
+        expectedName.length > 0 &&
+        enteredName === expectedName;
+
+
+    /* ========================================================
+       VALID
+       ======================================================== */
+
+    if (isValid) {
+
+        input.classList.remove(
+            "invalid"
+        );
+
+        input.classList.add(
+            "valid"
+        );
+
+
+        if (help) {
+
+            help.textContent =
+                "Parent name confirmed. You can now delete.";
+
+            help.classList.remove(
+                "invalid"
+            );
+
+            help.classList.add(
+                "valid"
+            );
+
+        }
+
+
+        submitButton.disabled = false;
+
+        return true;
+    }
+
+
+    /* ========================================================
+       EMPTY
+       ======================================================== */
+
+    if (!enteredName) {
+
+        input.classList.remove(
+            "valid",
+            "invalid"
+        );
+
+
+        if (help) {
+
+            help.textContent =
+                "Enter the exact parent name shown above.";
+
+            help.classList.remove(
+                "valid",
+                "invalid"
+            );
+
+        }
+
+
+        submitButton.disabled = true;
+
+        return false;
+    }
+
+
+    /* ========================================================
+       INVALID
+       ======================================================== */
+
+    input.classList.remove(
+        "valid"
+    );
+
+    input.classList.add(
+        "invalid"
+    );
+
+
+    if (help) {
+
+        help.textContent =
+            "The name does not match. Please type the parent name exactly.";
+
+        help.classList.remove(
+            "valid"
+        );
+
+        help.classList.add(
+            "invalid"
+        );
+
+    }
+
+
+    submitButton.disabled = true;
+
+    return false;
+}
+
+
+/* ============================================================
+   OPEN DELETE MODAL
+   ============================================================ */
+
+function openDeleteParentModal() {
+
+    const modal =
+        document.getElementById(
+            "parentDeleteModal"
+        );
+
+    const input =
+        document.getElementById(
+            "deleteParentConfirmInput"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.add(
+        "show"
+    );
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    document.body.style.overflow =
+        "hidden";
+
+
+    if (input) {
+
+        input.value = "";
+
+        input.classList.remove(
+            "valid",
+            "invalid"
+        );
+
+
+        const help =
+            document.getElementById(
+                "deleteParentConfirmHelp"
+            );
+
+
+        if (help) {
+
+            help.textContent =
+                "Enter the exact parent name shown above.";
+
+            help.classList.remove(
+                "valid",
+                "invalid"
+            );
+
+        }
+
+
+        const submitButton =
+            document.getElementById(
+                "deleteParentSubmitBtn"
+            );
+
+
+        if (submitButton) {
+
+            submitButton.disabled =
+                true;
+
+            submitButton.classList.remove(
+                "loading"
+            );
+
+        }
+
+
+        setTimeout(
+            function () {
+
+                input.focus();
+
+            },
+            120
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   CLOSE DELETE MODAL
+   ============================================================ */
+
+function closeDeleteParentModal() {
+
+    const modal =
+        document.getElementById(
+            "parentDeleteModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    /*
+     * Do not allow closing while deletion
+     * is already being submitted.
+     */
+
+    const submitButton =
+        document.getElementById(
+            "deleteParentSubmitBtn"
+        );
+
+
+    if (
+        submitButton &&
+        submitButton.classList.contains(
+            "loading"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    modal.classList.remove(
+        "show"
+    );
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    document.body.style.overflow =
+        "";
+
+
+    const input =
+        document.getElementById(
+            "deleteParentConfirmInput"
+        );
+
+
+    if (input) {
+
+        input.value = "";
+
+        input.classList.remove(
+            "valid",
+            "invalid"
+        );
+
+    }
+
+
+    const help =
+        document.getElementById(
+            "deleteParentConfirmHelp"
+        );
+
+
+    if (help) {
+
+        help.textContent =
+            "Enter the exact parent name shown above.";
+
+        help.classList.remove(
+            "valid",
+            "invalid"
+        );
+
+    }
+
+
+    if (submitButton) {
+
+        submitButton.disabled =
+            true;
+
+    }
+
+}
+
+
+/* ============================================================
+   SUBMIT PARENT DELETION
+   ============================================================ */
+
+function submitParentDeletion(event) {
+
+    /*
+     * Prevent the browser from submitting
+     * before our validation.
+     */
+
+    if (event) {
+
+        event.preventDefault();
+
+    }
+
+
+    const input =
+        document.getElementById(
+            "deleteParentConfirmInput"
+        );
+
+    const submitButton =
+        document.getElementById(
+            "deleteParentSubmitBtn"
+        );
+
+    const form =
+        document.getElementById(
+            "deleteParentForm"
+        );
+
+
+    if (
+        !input ||
+        !submitButton ||
+        !form
+    ) {
+
+        return false;
+
+    }
+
+
+    /* ========================================================
+       VALIDATE AGAIN
+       ======================================================== */
+
+    const isValid =
+        validateDeleteParentConfirmation();
+
+
+    if (!isValid) {
+
+        input.focus();
+
+        return false;
+
+    }
+
+
+    /* ========================================================
+       PREVENT DOUBLE SUBMISSION
+       ======================================================== */
+
+    if (
+        submitButton.classList.contains(
+            "loading"
+        )
+    ) {
+
+        return false;
+
+    }
+
+
+    /* ========================================================
+       LOADING STATE
+       ======================================================== */
+
+    submitButton.classList.add(
+        "loading"
+    );
+
+    submitButton.disabled =
+        true;
+
+
+    const cancelButton =
+        document.getElementById(
+            "deleteParentCancelBtn"
+        );
+
+
+    if (cancelButton) {
+
+        cancelButton.disabled =
+            true;
+
+    }
+
+
+    input.disabled =
+        true;
+
+
+    /*
+     * Keep modal visible while the server
+     * processes the deletion.
+     */
+
+    const modal =
+        document.getElementById(
+            "parentDeleteModal"
+        );
+
+
+    if (modal) {
+
+        modal.classList.add(
+            "show"
+        );
+
+    }
+
+
+    /*
+     * Submit natively after validation and
+     * loading state have been applied.
+     */
+
+    HTMLFormElement.prototype.submit.call(
+        form
+    );
+
+
+    return false;
+}
+
+
+/* ============================================================
+   COPY PARENT KEY
+   ============================================================ */
+
+function copyParentKey() {
+
+    const keyElement =
+        document.getElementById(
+            "parentKey"
+        );
+
+    const button =
+        document.getElementById(
+            "copyKeyBtn"
+        );
+
+
+    if (
+        !keyElement ||
+        !button
+    ) {
+        return;
+    }
+
+
+    const key =
+        keyElement.textContent.trim();
+
+
+    if (!key) {
+        return;
+    }
+
+
+    function showCopiedState() {
+
+        const originalHTML =
+            button.innerHTML;
+
+
+        button.classList.add(
+            "copied"
+        );
+
+
+        button.innerHTML =
+            `
+                <i class="fa-solid fa-check"></i>
+                <span>Copied</span>
+            `;
+
+
+        setTimeout(
+            function () {
+
+                button.classList.remove(
+                    "copied"
+                );
+
+                button.innerHTML =
+                    originalHTML;
+
+            },
+            1800
+        );
+
+    }
+
+
+    if (
+        navigator.clipboard &&
+        window.isSecureContext
+    ) {
+
+        navigator.clipboard
+            .writeText(key)
+            .then(
+                function () {
+
+                    showCopiedState();
+
+                }
+            )
+            .catch(
+                function () {
+
+                    fallbackCopyParentKey(
+                        key,
+                        showCopiedState
+                    );
+
+                }
+            );
+
+        return;
+    }
+
+
+    fallbackCopyParentKey(
+        key,
+        showCopiedState
+    );
+
+}
+
+
+/* ============================================================
+   FALLBACK COPY
+   ============================================================ */
+
+function fallbackCopyParentKey(
+    key,
+    successCallback
+) {
+
+    const textarea =
+        document.createElement(
+            "textarea"
+        );
+
+
+    textarea.value =
+        key;
+
+    textarea.style.position =
+        "fixed";
+
+    textarea.style.left =
+        "-9999px";
+
+    textarea.style.top =
+        "0";
+
+
+    document.body.appendChild(
+        textarea
+    );
+
+
+    textarea.focus();
+
+    textarea.select();
+
+
+    try {
+
+        const copied =
+            document.execCommand(
+                "copy"
+            );
+
+
+        if (
+            copied &&
+            typeof successCallback === "function"
+        ) {
+
+            successCallback();
+
+        }
+
+    }
+    catch (error) {
+
+        console.error(
+            "Unable to copy parent key:",
+            error
+        );
+
+    }
+
+
+    document.body.removeChild(
+        textarea
+    );
+
+}
+
+</script>
+
+
+{% endblock %}

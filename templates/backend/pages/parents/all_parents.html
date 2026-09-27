@@ -1,0 +1,4424 @@
+{% extends "backend/home/base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   ALL PARENTS PAGE
+   ============================================================ */
+
+.parents-page {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 4px 0 30px;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.parents-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.parents-header-left {
+    min-width: 0;
+}
+
+.parents-title {
+    margin: 0;
+    color: #06245f;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.4px;
+}
+
+.parents-subtitle {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.parents-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.parent-btn {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        background .18s ease,
+        border-color .18s ease;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.parent-btn:hover {
+    transform: translateY(-1px);
+}
+
+.parent-btn-primary {
+    background: #06245f;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(6, 36, 95, .16);
+}
+
+.parent-btn-primary:hover {
+    background: #041b49;
+    color: #fff;
+}
+
+.parent-btn-light {
+    background: #fff;
+    color: #334155;
+    border-color: #dbe3ef;
+}
+
+.parent-btn-light:hover {
+    border-color: #b8c7dc;
+    background: #f8fafc;
+}
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+
+.parent-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.parent-stat-card {
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+    padding: 17px;
+    box-shadow: 0 3px 14px rgba(15, 23, 42, .045);
+}
+
+.parent-stat-card::after {
+    content: "";
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    right: -28px;
+    bottom: -28px;
+    border-radius: 50%;
+    background: rgba(6, 36, 95, .045);
+}
+
+.parent-stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.parent-stat-icon {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef3fb;
+    color: #06245f;
+    font-size: 16px;
+}
+
+.parent-stat-card:nth-child(2) .parent-stat-icon {
+    background: #edf9ef;
+    color: #269530;
+}
+
+.parent-stat-card:nth-child(3) .parent-stat-icon {
+    background: #f1edff;
+    color: #5b3bb5;
+}
+
+.parent-stat-card:nth-child(4) .parent-stat-icon {
+    background: #fff1f2;
+    color: #d33b4b;
+}
+
+.parent-stat-label {
+    margin-top: 14px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.parent-stat-value {
+    margin-top: 3px;
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+/* ============================================================
+   FILTER CARD
+   ============================================================ */
+
+.parent-filter-card {
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 14px rgba(15, 23, 42, .045);
+}
+
+.parent-filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.parent-filter-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #06245f;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.parent-filter-title i {
+    color: #32b73a;
+}
+
+.parent-filter-grid {
+    display: grid;
+    grid-template-columns:
+        minmax(260px, 1.8fr)
+        minmax(170px, 1fr)
+        minmax(170px, 1fr);
+    gap: 12px;
+    align-items: end;
+}
+
+.parent-filter-field {
+    min-width: 0;
+}
+
+.parent-filter-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.parent-input,
+.parent-select {
+    width: 100%;
+    height: 42px;
+    box-sizing: border-box;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
+    padding: 0 12px;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.parent-input:focus,
+.parent-select:focus {
+    border-color: #06245f;
+    box-shadow: 0 0 0 3px rgba(6, 36, 95, .08);
+}
+
+.parent-search-wrap {
+    position: relative;
+}
+
+.parent-search-wrap i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.parent-search-wrap .parent-input {
+    padding-left: 37px;
+}
+
+.parent-filter-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 13px;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   ACTIVE FILTERS
+   ============================================================ */
+
+.parent-active-filters {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-top: 13px;
+}
+
+.parent-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: #eef3fb;
+    color: #334155;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.parent-filter-chip i {
+    color: #06245f;
+}
+
+/* ============================================================
+   TABLE CARD
+   ============================================================ */
+
+.parent-table-card {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 14px rgba(15, 23, 42, .045);
+}
+
+/* ============================================================
+   TABLE HEADER
+   ============================================================ */
+
+.parent-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 17px 18px;
+    border-bottom: 1px solid #e8edf4;
+}
+
+.parent-table-title-wrap {
+    min-width: 0;
+}
+
+.parent-table-title {
+    margin: 0;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.parent-table-count {
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.parent-per-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.parent-per-page select {
+    width: 72px;
+    height: 36px;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #fff;
+    padding: 0 8px;
+    color: #334155;
+    outline: none;
+}
+
+/* ============================================================
+   TABLE SCROLL
+   ============================================================ */
+
+.parent-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    /*
+       Smooth horizontal scrolling on mobile/tablet
+    */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================================
+   MAIN TABLE
+   ============================================================ */
+
+.parent-table {
+    width: 100%;
+
+    /*
+       Reduced from 1180px.
+       Columns now have controlled widths below.
+    */
+    min-width: 1080px;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    table-layout: fixed;
+}
+
+/* ============================================================
+   COLUMN WIDTHS
+   ============================================================ */
+
+/*
+   #1
+*/
+.parent-table th:nth-child(1),
+.parent-table td:nth-child(1) {
+    width: 46px;
+}
+
+/*
+   #2
+   PARENT NAME
+   Reduced width.
+*/
+.parent-table th:nth-child(2),
+.parent-table td:nth-child(2) {
+    width: 185px;
+}
+
+/*
+   #3
+   CONTACT
+*/
+.parent-table th:nth-child(3),
+.parent-table td:nth-child(3) {
+    width: 185px;
+}
+
+/*
+   #4
+   ADDRESS
+*/
+.parent-table th:nth-child(4),
+.parent-table td:nth-child(4) {
+    width: 145px;
+}
+
+/*
+   #5
+   INSTITUTION
+*/
+.parent-table th:nth-child(5),
+.parent-table td:nth-child(5) {
+    width: 145px;
+}
+
+/*
+   #6
+   BRANCH
+*/
+.parent-table th:nth-child(6),
+.parent-table td:nth-child(6) {
+    width: 125px;
+}
+
+/*
+   #7
+   STUDENTS
+*/
+.parent-table th:nth-child(7),
+.parent-table td:nth-child(7) {
+    width: 95px;
+}
+
+/*
+   #8
+   STATUS
+*/
+.parent-table th:nth-child(8),
+.parent-table td:nth-child(8) {
+    width: 100px;
+}
+
+/*
+   #9
+   ACTIONS
+*/
+.parent-table th:nth-child(9),
+.parent-table td:nth-child(9) {
+    width: 115px;
+}
+
+/* ============================================================
+   TABLE HEAD
+   ============================================================ */
+
+.parent-table thead th {
+    height: 42px;
+
+    box-sizing: border-box;
+
+    background: #f8fafc;
+
+    border-bottom: 1px solid #e5eaf1;
+
+    padding: 10px 11px;
+
+    color: #64748b;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    text-transform: uppercase;
+    letter-spacing: .35px;
+
+    text-align: left;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    vertical-align: middle;
+}
+
+/* ============================================================
+   TABLE BODY
+   ============================================================ */
+
+.parent-table tbody td {
+    box-sizing: border-box;
+
+    padding: 10px 11px;
+
+    border-bottom: 1px solid #edf1f6;
+
+    color: #334155;
+
+    font-size: 12px;
+
+    vertical-align: middle;
+
+    overflow: hidden;
+}
+
+.parent-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.parent-table tbody tr {
+    transition:
+        background .15s ease;
+}
+
+.parent-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+/* ============================================================
+   NUMBER COLUMN
+   ============================================================ */
+
+.parent-id {
+    display: block;
+
+    color: #94a3b8;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    text-align: center;
+}
+
+/* ============================================================
+   PARENT NAME COLUMN
+   ============================================================ */
+
+.parent-name-wrap {
+    width: 100%;
+
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+}
+
+/* ============================================================
+   PARENT ICON
+   ============================================================ */
+
+.parent-icon {
+    flex: 0 0 auto;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #eef3fb;
+
+    color: #06245f;
+
+    font-size: 14px;
+}
+
+/* ============================================================
+   PARENT NAME CONTENT
+   ============================================================ */
+
+.parent-name-content {
+    min-width: 0;
+
+    flex: 1 1 auto;
+}
+
+/* ============================================================
+   PARENT NAME
+   ============================================================ */
+
+.parent-name {
+    display: block;
+
+    width: 100%;
+    max-width: 100%;
+
+    color: #0f172a;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    line-height: 1.35;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.parent-name:hover {
+    color: #06245f;
+}
+
+/* ============================================================
+   RELATIONSHIP
+   ============================================================ */
+
+.parent-relation {
+    display: block;
+
+    width: 100%;
+
+    margin-top: 2px;
+
+    color: #94a3b8;
+
+    font-size: 10px;
+
+    line-height: 1.35;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+/* ============================================================
+   CONTACT COLUMN
+   ============================================================ */
+
+.parent-contact {
+    width: 100%;
+
+    min-width: 0;
+}
+
+/* ============================================================
+   PHONE
+   ============================================================ */
+
+.parent-phone {
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    min-width: 0;
+
+    color: #334155;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.parent-phone i {
+    flex: 0 0 auto;
+
+    color: #32b73a;
+
+    font-size: 10px;
+}
+
+/* ============================================================
+   EMAIL
+   ============================================================ */
+
+.parent-email {
+    display: block;
+
+    width: 100%;
+
+    margin-top: 3px;
+
+    color: #64748b;
+
+    font-size: 10px;
+
+    line-height: 1.35;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+/* ============================================================
+   ADDRESS
+   ============================================================ */
+
+.parent-address {
+    width: 100%;
+
+    max-width: 100%;
+
+    color: #64748b;
+
+    font-size: 10px;
+
+    line-height: 1.45;
+
+    display: -webkit-box;
+
+    -webkit-line-clamp: 2;
+
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+
+    word-break: break-word;
+}
+
+/* ============================================================
+   INSTITUTION
+   ============================================================ */
+
+.parent-org {
+    width: 100%;
+
+    min-width: 0;
+}
+
+.parent-org-name {
+    width: 100%;
+
+    color: #334155;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    line-height: 1.4;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.parent-org-id {
+    margin-top: 2px;
+
+    color: #94a3b8;
+
+    font-size: 9px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+/* ============================================================
+   BRANCH
+   ============================================================ */
+
+.parent-branch {
+    width: 100%;
+
+    color: #475569;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    line-height: 1.4;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.parent-branch-wide {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    max-width: 100%;
+
+    color: #5b3bb5;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.parent-branch-wide i {
+    flex: 0 0 auto;
+}
+
+/* ============================================================
+   STUDENTS COLUMN
+   ============================================================ */
+
+.parent-students {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    min-width: 0;
+}
+
+/* ============================================================
+   STUDENT ICON
+   ============================================================ */
+
+.parent-students-icon {
+    width: 29px;
+    height: 29px;
+
+    flex: 0 0 auto;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background: #eef3fb;
+
+    color: #06245f;
+
+    font-size: 11px;
+}
+
+/* ============================================================
+   STUDENT COUNTS
+   ============================================================ */
+
+.parent-students-count {
+    color: #0f172a;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    line-height: 1.2;
+}
+
+.parent-active-students {
+    display: block;
+
+    margin-top: 2px;
+
+    color: #32b73a;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.parent-status {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 4px 7px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+.parent-status::before {
+    content: "";
+
+    width: 5px;
+    height: 5px;
+
+    flex: 0 0 auto;
+
+    border-radius: 50%;
+}
+
+.parent-status-active {
+    background: #edf9ef;
+
+    color: #21882a;
+}
+
+.parent-status-active::before {
+    background: #32b73a;
+}
+
+.parent-status-inactive {
+    background: #f1f5f9;
+
+    color: #64748b;
+}
+
+.parent-status-inactive::before {
+    background: #94a3b8;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.parent-actions {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-start;
+
+    gap: 5px;
+
+    white-space: nowrap;
+}
+
+.parent-action {
+    width: 31px;
+    height: 31px;
+
+    flex: 0 0 auto;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 7px;
+
+    background: #fff;
+
+    color: #64748b;
+
+    text-decoration: none;
+
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        transform .18s ease;
+
+    cursor: pointer;
+}
+
+.parent-action:hover {
+    transform: translateY(-1px);
+}
+
+.parent-action-view:hover {
+    color: #06245f;
+
+    border-color: #b9c9e3;
+
+    background: #f3f7fd;
+}
+
+.parent-action-edit:hover {
+    color: #b7791f;
+
+    border-color: #f1d59a;
+
+    background: #fffaf0;
+}
+
+.parent-action-delete {
+    color: #dc3545;
+}
+
+.parent-action-delete:hover {
+    color: #b42333;
+
+    border-color: #f2b8bf;
+
+    background: #fff1f2;
+}
+
+.parent-delete-form {
+    margin: 0;
+    padding: 0;
+
+    display: inline-flex;
+}
+
+/* ============================================================
+   DELETE MODAL OVERLAY
+   ============================================================ */
+
+.parent-modal-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 99999;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(15, 23, 42, .60);
+
+    backdrop-filter: blur(5px);
+
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.parent-modal-overlay.show {
+    display: flex;
+}
+
+/* ============================================================
+   DELETE MODAL
+   ============================================================ */
+
+.parent-delete-modal {
+    width: 100%;
+
+    max-width: 470px;
+
+    background: #fff;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 25px 70px rgba(15, 23, 42, .25),
+        0 5px 20px rgba(15, 23, 42, .10);
+
+    overflow: hidden;
+
+    animation: parentModalIn .18s ease;
+}
+
+@keyframes parentModalIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(12px)
+            scale(.97);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+}
+
+/* ============================================================
+   MODAL TOP
+   ============================================================ */
+
+.parent-modal-top {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 20px;
+
+    border-bottom: 1px solid #edf1f6;
+}
+
+.parent-modal-icon {
+    width: 46px;
+    height: 46px;
+
+    flex: 0 0 auto;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background: #fff1f2;
+
+    color: #dc3545;
+
+    font-size: 19px;
+}
+
+.parent-modal-title {
+    margin: 0;
+
+    color: #0f172a;
+
+    font-size: 17px;
+
+    font-weight: 800;
+}
+
+.parent-modal-subtitle {
+    margin: 4px 0 0;
+
+    color: #94a3b8;
+
+    font-size: 11px;
+}
+
+/* ============================================================
+   MODAL BODY
+   ============================================================ */
+
+.parent-modal-body {
+    padding: 20px;
+}
+
+.parent-modal-text {
+    margin: 0;
+
+    color: #475569;
+
+    font-size: 13px;
+
+    line-height: 1.65;
+}
+
+/* ============================================================
+   SELECTED PARENT
+   ============================================================ */
+
+.parent-modal-parent {
+    margin-top: 14px;
+
+    padding: 14px;
+
+    border: 1px solid #e5eaf1;
+
+    border-radius: 11px;
+
+    background: #f8fafc;
+}
+
+.parent-modal-parent-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 10px;
+
+    color: #64748b;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    letter-spacing: .4px;
+}
+
+.parent-modal-parent-header i {
+    color: #06245f;
+}
+
+.parent-modal-parent-name {
+    color: #0f172a;
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+    word-break: break-word;
+}
+
+.parent-modal-parent-phone {
+    margin-top: 5px;
+
+    color: #64748b;
+
+    font-size: 11px;
+
+    word-break: break-word;
+}
+
+.parent-modal-parent-students {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-top: 8px;
+
+    padding: 5px 8px;
+
+    border-radius: 7px;
+
+    background: #eef3fb;
+
+    color: #06245f;
+
+    font-size: 10px;
+
+    font-weight: 800;
+}
+
+/* ============================================================
+   WARNING
+   ============================================================ */
+
+.parent-modal-warning {
+    margin-top: 13px;
+
+    padding: 11px 12px;
+
+    border-radius: 9px;
+
+    background: #fff7ed;
+
+    color: #b45309;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+.parent-modal-warning-row {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 8px;
+}
+
+.parent-modal-warning i {
+    margin-top: 2px;
+
+    flex: 0 0 auto;
+}
+
+/* ============================================================
+   DELETE CONFIRM INPUT
+   ============================================================ */
+
+.parent-delete-confirm-wrap {
+    margin-top: 15px;
+}
+
+.parent-delete-confirm-label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #475569;
+
+    font-size: 11px;
+
+    font-weight: 800;
+}
+
+.parent-delete-confirm-label span {
+    color: #dc3545;
+}
+
+.parent-delete-confirm-input {
+    width: 100%;
+
+    height: 42px;
+
+    box-sizing: border-box;
+
+    padding: 0 12px;
+
+    border: 1px solid #dbe3ef;
+
+    border-radius: 9px;
+
+    background: #fff;
+
+    color: #0f172a;
+
+    outline: none;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background .18s ease;
+}
+
+.parent-delete-confirm-input:focus {
+    border-color: #dc3545;
+
+    box-shadow:
+        0 0 0 3px rgba(220, 53, 69, .09);
+}
+
+.parent-delete-confirm-input.valid {
+    border-color: #32b73a;
+
+    background: #f7fff8;
+
+    box-shadow:
+        0 0 0 3px rgba(50, 183, 58, .08);
+}
+
+.parent-delete-confirm-input.invalid {
+    border-color: #dc3545;
+
+    background: #fff8f8;
+
+    box-shadow:
+        0 0 0 3px rgba(220, 53, 69, .08);
+}
+
+.parent-delete-confirm-hint {
+    margin-top: 6px;
+
+    color: #94a3b8;
+
+    font-size: 10px;
+
+    line-height: 1.5;
+}
+
+.parent-delete-confirm-error {
+    display: none;
+
+    margin-top: 6px;
+
+    color: #dc3545;
+
+    font-size: 10px;
+
+    font-weight: 700;
+}
+
+.parent-delete-confirm-error.show {
+    display: block;
+}
+
+/* ============================================================
+   MODAL ACTIONS
+   ============================================================ */
+
+.parent-modal-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 9px;
+
+    padding: 15px 20px;
+
+    border-top: 1px solid #edf1f6;
+
+    background: #fafbfc;
+}
+
+.parent-modal-btn {
+    min-height: 39px;
+
+    padding: 0 15px;
+
+    border-radius: 9px;
+
+    border: 1px solid transparent;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        transform .18s ease,
+        opacity .18s ease;
+}
+
+.parent-modal-btn:hover {
+    transform: translateY(-1px);
+}
+
+.parent-modal-cancel {
+    color: #334155;
+
+    background: #fff;
+
+    border-color: #dbe3ef;
+}
+
+.parent-modal-cancel:hover {
+    background: #f8fafc;
+}
+
+.parent-modal-delete {
+    color: #fff;
+
+    background: #dc3545;
+
+    border-color: #dc3545;
+}
+
+.parent-modal-delete:hover {
+    background: #b42333;
+
+    border-color: #b42333;
+}
+
+.parent-modal-delete:disabled {
+    opacity: .45;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+    box-shadow: none;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.parent-empty {
+    padding: 65px 25px;
+
+    text-align: center;
+}
+
+.parent-empty-icon {
+    width: 64px;
+    height: 64px;
+
+    margin: 0 auto 15px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 18px;
+
+    background: #eef3fb;
+
+    color: #06245f;
+
+    font-size: 25px;
+}
+
+.parent-empty-title {
+    margin: 0;
+
+    color: #0f172a;
+
+    font-size: 17px;
+
+    font-weight: 800;
+}
+
+.parent-empty-text {
+    max-width: 480px;
+
+    margin: 7px auto 20px;
+
+    color: #64748b;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+
+.parent-pagination {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+
+    padding: 15px 18px;
+
+    border-top: 1px solid #e8edf4;
+}
+
+.parent-pagination-info {
+    color: #64748b;
+
+    font-size: 12px;
+}
+
+.parent-pagination-info strong {
+    color: #334155;
+}
+
+.parent-pagination-links {
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    flex-wrap: wrap;
+}
+
+.parent-page-link {
+    min-width: 34px;
+
+    height: 34px;
+
+    padding: 0 9px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 1px solid #dbe3ef;
+
+    border-radius: 8px;
+
+    background: #fff;
+
+    color: #475569;
+
+    text-decoration: none;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+.parent-page-link:hover {
+    border-color: #b9c9e3;
+
+    color: #06245f;
+
+    background: #f5f8fc;
+}
+
+.parent-page-link.active {
+    border-color: #06245f;
+
+    background: #06245f;
+
+    color: #fff;
+}
+
+.parent-page-link.disabled {
+    opacity: .45;
+
+    pointer-events: none;
+}
+
+.parent-page-dots {
+    color: #94a3b8;
+
+    padding: 0 3px;
+}
+
+/* ============================================================
+   TABLE WIDTH OPTIMIZATION
+   ============================================================ */
+
+@media (min-width: 1200px) {
+
+    .parent-table {
+        min-width: 0;
+    }
+
+    /*
+       Make name slightly smaller on large screens
+       so long names do not consume excessive space.
+    */
+
+    .parent-table th:nth-child(2),
+    .parent-table td:nth-child(2) {
+        width: 175px;
+    }
+
+    .parent-table th:nth-child(3),
+    .parent-table td:nth-child(3) {
+        width: 180px;
+    }
+
+    .parent-table th:nth-child(4),
+    .parent-table td:nth-child(4) {
+        width: 140px;
+    }
+
+    .parent-table th:nth-child(5),
+    .parent-table td:nth-child(5) {
+        width: 140px;
+    }
+
+    .parent-table th:nth-child(6),
+    .parent-table td:nth-child(6) {
+        width: 115px;
+    }
+
+    .parent-table th:nth-child(7),
+    .parent-table td:nth-child(7) {
+        width: 90px;
+    }
+
+    .parent-table th:nth-child(8),
+    .parent-table td:nth-child(8) {
+        width: 95px;
+    }
+
+    .parent-table th:nth-child(9),
+    .parent-table td:nth-child(9) {
+        width: 105px;
+    }
+
+}
+
+/* ============================================================
+   RESPONSIVE - 1100px
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    .parent-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .parent-filter-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .parent-table {
+        min-width: 1080px;
+    }
+
+}
+
+/* ============================================================
+   RESPONSIVE - 900px
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    .parents-header {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+    .parents-header-actions {
+        width: 100%;
+    }
+
+}
+
+/* ============================================================
+   RESPONSIVE - 620px
+   ============================================================ */
+
+@media (max-width: 620px) {
+
+    .parents-page {
+        padding-bottom: 20px;
+    }
+
+    .parents-title {
+        font-size: 23px;
+    }
+
+    .parents-header-actions {
+        display: grid;
+
+        grid-template-columns: 1fr;
+    }
+
+    .parent-btn {
+        width: 100%;
+    }
+
+    .parent-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .parent-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .parent-table-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .parent-pagination {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .parent-pagination-links {
+        width: 100%;
+    }
+
+    .parent-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .parent-modal-btn {
+        width: 100%;
+    }
+
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    .parents-header-actions,
+    .parent-filter-card,
+    .parent-actions,
+    .parent-per-page,
+    .parent-pagination,
+    .parent-modal-overlay {
+        display: none !important;
+    }
+
+    .parents-page {
+        max-width: none;
+    }
+
+    .parent-table-card,
+    .parent-stat-card {
+        box-shadow: none;
+
+        border: 1px solid #ddd;
+    }
+
+    .parent-table {
+        min-width: 0;
+
+        table-layout: auto;
+    }
+
+    .parent-table th,
+    .parent-table td {
+        width: auto !important;
+    }
+
+}
+
+</style>
+
+<div class="parents-page">
+
+    <!-- ======================================================
+         PAGE HEADER
+         ====================================================== -->
+
+    <div class="parents-header">
+
+        <div class="parents-header-left">
+
+            <h1 class="parents-title">
+
+                <i class="fa-solid fa-user-group"></i>
+
+                All Parents
+
+            </h1>
+
+
+            <p class="parents-subtitle">
+
+                Manage, search, filter and view parents
+                linked to students across your institution.
+
+            </p>
+
+        </div>
+
+
+        <div class="parents-header-actions">
+
+            <button
+                type="button"
+                class="parent-btn parent-btn-light"
+                onclick="window.print()"
+            >
+
+                <i class="fa-solid fa-print"></i>
+
+                Print
+
+            </button>
+
+
+            {% if current_role|default('') in [
+                'superadmin',
+                'school_admin',
+                'branch_admin'
+            ] %}
+
+                <a
+                    href=""
+                    class="parent-btn parent-btn-primary"
+                >
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Parent
+
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         STATISTICS
+         ====================================================== -->
+
+    <div class="parent-stats">
+
+        <!-- TOTAL PARENTS -->
+
+        <div class="parent-stat-card">
+
+            <div class="parent-stat-top">
+
+                <div>
+
+                    <div class="parent-stat-label">
+                        Total Parents
+                    </div>
+
+                    <div class="parent-stat-value">
+                        {{ total_parents|default(0) }}
+                    </div>
+
+                </div>
+
+
+                <div class="parent-stat-icon">
+
+                    <i class="fa-solid fa-user-group"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL CHILDREN -->
+
+        <div class="parent-stat-card">
+
+            <div class="parent-stat-top">
+
+                <div>
+
+                    <div class="parent-stat-label">
+                        Total Children
+                    </div>
+
+                    <div class="parent-stat-value">
+                        {{ total_children|default(0) }}
+                    </div>
+
+                </div>
+
+
+                <div class="parent-stat-icon">
+
+                    <i class="fa-solid fa-children"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE CHILDREN -->
+
+        <div class="parent-stat-card">
+
+            <div class="parent-stat-top">
+
+                <div>
+
+                    <div class="parent-stat-label">
+                        Active Children
+                    </div>
+
+                    <div class="parent-stat-value">
+                        {{ active_children|default(0) }}
+                    </div>
+
+                </div>
+
+
+                <div class="parent-stat-icon">
+
+                    <i class="fa-solid fa-user-check"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PARENT GROUPS -->
+
+        <div class="parent-stat-card">
+
+            <div class="parent-stat-top">
+
+                <div>
+
+                    <div class="parent-stat-label">
+                        Parent Groups
+                    </div>
+
+                    <div class="parent-stat-value">
+                        {{ total_parents|default(0) }}
+                    </div>
+
+                </div>
+
+
+                <div class="parent-stat-icon">
+
+                    <i class="fa-solid fa-people-roof"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         FILTER CARD
+         ====================================================== -->
+
+    <div class="parent-filter-card">
+
+        <div class="parent-filter-header">
+
+            <div class="parent-filter-title">
+
+                <i class="fa-solid fa-filter"></i>
+
+                Parent Filters
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="GET"
+            action="{{ url_for('main.all_parents') }}"
+        >
+
+            <div class="parent-filter-grid">
+
+                <!-- SEARCH -->
+
+                <div class="parent-filter-field">
+
+                    <label
+                        class="parent-filter-label"
+                        for="parent-search"
+                    >
+
+                        Search
+
+                    </label>
+
+
+                    <div class="parent-search-wrap">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+
+                        <input
+                            id="parent-search"
+                            type="search"
+                            name="search"
+                            class="parent-input"
+                            value="{{ search|default('') }}"
+                            placeholder="Parent name, phone, email, student name..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- INSTITUTION -->
+
+                <div class="parent-filter-field">
+
+                    <label
+                        class="parent-filter-label"
+                        for="parent-institution"
+                    >
+
+                        Institution
+
+                    </label>
+
+
+                    <select
+                        id="parent-institution"
+                        name="institution_id"
+                        class="parent-select"
+                        {% if current_role|default('') != 'superadmin' %}
+                            disabled
+                        {% endif %}
+                    >
+
+                        {% if current_role|default('') == 'superadmin' %}
+
+                            <option value="">
+                                All Institutions
+                            </option>
+
+                        {% endif %}
+
+
+                        {% for institution in institutions|default([]) %}
+
+                            <option
+                                value="{{ institution.id }}"
+                                {% if selected_institution_id|default('')|string
+                                    == institution.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ institution.name }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+
+                    {% if current_role|default('') != 'superadmin' %}
+
+                        <input
+                            type="hidden"
+                            name="institution_id"
+                            value="{{ current_institution_id }}"
+                        >
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- BRANCH -->
+
+                <div class="parent-filter-field">
+
+                    <label
+                        class="parent-filter-label"
+                        for="parent-branch"
+                    >
+
+                        Branch
+
+                    </label>
+
+
+                    <select
+                        id="parent-branch"
+                        name="branch_id"
+                        class="parent-select"
+                        {% if current_role|default('') == 'branch_admin' %}
+                            disabled
+                        {% endif %}
+                    >
+
+                        {% if current_role|default('') != 'branch_admin' %}
+
+                            <option value="">
+                                All Branches
+                            </option>
+
+                        {% endif %}
+
+
+                        {% for branch in branches|default([]) %}
+
+                            <option
+                                value="{{ branch.id }}"
+                                {% if selected_branch_id|default('')|string
+                                    == branch.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ branch.name }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+
+                    {% if current_role|default('') == 'branch_admin' %}
+
+                        <input
+                            type="hidden"
+                            name="branch_id"
+                            value="{{ current_branch_id }}"
+                        >
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="parent-filter-actions">
+
+                <button
+                    type="submit"
+                    class="parent-btn parent-btn-primary"
+                >
+
+                    <i class="fa-solid fa-filter"></i>
+
+                    Apply Filters
+
+                </button>
+
+
+                <a
+                    href="{{ url_for('main.all_parents') }}"
+                    class="parent-btn parent-btn-light"
+                >
+
+                    <i class="fa-solid fa-rotate-left"></i>
+
+                    Reset
+
+                </a>
+
+            </div>
+
+
+            <!-- ACTIVE FILTERS -->
+
+            {% if search|default('')
+                or selected_institution_id|default('')
+                or selected_branch_id|default('')
+            %}
+
+                <div class="parent-active-filters">
+
+                    <span class="parent-filter-chip">
+
+                        <i class="fa-solid fa-filter"></i>
+
+                        Active filters
+
+                    </span>
+
+
+                    {% if search|default('') %}
+
+                        <span class="parent-filter-chip">
+
+                            Search:
+                            {{ search }}
+
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if selected_institution_id|default('') %}
+
+                        <span class="parent-filter-chip">
+
+                            <i class="fa-solid fa-building"></i>
+
+                            Institution selected
+
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if selected_branch_id|default('') %}
+
+                        <span class="parent-filter-chip">
+
+                            <i class="fa-solid fa-code-branch"></i>
+
+                            Branch selected
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </form>
+
+    </div>
+
+
+    <!-- ======================================================
+         PARENT TABLE
+         ====================================================== -->
+
+    <div class="parent-table-card">
+
+        <div class="parent-table-header">
+
+            <div class="parent-table-title-wrap">
+
+                <h2 class="parent-table-title">
+                    Parents
+                </h2>
+
+
+                <div class="parent-table-count">
+
+                    Showing
+
+                    <strong>
+                        {{ parents|length }}
+                    </strong>
+
+                    of
+
+                    <strong>
+                        {{ pagination.total }}
+                    </strong>
+
+                    parent groups
+
+                </div>
+
+            </div>
+
+
+            <!-- PER PAGE -->
+
+            <form
+                method="GET"
+                action="{{ url_for('main.all_parents') }}"
+                class="parent-per-page"
+            >
+
+                {% if search|default('') %}
+
+                    <input
+                        type="hidden"
+                        name="search"
+                        value="{{ search }}"
+                    >
+
+                {% endif %}
+
+
+                {% if selected_institution_id|default('') %}
+
+                    <input
+                        type="hidden"
+                        name="institution_id"
+                        value="{{ selected_institution_id }}"
+                    >
+
+                {% endif %}
+
+
+                {% if selected_branch_id|default('') %}
+
+                    <input
+                        type="hidden"
+                        name="branch_id"
+                        value="{{ selected_branch_id }}"
+                    >
+
+                {% endif %}
+
+
+                <span>
+                    Per page
+                </span>
+
+
+                <select
+                    name="per_page"
+                    onchange="this.form.submit()"
+                >
+
+                    {% for option in [10, 20, 50, 100] %}
+
+                        <option
+                            value="{{ option }}"
+                            {% if per_page|default(20)|int == option %}
+                                selected
+                            {% endif %}
+                        >
+
+                            {{ option }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </form>
+
+        </div>
+
+
+        {% if parents %}
+
+            <div class="parent-table-scroll">
+
+                <table class="parent-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>Parent</th>
+
+                            <th>Contact</th>
+
+                            <!-- <th>Address</th> -->
+
+                            <!-- <th>Institution</th>
+
+                            <th>Branch</th> -->
+
+                            <th>Students</th>
+
+                            <th>Status</th>
+
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for parent in parents %}
+
+                            <tr>
+
+                                <!-- NUMBER -->
+
+                                <td>
+
+                                    <span class="parent-id">
+
+                                        {{
+                                            (
+                                                (pagination.page - 1)
+                                                * pagination.per_page
+                                            ) + loop.index
+                                        }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- PARENT -->
+
+                                <td>
+
+                                    <div class="parent-name-wrap">
+
+                                        <div class="parent-icon">
+
+                                            <i class="fa-solid fa-user-tie"></i>
+
+                                        </div>
+
+
+                                        <div class="parent-name-content">
+
+                                            {% set parent_name =
+                                                parent.parent_name
+                                                |default('Unnamed Parent', true)
+                                            %}
+
+
+                                            <a
+                                                href="{{ url_for(
+                                                    'main.view_parent',
+                                                    parent_key=parent.parent_key
+                                                ) }}"
+                                                class="parent-name"
+                                                title="{{ parent_name }}"
+                                            >
+
+                                                {{ parent_name }}
+
+                                            </a>
+
+
+                                            {% if parent.relationship_to_student %}
+
+                                                <span class="parent-relation">
+
+                                                    <i class="fa-solid fa-link"></i>
+
+                                                    {{ parent.relationship_to_student }}
+
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="parent-relation">
+
+                                                    Parent
+
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- CONTACT -->
+
+                                <td>
+
+                                    <div class="parent-contact">
+
+                                        {% if parent.parent_phone %}
+
+                                            <div class="parent-phone">
+
+                                                <i class="fa-solid fa-phone"></i>
+
+                                                {{ parent.parent_phone }}
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <div class="parent-phone">
+
+                                                <i class="fa-solid fa-phone-slash"></i>
+
+                                                No phone
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        {% if parent.parent_email %}
+
+                                            <div
+                                                class="parent-email"
+                                                title="{{ parent.parent_email }}"
+                                            >
+
+                                                <i class="fa-regular fa-envelope"></i>
+
+                                                {{ parent.parent_email }}
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <div class="parent-email">
+
+                                                No email
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ADDRESS -->
+
+                                <!-- <td>
+
+                                    {% if parent.parent_address %}
+
+                                        <div
+                                            class="parent-address"
+                                            title="{{ parent.parent_address }}"
+                                        >
+
+                                            <i class="fa-solid fa-location-dot"></i>
+
+                                            {{ parent.parent_address }}
+
+                                        </div>
+
+                                    {% else %}
+
+                                        <span class="parent-relation">
+                                            Not specified
+                                        </span>
+
+                                    {% endif %}
+
+                                </td> -->
+
+
+                                <!-- INSTITUTION -->
+
+                                <!-- <td>
+
+                                    <div class="parent-org">
+
+                                        {% set parent_institution_id =
+                                            parent.institution_id
+                                            |default(current_institution_id)
+                                        %}
+
+
+                                        {% if parent_institution_id %}
+
+                                            {% set found_institution = none %}
+
+
+                                            {% for institution in institutions|default([]) %}
+
+                                                {% if institution.id|string
+                                                    == parent_institution_id|string %}
+
+                                                    {% set found_institution = institution %}
+
+                                                {% endif %}
+
+                                            {% endfor %}
+
+
+                                            {% if found_institution %}
+
+                                                <div class="parent-org-name">
+
+                                                    {{ found_institution.name }}
+
+                                                </div>
+
+                                            {% else %}
+
+                                                <div class="parent-org-name">
+
+                                                    Institution
+
+                                                </div>
+
+                                            {% endif %}
+
+
+                                            <div class="parent-org-id">
+
+                                                ID:
+                                                {{ parent_institution_id }}
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <div class="parent-org-name">
+                                                —
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td> -->
+
+
+                                <!-- BRANCH -->
+
+                                <!-- <td>
+
+                                    {% if parent.branch_id %}
+
+                                        {% set found_branch = none %}
+
+
+                                        {% for branch in branches|default([]) %}
+
+                                            {% if branch.id|string
+                                                == parent.branch_id|string %}
+
+                                                {% set found_branch = branch %}
+
+                                            {% endif %}
+
+                                        {% endfor %}
+
+
+                                        {% if found_branch %}
+
+                                            <div class="parent-branch">
+
+                                                <i class="fa-solid fa-code-branch"></i>
+
+                                                {{ found_branch.name }}
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <div class="parent-branch">
+
+                                                <i class="fa-solid fa-code-branch"></i>
+
+                                                Branch #{{ parent.branch_id }}
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        <span class="parent-branch-wide">
+
+                                            <i class="fa-solid fa-building"></i>
+
+                                            Institution-wide
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </td> -->
+
+
+                                <!-- STUDENTS -->
+
+                                <td>
+
+                                    <div class="parent-students">
+
+                                        <div class="parent-students-icon">
+
+                                            <i class="fa-solid fa-children"></i>
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <div class="parent-students-count">
+
+                                                {{ parent.student_count|default(0) }}
+
+                                            </div>
+
+
+                                            <span class="parent-active-students">
+
+                                                {{
+                                                    parent.active_student_count
+                                                    |default(0)
+                                                }}
+
+                                                active
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    {% if parent.active_student_count|default(0)|int > 0 %}
+
+                                        <span class="
+                                            parent-status
+                                            parent-status-active
+                                        ">
+
+                                            Active
+
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="
+                                            parent-status
+                                            parent-status-inactive
+                                        ">
+
+                                            Inactive
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td>
+
+                                    <div class="parent-actions">
+
+                                        <!-- VIEW -->
+
+                                        <a
+                                            href="{{ url_for(
+                                                'main.view_parent',
+                                                parent_key=parent.parent_key
+                                            ) }}"
+                                            class="
+                                                parent-action
+                                                parent-action-view
+                                            "
+                                            title="View Parent"
+                                            aria-label="View Parent"
+                                        >
+
+                                            <i class="fa-regular fa-eye"></i>
+
+                                        </a>
+
+
+                                        <!-- EDIT -->
+
+                                        <a
+                                            href="{{ url_for(
+                                                'main.edit_parent',
+                                                parent_key=parent.parent_key
+                                            ) }}"
+                                            class="
+                                                parent-action
+                                                parent-action-edit
+                                            "
+                                            title="Edit Parent"
+                                            aria-label="Edit Parent"
+                                        >
+
+                                            <i class="fa-solid fa-pen"></i>
+
+                                        </a>
+
+
+                                        <!-- DELETE -->
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'main.delete_parent',
+                                                parent_key=parent.parent_key
+                                            ) }}"
+                                            class="parent-delete-form"
+
+                                            onsubmit="
+                                                return confirmParentDelete(
+                                                    event,
+                                                    this
+                                                );
+                                            "
+
+                                            data-parent-name="{{ parent.parent_name|default('Unnamed Parent', true)|e }}"
+
+                                            data-parent-phone="{{ parent.parent_phone|default('', true)|e }}"
+
+                                            data-student-count="{{ parent.student_count|default(0) }}"
+
+                                            data-parent-key="{{ parent.parent_key|e }}"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="
+                                                    parent-action
+                                                    parent-action-delete
+                                                "
+                                                title="Delete Parent"
+                                                aria-label="Delete Parent"
+                                            >
+
+                                                <i class="fa-solid fa-trash-can"></i>
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- ==================================================
+                 PAGINATION
+                 ================================================== -->
+
+            <div class="parent-pagination">
+
+                <div class="parent-pagination-info">
+
+                    {% if pagination.total > 0 %}
+
+                        Showing
+
+                        <strong>
+
+                            {{
+                                (
+                                    (pagination.page - 1)
+                                    * pagination.per_page
+                                ) + 1
+                            }}
+
+                        </strong>
+
+                        to
+
+                        <strong>
+
+                            {{
+                                [
+                                    pagination.page * pagination.per_page,
+                                    pagination.total
+                                ]|min
+                            }}
+
+                        </strong>
+
+                        of
+
+                        <strong>
+                            {{ pagination.total }}
+                        </strong>
+
+                    {% else %}
+
+                        No parents found.
+
+                    {% endif %}
+
+                </div>
+
+
+                {% if pagination.pages > 1 %}
+
+                    <div class="parent-pagination-links">
+
+                        <!-- PREVIOUS -->
+
+                        {% if pagination.has_prev %}
+
+                            <a
+                                href="{{ url_for(
+                                    'main.all_parents',
+                                    page=pagination.prev_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id
+                                ) }}"
+                                class="parent-page-link"
+                                title="Previous"
+                            >
+
+                                <i class="fa-solid fa-chevron-left"></i>
+
+                            </a>
+
+                        {% else %}
+
+                            <span class="parent-page-link disabled">
+
+                                <i class="fa-solid fa-chevron-left"></i>
+
+                            </span>
+
+                        {% endif %}
+
+
+                        <!-- PAGE RANGE -->
+
+                        {% set start_page = pagination.page - 2 %}
+
+                        {% set end_page = pagination.page + 2 %}
+
+
+                        {% if start_page < 1 %}
+
+                            {% set start_page = 1 %}
+
+                        {% endif %}
+
+
+                        {% if end_page > pagination.pages %}
+
+                            {% set end_page = pagination.pages %}
+
+                        {% endif %}
+
+
+                        <!-- FIRST PAGE -->
+
+                        {% if start_page > 1 %}
+
+                            <a
+                                href="{{ url_for(
+                                    'main.all_parents',
+                                    page=1,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id
+                                ) }}"
+                                class="parent-page-link"
+                            >
+
+                                1
+
+                            </a>
+
+
+                            {% if start_page > 2 %}
+
+                                <span class="parent-page-dots">
+                                    ...
+                                </span>
+
+                            {% endif %}
+
+                        {% endif %}
+
+
+                        <!-- PAGE NUMBERS -->
+
+                        {% for page_num in range(
+                            start_page,
+                            end_page + 1
+                        ) %}
+
+                            {% if page_num == pagination.page %}
+
+                                <span class="
+                                    parent-page-link
+                                    active
+                                ">
+
+                                    {{ page_num }}
+
+                                </span>
+
+                            {% else %}
+
+                                <a
+                                    href="{{ url_for(
+                                        'main.all_parents',
+                                        page=page_num,
+                                        per_page=per_page,
+                                        search=search,
+                                        institution_id=selected_institution_id,
+                                        branch_id=selected_branch_id
+                                    ) }}"
+                                    class="parent-page-link"
+                                >
+
+                                    {{ page_num }}
+
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        <!-- LAST PAGE -->
+
+                        {% if end_page < pagination.pages %}
+
+                            {% if end_page < pagination.pages - 1 %}
+
+                                <span class="parent-page-dots">
+                                    ...
+                                </span>
+
+                            {% endif %}
+
+
+                            <a
+                                href="{{ url_for(
+                                    'main.all_parents',
+                                    page=pagination.pages,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id
+                                ) }}"
+                                class="parent-page-link"
+                            >
+
+                                {{ pagination.pages }}
+
+                            </a>
+
+                        {% endif %}
+
+
+                        <!-- NEXT -->
+
+                        {% if pagination.has_next %}
+
+                            <a
+                                href="{{ url_for(
+                                    'main.all_parents',
+                                    page=pagination.next_num,
+                                    per_page=per_page,
+                                    search=search,
+                                    institution_id=selected_institution_id,
+                                    branch_id=selected_branch_id
+                                ) }}"
+                                class="parent-page-link"
+                                title="Next"
+                            >
+
+                                <i class="fa-solid fa-chevron-right"></i>
+
+                            </a>
+
+                        {% else %}
+
+                            <span class="parent-page-link disabled">
+
+                                <i class="fa-solid fa-chevron-right"></i>
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+        {% else %}
+
+            <!-- ==================================================
+                 EMPTY STATE
+                 ================================================== -->
+
+            <div class="parent-empty">
+
+                <div class="parent-empty-icon">
+
+                    <i class="fa-solid fa-user-group"></i>
+
+                </div>
+
+
+                <h3 class="parent-empty-title">
+
+                    No Parents Found
+
+                </h3>
+
+
+                <p class="parent-empty-text">
+
+                    {% if search|default('')
+                        or selected_institution_id|default('')
+                        or selected_branch_id|default('')
+                    %}
+
+                        No parents match your current filters.
+                        Try changing the search or filter values.
+
+                    {% else %}
+
+                        There are no parent records linked to
+                        students yet.
+
+                    {% endif %}
+
+                </p>
+
+
+                {% if search|default('')
+                    or selected_institution_id|default('')
+                    or selected_branch_id|default('')
+                %}
+
+                    <a
+                        href="{{ url_for('main.all_parents') }}"
+                        class="parent-btn parent-btn-light"
+                    >
+
+                        <i class="fa-solid fa-rotate-left"></i>
+
+                        Clear Filters
+
+                    </a>
+
+                {% else %}
+
+                    {% if current_role|default('') in [
+                        'superadmin',
+                        'school_admin',
+                        'branch_admin'
+                    ] %}
+
+                        <a
+                            href="{{ url_for('main.add_parent') }}"
+                            class="parent-btn parent-btn-primary"
+                        >
+
+                            <i class="fa-solid fa-plus"></i>
+
+                            Add First Parent
+
+                        </a>
+
+                    {% endif %}
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     DELETE CONFIRMATION MODAL
+     ============================================================ -->
+
+<div
+    id="parentDeleteModal"
+    class="parent-modal-overlay"
+    aria-hidden="true"
+>
+
+    <div
+        class="parent-delete-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="parentDeleteTitle"
+    >
+
+        <!-- ====================================================
+             MODAL HEADER
+             ==================================================== -->
+
+        <div class="parent-modal-top">
+
+            <div class="parent-modal-icon">
+
+                <i class="fa-solid fa-trash-can"></i>
+
+            </div>
+
+
+            <div>
+
+                <h3
+                    id="parentDeleteTitle"
+                    class="parent-modal-title"
+                >
+
+                    Delete Parent
+
+                </h3>
+
+
+                <p class="parent-modal-subtitle">
+
+                    Permanent parent-group removal
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             MODAL BODY
+             ==================================================== -->
+
+        <div class="parent-modal-body">
+
+            <p class="parent-modal-text">
+
+                You are about to delete this parent group.
+                Please review the information below before
+                continuing.
+
+            </p>
+
+
+            <!-- ================================================
+                 PARENT INFORMATION
+                 ================================================ -->
+
+            <div class="parent-modal-parent">
+
+                <div class="parent-modal-parent-header">
+
+                    <i class="fa-solid fa-user-tie"></i>
+
+                    Parent selected for deletion
+
+                </div>
+
+
+                <div
+                    id="deleteParentName"
+                    class="parent-modal-parent-name"
+                >
+
+                    Unnamed Parent
+
+                </div>
+
+
+                <div
+                    id="deleteParentPhone"
+                    class="parent-modal-parent-phone"
+                >
+
+                    No phone number
+
+                </div>
+
+
+                <div
+                    id="deleteParentStudentCount"
+                    class="parent-modal-parent-students"
+                >
+
+                    <i class="fa-solid fa-children"></i>
+
+                    <span>
+                        0 students
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================
+                 WARNING
+                 ================================================ -->
+
+            <div class="parent-modal-warning">
+
+                <div class="parent-modal-warning-row">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <span id="deleteParentWarning">
+
+                        This action will remove the parent
+                        information associated with the
+                        related student records.
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================
+                 NAME CONFIRMATION
+                 ================================================ -->
+
+            <div class="parent-delete-confirm-wrap">
+
+                <label
+                    for="parentDeleteNameInput"
+                    class="parent-delete-confirm-label"
+                >
+
+                    Type the parent name to confirm deletion
+
+                    <span>*</span>
+
+                </label>
+
+
+                <input
+                    id="parentDeleteNameInput"
+                    type="text"
+                    class="parent-delete-confirm-input"
+                    placeholder="Type parent name exactly..."
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-required="true"
+                >
+
+
+                <div class="parent-delete-confirm-hint">
+
+                    For security, type the exact parent name
+                    shown above.
+
+                </div>
+
+
+                <div
+                    id="parentDeleteConfirmError"
+                    class="parent-delete-confirm-error"
+                    role="alert"
+                >
+
+                    Parent name does not match.
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             MODAL ACTIONS
+             ==================================================== -->
+
+        <div class="parent-modal-actions">
+
+            <button
+                type="button"
+                class="parent-modal-btn parent-modal-cancel"
+                onclick="closeParentDeleteModal()"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+                Cancel
+
+            </button>
+
+
+            <button
+                type="button"
+                class="parent-modal-btn parent-modal-delete"
+                id="parentDeleteConfirmButton"
+                disabled
+            >
+
+                <i class="fa-solid fa-trash-can"></i>
+
+                Delete Parent
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   PARENT PAGE SCRIPT
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        "use strict";
+
+
+        /* ====================================================
+           SEARCH
+           ==================================================== */
+
+        const searchInput =
+            document.getElementById(
+                "parent-search"
+            );
+
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (
+                        event.key === "Enter"
+                    ) {
+
+                        event.preventDefault();
+
+
+                        const form =
+                            searchInput.closest(
+                                "form"
+                            );
+
+
+                        if (form) {
+
+                            form.submit();
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* ====================================================
+           DELETE CONFIRMATION BUTTON
+           ==================================================== */
+
+        const confirmButton =
+            document.getElementById(
+                "parentDeleteConfirmButton"
+            );
+
+
+        /* ====================================================
+           CONFIRM INPUT
+           ==================================================== */
+
+        const confirmInput =
+            document.getElementById(
+                "parentDeleteNameInput"
+            );
+
+
+        if (confirmInput) {
+
+            confirmInput.addEventListener(
+                "input",
+                function () {
+
+                    validateParentDeleteName();
+
+                }
+            );
+
+
+            confirmInput.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (
+                        event.key === "Enter"
+                    ) {
+
+                        event.preventDefault();
+
+                        validateParentDeleteName();
+
+                        if (
+                            confirmButton &&
+                            !confirmButton.disabled
+                        ) {
+
+                            confirmButton.click();
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* ====================================================
+           CONFIRM BUTTON
+           ==================================================== */
+
+        if (confirmButton) {
+
+            confirmButton.addEventListener(
+                "click",
+                function () {
+
+                    if (!parentDeleteForm) {
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !validateParentDeleteName()
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const form =
+                        parentDeleteForm;
+
+
+                    /*
+                     * Clear the stored form before submit.
+                     */
+
+                    parentDeleteForm =
+                        null;
+
+
+                    /*
+                     * Close modal.
+                     */
+
+                    hideParentDeleteModal();
+
+
+                    /*
+                     * Submit the ORIGINAL form.
+                     *
+                     * This keeps the POST action:
+                     *
+                     * main.delete_parent
+                     *
+                     * with the original parent_key.
+                     */
+
+                    form.submit();
+
+                }
+            );
+
+        }
+
+
+        /* ====================================================
+           OUTSIDE CLICK
+           ==================================================== */
+
+        const modal =
+            document.getElementById(
+                "parentDeleteModal"
+            );
+
+
+        if (modal) {
+
+            modal.addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target === modal
+                    ) {
+
+                        closeParentDeleteModal();
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* ====================================================
+           ESC KEY
+           ==================================================== */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    const activeModal =
+                        document.getElementById(
+                            "parentDeleteModal"
+                        );
+
+
+                    if (
+                        activeModal &&
+                        activeModal.classList.contains("show")
+                    ) {
+
+                        closeParentDeleteModal();
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* ============================================================
+   GLOBAL DELETE FORM
+   ============================================================ */
+
+let parentDeleteForm = null;
+
+
+/* ============================================================
+   CURRENT PARENT NAME
+   ============================================================ */
+
+let currentDeleteParentName = "";
+
+
+/* ============================================================
+   OPEN DELETE MODAL
+   ============================================================ */
+
+function confirmParentDelete(
+    event,
+    form
+) {
+
+    /*
+     * NEVER allow the browser to submit
+     * the delete POST immediately.
+     */
+
+    event.preventDefault();
+
+
+    if (!form) {
+
+        return false;
+
+    }
+
+
+    parentDeleteForm =
+        form;
+
+
+    /* ========================================================
+       ELEMENTS
+       ======================================================== */
+
+    const modal =
+        document.getElementById(
+            "parentDeleteModal"
+        );
+
+
+    const nameElement =
+        document.getElementById(
+            "deleteParentName"
+        );
+
+
+    const phoneElement =
+        document.getElementById(
+            "deleteParentPhone"
+        );
+
+
+    const studentCountElement =
+        document.getElementById(
+            "deleteParentStudentCount"
+        );
+
+
+    const warningElement =
+        document.getElementById(
+            "deleteParentWarning"
+        );
+
+
+    const confirmInput =
+        document.getElementById(
+            "parentDeleteNameInput"
+        );
+
+
+    const errorElement =
+        document.getElementById(
+            "parentDeleteConfirmError"
+        );
+
+
+    const confirmButton =
+        document.getElementById(
+            "parentDeleteConfirmButton"
+        );
+
+
+    /* ========================================================
+       READ DATA ATTRIBUTES
+       ======================================================== */
+
+    const parentName =
+        (
+            form.dataset.parentName
+            || "Unnamed Parent"
+        ).trim();
+
+
+    const parentPhone =
+        (
+            form.dataset.parentPhone
+            || ""
+        ).trim();
+
+
+    const studentCount =
+        parseInt(
+            form.dataset.studentCount
+            || "0",
+            10
+        );
+
+
+    /* ========================================================
+       SAVE CURRENT NAME
+       ======================================================== */
+
+    currentDeleteParentName =
+        parentName;
+
+
+    /* ========================================================
+       PARENT NAME
+       ======================================================== */
+
+    if (nameElement) {
+
+        nameElement.textContent =
+            parentName;
+
+    }
+
+
+    /* ========================================================
+       PHONE
+       ======================================================== */
+
+    if (phoneElement) {
+
+        phoneElement.textContent =
+            parentPhone
+                ? "Phone: " + parentPhone
+                : "No phone number";
+
+    }
+
+
+    /* ========================================================
+       STUDENT COUNT
+       ======================================================== */
+
+    if (studentCountElement) {
+
+        const studentText =
+            studentCount === 1
+                ? "1 student"
+                : studentCount + " students";
+
+
+        studentCountElement.innerHTML =
+            '<i class="fa-solid fa-children"></i>' +
+            '<span>' +
+            studentText +
+            '</span>';
+
+    }
+
+
+    /* ========================================================
+       WARNING
+       ======================================================== */
+
+    if (warningElement) {
+
+        if (
+            studentCount > 0
+        ) {
+
+            const childText =
+                studentCount === 1
+                    ? "1 student"
+                    : studentCount + " students";
+
+
+            warningElement.textContent =
+                "This parent is linked to "
+                + childText
+                + ". Deleting the parent will remove "
+                + "the parent information from the related "
+                + "student records. The student records "
+                + "themselves will NOT be deleted.";
+
+        } else {
+
+            warningElement.textContent =
+                "This parent has no linked students "
+                + "in the current parent group. "
+                + "The parent information will be removed.";
+
+        }
+
+    }
+
+
+    /* ========================================================
+       RESET CONFIRM INPUT
+       ======================================================== */
+
+    if (confirmInput) {
+
+        confirmInput.value = "";
+
+        confirmInput.classList.remove(
+            "valid",
+            "invalid"
+        );
+
+    }
+
+
+    /* ========================================================
+       RESET ERROR
+       ======================================================== */
+
+    if (errorElement) {
+
+        errorElement.classList.remove(
+            "show"
+        );
+
+        errorElement.textContent =
+            "Parent name does not match.";
+
+    }
+
+
+    /* ========================================================
+       DISABLE CONFIRM BUTTON
+       ======================================================== */
+
+    if (confirmButton) {
+
+        confirmButton.disabled =
+            true;
+
+    }
+
+
+    /* ========================================================
+       SHOW MODAL
+       ======================================================== */
+
+    if (modal) {
+
+        modal.classList.add(
+            "show"
+        );
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.style.overflow =
+            "hidden";
+
+    }
+
+
+    /* ========================================================
+       FOCUS INPUT
+       ======================================================== */
+
+    if (confirmInput) {
+
+        setTimeout(
+            function () {
+
+                confirmInput.focus();
+
+            },
+            80
+        );
+
+    }
+
+
+    return false;
+}
+
+
+/* ============================================================
+   VALIDATE DELETE NAME
+   ============================================================ */
+
+function validateParentDeleteName() {
+
+    const confirmInput =
+        document.getElementById(
+            "parentDeleteNameInput"
+        );
+
+
+    const confirmButton =
+        document.getElementById(
+            "parentDeleteConfirmButton"
+        );
+
+
+    const errorElement =
+        document.getElementById(
+            "parentDeleteConfirmError"
+        );
+
+
+    if (!confirmInput) {
+
+        return false;
+
+    }
+
+
+    const enteredName =
+        confirmInput.value.trim();
+
+
+    const requiredName =
+        currentDeleteParentName.trim();
+
+
+    /*
+     * Case-insensitive comparison.
+     *
+     * Extra spaces are normalized.
+     */
+
+    const normalizedEntered =
+        normalizeParentName(
+            enteredName
+        );
+
+
+    const normalizedRequired =
+        normalizeParentName(
+            requiredName
+        );
+
+
+    const valid =
+        normalizedEntered !== ""
+        &&
+        normalizedEntered === normalizedRequired;
+
+
+    /* ========================================================
+       VALID
+       ======================================================== */
+
+    if (valid) {
+
+        confirmInput.classList.remove(
+            "invalid"
+        );
+
+        confirmInput.classList.add(
+            "valid"
+        );
+
+
+        if (errorElement) {
+
+            errorElement.classList.remove(
+                "show"
+            );
+
+        }
+
+
+        if (confirmButton) {
+
+            confirmButton.disabled =
+                false;
+
+        }
+
+
+        return true;
+
+    }
+
+
+    /* ========================================================
+       INVALID
+       ======================================================== */
+
+    confirmInput.classList.remove(
+        "valid"
+    );
+
+
+    if (enteredName.length > 0) {
+
+        confirmInput.classList.add(
+            "invalid"
+        );
+
+    } else {
+
+        confirmInput.classList.remove(
+            "invalid"
+        );
+
+    }
+
+
+    if (errorElement) {
+
+        if (enteredName.length > 0) {
+
+            errorElement.textContent =
+                "The parent name does not match. "
+                + "Please type the name exactly as shown.";
+
+            errorElement.classList.add(
+                "show"
+            );
+
+        } else {
+
+            errorElement.classList.remove(
+                "show"
+            );
+
+        }
+
+    }
+
+
+    if (confirmButton) {
+
+        confirmButton.disabled =
+            true;
+
+    }
+
+
+    return false;
+}
+
+
+/* ============================================================
+   NORMALIZE PARENT NAME
+   ============================================================ */
+
+function normalizeParentName(
+    value
+) {
+
+    return String(
+        value || ""
+    )
+        .trim()
+        .replace(
+            /\s+/g,
+            " "
+        )
+        .toLowerCase();
+
+}
+
+
+/* ============================================================
+   HIDE MODAL
+   ============================================================ */
+
+function hideParentDeleteModal() {
+
+    const modal =
+        document.getElementById(
+            "parentDeleteModal"
+        );
+
+
+    if (modal) {
+
+        modal.classList.remove(
+            "show"
+        );
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+    }
+
+
+    document.body.style.overflow =
+        "";
+
+
+    const confirmInput =
+        document.getElementById(
+            "parentDeleteNameInput"
+        );
+
+
+    if (confirmInput) {
+
+        confirmInput.value = "";
+
+        confirmInput.classList.remove(
+            "valid",
+            "invalid"
+        );
+
+    }
+
+
+    const confirmButton =
+        document.getElementById(
+            "parentDeleteConfirmButton"
+        );
+
+
+    if (confirmButton) {
+
+        confirmButton.disabled =
+            true;
+
+    }
+
+
+    const errorElement =
+        document.getElementById(
+            "parentDeleteConfirmError"
+        );
+
+
+    if (errorElement) {
+
+        errorElement.classList.remove(
+            "show"
+        );
+
+    }
+
+
+    currentDeleteParentName =
+        "";
+
+}
+
+
+/* ============================================================
+   CLOSE DELETE MODAL
+   ============================================================ */
+
+function closeParentDeleteModal() {
+
+    /*
+     * Cancel means:
+     *
+     * 1. close modal
+     * 2. clear selected form
+     * 3. clear confirmation input
+     * 4. DO NOT submit anything
+     */
+
+    parentDeleteForm =
+        null;
+
+
+    hideParentDeleteModal();
+
+}
+
+
+/* ============================================================
+   PREVENT DOUBLE SUBMIT
+   ============================================================ */
+
+document.addEventListener(
+    "submit",
+    function (event) {
+
+        const form =
+            event.target;
+
+
+        if (
+            form &&
+            form.classList &&
+            form.classList.contains(
+                "parent-delete-form"
+            )
+        ) {
+
+            /*
+             * If the form is submitted directly,
+             * force it through the confirmation modal.
+             *
+             * The modal itself uses form.submit(),
+             * which bypasses this event handler.
+             */
+
+            if (
+                parentDeleteForm !== null
+            ) {
+
+                return;
+
+            }
+
+            event.preventDefault();
+
+            confirmParentDelete(
+                event,
+                form
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}
