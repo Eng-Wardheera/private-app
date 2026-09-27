@@ -63910,7 +63910,7 @@ def import_students_full():
 
     return redirect(
         url_for(
-            "main.import_students_full"
+            "main.all_students"
         )
         if generated_credentials
         else url_for(
