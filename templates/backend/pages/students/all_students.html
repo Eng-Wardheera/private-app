@@ -1350,6 +1350,2039 @@
                 Add Student
             </a>
 
+            <!-- ========================================================
+     DELETE ALL STUDENTS
+     ======================================================== -->
+<button
+    type="button"
+    class="student-header-btn danger"
+    id="openDeleteAllStudentsModal"
+    data-student-count="{{ total_student_count|default(0)|int }}"
+>
+    <i class="fas fa-trash-can"></i>
+    Delete All Students
+</button>
+
+<!-- ========================================================
+     DELETE ALL STUDENTS MODAL
+     ======================================================== -->
+
+<div
+    class="delete-all-students-modal"
+    id="deleteAllStudentsModal"
+    aria-hidden="true"
+>
+    <!-- ====================================================
+         OVERLAY
+         ==================================================== -->
+
+    <div
+        class="delete-all-students-overlay"
+        id="deleteAllStudentsOverlay"
+    ></div>
+
+
+    <!-- ====================================================
+         DIALOG
+         ==================================================== -->
+
+    <div
+        class="delete-all-students-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteAllStudentsTitle"
+    >
+
+        <!-- =================================================
+             HEADER
+             ================================================= -->
+
+        <div class="delete-all-students-header">
+
+            <div class="delete-all-students-header-left">
+
+                <div class="delete-all-students-icon">
+                    <i class="fas fa-user-group"></i>
+                </div>
+
+                <div>
+
+                    <h2 id="deleteAllStudentsTitle">
+                        Delete All Students
+                    </h2>
+
+                    <p>
+                        Permanently delete all students
+                        within your allowed scope.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- CLOSE -->
+
+            <button
+                type="button"
+                class="delete-all-students-close"
+                id="closeDeleteAllStudentsModal"
+                aria-label="Close"
+            >
+                <i class="fas fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             BODY
+             ================================================= -->
+
+        <div class="delete-all-students-body">
+
+            <!-- =============================================
+                 INFORMATION BOX
+                 ============================================= -->
+
+            <div class="delete-all-students-info-box">
+
+                <div class="delete-all-students-info-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        Students in your scope
+                    </span>
+
+                    <strong
+                        id="deleteAllStudentsCount"
+                    >
+                        Checking...
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 WARNING
+                 ============================================= -->
+
+            <div class="delete-all-students-warning">
+
+                <div class="delete-all-students-warning-icon">
+                    <i class="fas fa-triangle-exclamation"></i>
+                </div>
+
+                <div>
+
+                    <strong>
+                        Permanent deletion
+                    </strong>
+
+                    <p>
+                        This action will permanently delete
+                        all students available to your current
+                        account scope.
+                    </p>
+
+                    <p>
+                        Related student records such as
+                        enrollments, charges, results, marks,
+                        and attendance records may also be
+                        removed through the configured
+                        relationships.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 CONFIRMATION
+                 ============================================= -->
+
+            <div class="delete-all-students-confirm-box">
+
+                <label
+                    for="deleteAllStudentsConfirmation"
+                >
+                    Type
+                    <strong>DELETE</strong>
+                    to confirm
+                </label>
+
+                <input
+                    type="text"
+                    id="deleteAllStudentsConfirmation"
+                    class="delete-all-students-confirm-input"
+                    placeholder="Type DELETE"
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+
+                <small>
+                    This confirmation is required before
+                    all students can be deleted.
+                </small>
+
+            </div>
+
+
+            <!-- =============================================
+                 STATUS
+                 ============================================= -->
+
+            <div
+                class="delete-all-students-status"
+                id="deleteAllStudentsStatus"
+                hidden
+                aria-live="polite"
+            >
+
+                <i
+                    class="fas fa-circle-info"
+                    id="deleteAllStudentsStatusIcon"
+                ></i>
+
+                <span
+                    id="deleteAllStudentsStatusText"
+                ></span>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FOOTER
+             ================================================= -->
+
+        <div class="delete-all-students-footer">
+
+            <!-- CANCEL -->
+
+            <button
+                type="button"
+                class="delete-all-students-btn
+                       delete-all-students-btn-cancel"
+                id="cancelDeleteAllStudents"
+            >
+                <i class="fas fa-xmark"></i>
+                Cancel
+            </button>
+
+
+            <!-- DELETE FORM -->
+
+            <form
+                id="deleteAllStudentsForm"
+                method="POST"
+                action="{{ url_for('main.delete_all_students') }}"
+            >
+
+                <button
+                    type="submit"
+                    class="delete-all-students-btn
+                           delete-all-students-btn-danger"
+                    id="confirmDeleteAllStudents"
+                    disabled
+                >
+
+                    <i
+                        class="fas fa-trash-can"
+                        id="deleteAllStudentsButtonIcon"
+                    ></i>
+
+                    <span
+                        id="deleteAllStudentsButtonText"
+                    >
+                        Delete All Students
+                    </span>
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+/* ============================================================
+   DELETE ALL STUDENTS MODAL
+   ============================================================ */
+
+.delete-all-students-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 99999;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+}
+
+
+.delete-all-students-modal.is-open {
+    display: flex;
+}
+
+
+/* ============================================================
+   BODY LOCK
+   ============================================================ */
+
+body.delete-all-students-modal-open {
+    overflow: hidden;
+}
+
+
+/* ============================================================
+   OVERLAY
+   ============================================================ */
+
+.delete-all-students-overlay {
+    position: absolute;
+    inset: 0;
+
+    background: rgba(6, 36, 95, 0.60);
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    animation:
+        deleteAllStudentsOverlayIn
+        0.20s
+        ease
+        forwards;
+}
+
+
+/* ============================================================
+   DIALOG
+   ============================================================ */
+
+.delete-all-students-dialog {
+    position: relative;
+
+    z-index: 2;
+
+    width: min(560px, 100%);
+
+    max-height:
+        calc(100vh - 40px);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    border: 1px solid rgba(6, 36, 95, 0.10);
+
+    box-shadow:
+        0 30px 80px rgba(6, 36, 95, 0.28),
+        0 10px 30px rgba(0, 0, 0, 0.12);
+
+    animation:
+        deleteAllStudentsDialogIn
+        0.25s
+        ease
+        forwards;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.delete-all-students-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 22px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #06245f 0%,
+            #0a347f 58%,
+            #33206f 100%
+        );
+
+    color: #ffffff;
+}
+
+
+.delete-all-students-header-left {
+    min-width: 0;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 14px;
+}
+
+
+/* ============================================================
+   HEADER ICON
+   ============================================================ */
+
+.delete-all-students-icon {
+    flex: 0 0 46px;
+
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background:
+        rgba(255, 255, 255, 0.14);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.20);
+
+    color: #ffffff;
+
+    font-size: 19px;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.10);
+}
+
+
+/* ============================================================
+   TITLE
+   ============================================================ */
+
+.delete-all-students-header h2 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 19px;
+
+    font-weight: 800;
+
+    line-height: 1.25;
+
+    letter-spacing: -0.2px;
+}
+
+
+.delete-all-students-header p {
+    margin: 6px 0 0;
+
+    color:
+        rgba(255, 255, 255, 0.78);
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   CLOSE
+   ============================================================ */
+
+.delete-all-students-close {
+    flex: 0 0 36px;
+
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.10);
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    transition:
+        background 0.18s ease,
+        transform 0.18s ease,
+        opacity 0.18s ease;
+}
+
+
+.delete-all-students-close:hover {
+    background:
+        rgba(255, 255, 255, 0.20);
+
+    transform:
+        rotate(4deg);
+}
+
+
+.delete-all-students-close:active {
+    transform:
+        scale(0.94);
+}
+
+
+.delete-all-students-close:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* ============================================================
+   BODY
+   ============================================================ */
+
+.delete-all-students-body {
+    flex: 1 1 auto;
+
+    overflow-y: auto;
+
+    padding: 22px;
+}
+
+
+/* ============================================================
+   INFO BOX
+   ============================================================ */
+
+.delete-all-students-info-box {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 14px;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(6, 36, 95, 0.055),
+            rgba(51, 32, 111, 0.045)
+        );
+
+    border:
+        1px solid
+        rgba(6, 36, 95, 0.10);
+}
+
+
+.delete-all-students-info-icon {
+    flex: 0 0 40px;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    background:
+        rgba(6, 36, 95, 0.09);
+
+    color: #06245f;
+
+    font-size: 16px;
+}
+
+
+.delete-all-students-info-box span {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #78849a;
+
+    font-size: 10.5px;
+
+    font-weight: 650;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.4px;
+}
+
+
+.delete-all-students-info-box strong {
+    display: block;
+
+    color: #18243b;
+
+    font-size: 17px;
+
+    font-weight: 800;
+}
+
+
+/* ============================================================
+   WARNING
+   ============================================================ */
+
+.delete-all-students-warning {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 12px;
+
+    margin-top: 18px;
+
+    padding: 15px;
+
+    border-radius: 13px;
+
+    background: #fff5f5;
+
+    border:
+        1px solid
+        #fecaca;
+
+    color: #7f1d1d;
+}
+
+
+.delete-all-students-warning-icon {
+    flex: 0 0 auto;
+
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background:
+        rgba(220, 38, 38, 0.10);
+
+    color: #dc2626;
+
+    font-size: 15px;
+}
+
+
+.delete-all-students-warning strong {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #991b1b;
+
+    font-size: 13px;
+
+    font-weight: 800;
+}
+
+
+.delete-all-students-warning p {
+    margin: 0 0 6px;
+
+    color: #8b3030;
+
+    font-size: 12px;
+
+    line-height: 1.55;
+}
+
+
+.delete-all-students-warning p:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ============================================================
+   CONFIRMATION BOX
+   ============================================================ */
+
+.delete-all-students-confirm-box {
+    margin-top: 18px;
+}
+
+
+.delete-all-students-confirm-box label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #263248;
+
+    font-size: 12.5px;
+
+    font-weight: 700;
+}
+
+
+.delete-all-students-confirm-box label strong {
+    color: #dc2626;
+
+    font-weight: 850;
+
+    letter-spacing: 0.5px;
+}
+
+
+/* ============================================================
+   CONFIRM INPUT
+   ============================================================ */
+
+.delete-all-students-confirm-input {
+    width: 100%;
+
+    height: 46px;
+
+    box-sizing: border-box;
+
+    padding:
+        0
+        14px;
+
+    border:
+        1px solid
+        #d7deea;
+
+    border-radius: 11px;
+
+    background: #ffffff;
+
+    color: #172033;
+
+    font-size: 13px;
+
+    font-weight: 650;
+
+    outline: none;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+}
+
+
+.delete-all-students-confirm-input::placeholder {
+    color: #a0a9b8;
+
+    font-weight: 500;
+}
+
+
+.delete-all-students-confirm-input:hover {
+    border-color: #9eabc0;
+}
+
+
+.delete-all-students-confirm-input:focus {
+    border-color: #06245f;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(6, 36, 95, 0.10);
+}
+
+
+.delete-all-students-confirm-input.is-valid {
+    border-color: #32b73a;
+
+    background: #f4fff5;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(50, 183, 58, 0.09);
+}
+
+
+.delete-all-students-confirm-input.is-invalid {
+    border-color: #dc2626;
+
+    background: #fff8f8;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(220, 38, 38, 0.08);
+}
+
+
+.delete-all-students-confirm-box small {
+    display: block;
+
+    margin-top: 7px;
+
+    color: #758198;
+
+    font-size: 11.5px;
+
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.delete-all-students-status {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 9px;
+
+    margin-top: 14px;
+
+    padding: 11px 12px;
+
+    border-radius: 10px;
+
+    font-size: 12px;
+
+    line-height: 1.45;
+
+    border:
+        1px solid
+        transparent;
+}
+
+
+.delete-all-students-status > i {
+    flex: 0 0 auto;
+
+    margin-top: 2px;
+}
+
+
+.delete-all-students-status.info {
+    background: #eff6ff;
+
+    border-color: #bfdbfe;
+
+    color: #1d4ed8;
+}
+
+
+.delete-all-students-status.success {
+    background: #f0fdf4;
+
+    border-color: #bbf7d0;
+
+    color: #15803d;
+}
+
+
+.delete-all-students-status.error {
+    background: #fef2f2;
+
+    border-color: #fecaca;
+
+    color: #b91c1c;
+}
+
+
+.delete-all-students-status[hidden] {
+    display: none !important;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.delete-all-students-footer {
+    flex: 0 0 auto;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding: 16px 22px;
+
+    background: #fafbfc;
+
+    border-top:
+        1px solid
+        #e8ecf2;
+}
+
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.delete-all-students-footer form {
+    margin: 0;
+}
+
+
+/* ============================================================
+   BUTTON BASE
+   ============================================================ */
+
+.delete-all-students-btn {
+    min-height: 42px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    padding:
+        0
+        16px;
+
+    border-radius: 10px;
+
+    font-size: 12.5px;
+
+    font-weight: 750;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease,
+        opacity 0.18s ease;
+}
+
+
+.delete-all-students-btn:active {
+    transform:
+        translateY(1px);
+}
+
+
+.delete-all-students-btn:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* ============================================================
+   CANCEL
+   ============================================================ */
+
+.delete-all-students-btn-cancel {
+    border:
+        1px solid
+        #d6dce7;
+
+    background: #ffffff;
+
+    color: #4b5568;
+}
+
+
+.delete-all-students-btn-cancel:hover {
+    background: #f4f6f9;
+
+    border-color: #c3cad7;
+
+    color: #1f2937;
+}
+
+
+/* ============================================================
+   DELETE
+   ============================================================ */
+
+.delete-all-students-btn-danger {
+    border:
+        1px solid
+        #dc2626;
+
+    background:
+        linear-gradient(
+            135deg,
+            #dc2626 0%,
+            #b91c1c 100%
+        );
+
+    color: #ffffff;
+
+    box-shadow:
+        0 5px 14px
+        rgba(220, 38, 38, 0.20);
+}
+
+
+.delete-all-students-btn-danger:hover:not(:disabled) {
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444 0%,
+            #dc2626 100%
+        );
+
+    box-shadow:
+        0 7px 18px
+        rgba(220, 38, 38, 0.27);
+
+    transform:
+        translateY(-1px);
+}
+
+
+.delete-all-students-btn-danger:focus-visible {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(220, 38, 38, 0.16),
+        0 7px 18px
+        rgba(220, 38, 38, 0.22);
+}
+
+
+/* ============================================================
+   LOADING
+   ============================================================ */
+
+.delete-all-students-btn-danger.is-loading {
+    pointer-events: none;
+}
+
+
+.delete-all-students-btn-danger.is-loading
+.fa-spinner {
+    animation:
+        deleteAllStudentsSpinner
+        0.75s
+        linear
+        infinite;
+}
+
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+.delete-all-students-body::-webkit-scrollbar {
+    width: 7px;
+}
+
+
+.delete-all-students-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+.delete-all-students-body::-webkit-scrollbar-thumb {
+    background: #cbd3df;
+
+    border-radius: 10px;
+}
+
+
+.delete-all-students-body::-webkit-scrollbar-thumb:hover {
+    background: #aeb8c8;
+}
+
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes deleteAllStudentsOverlayIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+@keyframes deleteAllStudentsDialogIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(18px)
+            scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+@keyframes deleteAllStudentsSpinner {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    .delete-all-students-modal {
+        padding: 12px;
+    }
+
+    .delete-all-students-dialog {
+        width: 100%;
+
+        max-height:
+            calc(100vh - 24px);
+
+        border-radius: 16px;
+    }
+
+    .delete-all-students-header {
+        padding: 18px;
+    }
+
+    .delete-all-students-body {
+        padding: 18px;
+    }
+
+    .delete-all-students-footer {
+        padding: 14px 18px;
+    }
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 520px) {
+
+    .delete-all-students-modal {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    .delete-all-students-dialog {
+        width: 100%;
+
+        max-height: 94vh;
+
+        border-radius:
+            18px
+            18px
+            0
+            0;
+
+        animation:
+            deleteAllStudentsMobileIn
+            0.25s
+            ease
+            forwards;
+    }
+
+    .delete-all-students-header {
+        padding: 17px 16px;
+    }
+
+    .delete-all-students-header-left {
+        gap: 11px;
+    }
+
+    .delete-all-students-icon {
+        flex-basis: 40px;
+
+        width: 40px;
+        height: 40px;
+
+        border-radius: 11px;
+
+        font-size: 17px;
+    }
+
+    .delete-all-students-header h2 {
+        font-size: 16px;
+    }
+
+    .delete-all-students-header p {
+        font-size: 11.5px;
+    }
+
+    .delete-all-students-close {
+        flex-basis: 34px;
+
+        width: 34px;
+        height: 34px;
+    }
+
+    .delete-all-students-body {
+        padding: 17px 16px;
+    }
+
+    .delete-all-students-footer {
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+        padding:
+            13px
+            16px
+            calc(
+                13px +
+                env(safe-area-inset-bottom)
+            );
+    }
+
+    .delete-all-students-footer form {
+        width: 100%;
+    }
+
+    .delete-all-students-btn {
+        width: 100%;
+    }
+}
+
+
+@keyframes deleteAllStudentsMobileIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 360px) {
+
+    .delete-all-students-header h2 {
+        font-size: 15px;
+    }
+
+    .delete-all-students-header p {
+        font-size: 11px;
+    }
+
+    .delete-all-students-warning p {
+        font-size: 11.5px;
+    }
+
+    .delete-all-students-confirm-input {
+        font-size: 12px;
+    }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .delete-all-students-modal *,
+    .delete-all-students-modal {
+        animation: none !important;
+
+        transition: none !important;
+    }
+}
+
+</style>
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        "use strict";
+
+
+        /* ====================================================
+           ELEMENTS
+        ==================================================== */
+
+        const openButton =
+            document.getElementById(
+                "openDeleteAllStudentsModal"
+            );
+
+        const modal =
+            document.getElementById(
+                "deleteAllStudentsModal"
+            );
+
+        const overlay =
+            document.getElementById(
+                "deleteAllStudentsOverlay"
+            );
+
+        const closeButton =
+            document.getElementById(
+                "closeDeleteAllStudentsModal"
+            );
+
+        const cancelButton =
+            document.getElementById(
+                "cancelDeleteAllStudents"
+            );
+
+        const form =
+            document.getElementById(
+                "deleteAllStudentsForm"
+            );
+
+        const confirmButton =
+            document.getElementById(
+                "confirmDeleteAllStudents"
+            );
+
+        const confirmationInput =
+            document.getElementById(
+                "deleteAllStudentsConfirmation"
+            );
+
+        const countElement =
+            document.getElementById(
+                "deleteAllStudentsCount"
+            );
+
+        const buttonIcon =
+            document.getElementById(
+                "deleteAllStudentsButtonIcon"
+            );
+
+        const buttonText =
+            document.getElementById(
+                "deleteAllStudentsButtonText"
+            );
+
+        const statusBox =
+            document.getElementById(
+                "deleteAllStudentsStatus"
+            );
+
+        const statusText =
+            document.getElementById(
+                "deleteAllStudentsStatusText"
+            );
+
+        const statusIcon =
+            document.getElementById(
+                "deleteAllStudentsStatusIcon"
+            );
+
+
+        /* ====================================================
+           STATE
+        ==================================================== */
+
+        let isDeleting = false;
+
+
+        /* ====================================================
+           STUDENT COUNT
+        ==================================================== */
+
+        const studentCount =
+            openButton
+                ? parseInt(
+                    openButton.dataset.studentCount || "0",
+                    10
+                )
+                : 0;
+
+
+        /* ====================================================
+           UPDATE COUNT
+        ==================================================== */
+
+        function updateStudentCount() {
+
+            if (!countElement) {
+                return;
+            }
+
+            if (
+                Number.isFinite(studentCount)
+                && studentCount > 0
+            ) {
+
+                countElement.textContent =
+                    studentCount.toLocaleString();
+
+            } else {
+
+                countElement.textContent =
+                    "0";
+
+            }
+        }
+
+
+        /* ====================================================
+           STATUS
+        ==================================================== */
+
+        function showStatus(
+            message,
+            type = "info"
+        ) {
+
+            if (!statusBox || !statusText) {
+                return;
+            }
+
+            statusBox.hidden = false;
+
+            statusBox.classList.remove(
+                "info",
+                "success",
+                "error"
+            );
+
+            statusBox.classList.add(type);
+
+            statusText.textContent =
+                message;
+
+
+            if (statusIcon) {
+
+                statusIcon.className =
+                    "fas";
+
+                if (type === "error") {
+
+                    statusIcon.classList.add(
+                        "fa-circle-exclamation"
+                    );
+
+                } else if (type === "success") {
+
+                    statusIcon.classList.add(
+                        "fa-circle-check"
+                    );
+
+                } else {
+
+                    statusIcon.classList.add(
+                        "fa-circle-info"
+                    );
+                }
+            }
+        }
+
+
+        /* ====================================================
+           HIDE STATUS
+        ==================================================== */
+
+        function hideStatus() {
+
+            if (!statusBox) {
+                return;
+            }
+
+            statusBox.hidden = true;
+
+            statusBox.classList.remove(
+                "info",
+                "success",
+                "error"
+            );
+
+            if (statusText) {
+
+                statusText.textContent =
+                    "";
+            }
+        }
+
+
+        /* ====================================================
+           UPDATE DELETE BUTTON
+        ==================================================== */
+
+        function updateDeleteButton() {
+
+            if (!confirmButton) {
+                return;
+            }
+
+            const value =
+                confirmationInput
+                    ? confirmationInput.value
+                        .trim()
+                        .toUpperCase()
+                    : "";
+
+            const confirmed =
+                value === "DELETE";
+
+            const hasStudents =
+                studentCount > 0;
+
+            confirmButton.disabled =
+                !confirmed
+                || !hasStudents
+                || isDeleting;
+        }
+
+
+        /* ====================================================
+           OPEN MODAL
+        ==================================================== */
+
+        function openModal() {
+
+            if (!modal) {
+                return;
+            }
+
+            if (isDeleting) {
+                return;
+            }
+
+            modal.classList.add(
+                "is-open"
+            );
+
+            modal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+            document.body.classList.add(
+                "delete-all-students-modal-open"
+            );
+
+            hideStatus();
+
+            updateStudentCount();
+
+            if (confirmationInput) {
+
+                confirmationInput.value = "";
+
+                confirmationInput.classList.remove(
+                    "is-valid",
+                    "is-invalid"
+                );
+            }
+
+            updateDeleteButton();
+
+
+            window.setTimeout(
+                function () {
+
+                    if (confirmationInput) {
+
+                        confirmationInput.focus();
+
+                    }
+
+                },
+                80
+            );
+        }
+
+
+        /* ====================================================
+           CLOSE MODAL
+        ==================================================== */
+
+        function closeModal() {
+
+            if (!modal) {
+                return;
+            }
+
+            if (isDeleting) {
+                return;
+            }
+
+            modal.classList.remove(
+                "is-open"
+            );
+
+            modal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            document.body.classList.remove(
+                "delete-all-students-modal-open"
+            );
+
+
+            if (confirmationInput) {
+
+                confirmationInput.value = "";
+
+                confirmationInput.classList.remove(
+                    "is-valid",
+                    "is-invalid"
+                );
+            }
+
+            hideStatus();
+
+            updateDeleteButton();
+        }
+
+
+        /* ====================================================
+           CONFIRMATION INPUT
+        ==================================================== */
+
+        if (confirmationInput) {
+
+            confirmationInput.addEventListener(
+                "input",
+                function () {
+
+                    const value =
+                        confirmationInput.value
+                            .trim()
+                            .toUpperCase();
+
+
+                    /* ----------------------------------------
+                       Normalize input
+                    ---------------------------------------- */
+
+                    if (
+                        confirmationInput.value !==
+                        value
+                    ) {
+
+                        confirmationInput.value =
+                            value;
+                    }
+
+
+                    /* ----------------------------------------
+                       Valid
+                    ---------------------------------------- */
+
+                    if (value === "DELETE") {
+
+                        confirmationInput.classList.add(
+                            "is-valid"
+                        );
+
+                        confirmationInput.classList.remove(
+                            "is-invalid"
+                        );
+
+                        hideStatus();
+
+                    }
+
+                    /* ----------------------------------------
+                       Invalid but partially typed
+                    ---------------------------------------- */
+
+                    else if (value.length > 0) {
+
+                        confirmationInput.classList.add(
+                            "is-invalid"
+                        );
+
+                        confirmationInput.classList.remove(
+                            "is-valid"
+                        );
+
+                    }
+
+                    /* ----------------------------------------
+                       Empty
+                    ---------------------------------------- */
+
+                    else {
+
+                        confirmationInput.classList.remove(
+                            "is-valid",
+                            "is-invalid"
+                        );
+
+                        hideStatus();
+                    }
+
+
+                    updateDeleteButton();
+                }
+            );
+
+
+            /* =================================================
+               ENTER KEY
+            ================================================= */
+
+            confirmationInput.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (
+                        event.key === "Enter"
+                    ) {
+
+                        event.preventDefault();
+
+                        if (
+                            confirmButton
+                            && !confirmButton.disabled
+                        ) {
+
+                            form.requestSubmit(
+                                confirmButton
+                            );
+                        }
+                    }
+                }
+            );
+        }
+
+
+        /* ====================================================
+           OPEN BUTTON
+        ==================================================== */
+
+        if (openButton) {
+
+            openButton.addEventListener(
+                "click",
+                function (event) {
+
+                    event.preventDefault();
+
+                    openModal();
+                }
+            );
+        }
+
+
+        /* ====================================================
+           CLOSE BUTTON
+        ==================================================== */
+
+        if (closeButton) {
+
+            closeButton.addEventListener(
+                "click",
+                function (event) {
+
+                    event.preventDefault();
+
+                    closeModal();
+                }
+            );
+        }
+
+
+        /* ====================================================
+           CANCEL BUTTON
+        ==================================================== */
+
+        if (cancelButton) {
+
+            cancelButton.addEventListener(
+                "click",
+                function (event) {
+
+                    event.preventDefault();
+
+                    closeModal();
+                }
+            );
+        }
+
+
+        /* ====================================================
+           OVERLAY
+        ==================================================== */
+
+        if (overlay) {
+
+            overlay.addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target === overlay
+                    ) {
+
+                        closeModal();
+                    }
+                }
+            );
+        }
+
+
+        /* ====================================================
+           FORM SUBMIT
+        ==================================================== */
+
+        if (form) {
+
+            form.addEventListener(
+                "submit",
+                function (event) {
+
+                    const value =
+                        confirmationInput
+                            ? confirmationInput.value
+                                .trim()
+                                .toUpperCase()
+                            : "";
+
+
+                    /* ----------------------------------------
+                       Confirmation required
+                    ---------------------------------------- */
+
+                    if (value !== "DELETE") {
+
+                        event.preventDefault();
+
+                        if (confirmationInput) {
+
+                            confirmationInput.classList.add(
+                                "is-invalid"
+                            );
+
+                            confirmationInput.focus();
+                        }
+
+                        showStatus(
+                            "Please type DELETE to confirm.",
+                            "error"
+                        );
+
+                        updateDeleteButton();
+
+                        return;
+                    }
+
+
+                    /* ----------------------------------------
+                       No students
+                    ---------------------------------------- */
+
+                    if (studentCount <= 0) {
+
+                        event.preventDefault();
+
+                        showStatus(
+                            "There are no students available to delete.",
+                            "error"
+                        );
+
+                        return;
+                    }
+
+
+                    /* ----------------------------------------
+                       Already deleting
+                    ---------------------------------------- */
+
+                    if (isDeleting) {
+
+                        event.preventDefault();
+
+                        return;
+                    }
+
+
+                    /* ----------------------------------------
+                       Start deletion
+                    ---------------------------------------- */
+
+                    isDeleting = true;
+
+
+                    if (confirmButton) {
+
+                        confirmButton.disabled =
+                            true;
+
+                        confirmButton.classList.add(
+                            "is-loading"
+                        );
+                    }
+
+
+                    if (cancelButton) {
+
+                        cancelButton.disabled =
+                            true;
+                    }
+
+
+                    if (closeButton) {
+
+                        closeButton.disabled =
+                            true;
+                    }
+
+
+                    if (buttonIcon) {
+
+                        buttonIcon.className =
+                            "fas fa-spinner";
+                    }
+
+
+                    if (buttonText) {
+
+                        buttonText.textContent =
+                            "Deleting Students...";
+                    }
+
+
+                    showStatus(
+                        "Deleting all students and related records. Please wait...",
+                        "info"
+                    );
+
+
+                    /*
+                     * Do NOT preventDefault().
+                     *
+                     * Normal POST request continues to Flask.
+                     */
+                }
+            );
+        }
+
+
+        /* ====================================================
+           ESCAPE KEY
+        ==================================================== */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape"
+                    && modal
+                    && modal.classList.contains(
+                        "is-open"
+                    )
+                ) {
+
+                    closeModal();
+                }
+            }
+        );
+
+
+        /* ====================================================
+           INITIALIZE
+        ==================================================== */
+
+        updateStudentCount();
+
+        updateDeleteButton();
+
+    }
+);
+
+</script>
+
         </div>
 
     </div>

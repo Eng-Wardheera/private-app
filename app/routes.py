@@ -53491,21 +53491,29 @@ def _student_has_access(student):
     return False
 
 
+
 # ============================================================
 # ALL STUDENTS
 # ============================================================
-@bp.route("/students", methods=["GET"])
+# ============================================================
+# ALL STUDENTS
+# ============================================================
+
+@bp.route(
+    "/students",
+    methods=["GET"]
+)
 @login_required
 def all_students():
     """
     ALL STUDENTS
     ============================================================
-    Student management/list page.
+    Student management / list page.
 
     Supported roles:
-        superadmin
-        school_admin
-        branch_admin
+        - superadmin
+        - school_admin
+        - branch_admin
 
     Features:
         - Role-based security
@@ -53515,7 +53523,9 @@ def all_students():
         - Status filter
         - Pagination
         - Accurate statistics
+        - Accurate delete-all count
         - Student-only records
+        - Strict institution / branch scope
     """
 
     # ============================================================
@@ -53535,7 +53545,10 @@ def all_students():
         login_required,
     )
 
-    from sqlalchemy import or_, func
+    from sqlalchemy import (
+        or_,
+        func,
+    )
 
     # ============================================================
     # ACCESS CONTROL
@@ -53547,11 +53560,28 @@ def all_students():
         "branch_admin",
     }
 
+    # ------------------------------------------------------------
+    # Normalize role
+    # ------------------------------------------------------------
+
     current_role = getattr(
         current_user,
         "role",
         None,
     )
+
+    if hasattr(current_role, "value"):
+        current_role = current_role.value
+
+    current_role = (
+        str(current_role).strip().lower()
+        if current_role is not None
+        else ""
+    )
+
+    # ------------------------------------------------------------
+    # Check role
+    # ------------------------------------------------------------
 
     if current_role not in allowed_roles:
 
@@ -53586,6 +53616,10 @@ def all_students():
     # ROLE SCOPE VALIDATION
     # ============================================================
 
+    # ------------------------------------------------------------
+    # SCHOOL ADMIN
+    # ------------------------------------------------------------
+
     if current_role == "school_admin":
 
         if not current_institution_id:
@@ -53600,6 +53634,10 @@ def all_students():
                     "main.dashboard"
                 )
             )
+
+    # ------------------------------------------------------------
+    # BRANCH ADMIN
+    # ------------------------------------------------------------
 
     elif current_role == "branch_admin":
 
@@ -53693,46 +53731,49 @@ def all_students():
         status = ""
 
     # ============================================================
-    # PARSE FILTER IDS
+    # PARSE INSTITUTION ID
     # ============================================================
 
     selected_institution_id = None
-    selected_branch_id = None
-
-    # ------------------------------------------------------------
-    # Institution
-    # ------------------------------------------------------------
 
     if institution_id_raw:
 
         try:
+
             selected_institution_id = int(
                 institution_id_raw
             )
+
         except (
             TypeError,
             ValueError,
         ):
+
             selected_institution_id = None
 
-    # ------------------------------------------------------------
-    # Branch
-    # ------------------------------------------------------------
+    # ============================================================
+    # PARSE BRANCH ID
+    # ============================================================
+
+    selected_branch_id = None
 
     if branch_id_raw:
 
         try:
+
             selected_branch_id = int(
                 branch_id_raw
             )
+
         except (
             TypeError,
             ValueError,
         ):
+
             selected_branch_id = None
 
     # ============================================================
-    # ENFORCE ROLE SCOPE ON FILTERS
+    # ENFORCE ROLE SCOPE
     # ============================================================
 
     # ------------------------------------------------------------
@@ -53741,7 +53782,9 @@ def all_students():
 
     if current_role == "superadmin":
 
-        # Superadmin may use the submitted filters.
+        # Superadmin can use submitted institution / branch
+        # filters.
+
         pass
 
     # ------------------------------------------------------------
@@ -53750,13 +53793,16 @@ def all_students():
 
     elif current_role == "school_admin":
 
-        # School admin can ONLY see own institution.
+        # School admin is locked to own institution.
+
         selected_institution_id = (
             current_institution_id
         )
 
-        # If selected branch is supplied, verify it belongs
-        # to the current institution.
+        # --------------------------------------------------------
+        # Validate selected branch
+        # --------------------------------------------------------
+
         if selected_branch_id:
 
             valid_branch = (
@@ -53781,7 +53827,8 @@ def all_students():
 
     elif current_role == "branch_admin":
 
-        # Branch admin can ONLY see own institution + branch.
+        # Branch admin is locked to own institution + branch.
+
         selected_institution_id = (
             current_institution_id
         )
@@ -53794,7 +53841,16 @@ def all_students():
     # BASE STUDENT QUERY
     # ============================================================
     #
-    # Always restrict to actual students.
+    # IMPORTANT:
+    #
+    # Do NOT add order_by() here.
+    #
+    # This query is used for:
+    #   - statistics
+    #   - total count
+    #   - filtering
+    #
+    # Ordering is added later only for pagination.
     #
 
     base_query = (
@@ -53808,12 +53864,20 @@ def all_students():
     # APPLY ROLE SCOPE
     # ============================================================
 
+    # ------------------------------------------------------------
+    # SCHOOL ADMIN
+    # ------------------------------------------------------------
+
     if current_role == "school_admin":
 
         base_query = base_query.filter(
             Student.institution_id
             == current_institution_id
         )
+
+    # ------------------------------------------------------------
+    # BRANCH ADMIN
+    # ------------------------------------------------------------
 
     elif current_role == "branch_admin":
 
@@ -53858,7 +53922,9 @@ def all_students():
         )
 
         base_query = base_query.filter(
+
             or_(
+
                 Student.full_name.ilike(
                     search_pattern
                 ),
@@ -53898,6 +53964,7 @@ def all_students():
                 Student.parent_email.ilike(
                     search_pattern
                 ),
+
             )
         )
 
@@ -53912,14 +53979,17 @@ def all_students():
         )
 
     # ============================================================
-    # STATISTICS
+    # TOTAL FILTERED STUDENTS
     # ============================================================
     #
-    # These statistics represent the CURRENT FILTERED RESULT:
+    # IMPORTANT:
     #
-    # search + institution + branch + status
+    # There is NO order_by() here.
     #
-    # This is useful for cards at the top of the page.
+    # This prevents PostgreSQL:
+    #
+    # column "students.full_name" must appear
+    # in the GROUP BY clause...
     #
 
     total_students = (
@@ -53930,6 +54000,10 @@ def all_students():
         .scalar()
         or 0
     )
+
+    # ============================================================
+    # STATUS STATISTICS
+    # ============================================================
 
     active_students = (
         base_query
@@ -54004,8 +54078,37 @@ def all_students():
     )
 
     # ============================================================
+    # DELETE ALL COUNT
+    # ============================================================
+    #
+    # This is intentionally based on the SAME role scope,
+    # institution filter, branch filter, search and status
+    # currently active on the page.
+    #
+    # Since base_query has NO order_by(), this is safe.
+    #
+    # However, if your Delete All route deletes ALL students
+    # in the role scope regardless of page filters, then use
+    # a separate role-scoped count instead.
+    #
+
+    total_student_count = (
+        base_query
+        .with_entities(
+            func.count(Student.id)
+        )
+        .scalar()
+        or 0
+    )
+
+    # ============================================================
     # ORDERING
     # ============================================================
+    #
+    # ONLY NOW add order_by().
+    #
+    # This query is used for displaying students / pagination.
+    #
 
     students_query = (
         base_query
@@ -54147,7 +54250,7 @@ def all_students():
         "backend/pages/students/all_students.html",
 
         # --------------------------------------------------------
-        # Students
+        # STUDENTS
         # --------------------------------------------------------
 
         students=students,
@@ -54155,7 +54258,20 @@ def all_students():
         pagination=pagination,
 
         # --------------------------------------------------------
-        # Filters
+        # TOTAL STUDENT COUNT
+        # --------------------------------------------------------
+        #
+        # Used by:
+        #
+        # data-student-count="{{ total_student_count }}"
+        #
+        # for Delete All Students modal.
+        #
+
+        total_student_count=total_student_count,
+
+        # --------------------------------------------------------
+        # FILTERS
         # --------------------------------------------------------
 
         search=search,
@@ -54173,7 +54289,7 @@ def all_students():
         per_page=per_page,
 
         # --------------------------------------------------------
-        # Filter data
+        # FILTER DATA
         # --------------------------------------------------------
 
         institutions=institutions,
@@ -54181,7 +54297,7 @@ def all_students():
         branches=branches,
 
         # --------------------------------------------------------
-        # Statistics
+        # STATISTICS
         # --------------------------------------------------------
 
         total_students=(
@@ -54213,7 +54329,7 @@ def all_students():
         ),
 
         # --------------------------------------------------------
-        # Current user
+        # CURRENT USER
         # --------------------------------------------------------
 
         user=current_user,
@@ -54228,8 +54344,6 @@ def all_students():
             current_branch_id
         ),
     )
-
-
 
 # ============================================================
 # ADD STUDENT
@@ -63803,6 +63917,181 @@ def import_students_full():
             "main.all_students"
         )
     )
+
+
+
+# ============================================================
+# DELETE ALL STUDENTS
+# ============================================================
+
+@bp.route(
+    "/students/delete-all",
+    methods=["POST"]
+)
+@login_required
+def delete_all_students():
+
+    try:
+
+        # ====================================================
+        # ROLE
+        # ====================================================
+
+        role = current_user.role
+
+        if hasattr(role, "value"):
+            role = role.value
+
+        role = str(role).strip().lower()
+
+        allowed_roles = {
+            "superadmin",
+            "school_admin",
+            "branch_admin",
+        }
+
+        if role not in allowed_roles:
+            abort(403)
+
+        # ====================================================
+        # BASE QUERY
+        # ====================================================
+
+        students_query = Student.query
+
+        # ====================================================
+        # SUPERVISOR / SCHOOL ADMIN SCOPE
+        # ====================================================
+
+        if role == "school_admin":
+
+            institution_id = getattr(
+                current_user,
+                "institution_id",
+                None
+            )
+
+            if not institution_id:
+                abort(403)
+
+            students_query = students_query.filter(
+                Student.institution_id == institution_id
+            )
+
+        # ====================================================
+        # BRANCH ADMIN SCOPE
+        # ====================================================
+
+        elif role == "branch_admin":
+
+            institution_id = getattr(
+                current_user,
+                "institution_id",
+                None
+            )
+
+            branch_id = getattr(
+                current_user,
+                "branch_id",
+                None
+            )
+
+            if not institution_id or not branch_id:
+                abort(403)
+
+            students_query = students_query.filter(
+                Student.institution_id == institution_id,
+                Student.branch_id == branch_id
+            )
+
+        # ====================================================
+        # LOAD STUDENTS
+        # ====================================================
+
+        students = students_query.all()
+
+        student_count = len(students)
+
+        # ====================================================
+        # NOTHING TO DELETE
+        # ====================================================
+
+        if student_count == 0:
+
+            flash(
+                "There are no students to delete.",
+                "info"
+            )
+
+            return redirect(
+                url_for("main.all_students")
+            )
+
+        # ====================================================
+        # DELETE STUDENTS
+        #
+        # db.session.delete(student) is intentional.
+        #
+        # This allows SQLAlchemy relationship cascades to
+        # process:
+        #
+        # - StudentEnrollment
+        # - StudentCharge
+        # - StudentResult
+        # - Mark
+        # - AttendanceRecord
+        # ====================================================
+
+        for student in students:
+
+            db.session.delete(student)
+
+        # ====================================================
+        # COMMIT
+        # ====================================================
+
+        db.session.commit()
+
+        # ====================================================
+        # SUCCESS
+        # ====================================================
+
+        flash(
+            (
+                f"All {student_count} student(s) "
+                f"were deleted successfully."
+            ),
+            "success"
+        )
+
+        return redirect(
+            url_for("main.all_students")
+        )
+
+    # ========================================================
+    # ERROR
+    # ========================================================
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        current_app.logger.exception(
+            "Failed to delete all students."
+        )
+
+        flash(
+            (
+                "Unable to delete all students. "
+                "No changes were saved."
+            ),
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.all_students")
+        )
+
 
 # ============================================================
 # EXAM ROLE SECURITY
@@ -95843,6 +96132,7 @@ def add_exam_result():
         ),
 
         scope_type=scope_type,
+        user=current_user
     )
 
 
