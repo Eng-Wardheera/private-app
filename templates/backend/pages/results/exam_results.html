@@ -5542,23 +5542,22 @@ document.addEventListener("DOMContentLoaded", function () {
         Add Exam Mark
     </a>
 
-    
     <!-- ============================================================
-     DELETE ALL EXAM RESULTS BUTTON
+     DELETE ALL RESULTS
+     PAGE LEVEL BUTTON
 ============================================================ -->
 
 <button
     type="button"
-    class="exam-results-btn exam-results-btn-danger open-delete-all-results-modal"
-    data-exam-id="{{ exam.id }}"
-    data-exam-name="{{ exam.name or exam.title or exam.code or ('Exam #' ~ exam.id) }}"
+    class="exam-results-btn exam-results-btn-danger"
+    id="openDeleteAllResultsModal"
 >
     <i class="fa-solid fa-trash-can"></i>
     Delete All Results
 </button>
 
-<!-- ============================================================
-     DELETE ALL EXAM RESULTS MODAL
+    <!-- ============================================================
+     DELETE ALL RESULTS MODAL
 ============================================================ -->
 
 <div
@@ -5567,19 +5566,11 @@ document.addEventListener("DOMContentLoaded", function () {
     aria-hidden="true"
 >
 
-    <!-- ========================================================
-         OVERLAY
-    ========================================================= -->
-
     <div
         class="delete-all-results-overlay"
         id="deleteAllResultsOverlay"
     ></div>
 
-
-    <!-- ========================================================
-         DIALOG
-    ========================================================= -->
 
     <div
         class="delete-all-results-dialog"
@@ -5588,17 +5579,13 @@ document.addEventListener("DOMContentLoaded", function () {
         aria-labelledby="deleteAllResultsTitle"
     >
 
-        <!-- ====================================================
-             HEADER
-        ===================================================== -->
-
         <div class="delete-all-results-header">
 
             <div class="delete-all-results-header-left">
 
                 <div class="delete-all-results-icon">
 
-                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <i class="fa-solid fa-trash-can"></i>
 
                 </div>
 
@@ -5610,8 +5597,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     </h2>
 
                     <p>
-                        This action will permanently remove
-                        all student results for the selected exam.
+                        Select the examination whose results
+                        you want to permanently delete.
                     </p>
 
                 </div>
@@ -5633,17 +5620,75 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
 
 
-        <!-- ====================================================
-             BODY
-        ===================================================== -->
-
         <div class="delete-all-results-body">
 
             <!-- ==================================================
-                 EXAM INFORMATION
+                 EXAM SELECT
             =================================================== -->
 
-            <div class="delete-all-results-exam-box">
+            <div class="delete-all-results-field">
+
+                <label for="deleteAllResultsExamSelect">
+
+                    <i class="fa-solid fa-file-signature"></i>
+
+                    Examination
+
+                    <span>*</span>
+
+                </label>
+
+
+                <select
+                    id="deleteAllResultsExamSelect"
+                    class="delete-all-results-select"
+                >
+
+                    <option value="">
+                        Select Examination
+                    </option>
+
+                    {% for exam_item in exams %}
+
+                        <option
+                            value="{{ exam_item.id }}"
+                            data-exam-name="{{ exam_item.name or exam_item.title or exam_item.code or ('Exam #' ~ exam_item.id) }}"
+                        >
+
+                            {{ exam_item.name
+                                or exam_item.title
+                                or exam_item.code
+                                or ('Exam #' ~ exam_item.id)
+                            }}
+
+                            {% if exam_item.code %}
+                                ({{ exam_item.code }})
+                            {% endif %}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <small>
+                    Select the examination whose results
+                    should be deleted.
+                </small>
+
+            </div>
+
+
+            <!-- ==================================================
+                 SELECTED EXAM
+            =================================================== -->
+
+            <div
+                class="delete-all-results-exam-box"
+                id="deleteAllResultsExamBox"
+                hidden
+            >
 
                 <div class="delete-all-results-exam-icon">
 
@@ -5685,8 +5730,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     <p>
                         All student results and marks belonging
-                        to this examination will be deleted.
-                        This action cannot be undone.
+                        to the selected examination will be
+                        permanently deleted. This action cannot
+                        be undone.
                     </p>
 
                 </div>
@@ -5703,7 +5749,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 id="deleteAllResultsStatus"
                 hidden
                 aria-live="polite"
-                aria-atomic="true"
             >
 
                 <i
@@ -5739,20 +5784,11 @@ document.addEventListener("DOMContentLoaded", function () {
             </button>
 
 
-            <!-- ==================================================
-                 FORM
-            =================================================== -->
-
             <form
                 id="deleteAllExamResultsForm"
                 method="POST"
                 action="{{ url_for('main.delete_all_exam_results') }}"
             >
-
-                <!-- IMPORTANT:
-                     This starts EMPTY.
-                     JavaScript will put the selected exam ID here.
-                -->
 
                 <input
                     type="hidden"
@@ -5766,6 +5802,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     type="submit"
                     class="delete-all-results-btn delete-all-results-btn-danger"
                     id="confirmDeleteAllResults"
+                    disabled
                 >
 
                     <i
@@ -5787,914 +5824,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </div>
 
-<style>
-
-/* ============================================================
-   DELETE ALL RESULTS MODAL
-============================================================ */
-
-.delete-all-results-modal {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 100000;
-
-    display: none;
-
-    align-items: center;
-
-    justify-content: center;
-
-    padding: 20px;
-
-}
-
-
-/* ============================================================
-   OPEN STATE
-============================================================ */
-
-.delete-all-results-modal.is-open {
-
-    display: flex;
-
-}
-
-
-/* ============================================================
-   BODY LOCK
-============================================================ */
-
-body.delete-all-results-modal-open {
-
-    overflow: hidden;
-
-}
-
-
-/* ============================================================
-   OVERLAY
-============================================================ */
-
-.delete-all-results-overlay {
-
-    position: absolute;
-
-    inset: 0;
-
-    background:
-        rgba(6, 36, 95, 0.60);
-
-    backdrop-filter:
-        blur(5px);
-
-    -webkit-backdrop-filter:
-        blur(5px);
-
-}
-
-
-/* ============================================================
-   DIALOG
-============================================================ */
-
-.delete-all-results-dialog {
-
-    position: relative;
-
-    z-index: 2;
-
-    width:
-        min(560px, 100%);
-
-    max-height:
-        calc(100vh - 40px);
-
-    overflow-y:
-        auto;
-
-    background:
-        #ffffff;
-
-    border-radius:
-        18px;
-
-    box-shadow:
-        0 25px 70px
-        rgba(6, 36, 95, 0.28);
-
-    animation:
-        deleteAllResultsModalIn
-        0.22s
-        ease-out;
-
-}
-
-
-@keyframes deleteAllResultsModalIn {
-
-    from {
-
-        opacity: 0;
-
-        transform:
-            translateY(18px)
-            scale(0.97);
-
-    }
-
-    to {
-
-        opacity: 1;
-
-        transform:
-            translateY(0)
-            scale(1);
-
-    }
-
-}
-
-
-/* ============================================================
-   HEADER
-============================================================ */
-
-.delete-all-results-header {
-
-    display: flex;
-
-    align-items: flex-start;
-
-    justify-content: space-between;
-
-    gap: 16px;
-
-    padding:
-        22px 24px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #06245f 0%,
-            #123b86 100%
-        );
-
-    color:
-        #ffffff;
-
-}
-
-
-.delete-all-results-header-left {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 14px;
-
-    min-width: 0;
-
-}
-
-
-/* ============================================================
-   HEADER ICON
-============================================================ */
-
-.delete-all-results-icon {
-
-    width:
-        46px;
-
-    height:
-        46px;
-
-    flex:
-        0 0 46px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border-radius:
-        12px;
-
-    background:
-        rgba(217, 45, 32, 0.18);
-
-    color:
-        #ffffff;
-
-    font-size:
-        20px;
-
-    border:
-        1px solid
-        rgba(255, 255, 255, 0.18);
-
-}
-
-
-/* ============================================================
-   HEADER TITLE
-============================================================ */
-
-.delete-all-results-header h2 {
-
-    margin:
-        0;
-
-    font-size:
-        20px;
-
-    font-weight:
-        750;
-
-    line-height:
-        1.25;
-
-}
-
-
-.delete-all-results-header p {
-
-    margin:
-        5px 0 0;
-
-    color:
-        rgba(255, 255, 255, 0.78);
-
-    font-size:
-        13px;
-
-    line-height:
-        1.5;
-
-}
-
-
-/* ============================================================
-   CLOSE
-============================================================ */
-
-.delete-all-results-close {
-
-    width:
-        36px;
-
-    height:
-        36px;
-
-    flex:
-        0 0 36px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    border:
-        0;
-
-    border-radius:
-        9px;
-
-    background:
-        rgba(255, 255, 255, 0.10);
-
-    color:
-        #ffffff;
-
-    cursor:
-        pointer;
-
-    font-size:
-        16px;
-
-    transition:
-        background 0.18s ease,
-        transform 0.18s ease;
-
-}
-
-
-.delete-all-results-close:hover {
-
-    background:
-        rgba(255, 255, 255, 0.18);
-
-    transform:
-        rotate(4deg);
-
-}
-
-
-/* ============================================================
-   BODY
-============================================================ */
-
-.delete-all-results-body {
-
-    padding:
-        24px;
-
-}
-
-
-/* ============================================================
-   EXAM BOX
-============================================================ */
-
-.delete-all-results-exam-box {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        13px;
-
-    padding:
-        14px;
-
-    margin-bottom:
-        18px;
-
-    border:
-        1px solid
-        #d0d5dd;
-
-    border-radius:
-        11px;
-
-    background:
-        #f9fafb;
-
-}
-
-
-.delete-all-results-exam-icon {
-
-    width:
-        42px;
-
-    height:
-        42px;
-
-    flex:
-        0 0 42px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    border-radius:
-        10px;
-
-    background:
-        rgba(6, 36, 95, 0.08);
-
-    color:
-        #06245f;
-
-}
-
-
-.delete-all-results-exam-box span {
-
-    display:
-        block;
-
-    margin-bottom:
-        3px;
-
-    color:
-        #667085;
-
-    font-size:
-        11px;
-
-    font-weight:
-        600;
-
-}
-
-
-.delete-all-results-exam-box strong {
-
-    display:
-        block;
-
-    color:
-        #1d2939;
-
-    font-size:
-        14px;
-
-    font-weight:
-        750;
-
-}
-
-
-/* ============================================================
-   WARNING
-============================================================ */
-
-.delete-all-results-warning {
-
-    display:
-        flex;
-
-    align-items:
-        flex-start;
-
-    gap:
-        11px;
-
-    padding:
-        14px;
-
-    border:
-        1px solid
-        #fecdca;
-
-    border-radius:
-        11px;
-
-    background:
-        #fef3f2;
-
-    color:
-        #b42318;
-
-}
-
-
-.delete-all-results-warning > i {
-
-    margin-top:
-        2px;
-
-    flex:
-        0 0 auto;
-
-    font-size:
-        17px;
-
-}
-
-
-.delete-all-results-warning strong {
-
-    display:
-        block;
-
-    margin-bottom:
-        3px;
-
-    font-size:
-        13px;
-
-}
-
-
-.delete-all-results-warning p {
-
-    margin:
-        0;
-
-    color:
-        #b42318;
-
-    font-size:
-        12px;
-
-    line-height:
-        1.55;
-
-}
-
-
-/* ============================================================
-   STATUS
-============================================================ */
-
-.delete-all-results-status {
-
-    display:
-        flex;
-
-    align-items:
-        flex-start;
-
-    gap:
-        9px;
-
-    margin-top:
-        17px;
-
-    padding:
-        11px 13px;
-
-    border-radius:
-        9px;
-
-    background:
-        #f2f4f7;
-
-    color:
-        #475467;
-
-    font-size:
-        12px;
-
-    line-height:
-        1.5;
-
-}
-
-
-.delete-all-results-status[hidden] {
-
-    display:
-        none;
-
-}
-
-
-.delete-all-results-status i {
-
-    margin-top:
-        2px;
-
-}
-
-
-.delete-all-results-status.info {
-
-    background:
-        #eff8ff;
-
-    color:
-        #175cd3;
-
-}
-
-
-.delete-all-results-status.info i {
-
-    color:
-        #1570ef;
-
-}
-
-
-.delete-all-results-status.success {
-
-    background:
-        #ecfdf3;
-
-    color:
-        #027a48;
-
-}
-
-
-.delete-all-results-status.success i {
-
-    color:
-        #12b76a;
-
-}
-
-
-.delete-all-results-status.error {
-
-    background:
-        #fef3f2;
-
-    color:
-        #b42318;
-
-}
-
-
-.delete-all-results-status.error i {
-
-    color:
-        #d92d20;
-
-}
-
-
-/* ============================================================
-   FOOTER
-============================================================ */
-
-.delete-all-results-footer {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        flex-end;
-
-    gap:
-        10px;
-
-    padding:
-        17px 24px;
-
-    border-top:
-        1px solid
-        #eaecf0;
-
-    background:
-        #fcfcfd;
-
-}
-
-
-.delete-all-results-footer form {
-
-    margin:
-        0;
-
-}
-
-
-/* ============================================================
-   BUTTON
-============================================================ */
-
-.delete-all-results-btn {
-
-    min-height:
-        42px;
-
-    display:
-        inline-flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    gap:
-        8px;
-
-    padding:
-        0 16px;
-
-    border-radius:
-        9px;
-
-    border:
-        1px solid
-        transparent;
-
-    font-size:
-        13px;
-
-    font-weight:
-        700;
-
-    cursor:
-        pointer;
-
-    transition:
-        all 0.18s ease;
-
-}
-
-
-/* ============================================================
-   CANCEL
-============================================================ */
-
-.delete-all-results-btn-cancel {
-
-    background:
-        #ffffff;
-
-    color:
-        #344054;
-
-    border-color:
-        #d0d5dd;
-
-}
-
-
-.delete-all-results-btn-cancel:hover {
-
-    background:
-        #f9fafb;
-
-    border-color:
-        #98a2b3;
-
-}
-
-
-/* ============================================================
-   DELETE
-============================================================ */
-
-.delete-all-results-btn-danger {
-
-    background:
-        #d92d20;
-
-    color:
-        #ffffff;
-
-    border-color:
-        #d92d20;
-
-    box-shadow:
-        0 4px 10px
-        rgba(217, 45, 32, 0.18);
-
-}
-
-
-.delete-all-results-btn-danger:hover:not(:disabled) {
-
-    background:
-        #b42318;
-
-    border-color:
-        #b42318;
-
-    transform:
-        translateY(-1px);
-
-}
-
-
-/* ============================================================
-   DISABLED
-============================================================ */
-
-.delete-all-results-btn:disabled {
-
-    opacity:
-        0.60;
-
-    cursor:
-        not-allowed;
-
-    transform:
-        none !important;
-
-    box-shadow:
-        none;
-
-}
-
-
-/* ============================================================
-   LOADING
-============================================================ */
-
-.delete-all-results-btn-danger.is-loading {
-
-    pointer-events:
-        none;
-
-    opacity:
-        0.75;
-
-}
-
-
-.delete-all-results-btn-danger.is-loading i {
-
-    animation:
-        deleteAllResultsSpin
-        0.8s
-        linear
-        infinite;
-
-}
-
-
-@keyframes deleteAllResultsSpin {
-
-    from {
-
-        transform:
-            rotate(0deg);
-
-    }
-
-    to {
-
-        transform:
-            rotate(360deg);
-
-    }
-
-}
-
-
-/* ============================================================
-   RESPONSIVE
-============================================================ */
-
-@media (max-width: 600px) {
-
-    .delete-all-results-modal {
-
-        padding:
-            10px;
-
-    }
-
-
-    .delete-all-results-dialog {
-
-        border-radius:
-            14px;
-
-        max-height:
-            calc(100vh - 20px);
-
-    }
-
-
-    .delete-all-results-header {
-
-        padding:
-            18px;
-
-    }
-
-
-    .delete-all-results-body {
-
-        padding:
-            18px;
-
-    }
-
-
-    .delete-all-results-footer {
-
-        padding:
-            14px 18px;
-
-        flex-direction:
-            column-reverse;
-
-        align-items:
-            stretch;
-
-    }
-
-
-    .delete-all-results-footer form {
-
-        width:
-            100%;
-
-    }
-
-
-    .delete-all-results-btn {
-
-        width:
-            100%;
-
-    }
-
-}
-
-</style>
-
 <script>
 
 (function () {
@@ -6705,6 +5834,12 @@ body.delete-all-results-modal-open {
     /* ========================================================
        ELEMENTS
     ======================================================== */
+
+    const openButton =
+        document.getElementById(
+            "openDeleteAllResultsModal"
+        );
+
 
     const modal =
         document.getElementById(
@@ -6730,9 +5865,9 @@ body.delete-all-results-modal-open {
         );
 
 
-    const form =
+    const examSelect =
         document.getElementById(
-            "deleteAllExamResultsForm"
+            "deleteAllResultsExamSelect"
         );
 
 
@@ -6742,9 +5877,21 @@ body.delete-all-results-modal-open {
         );
 
 
+    const examBox =
+        document.getElementById(
+            "deleteAllResultsExamBox"
+        );
+
+
     const examName =
         document.getElementById(
             "deleteAllResultsExamName"
+        );
+
+
+    const form =
+        document.getElementById(
+            "deleteAllExamResultsForm"
         );
 
 
@@ -6784,59 +5931,11 @@ body.delete-all-results-modal-open {
         );
 
 
-    /* ========================================================
-       STATE
-    ======================================================== */
-
     let isDeleting = false;
 
 
     /* ========================================================
-       STATUS ICON
-    ======================================================== */
-
-    function setStatusIcon(type) {
-
-        if (!statusIcon) {
-            return;
-        }
-
-
-        statusIcon.className =
-            "fa-solid";
-
-
-        if (type === "success") {
-
-            statusIcon.classList.add(
-                "fa-circle-check"
-            );
-
-            return;
-
-        }
-
-
-        if (type === "error") {
-
-            statusIcon.classList.add(
-                "fa-circle-exclamation"
-            );
-
-            return;
-
-        }
-
-
-        statusIcon.classList.add(
-            "fa-circle-info"
-        );
-
-    }
-
-
-    /* ========================================================
-       SHOW STATUS
+       STATUS
     ======================================================== */
 
     function showStatus(
@@ -6844,16 +5943,12 @@ body.delete-all-results-modal-open {
         type = "info"
     ) {
 
-        if (
-            !statusBox ||
-            !statusText
-        ) {
+        if (!statusBox || !statusText) {
             return;
         }
 
 
-        statusBox.hidden =
-            false;
+        statusBox.hidden = false;
 
 
         statusBox.classList.remove(
@@ -6872,16 +5967,36 @@ body.delete-all-results-modal-open {
             message;
 
 
-        setStatusIcon(
-            type
-        );
+        if (statusIcon) {
+
+            statusIcon.className =
+                "fa-solid";
+
+
+            if (type === "error") {
+
+                statusIcon.classList.add(
+                    "fa-circle-exclamation"
+                );
+
+            } else if (type === "success") {
+
+                statusIcon.classList.add(
+                    "fa-circle-check"
+                );
+
+            } else {
+
+                statusIcon.classList.add(
+                    "fa-circle-info"
+                );
+
+            }
+
+        }
 
     }
 
-
-    /* ========================================================
-       HIDE STATUS
-    ======================================================== */
 
     function hideStatus() {
 
@@ -6890,8 +6005,7 @@ body.delete-all-results-modal-open {
         }
 
 
-        statusBox.hidden =
-            true;
+        statusBox.hidden = true;
 
 
         statusBox.classList.remove(
@@ -6903,8 +6017,7 @@ body.delete-all-results-modal-open {
 
         if (statusText) {
 
-            statusText.textContent =
-                "";
+            statusText.textContent = "";
 
         }
 
@@ -6912,99 +6025,39 @@ body.delete-all-results-modal-open {
 
 
     /* ========================================================
-       RESET MODAL
+       UPDATE BUTTON
     ======================================================== */
 
-    function resetModal() {
+    function updateDeleteButton() {
 
-        if (examIdInput) {
-
-            examIdInput.value =
-                "";
-
+        if (!confirmButton) {
+            return;
         }
 
 
-        if (examName) {
-
-            examName.textContent =
-                "—";
-
-        }
+        const examId =
+            examSelect
+                ? examSelect.value
+                : "";
 
 
-        hideStatus();
-
-
-        setDeletingState(
-            false
-        );
+        confirmButton.disabled =
+            !examId ||
+            isDeleting;
 
     }
 
 
     /* ========================================================
-       OPEN MODAL
+       OPEN
     ======================================================== */
 
-    function openDeleteAllModal(
-        examId,
-        name
-    ) {
+    function openModal() {
 
         if (!modal) {
-
-            console.error(
-                "Delete all results modal not found."
-            );
-
             return;
-
         }
 
-
-        if (!examId) {
-
-            console.error(
-                "Delete all results: exam ID is missing."
-            );
-
-            return;
-
-        }
-
-
-        resetModal();
-
-
-        /* ----------------------------------------------------
-           SET EXAM ID
-        ---------------------------------------------------- */
-
-        if (examIdInput) {
-
-            examIdInput.value =
-                String(examId);
-
-        }
-
-
-        /* ----------------------------------------------------
-           SET EXAM NAME
-        ---------------------------------------------------- */
-
-        if (examName) {
-
-            examName.textContent =
-                name ||
-                `Exam #${examId}`;
-
-        }
-
-
-        /* ----------------------------------------------------
-           OPEN
-        ---------------------------------------------------- */
 
         modal.classList.add(
             "is-open"
@@ -7022,43 +6075,31 @@ body.delete-all-results-modal-open {
         );
 
 
-        /* ----------------------------------------------------
-           FOCUS
-        ---------------------------------------------------- */
+        hideStatus();
 
-        setTimeout(
-            function () {
 
-                if (cancelButton) {
+        if (examSelect) {
 
-                    cancelButton.focus();
+            examSelect.focus();
 
-                }
-
-            },
-            50
-        );
+        }
 
     }
 
 
     /* ========================================================
-       CLOSE MODAL
+       CLOSE
     ======================================================== */
 
-    function closeDeleteAllModal() {
+    function closeModal() {
 
         if (isDeleting) {
-
             return;
-
         }
 
 
         if (!modal) {
-
             return;
-
         }
 
 
@@ -7078,187 +6119,99 @@ body.delete-all-results-modal-open {
         );
 
 
-        resetModal();
+        if (examSelect) {
+
+            examSelect.value = "";
+
+        }
+
+
+        if (examIdInput) {
+
+            examIdInput.value = "";
+
+        }
+
+
+        if (examBox) {
+
+            examBox.hidden = true;
+
+        }
+
+
+        if (examName) {
+
+            examName.textContent = "—";
+
+        }
+
+
+        hideStatus();
+
+
+        updateDeleteButton();
 
     }
 
 
     /* ========================================================
-       LOADING STATE
+       EXAM CHANGE
     ======================================================== */
 
-    function setDeletingState(
-        deleting
-    ) {
+    if (examSelect) {
 
-        isDeleting =
-            deleting;
+        examSelect.addEventListener(
+            "change",
+            function () {
 
-
-        if (!confirmButton) {
-
-            return;
-
-        }
+                const selectedOption =
+                    examSelect.options[
+                        examSelect.selectedIndex
+                    ];
 
 
-        confirmButton.disabled =
-            deleting;
+                const selectedId =
+                    examSelect.value;
 
 
-        if (deleting) {
-
-            confirmButton.classList.add(
-                "is-loading"
-            );
-
-
-            if (buttonIcon) {
-
-                buttonIcon.className =
-                    "fa-solid fa-spinner";
-
-            }
-
-
-            if (buttonText) {
-
-                buttonText.textContent =
-                    "Deleting Results...";
-
-            }
-
-
-            if (closeButton) {
-
-                closeButton.disabled =
-                    true;
-
-            }
-
-
-            if (cancelButton) {
-
-                cancelButton.disabled =
-                    true;
-
-            }
-
-        } else {
-
-            confirmButton.classList.remove(
-                "is-loading"
-            );
-
-
-            if (buttonIcon) {
-
-                buttonIcon.className =
-                    "fa-solid fa-trash-can";
-
-            }
-
-
-            if (buttonText) {
-
-                buttonText.textContent =
-                    "Delete All Results";
-
-            }
-
-
-            if (closeButton) {
-
-                closeButton.disabled =
-                    false;
-
-            }
-
-
-            if (cancelButton) {
-
-                cancelButton.disabled =
-                    false;
-
-            }
-
-        }
-
-    }
-
-
-    /* ========================================================
-       DELETE BUTTON CLICK
-    ======================================================== */
-
-    if (form) {
-
-        form.addEventListener(
-            "submit",
-            function (event) {
-
-                /* ------------------------------------------------
-                   STOP EMPTY EXAM ID
-                ------------------------------------------------ */
-
-                const examId =
-                    examIdInput
-                        ? examIdInput.value.trim()
+                const selectedName =
+                    selectedOption
+                        ? (
+                            selectedOption.dataset.examName ||
+                            selectedOption.textContent.trim()
+                        )
                         : "";
 
 
-                if (!examId) {
+                if (examIdInput) {
 
-                    event.preventDefault();
-
-
-                    showStatus(
-                        "No examination was selected.",
-                        "error"
-                    );
-
-
-                    return;
+                    examIdInput.value =
+                        selectedId;
 
                 }
 
 
-                /* ------------------------------------------------
-                   PREVENT DOUBLE SUBMIT
-                ------------------------------------------------ */
+                if (examName) {
 
-                if (isDeleting) {
-
-                    event.preventDefault();
-
-                    return;
+                    examName.textContent =
+                        selectedName || "—";
 
                 }
 
 
-                /* ------------------------------------------------
-                   LOADING
-                ------------------------------------------------ */
+                if (examBox) {
 
-                setDeletingState(
-                    true
-                );
+                    examBox.hidden =
+                        !selectedId;
 
-
-                showStatus(
-                    "Deleting all student results and marks. Please wait...",
-                    "info"
-                );
+                }
 
 
-                /*
-                 * DO NOT preventDefault().
-                 *
-                 * The normal POST request will now continue
-                 * to the Flask route:
-                 *
-                 * main.delete_all_exam_results
-                 */
+                hideStatus();
+
+
+                updateDeleteButton();
 
             }
         );
@@ -7267,50 +6220,27 @@ body.delete-all-results-modal-open {
 
 
     /* ========================================================
-       OPEN BUTTONS
+       OPEN
     ======================================================== */
 
-    document.addEventListener(
-        "click",
-        function (event) {
+    if (openButton) {
 
-            const button =
-                event.target.closest(
-                    ".open-delete-all-results-modal"
-                );
+        openButton.addEventListener(
+            "click",
+            function (event) {
 
+                event.preventDefault();
 
-            if (!button) {
-
-                return;
+                openModal();
 
             }
+        );
 
-
-            event.preventDefault();
-
-
-            const selectedExamId =
-                button.dataset.examId ||
-                "";
-
-
-            const selectedExamName =
-                button.dataset.examName ||
-                "";
-
-
-            openDeleteAllModal(
-                selectedExamId,
-                selectedExamName
-            );
-
-        }
-    );
+    }
 
 
     /* ========================================================
-       CLOSE BUTTON
+       CLOSE
     ======================================================== */
 
     if (closeButton) {
@@ -7321,7 +6251,7 @@ body.delete-all-results-modal-open {
 
                 event.preventDefault();
 
-                closeDeleteAllModal();
+                closeModal();
 
             }
         );
@@ -7341,7 +6271,7 @@ body.delete-all-results-modal-open {
 
                 event.preventDefault();
 
-                closeDeleteAllModal();
+                closeModal();
 
             }
         );
@@ -7363,7 +6293,7 @@ body.delete-all-results-modal-open {
                     event.target === overlay
                 ) {
 
-                    closeDeleteAllModal();
+                    closeModal();
 
                 }
 
@@ -7374,7 +6304,117 @@ body.delete-all-results-modal-open {
 
 
     /* ========================================================
-       ESC KEY
+       FORM SUBMIT
+    ======================================================== */
+
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+                const examId =
+                    examIdInput
+                        ? examIdInput.value.trim()
+                        : "";
+
+
+                if (!examId) {
+
+                    event.preventDefault();
+
+
+                    showStatus(
+                        "Please select an examination first.",
+                        "error"
+                    );
+
+
+                    return;
+
+                }
+
+
+                if (isDeleting) {
+
+                    event.preventDefault();
+
+                    return;
+
+                }
+
+
+                isDeleting = true;
+
+
+                confirmButton.disabled =
+                    true;
+
+
+                if (cancelButton) {
+
+                    cancelButton.disabled =
+                        true;
+
+                }
+
+
+                if (closeButton) {
+
+                    closeButton.disabled =
+                        true;
+
+                }
+
+
+                if (buttonIcon) {
+
+                    buttonIcon.className =
+                        "fa-solid fa-spinner";
+
+                }
+
+
+                if (buttonText) {
+
+                    buttonText.textContent =
+                        "Deleting Results...";
+
+                }
+
+
+                confirmButton.classList.add(
+                    "is-loading"
+                );
+
+
+                showStatus(
+                    "Deleting all student results and marks. Please wait...",
+                    "info"
+                );
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * We do NOT call preventDefault().
+                 *
+                 * Flask will receive:
+                 *
+                 * POST /exam-results/delete-all
+                 *
+                 * with:
+                 *
+                 * exam_id=<selected exam id>
+                 */
+
+            }
+        );
+
+    }
+
+
+    /* ========================================================
+       ESC
     ======================================================== */
 
     document.addEventListener(
@@ -7389,7 +6429,7 @@ body.delete-all-results-modal-open {
                 )
             ) {
 
-                closeDeleteAllModal();
+                closeModal();
 
             }
 
@@ -7397,11 +6437,998 @@ body.delete-all-results-modal-open {
     );
 
 
+    /* ========================================================
+       INITIAL
+    ======================================================== */
+
+    updateDeleteButton();
+
+
 })();
 
 </script>
 
+<style>
 
+/* ============================================================
+   DELETE ALL EXAM RESULTS MODAL
+   ============================================================ */
+
+.delete-all-results-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+}
+
+.delete-all-results-modal.is-open {
+    display: flex;
+}
+
+
+/* ============================================================
+   BODY LOCK
+   ============================================================ */
+
+body.delete-all-results-modal-open {
+    overflow: hidden;
+}
+
+
+/* ============================================================
+   OVERLAY
+   ============================================================ */
+
+.delete-all-results-overlay {
+    position: absolute;
+    inset: 0;
+
+    background:
+        rgba(6, 36, 95, 0.58);
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    animation:
+        deleteAllOverlayIn 0.2s ease forwards;
+}
+
+
+/* ============================================================
+   DIALOG
+   ============================================================ */
+
+.delete-all-results-dialog {
+    position: relative;
+    z-index: 2;
+
+    width: min(560px, 100%);
+    max-height: calc(100vh - 40px);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    border: 1px solid rgba(6, 36, 95, 0.10);
+
+    box-shadow:
+        0 30px 80px rgba(6, 36, 95, 0.28),
+        0 10px 30px rgba(0, 0, 0, 0.12);
+
+    animation:
+        deleteAllDialogIn 0.25s ease forwards;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.delete-all-results-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+
+    padding: 22px 22px 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #06245f 0%,
+            #0a347f 58%,
+            #33206f 100%
+        );
+
+    color: #ffffff;
+}
+
+
+.delete-all-results-header-left {
+    min-width: 0;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+
+/* ============================================================
+   HEADER ICON
+   ============================================================ */
+
+.delete-all-results-icon {
+    flex: 0 0 46px;
+
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background: rgba(255, 255, 255, 0.14);
+
+    border: 1px solid rgba(255, 255, 255, 0.20);
+
+    color: #ffffff;
+
+    font-size: 20px;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+
+.delete-all-results-header h2 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.25;
+
+    letter-spacing: -0.2px;
+}
+
+
+.delete-all-results-header p {
+    margin: 6px 0 0;
+
+    color: rgba(255, 255, 255, 0.78);
+
+    font-size: 13px;
+    font-weight: 400;
+
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   CLOSE BUTTON
+   ============================================================ */
+
+.delete-all-results-close {
+    flex: 0 0 36px;
+
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.10);
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    transition:
+        background 0.18s ease,
+        transform 0.18s ease,
+        opacity 0.18s ease;
+}
+
+
+.delete-all-results-close:hover {
+    background: rgba(255, 255, 255, 0.20);
+
+    transform: rotate(4deg);
+}
+
+
+.delete-all-results-close:active {
+    transform: scale(0.94);
+}
+
+
+.delete-all-results-close:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* ============================================================
+   BODY
+   ============================================================ */
+
+.delete-all-results-body {
+    flex: 1 1 auto;
+
+    overflow-y: auto;
+
+    padding: 22px;
+}
+
+
+/* ============================================================
+   FIELD
+   ============================================================ */
+
+.delete-all-results-field {
+    width: 100%;
+}
+
+
+.delete-all-results-field label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-bottom: 8px;
+
+    color: #16213a;
+
+    font-size: 13px;
+    font-weight: 750;
+}
+
+
+.delete-all-results-field label i {
+    color: #06245f;
+
+    font-size: 13px;
+}
+
+
+.delete-all-results-field label span {
+    color: #dc2626;
+
+    font-weight: 800;
+}
+
+
+/* ============================================================
+   SELECT
+   ============================================================ */
+
+.delete-all-results-select {
+    width: 100%;
+    height: 46px;
+
+    padding: 0 42px 0 14px;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    border: 1px solid #d7deea;
+    border-radius: 11px;
+
+    background-color: #ffffff;
+
+    background-image:
+        linear-gradient(45deg, transparent 50%, #06245f 50%),
+        linear-gradient(135deg, #06245f 50%, transparent 50%);
+
+    background-position:
+        calc(100% - 18px) 19px,
+        calc(100% - 13px) 19px;
+
+    background-size:
+        5px 5px,
+        5px 5px;
+
+    background-repeat: no-repeat;
+
+    color: #172033;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    outline: none;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background-color 0.18s ease;
+}
+
+
+.delete-all-results-select:hover {
+    border-color: #9eabc0;
+}
+
+
+.delete-all-results-select:focus {
+    border-color: #06245f;
+
+    box-shadow:
+        0 0 0 3px rgba(6, 36, 95, 0.10);
+}
+
+
+.delete-all-results-select:disabled {
+    background-color: #f4f6f9;
+
+    cursor: not-allowed;
+
+    opacity: 0.7;
+}
+
+
+.delete-all-results-field small {
+    display: block;
+
+    margin-top: 7px;
+
+    color: #758198;
+
+    font-size: 11.5px;
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   SELECTED EXAM BOX
+   ============================================================ */
+
+.delete-all-results-exam-box {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 15px;
+    padding: 13px 14px;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(6, 36, 95, 0.055),
+            rgba(51, 32, 111, 0.045)
+        );
+
+    border: 1px solid rgba(6, 36, 95, 0.10);
+
+    animation:
+        deleteAllExamBoxIn 0.18s ease forwards;
+}
+
+
+.delete-all-results-exam-icon {
+    flex: 0 0 38px;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: rgba(6, 36, 95, 0.09);
+
+    color: #06245f;
+
+    font-size: 15px;
+}
+
+
+.delete-all-results-exam-box span {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #78849a;
+
+    font-size: 10.5px;
+    font-weight: 650;
+
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+
+.delete-all-results-exam-box strong {
+    display: block;
+
+    color: #18243b;
+
+    font-size: 13px;
+    font-weight: 750;
+
+    line-height: 1.4;
+
+    word-break: break-word;
+}
+
+
+/* ============================================================
+   WARNING
+   ============================================================ */
+
+.delete-all-results-warning {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 12px;
+
+    margin-top: 18px;
+    padding: 15px;
+
+    border-radius: 13px;
+
+    background:
+        #fff5f5;
+
+    border: 1px solid #fecaca;
+
+    color: #7f1d1d;
+}
+
+
+.delete-all-results-warning > i {
+    flex: 0 0 auto;
+
+    margin-top: 2px;
+
+    color: #dc2626;
+
+    font-size: 18px;
+}
+
+
+.delete-all-results-warning strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #991b1b;
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+
+.delete-all-results-warning p {
+    margin: 0;
+
+    color: #8b3030;
+
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.delete-all-results-status {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 9px;
+
+    margin-top: 14px;
+    padding: 11px 12px;
+
+    border-radius: 10px;
+
+    font-size: 12px;
+    line-height: 1.45;
+
+    border: 1px solid transparent;
+}
+
+
+.delete-all-results-status > i {
+    flex: 0 0 auto;
+
+    margin-top: 2px;
+}
+
+
+.delete-all-results-status.info {
+    background: #eff6ff;
+
+    border-color: #bfdbfe;
+
+    color: #1d4ed8;
+}
+
+
+.delete-all-results-status.success {
+    background: #f0fdf4;
+
+    border-color: #bbf7d0;
+
+    color: #15803d;
+}
+
+
+.delete-all-results-status.error {
+    background: #fef2f2;
+
+    border-color: #fecaca;
+
+    color: #b91c1c;
+}
+
+
+.delete-all-results-status[hidden] {
+    display: none !important;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.delete-all-results-footer {
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding: 16px 22px;
+
+    background: #fafbfc;
+
+    border-top: 1px solid #e8ecf2;
+}
+
+
+/* ============================================================
+   BUTTON BASE
+   ============================================================ */
+
+.delete-all-results-btn {
+    min-height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 0 16px;
+
+    border-radius: 10px;
+
+    font-size: 12.5px;
+    font-weight: 750;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease,
+        opacity 0.18s ease;
+}
+
+
+.delete-all-results-btn:active {
+    transform: translateY(1px);
+}
+
+
+.delete-all-results-btn:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* ============================================================
+   CANCEL BUTTON
+   ============================================================ */
+
+.delete-all-results-btn-cancel {
+    border: 1px solid #d6dce7;
+
+    background: #ffffff;
+
+    color: #4b5568;
+}
+
+
+.delete-all-results-btn-cancel:hover {
+    background: #f4f6f9;
+
+    border-color: #c3cad7;
+
+    color: #1f2937;
+}
+
+
+/* ============================================================
+   DELETE BUTTON
+   ============================================================ */
+
+.delete-all-results-btn-danger {
+    border: 1px solid #dc2626;
+
+    background:
+        linear-gradient(
+            135deg,
+            #dc2626 0%,
+            #b91c1c 100%
+        );
+
+    color: #ffffff;
+
+    box-shadow:
+        0 5px 14px rgba(220, 38, 38, 0.20);
+}
+
+
+.delete-all-results-btn-danger:hover:not(:disabled) {
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444 0%,
+            #dc2626 100%
+        );
+
+    box-shadow:
+        0 7px 18px rgba(220, 38, 38, 0.27);
+
+    transform: translateY(-1px);
+}
+
+
+.delete-all-results-btn-danger:focus-visible {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px rgba(220, 38, 38, 0.16),
+        0 7px 18px rgba(220, 38, 38, 0.22);
+}
+
+
+/* ============================================================
+   LOADING STATE
+   ============================================================ */
+
+.delete-all-results-btn-danger.is-loading {
+    pointer-events: none;
+}
+
+
+.delete-all-results-btn-danger.is-loading
+.fa-spinner {
+    animation:
+        deleteAllSpinner 0.75s linear infinite;
+}
+
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes deleteAllOverlayIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+@keyframes deleteAllDialogIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(18px)
+            scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+@keyframes deleteAllExamBoxIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+@keyframes deleteAllSpinner {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ============================================================
+   CUSTOM SCROLLBAR
+   ============================================================ */
+
+.delete-all-results-body::-webkit-scrollbar {
+    width: 7px;
+}
+
+
+.delete-all-results-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+.delete-all-results-body::-webkit-scrollbar-thumb {
+    background: #cbd3df;
+
+    border-radius: 10px;
+}
+
+
+.delete-all-results-body::-webkit-scrollbar-thumb:hover {
+    background: #aeb8c8;
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    .delete-all-results-modal {
+        padding: 12px;
+    }
+
+    .delete-all-results-dialog {
+        width: 100%;
+
+        max-height: calc(100vh - 24px);
+
+        border-radius: 16px;
+    }
+
+    .delete-all-results-header {
+        padding: 18px;
+    }
+
+    .delete-all-results-body {
+        padding: 18px;
+    }
+
+    .delete-all-results-footer {
+        padding: 14px 18px;
+    }
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 520px) {
+
+    .delete-all-results-modal {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    .delete-all-results-dialog {
+        width: 100%;
+
+        max-height: 94vh;
+
+        border-radius:
+            18px
+            18px
+            0
+            0;
+
+        animation:
+            deleteAllMobileDialogIn
+            0.25s
+            ease
+            forwards;
+    }
+
+    .delete-all-results-header {
+        padding: 17px 16px;
+    }
+
+    .delete-all-results-header-left {
+        gap: 11px;
+    }
+
+    .delete-all-results-icon {
+        flex-basis: 40px;
+
+        width: 40px;
+        height: 40px;
+
+        border-radius: 11px;
+
+        font-size: 17px;
+    }
+
+    .delete-all-results-header h2 {
+        font-size: 16px;
+    }
+
+    .delete-all-results-header p {
+        font-size: 11.5px;
+    }
+
+    .delete-all-results-close {
+        flex-basis: 34px;
+
+        width: 34px;
+        height: 34px;
+    }
+
+    .delete-all-results-body {
+        padding: 17px 16px;
+    }
+
+    .delete-all-results-footer {
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+        padding:
+            13px
+            16px
+            calc(13px + env(safe-area-inset-bottom));
+    }
+
+    .delete-all-results-footer form {
+        width: 100%;
+    }
+
+    .delete-all-results-btn {
+        width: 100%;
+    }
+}
+
+
+@keyframes deleteAllMobileDialogIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+/* ============================================================
+   VERY SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 360px) {
+
+    .delete-all-results-header h2 {
+        font-size: 15px;
+    }
+
+    .delete-all-results-header p {
+        font-size: 11px;
+    }
+
+    .delete-all-results-warning p {
+        font-size: 11.5px;
+    }
+
+    .delete-all-results-select {
+        font-size: 12px;
+    }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .delete-all-results-modal *,
+    .delete-all-results-modal {
+        animation: none !important;
+
+        transition: none !important;
+    }
+}
+
+</style>
 
     <!-- =====================================================
          IMPORT EXAM MARK
