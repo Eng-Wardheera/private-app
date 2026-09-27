@@ -244,6 +244,203 @@
   </script>
   
 
+<script>
+/* ============================================================
+   SOOYAAL USER FORCE LOGOUT WATCHER
+   ============================================================ */
+
+(function () {
+
+    "use strict";
+
+    /* --------------------------------------------------------
+       LOGIN URL
+       -------------------------------------------------------- */
+
+    const LOGIN_URL = "{{ url_for('main.login') }}";
+
+
+    /* --------------------------------------------------------
+       HEARTBEAT / AUTH CHECK
+       -------------------------------------------------------- */
+
+    async function checkUserSession() {
+
+        try {
+
+            const response = await fetch(
+                "{{ url_for('main.online_status') }}",
+                {
+                    method: "GET",
+
+                    credentials: "same-origin",
+
+                    cache: "no-store",
+
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+
+            /* =================================================
+               RESPONSE
+               ================================================= */
+
+            let data = {};
+
+            try {
+
+                data = await response.json();
+
+            } catch (jsonError) {
+
+                data = {};
+
+            }
+
+
+            /* =================================================
+               FORCE LOGOUT
+               ================================================= */
+
+            if (
+
+                response.status === 401 &&
+
+                (
+                    data.status === "force_logout" ||
+                    data.logout === true
+                )
+
+            ) {
+
+                window.location.replace(
+                    LOGIN_URL
+                );
+
+                return false;
+            }
+
+
+            /* =================================================
+               SESSION EXPIRED / UNAUTHORIZED
+               ================================================= */
+
+            if (response.status === 401) {
+
+                window.location.replace(
+                    LOGIN_URL
+                );
+
+                return false;
+            }
+
+
+            /* =================================================
+               SERVER EXPLICITLY SAYS LOGOUT
+               ================================================= */
+
+            if (
+
+                data.logout === true &&
+
+                (
+                    data.status === "force_logout" ||
+                    data.status === "unauthorized"
+                )
+
+            ) {
+
+                window.location.replace(
+                    LOGIN_URL
+                );
+
+                return false;
+            }
+
+
+            return true;
+
+        }
+
+        catch (error) {
+
+            /*
+             * Network error ha logout-gareynin.
+             *
+             * Waxaa dhici karta internet-ku inuu
+             * si ku-meel-gaar ah u go'o.
+             */
+
+            console.warn(
+                "SOOYAAL session check failed:",
+                error
+            );
+
+            return true;
+        }
+
+    }
+
+
+    /* --------------------------------------------------------
+       CHECK EVERY 15 SECONDS
+       -------------------------------------------------------- */
+
+    const FORCE_LOGOUT_INTERVAL = 15000;
+
+
+    setInterval(
+        function () {
+
+            /*
+             * Haddii tab-ku hidden yahay,
+             * browser-ku weli mararka qaar
+             * wuu yareyn karaa requests-ka.
+             */
+
+            checkUserSession();
+
+        },
+        FORCE_LOGOUT_INTERVAL
+    );
+
+
+    /* --------------------------------------------------------
+       CHECK WHEN USER RETURNS TO TAB
+       -------------------------------------------------------- */
+
+    document.addEventListener(
+        "visibilitychange",
+        function () {
+
+            if (
+                document.visibilityState === "visible"
+            ) {
+
+                checkUserSession();
+
+            }
+
+        }
+    );
+
+
+    /* --------------------------------------------------------
+       INITIAL CHECK
+       -------------------------------------------------------- */
+
+    checkUserSession();
+
+
+})();
+</script>
+
+
+
     
 <script>
 

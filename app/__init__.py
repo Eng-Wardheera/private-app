@@ -6,9 +6,23 @@ import cloudinary
 import pytz
 from dotenv import load_dotenv
 
-from flask import Flask, g, redirect, session, url_for
+from flask import (
+    Flask,
+    g,
+    redirect,
+    session,
+    url_for,
+    request,
+    jsonify,
+    current_app
+)
+
 from flask_cors import CORS
-from flask_login import LoginManager
+from flask_login import (
+    LoginManager,
+    current_user,
+    logout_user
+)
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -424,45 +438,253 @@ def create_app():
     login_manager.login_message_category = "warning"
 
 
-    # ========================================================
-    # IMPORT MODELS
-    # ========================================================
-
     from app.model import User, Teacher
+   
+    # ============================================================
+    # VALIDATE USER AUTH STATUS
+    # ============================================================
 
+    @app.before_request
+    def validate_user_auth_status():
 
-    # ========================================================
+        # ========================================================
+        # NOT LOGGED IN
+        # ========================================================
+
+        if not current_user.is_authenticated:
+            return None
+
+        # ========================================================
+        # GET FRESH USER FROM DATABASE
+        # ========================================================
+
+        try:
+
+            user = db.session.get(
+                User,
+                current_user.id
+            )
+
+        except Exception as e:
+
+            current_app.logger.exception(
+                "AUTH VALIDATION ERROR | "
+                "User ID=%s | Error=%s",
+                current_user.id,
+                e
+            )
+
+            return None
+
+        # ========================================================
+        # USER NO LONGER EXISTS
+        # ========================================================
+
+        if user is None:
+
+            logout_user()
+
+            if request.path.startswith("/api/"):
+
+                return jsonify({
+                    "success": False,
+                    "status": "force_logout",
+                    "logout": True,
+                    "message": "Session expired."
+                }), 401
+
+            return redirect(
+                url_for("main.login")
+            )
+
+        # ========================================================
+        # ACCOUNT WAS FORCE LOGGED OUT
+        # ========================================================
+
+        if getattr(
+            user,
+            "auth_status",
+            "logout"
+        ) != "login":
+
+            current_app.logger.info(
+                "FORCE LOGOUT DETECTED | "
+                "User ID=%s | "
+                "Username=%s",
+                user.id,
+                getattr(
+                    user,
+                    "username",
+                    None
+                )
+            )
+
+            # ----------------------------------------------------
+            # REMOVE FLASK-LOGIN SESSION
+            # ----------------------------------------------------
+
+            logout_user()
+
+            # ----------------------------------------------------
+            # API / AJAX
+            # ----------------------------------------------------
+
+            if (
+                request.path.startswith("/api/")
+                or request.is_json
+            ):
+
+                return jsonify({
+                    "success": False,
+                    "status": "force_logout",
+                    "logout": True,
+                    "message": (
+                        "Your session has been "
+                        "terminated by an administrator."
+                    )
+                }), 401
+
+            # ----------------------------------------------------
+            # NORMAL PAGE
+            # ----------------------------------------------------
+
+            return redirect(
+                url_for("main.login")
+            )
+
+        # ========================================================
+        # USER VALID
+        # ========================================================
+
+        return None
+
+    # ============================================================
     # LOGIN USER LOADER
-    # ========================================================
+    # ============================================================
 
     @login_manager.user_loader
     def load_user(user_id):
 
-        try:
+        # ========================================================
+        # VALIDATE USER ID
+        # ========================================================
 
-            return db.session.get(
-                User,
-                int(user_id)
-            )
+        try:
+            user_id = int(user_id)
 
         except (
             ValueError,
             TypeError
         ):
+            return None
+
+        # ========================================================
+        # LOAD USER
+        # ========================================================
+
+        try:
+
+            user = db.session.get(
+                User,
+                user_id
+            )
+
+        except Exception as e:
+
+            current_app.logger.exception(
+                "USER LOADER ERROR | "
+                "User ID=%s | Error=%s",
+                user_id,
+                e
+            )
+
+            db.session.rollback()
 
             return None
 
+        # ========================================================
+        # USER NOT FOUND
+        # ========================================================
+
+        if user is None:
+            return None
+
+        # ========================================================
+        # IMPORTANT
+        #
+        # DO NOT CHECK session_token HERE.
+        #
+        # Flask-Login's own session cookie determines which
+        # User ID is loaded.
+        #
+        # auth_status / session_token validation will be handled
+        # separately.
+        # ========================================================
+
+        return user
+
+    # ============================================================
+    # TEACHER LOGIN REQUIRED
+    # ============================================================
 
     def teacher_login_required(view):
+
         @wraps(view)
         def wrapped_view(*args, **kwargs):
 
-            teacher_id = session.get("teacher_id")
+            # ====================================================
+            # GET TEACHER SESSION
+            # ====================================================
+
+            teacher_id = session.get(
+                "teacher_id"
+            )
+
+            # ====================================================
+            # NO TEACHER SESSION
+            # ====================================================
 
             if not teacher_id:
+
+                g.teacher = None
+
                 return redirect(
-                    url_for("main.teacher_login")
+                    url_for(
+                        "main.teacher_login"
+                    )
                 )
+
+            # ====================================================
+            # VALIDATE TEACHER ID
+            # ====================================================
+
+            try:
+
+                teacher_id = int(
+                    teacher_id
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                session.pop(
+                    "teacher_id",
+                    None
+                )
+
+                g.teacher = None
+
+                return redirect(
+                    url_for(
+                        "main.teacher_login"
+                    )
+                )
+
+            # ====================================================
+            # LOAD ACTIVE TEACHER
+            # ====================================================
 
             teacher = Teacher.query.filter(
                 Teacher.id == teacher_id,
@@ -470,21 +692,57 @@ def create_app():
                 Teacher.status == "active"
             ).first()
 
+            # ====================================================
+            # TEACHER INVALID / DEACTIVATED
+            # ====================================================
+
             if not teacher:
-                session.pop("teacher_id", None)
+
+                session.pop(
+                    "teacher_id",
+                    None
+                )
+
+                # ------------------------------------------------
+                # REMOVE ANY OTHER TEACHER SESSION DATA
+                # ------------------------------------------------
+
+                session.pop(
+                    "teacher_username",
+                    None
+                )
+
+                session.pop(
+                    "teacher_roll_no",
+                    None
+                )
+
+                g.teacher = None
 
                 return redirect(
-                    url_for("main.teacher_login")
+                    url_for(
+                        "main.teacher_login"
+                    )
                 )
+
+            # ====================================================
+            # STORE TEACHER
+            # ====================================================
 
             g.teacher = teacher
 
-            return view(*args, **kwargs)
+            # ====================================================
+            # EXECUTE VIEW
+            # ====================================================
+
+            return view(
+                *args,
+                **kwargs
+            )
 
         return wrapped_view
 
 
-    
     # ========================================================
     # IMPORT BLUEPRINT
     # ========================================================

@@ -17796,12 +17796,14 @@ def get_branches(institution_id):
 
 
 
-
 # ============================================================
 # FORCE LOGOUT USER
 # ============================================================
-@bp.route("/force-logout-user/<int:user_id>", methods=["POST"])
-@login_required
+
+@bp.route(
+    "/force-logout-user/<int:user_id>",
+    methods=["POST"]
+)
 def force_logout_user(user_id):
 
     # ========================================================
@@ -17809,36 +17811,59 @@ def force_logout_user(user_id):
     # ========================================================
 
     if not current_user.is_authenticated:
+
         return jsonify({
             "success": False,
-            "status": "error",
-            "message": "Authentication required."
+            "status": "unauthorized",
+            "message": "Authentication required.",
+            "logout": True
         }), 401
 
     # ========================================================
     # SUPERADMIN ONLY
     # ========================================================
 
-    if not current_user.is_superadmin():
+    try:
+
+        is_superadmin = (
+            current_user.is_superadmin()
+        )
+
+    except Exception:
+
+        is_superadmin = (
+            getattr(
+                current_user,
+                "role",
+                None
+            ) == "superadmin"
+        )
+
+    if not is_superadmin:
+
         return jsonify({
             "success": False,
-            "status": "error",
+            "status": "forbidden",
             "message": (
-                "You do not have permission "
-                "to force logout users."
+                "Only superadmin can "
+                "force logout users."
             )
         }), 403
 
     # ========================================================
-    # FIND USER
+    # FIND TARGET USER
     # ========================================================
 
-    user = User.query.get(user_id)
+    user = db.session.get(
+        User,
+        user_id
+    )
 
     if user is None:
+
         return jsonify({
             "success": False,
-            "status": "error",
+            "status": "not_found",
             "message": "User not found."
         }), 404
 
@@ -17847,6 +17872,7 @@ def force_logout_user(user_id):
     # ========================================================
 
     if user.id == current_user.id:
+
         return jsonify({
             "success": False,
             "status": "error",
@@ -17861,25 +17887,57 @@ def force_logout_user(user_id):
     # ========================================================
 
     user_name = (
-        user.fullname
-        or user.username
-        or user.email
+        getattr(
+            user,
+            "fullname",
+            None
+        )
+        or getattr(
+            user,
+            "username",
+            None
+        )
+        or getattr(
+            user,
+            "email",
+            None
+        )
         or f"User #{user.id}"
     )
 
     # ========================================================
-    # CHECK CURRENT AUTH STATUS
+    # OLD VALUES
     # ========================================================
 
     old_auth_status = (
-        user.auth_status
+        getattr(
+            user,
+            "auth_status",
+            None
+        )
         or "logout"
     )
 
+    old_session_token = getattr(
+        user,
+        "session_token",
+        None
+    )
+
+    old_login_time = getattr(
+        user,
+        "login_time",
+        None
+    )
+
+    # ========================================================
+    # CHECK ALREADY LOGGED OUT
+    # ========================================================
+
     already_logged_out = (
         old_auth_status != "login"
-        and not user.session_token
-        and user.login_time is None
+        and not old_session_token
+        and old_login_time is None
     )
 
     # ========================================================
@@ -17890,19 +17948,59 @@ def force_logout_user(user_id):
 
         now = datetime.utcnow()
 
+        # ----------------------------------------------------
+        # CHANGE AUTH STATUS
+        # ----------------------------------------------------
+
         user.auth_status = "logout"
 
-        # Invalidate the user's current token
-        user.session_token = None
+        # ----------------------------------------------------
+        # INVALIDATE SESSION TOKEN
+        # ----------------------------------------------------
 
-        # Remove login time
-        user.login_time = None
+        if hasattr(
+            user,
+            "session_token"
+        ):
 
-        # Update last seen
-        user.last_seen = now
+            user.session_token = None
 
-        # Update record timestamp
-        user.updated_at = now
+        # ----------------------------------------------------
+        # REMOVE LOGIN TIME
+        # ----------------------------------------------------
+
+        if hasattr(
+            user,
+            "login_time"
+        ):
+
+            user.login_time = None
+
+        # ----------------------------------------------------
+        # LAST SEEN
+        # ----------------------------------------------------
+
+        if hasattr(
+            user,
+            "last_seen"
+        ):
+
+            user.last_seen = now
+
+        # ----------------------------------------------------
+        # UPDATED AT
+        # ----------------------------------------------------
+
+        if hasattr(
+            user,
+            "updated_at"
+        ):
+
+            user.updated_at = now
+
+        # ----------------------------------------------------
+        # COMMIT
+        # ----------------------------------------------------
 
         db.session.commit()
 
@@ -17911,10 +18009,10 @@ def force_logout_user(user_id):
         db.session.rollback()
 
         current_app.logger.exception(
-            "Error forcing logout. "
-            "Target User ID: %s, "
-            "Admin ID: %s, "
-            "Error: %s",
+            "FORCE LOGOUT FAILED | "
+            "Target User ID=%s | "
+            "Admin User ID=%s | "
+            "Error=%s",
             user_id,
             current_user.id,
             e
@@ -17924,7 +18022,8 @@ def force_logout_user(user_id):
             "success": False,
             "status": "error",
             "message": (
-                "Unable to force logout this user."
+                "Unable to force logout "
+                "this user."
             )
         }), 500
 
@@ -17933,13 +18032,17 @@ def force_logout_user(user_id):
     # ========================================================
 
     current_app.logger.info(
-        "User force logout completed. "
-        "Target User ID: %s, "
-        "Username: %s, "
-        "Old Auth Status: %s, "
-        "Performed By Superadmin ID: %s",
+        "FORCE LOGOUT SUCCESS | "
+        "Target User ID=%s | "
+        "Username=%s | "
+        "Old Auth Status=%s | "
+        "Performed By Superadmin ID=%s",
         user.id,
-        user.username,
+        getattr(
+            user,
+            "username",
+            None
+        ),
         old_auth_status,
         current_user.id
     )
@@ -17962,7 +18065,17 @@ def force_logout_user(user_id):
         )
 
     # ========================================================
-    # JSON RESPONSE
+    # LAST SEEN RESPONSE
+    # ========================================================
+
+    last_seen = getattr(
+        user,
+        "last_seen",
+        None
+    )
+
+    # ========================================================
+    # SUCCESS RESPONSE
     # ========================================================
 
     return jsonify({
@@ -17971,13 +18084,29 @@ def force_logout_user(user_id):
 
         "status": "success",
 
+        "logout": True,
+
         "message": message,
 
         "user_id": user.id,
 
-        "username": user.username or "",
+        "username": (
+            getattr(
+                user,
+                "username",
+                None
+            )
+            or ""
+        ),
 
-        "fullname": user.fullname or "",
+        "fullname": (
+            getattr(
+                user,
+                "fullname",
+                None
+            )
+            or ""
+        ),
 
         "auth_status": "logout",
 
@@ -17988,17 +18117,14 @@ def force_logout_user(user_id):
         "login_time": None,
 
         "last_seen": (
-            user.last_seen.strftime(
+            last_seen.strftime(
                 "%Y-%m-%d %H:%M:%S UTC"
             )
-            if user.last_seen
+            if last_seen
             else None
         )
 
     }), 200
-
-
-
 
 
 # ============================================================
