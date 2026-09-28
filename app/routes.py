@@ -15,10 +15,11 @@ import uuid
 import bcrypt
 import cloudinary
 from cloudinary import uploader
-from flask import Blueprint, Response, abort, app, current_app, flash, g, json, jsonify, make_response, redirect, render_template, request, session, url_for
+from flask import Blueprint, Response, abort, app, current_app, flash, g, json, jsonify, make_response, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_mail import Message
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
 import pytz
 from slugify import slugify
 from sqlalchemy import and_, case, cast, distinct, func, or_
@@ -26,6 +27,8 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
 
 from app import ALLOWED_EXTENSIONS
 from app.model import AcademicYear, AssessmentPlan, AttendanceRecord, AttendanceSession, Branch, Class, Exam, ExamSubject, Institution, Mark, Program, Section, SiteSettings, Student, StudentCharge, StudentEnrollment, StudentResult, Subject, Teacher, TeacherSubject, Term, User, UserRole, db
