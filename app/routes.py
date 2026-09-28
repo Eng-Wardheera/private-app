@@ -67079,13 +67079,6 @@ def import_students_full():
 # EXPORT STUDENT DATA
 # ============================================================
 
-# ============================================================
-# EXPORT STUDENTS + ENROLLMENTS + CHARGES
-# ONE EXCEL FILE
-# NO ZIP
-# FOREIGN KEYS => NAMES
-# ============================================================
-
 @bp.route(
     "/students/export",
     methods=["GET"]
@@ -67372,10 +67365,9 @@ def export_students():
     # ========================================================
     # HELPER
     #
-    # Convert relationship object into a readable name.
+    # Convert relationship object into readable name.
     #
-    # IMPORTANT:
-    # Foreign key IDs are NEVER exported.
+    # FOREIGN KEY IDs ARE NEVER EXPORTED.
     # ========================================================
 
     def get_display_name(
@@ -67508,13 +67500,20 @@ def export_students():
     # ========================================================
     # BUILD STUDENT DATA
     #
-    # NO FOREIGN KEY IDs
+    # CLASS NAME IS INCLUDED HERE.
     # ========================================================
 
     student_columns = [
         "Admission No",
         "Roll No",
         "Full Name",
+
+        # ----------------------------------------------------
+        # CURRENT ACADEMIC INFORMATION
+        # ----------------------------------------------------
+
+        "Class",
+
         "Username",
         "Email",
         "Role",
@@ -67624,6 +67623,88 @@ def export_students():
         )
 
         # ====================================================
+        # GET STUDENT ENROLLMENTS
+        # ====================================================
+
+        student_enrollments = getattr(
+            student,
+            "enrollments",
+            []
+        ) or []
+
+        # ====================================================
+        # FIND CURRENT / ACTIVE ENROLLMENT
+        #
+        # Priority:
+        # 1. active enrollment
+        # 2. latest enrollment
+        # 3. empty
+        # ====================================================
+
+        current_enrollment = None
+
+        if student_enrollments:
+
+            active_enrollments = [
+                enrollment
+                for enrollment in student_enrollments
+                if str(
+                    getattr(
+                        enrollment,
+                        "status",
+                        ""
+                    )
+                ).strip().lower()
+                == "active"
+            ]
+
+            if active_enrollments:
+
+                current_enrollment = max(
+                    active_enrollments,
+                    key=lambda enrollment: (
+                        getattr(
+                            enrollment,
+                            "created_at",
+                            None
+                        )
+                        or datetime.min
+                    )
+                )
+
+            else:
+
+                current_enrollment = max(
+                    student_enrollments,
+                    key=lambda enrollment: (
+                        getattr(
+                            enrollment,
+                            "created_at",
+                            None
+                        )
+                        or datetime.min
+                    )
+                )
+
+        # ====================================================
+        # CURRENT CLASS NAME
+        # ====================================================
+
+        current_class_name = ""
+
+        if current_enrollment is not None:
+
+            current_class = getattr(
+                current_enrollment,
+                "class_",
+                None
+            )
+
+            current_class_name = get_display_name(
+                current_class
+            )
+
+        # ====================================================
         # STUDENT ROW
         # ====================================================
 
@@ -67643,6 +67724,13 @@ def export_students():
                 format_value(
                     student.full_name
                 ),
+
+            # =================================================
+            # CLASS NAME
+            # =================================================
+
+            "Class":
+                current_class_name,
 
             "Username":
                 format_value(
@@ -67782,20 +67870,7 @@ def export_students():
 
         # ====================================================
         # ALL ENROLLMENTS
-        #
-        # IMPORTANT:
-        # We do NOT export student_id, institution_id,
-        # branch_id, academic_year_id, program_id,
-        # class_id, section_id.
-        #
-        # Their names are exported instead.
         # ====================================================
-
-        student_enrollments = getattr(
-            student,
-            "enrollments",
-            []
-        ) or []
 
         for enrollment in student_enrollments:
 
@@ -67924,9 +67999,6 @@ def export_students():
 
         # ====================================================
         # ALL CHARGES
-        #
-        # IMPORTANT:
-        # We export names instead of FK IDs.
         # ====================================================
 
         student_charges = getattr(
@@ -67984,10 +68056,6 @@ def export_students():
             created_by_name = get_display_name(
                 created_by_user
             )
-
-            # -----------------------------------------------
-            # If User has username/email but no name
-            # -----------------------------------------------
 
             if (
                 not created_by_name
@@ -68215,10 +68283,6 @@ def export_students():
                 str(column_name)
             )
 
-            # ----------------------------------------------
-            # Check up to 500 rows
-            # ----------------------------------------------
-
             for row_index in range(
                 2,
                 min(
@@ -68331,7 +68395,6 @@ def export_students():
 
     # ========================================================
     # RETURN ONE EXCEL FILE
-    #
     # NO ZIP
     # ========================================================
 
