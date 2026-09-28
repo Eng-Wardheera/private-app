@@ -4170,8 +4170,6 @@ class Student(UserMixin, db.Model):
 
 
 
-
-
 # ============================================================
 # STUDENT ENROLLMENT MODEL
 # PostgreSQL / Neon
@@ -4323,6 +4321,8 @@ class StudentEnrollment(db.Model):
         index=True
     )
 
+    # Allowed:
+    #
     # active
     # completed
     # transferred
@@ -4331,7 +4331,7 @@ class StudentEnrollment(db.Model):
     # promoted
 
     # ========================================================
-    # PREVIOUS CLASS / NOTES
+    # NOTES
     # ========================================================
 
     notes = db.Column(
@@ -4340,7 +4340,7 @@ class StudentEnrollment(db.Model):
     )
 
     # ========================================================
-    # CREATED / UPDATED
+    # CREATED AT
     # ========================================================
 
     created_at = db.Column(
@@ -4350,6 +4350,10 @@ class StudentEnrollment(db.Model):
         server_default=db.func.now(),
         index=True
     )
+
+    # ========================================================
+    # UPDATED AT
+    # ========================================================
 
     updated_at = db.Column(
         db.DateTime,
@@ -4364,40 +4368,72 @@ class StudentEnrollment(db.Model):
     # RELATIONSHIPS
     # ========================================================
 
+    # --------------------------------------------------------
+    # INSTITUTION
+    # --------------------------------------------------------
+
     institution = db.relationship(
         "Institution",
         back_populates="student_enrollments"
     )
+
+    # --------------------------------------------------------
+    # BRANCH
+    # --------------------------------------------------------
 
     branch = db.relationship(
         "Branch",
         back_populates="student_enrollments"
     )
 
+    # --------------------------------------------------------
+    # STUDENT
+    # --------------------------------------------------------
+
     student = db.relationship(
         "Student",
         back_populates="enrollments"
     )
+
+    # --------------------------------------------------------
+    # ACADEMIC YEAR
+    # --------------------------------------------------------
 
     academic_year = db.relationship(
         "AcademicYear",
         back_populates="student_enrollments"
     )
 
+    # --------------------------------------------------------
+    # PROGRAM
+    # --------------------------------------------------------
+
     program = db.relationship(
         "Program",
         back_populates="student_enrollments"
     )
+
+    # --------------------------------------------------------
+    # CLASS
+    # --------------------------------------------------------
 
     class_ = db.relationship(
         "Class",
         back_populates="student_enrollments"
     )
 
+    # --------------------------------------------------------
+    # SECTION
+    # --------------------------------------------------------
+
     section = db.relationship(
         "Section",
         back_populates="student_enrollments"
     )
+
+    # --------------------------------------------------------
+    # STUDENT CHARGES
+    # --------------------------------------------------------
 
     charges = db.relationship(
         "StudentCharge",
@@ -4405,11 +4441,21 @@ class StudentEnrollment(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+
+    # --------------------------------------------------------
+    # STUDENT RESULTS
+    # --------------------------------------------------------
+
     student_results = db.relationship(
         "StudentResult",
         back_populates="student_enrollment",
         passive_deletes=True
     )
+
+    # --------------------------------------------------------
+    # ATTENDANCE RECORDS
+    # --------------------------------------------------------
+
     attendance_records = db.relationship(
         "AttendanceRecord",
         back_populates="enrollment",
@@ -4417,22 +4463,45 @@ class StudentEnrollment(db.Model):
     )
 
     # ========================================================
-    # CONSTRAINTS
+    # TABLE CONSTRAINTS
     # ========================================================
 
     __table_args__ = (
 
+        # ----------------------------------------------------
+        # ENROLLMENT NUMBER
+        #
+        # Same enrollment number can exist in different
+        # branches of the same institution.
+        #
+        # Example:
+        #
+        # Institution 1 / Branch 3 / ENR001
+        # Institution 1 / Branch 4 / ENR001
+        #
+        # Both are valid.
+        # ----------------------------------------------------
+
         db.UniqueConstraint(
             "institution_id",
+            "branch_id",
             "enrollment_no",
-            name="uq_enrollment_institution_no"
+            name="uq_enrollment_institution_branch_no"
         ),
+
+        # ----------------------------------------------------
+        # ONE ENROLLMENT PER STUDENT PER ACADEMIC YEAR
+        # ----------------------------------------------------
 
         db.UniqueConstraint(
             "student_id",
             "academic_year_id",
             name="uq_student_academic_year_enrollment"
         ),
+
+        # ----------------------------------------------------
+        # STATUS VALIDATION
+        # ----------------------------------------------------
 
         db.CheckConstraint(
             "status IN ("
@@ -4466,10 +4535,12 @@ class StudentEnrollment(db.Model):
         )
 
 
+
 # ============================================================
 # STUDENT CHARGE MODEL
 # PostgreSQL / Neon
 # ============================================================
+
 class StudentCharge(db.Model):
 
     __tablename__ = "student_charges"
@@ -4528,6 +4599,11 @@ class StudentCharge(db.Model):
 
     # ========================================================
     # ENROLLMENT
+    #
+    # A charge may belong to a specific enrollment.
+    #
+    # If enrollment is deleted, the charge itself remains,
+    # but enrollment_id becomes NULL.
     # ========================================================
 
     enrollment_id = db.Column(
@@ -4557,22 +4633,19 @@ class StudentCharge(db.Model):
     # ========================================================
     # CHARGE TYPE
     #
-    # Registration:
-    #     registration
-    #
-    # Program:
-    #     program_fee
-    #
-    # Future:
-    #     tuition
-    #     exam
-    #     books
-    #     uniform
-    #     transport
-    #     laboratory
-    #     library
-    #     certificate
-    #     other
+    # registration
+    # program_fee
+    # tuition
+    # exam
+    # admission
+    # id_card
+    # uniform
+    # books
+    # transport
+    # laboratory
+    # library
+    # certificate
+    # other
     # ========================================================
 
     charge_type = db.Column(
@@ -4602,6 +4675,8 @@ class StudentCharge(db.Model):
 
     # ========================================================
     # AMOUNT
+    #
+    # Original charge amount before discount.
     # ========================================================
 
     amount = db.Column(
@@ -4624,6 +4699,8 @@ class StudentCharge(db.Model):
 
     # ========================================================
     # NET AMOUNT
+    #
+    # amount - discount
     # ========================================================
 
     net_amount = db.Column(
@@ -4646,6 +4723,8 @@ class StudentCharge(db.Model):
 
     # ========================================================
     # BALANCE
+    #
+    # net_amount - paid_amount
     # ========================================================
 
     balance = db.Column(
@@ -4667,6 +4746,12 @@ class StudentCharge(db.Model):
 
     # ========================================================
     # PAYMENT STATUS
+    #
+    # unpaid
+    # partial
+    # paid
+    # cancelled
+    # overdue
     # ========================================================
 
     status = db.Column(
@@ -4682,7 +4767,7 @@ class StudentCharge(db.Model):
     # ========================================================
 
     created_by = db.Column(
-        db.Integer,
+        db.BigInteger,
         db.ForeignKey(
             "users.id",
             ondelete="SET NULL"
@@ -4692,7 +4777,7 @@ class StudentCharge(db.Model):
     )
 
     # ========================================================
-    # TIMESTAMPS
+    # CREATED AT
     # ========================================================
 
     created_at = db.Column(
@@ -4702,6 +4787,10 @@ class StudentCharge(db.Model):
         server_default=db.func.now(),
         index=True
     )
+
+    # ========================================================
+    # UPDATED AT
+    # ========================================================
 
     updated_at = db.Column(
         db.DateTime,
@@ -4716,30 +4805,54 @@ class StudentCharge(db.Model):
     # RELATIONSHIPS
     # ========================================================
 
+    # --------------------------------------------------------
+    # INSTITUTION
+    # --------------------------------------------------------
+
     institution = db.relationship(
         "Institution",
         back_populates="student_charges"
     )
+
+    # --------------------------------------------------------
+    # BRANCH
+    # --------------------------------------------------------
 
     branch = db.relationship(
         "Branch",
         back_populates="student_charges"
     )
 
+    # --------------------------------------------------------
+    # STUDENT
+    # --------------------------------------------------------
+
     student = db.relationship(
         "Student",
         back_populates="charges"
     )
+
+    # --------------------------------------------------------
+    # ENROLLMENT
+    # --------------------------------------------------------
 
     enrollment = db.relationship(
         "StudentEnrollment",
         back_populates="charges"
     )
 
+    # --------------------------------------------------------
+    # ACADEMIC YEAR
+    # --------------------------------------------------------
+
     academic_year = db.relationship(
         "AcademicYear",
         back_populates="student_charges"
     )
+
+    # --------------------------------------------------------
+    # CREATED BY USER
+    # --------------------------------------------------------
 
     created_by_user = db.relationship(
         "User",
@@ -4747,45 +4860,86 @@ class StudentCharge(db.Model):
     )
 
     # ========================================================
-    # CONSTRAINTS
+    # TABLE CONSTRAINTS
     # ========================================================
 
     __table_args__ = (
+
+        # ----------------------------------------------------
+        # AMOUNT
+        # ----------------------------------------------------
 
         db.CheckConstraint(
             "amount >= 0",
             name="ck_student_charge_amount"
         ),
 
+        # ----------------------------------------------------
+        # DISCOUNT
+        # ----------------------------------------------------
+
         db.CheckConstraint(
             "discount >= 0",
             name="ck_student_charge_discount"
         ),
+
+        # ----------------------------------------------------
+        # DISCOUNT CANNOT EXCEED AMOUNT
+        # ----------------------------------------------------
 
         db.CheckConstraint(
             "discount <= amount",
             name="ck_student_charge_discount_amount"
         ),
 
+        # ----------------------------------------------------
+        # NET AMOUNT
+        # ----------------------------------------------------
+
         db.CheckConstraint(
             "net_amount >= 0",
             name="ck_student_charge_net_amount"
         ),
+
+        # ----------------------------------------------------
+        # PAID AMOUNT
+        # ----------------------------------------------------
 
         db.CheckConstraint(
             "paid_amount >= 0",
             name="ck_student_charge_paid_amount"
         ),
 
+        # ----------------------------------------------------
+        # PAID CANNOT EXCEED NET AMOUNT
+        # ----------------------------------------------------
+
         db.CheckConstraint(
             "paid_amount <= net_amount",
             name="ck_student_charge_paid_net_amount"
         ),
 
+        # ----------------------------------------------------
+        # BALANCE
+        # ----------------------------------------------------
+
         db.CheckConstraint(
             "balance >= 0",
             name="ck_student_charge_balance"
         ),
+
+        # ----------------------------------------------------
+        # BALANCE CANNOT EXCEED NET AMOUNT
+        # ----------------------------------------------------
+
+        db.CheckConstraint(
+            "balance <= net_amount",
+            name="ck_student_charge_balance_net_amount"
+        ),
+
+        # ----------------------------------------------------
+        # PAYMENT STATUS
+        # ----------------------------------------------------
 
         db.CheckConstraint(
             "status IN ("
@@ -4797,6 +4951,10 @@ class StudentCharge(db.Model):
             ")",
             name="ck_student_charge_status"
         ),
+
+        # ----------------------------------------------------
+        # CHARGE TYPE
+        # ----------------------------------------------------
 
         db.CheckConstraint(
             "charge_type IN ("
@@ -4819,31 +4977,192 @@ class StudentCharge(db.Model):
     )
 
     # ========================================================
+    # CALCULATE NET AMOUNT
+    # ========================================================
+
+    def calculate_net_amount(self):
+
+        amount = self.amount or 0
+        discount = self.discount or 0
+
+        net_amount = amount - discount
+
+        if net_amount < 0:
+            net_amount = 0
+
+        self.net_amount = net_amount
+
+        return self.net_amount
+
+    # ========================================================
     # CALCULATE BALANCE
     # ========================================================
 
     def calculate_balance(self):
 
-        self.net_amount = (
-            self.amount - self.discount
-        )
+        amount = self.amount or 0
+        discount = self.discount or 0
+        paid_amount = self.paid_amount or 0
 
-        self.balance = (
-            self.net_amount - self.paid_amount
-        )
+        # ----------------------------------------------------
+        # NET AMOUNT
+        # ----------------------------------------------------
 
-        if self.balance <= 0:
+        net_amount = amount - discount
 
-            self.balance = 0
+        if net_amount < 0:
+            net_amount = 0
+
+        self.net_amount = net_amount
+
+        # ----------------------------------------------------
+        # PAID AMOUNT
+        # ----------------------------------------------------
+
+        if paid_amount < 0:
+            paid_amount = 0
+
+        # ----------------------------------------------------
+        # PREVENT PAID > NET
+        # ----------------------------------------------------
+
+        if paid_amount > net_amount:
+            paid_amount = net_amount
+
+        self.paid_amount = paid_amount
+
+        # ----------------------------------------------------
+        # BALANCE
+        # ----------------------------------------------------
+
+        balance = net_amount - paid_amount
+
+        if balance < 0:
+            balance = 0
+
+        self.balance = balance
+
+        # ----------------------------------------------------
+        # STATUS
+        #
+        # cancelled is intentionally preserved.
+        # ----------------------------------------------------
+
+        if self.status == "cancelled":
+            return self.balance
+
+        # ----------------------------------------------------
+        # FULLY PAID
+        # ----------------------------------------------------
+
+        if self.balance == 0:
+
             self.status = "paid"
+
+        # ----------------------------------------------------
+        # PARTIALLY PAID
+        # ----------------------------------------------------
 
         elif self.paid_amount > 0:
 
             self.status = "partial"
 
+        # ----------------------------------------------------
+        # UNPAID
+        # ----------------------------------------------------
+
         else:
 
             self.status = "unpaid"
+
+        return self.balance
+
+    # ========================================================
+    # UPDATE PAYMENT STATUS
+    #
+    # This method can be used when you want overdue status
+    # to be calculated based on due_date.
+    # ========================================================
+
+    def update_status(self, today=None):
+
+        if self.status == "cancelled":
+            return self.status
+
+        # ----------------------------------------------------
+        # FIRST CALCULATE FINANCIAL VALUES
+        # ----------------------------------------------------
+
+        self.calculate_balance()
+
+        # ----------------------------------------------------
+        # FULLY PAID
+        # ----------------------------------------------------
+
+        if self.balance <= 0:
+
+            self.status = "paid"
+
+            return self.status
+
+        # ----------------------------------------------------
+        # DATE FOR OVERDUE CHECK
+        # ----------------------------------------------------
+
+        if today is None:
+            today = date.today()
+
+        # ----------------------------------------------------
+        # OVERDUE
+        # ----------------------------------------------------
+
+        if (
+            self.due_date is not None
+            and self.due_date < today
+            and self.balance > 0
+        ):
+
+            self.status = "overdue"
+
+        # ----------------------------------------------------
+        # PARTIAL
+        # ----------------------------------------------------
+
+        elif self.paid_amount and self.paid_amount > 0:
+
+            self.status = "partial"
+
+        # ----------------------------------------------------
+        # UNPAID
+        # ----------------------------------------------------
+
+        else:
+
+            self.status = "unpaid"
+
+        return self.status
+
+    # ========================================================
+    # MARK AS CANCELLED
+    # ========================================================
+
+    def cancel(self):
+
+        self.status = "cancelled"
+
+        return self.status
+
+    # ========================================================
+    # MARK AS PAID
+    # ========================================================
+
+    def mark_as_paid(self):
+
+        self.calculate_net_amount()
+
+        self.paid_amount = self.net_amount
+        self.balance = 0
+        self.status = "paid"
 
         return self.balance
 
@@ -4857,15 +5176,17 @@ class StudentCharge(db.Model):
             f"<StudentCharge "
             f"id={self.id} "
             f"student_id={self.student_id} "
+            f"enrollment_id={self.enrollment_id} "
+            f"academic_year_id={self.academic_year_id} "
             f"charge_type={self.charge_type!r} "
             f"charge_name={self.charge_name!r} "
             f"amount={self.amount} "
+            f"discount={self.discount} "
             f"net_amount={self.net_amount} "
             f"paid_amount={self.paid_amount} "
             f"balance={self.balance} "
             f"status={self.status!r}>"
         )
-
 
 # ============================================================
 # EXAM MODEL
