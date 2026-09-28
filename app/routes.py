@@ -67078,36 +67078,12 @@ def import_students_full():
 # ============================================================
 # EXPORT STUDENT DATA
 # ============================================================
-#
-# URL:
-#
-# /students/export
-# /students/export?format=xlsx
-# /students/export?format=csv
-#
-# ROLE SCOPE:
-#
-# superadmin
-#     -> ALL institutions / ALL branches
-#
-# school_admin
-#     -> CURRENT institution ONLY
-#
-# branch_admin
-#     -> CURRENT institution + CURRENT branch ONLY
-#
-# teacher
-# student
-# parent
-#     -> DENIED
-#
-# SECURITY:
-#
-# password
-# session_token
-#
-# are NEVER exported.
-#
+
+# ============================================================
+# EXPORT STUDENTS + ENROLLMENTS + CHARGES
+# ONE EXCEL FILE
+# NO ZIP
+# FOREIGN KEYS => NAMES
 # ============================================================
 
 @bp.route(
@@ -67154,7 +67130,6 @@ def export_students():
     }
 
     if current_role not in allowed_roles:
-
         abort(403)
 
     # ========================================================
@@ -67176,14 +67151,6 @@ def export_students():
     # ========================================================
     # QUERY PARAMETERS
     # ========================================================
-
-    export_format = (
-        request.args.get(
-            "format",
-            "xlsx"
-        )
-        or "xlsx"
-    ).strip().lower()
 
     search = (
         request.args.get(
@@ -67212,24 +67179,7 @@ def export_students():
     )
 
     # ========================================================
-    # FORMAT VALIDATION
-    # ========================================================
-
-    if export_format not in {
-        "xlsx",
-        "csv",
-    }:
-
-        abort(
-            400,
-            description=(
-                "Invalid export format. "
-                "Use 'xlsx' or 'csv'."
-            )
-        )
-
-    # ========================================================
-    # BASE QUERY
+    # BASE STUDENT QUERY
     # ========================================================
 
     query = Student.query
@@ -67240,20 +67190,12 @@ def export_students():
 
     if current_role == "superadmin":
 
-        # ----------------------------------------------------
-        # Optional institution filter
-        # ----------------------------------------------------
-
         if institution_filter:
 
             query = query.filter(
                 Student.institution_id
                 == institution_filter
             )
-
-        # ----------------------------------------------------
-        # Optional branch filter
-        # ----------------------------------------------------
 
         if branch_filter:
 
@@ -67268,10 +67210,6 @@ def export_students():
 
     elif current_role == "school_admin":
 
-        # ----------------------------------------------------
-        # Institution is REQUIRED
-        # ----------------------------------------------------
-
         if not user_institution_id:
 
             abort(
@@ -67282,21 +67220,10 @@ def export_students():
                 )
             )
 
-        # ----------------------------------------------------
-        # LOCK TO CURRENT INSTITUTION
-        # ----------------------------------------------------
-
         query = query.filter(
             Student.institution_id
             == user_institution_id
         )
-
-        # ----------------------------------------------------
-        # Optional branch filter
-        #
-        # Because institution_id is already locked,
-        # branch_filter cannot escape another institution.
-        # ----------------------------------------------------
 
         if branch_filter:
 
@@ -67311,10 +67238,6 @@ def export_students():
 
     elif current_role == "branch_admin":
 
-        # ----------------------------------------------------
-        # Institution REQUIRED
-        # ----------------------------------------------------
-
         if not user_institution_id:
 
             abort(
@@ -67324,10 +67247,6 @@ def export_students():
                     "to an institution."
                 )
             )
-
-        # ----------------------------------------------------
-        # Branch REQUIRED
-        # ----------------------------------------------------
 
         if not user_branch_id:
 
@@ -67339,17 +67258,11 @@ def export_students():
                 )
             )
 
-        # ----------------------------------------------------
-        # HARD LOCK:
-        #
-        # institution + branch
-        #
-        # Client cannot override this using query params.
-        # ----------------------------------------------------
-
+        # HARD LOCK
         query = query.filter(
             Student.institution_id
             == user_institution_id,
+
             Student.branch_id
             == user_branch_id
         )
@@ -67360,12 +67273,11 @@ def export_students():
 
     if search:
 
-        search_value = (
-            f"%{search}%"
-        )
+        search_value = f"%{search}%"
 
         query = query.filter(
             db.or_(
+
                 Student.full_name.ilike(
                     search_value
                 ),
@@ -67399,6 +67311,14 @@ def export_students():
                 ),
 
                 Student.parent_email.ilike(
+                    search_value
+                ),
+
+                Student.city.ilike(
+                    search_value
+                ),
+
+                Student.nationality.ilike(
                     search_value
                 )
             )
@@ -67444,118 +67364,945 @@ def export_students():
     )
 
     # ========================================================
-    # FETCH DATA
+    # FETCH STUDENTS
     # ========================================================
 
     students = query.all()
 
     # ========================================================
-    # EXPORT COLUMNS
+    # HELPER
     #
-    # Dynamically collect Student model columns.
+    # Convert relationship object into a readable name.
     #
-    # This means if you later add another Student column,
-    # it can automatically appear in the export.
-    #
-    # Sensitive authentication columns are excluded.
+    # IMPORTANT:
+    # Foreign key IDs are NEVER exported.
     # ========================================================
 
-    excluded_columns = {
-        "password",
-        "session_token",
-    }
+    def get_display_name(
+        obj,
+        fallback=""
+    ):
 
-    export_columns = [
-        column
-        for column in Student.__table__.columns
-        if column.name not in excluded_columns
-    ]
+        if obj is None:
+            return fallback
 
-    column_names = [
-        column.name
-        for column in export_columns
-    ]
+        # -----------------------------------------------
+        # Most common
+        # -----------------------------------------------
 
-    # ========================================================
-    # BUILD ROW DATA
-    # ========================================================
+        for field_name in (
+            "name",
+            "full_name",
+            "title",
+            "display_name",
+            "short_name",
+        ):
 
-    rows = []
+            try:
 
-    for student in students:
+                value = getattr(
+                    obj,
+                    field_name,
+                    None
+                )
 
-        row = {}
+            except Exception:
 
-        for column in export_columns:
+                value = None
 
-            column_name = column.name
+            if value not in (
+                None,
+                ""
+            ):
 
-            value = getattr(
-                student,
-                column_name,
+                return str(value)
+
+        # -----------------------------------------------
+        # Academic year may use year
+        # -----------------------------------------------
+
+        try:
+
+            year_value = getattr(
+                obj,
+                "year",
                 None
             )
 
-            # ------------------------------------------------
-            # Date / DateTime formatting
-            # ------------------------------------------------
-
-            if isinstance(
-                value,
-                datetime
+            if year_value not in (
+                None,
+                ""
             ):
 
-                value = value.strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
+                return str(year_value)
 
-            elif hasattr(
-                value,
-                "isoformat"
+        except Exception:
+
+            pass
+
+        # -----------------------------------------------
+        # Code fallback
+        # -----------------------------------------------
+
+        try:
+
+            code_value = getattr(
+                obj,
+                "code",
+                None
+            )
+
+            if code_value not in (
+                None,
+                ""
             ):
 
-                try:
+                return str(code_value)
 
-                    value = value.isoformat()
+        except Exception:
 
-                except Exception:
+            pass
 
-                    value = str(value)
+        return fallback
 
-            # ------------------------------------------------
-            # Boolean formatting
-            # ------------------------------------------------
+    # ========================================================
+    # FORMAT VALUE
+    # ========================================================
 
-            elif isinstance(
-                value,
-                bool
-            ):
+    def format_value(value):
 
-                value = (
+        if value is None:
+            return ""
+
+        if isinstance(
+            value,
+            datetime
+        ):
+
+            return value.strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+
+        if isinstance(
+            value,
+            date
+        ):
+
+            return value.strftime(
+                "%Y-%m-%d"
+            )
+
+        if isinstance(
+            value,
+            bool
+        ):
+
+            return (
+                "Yes"
+                if value
+                else "No"
+            )
+
+        return str(value)
+
+    # ========================================================
+    # BUILD STUDENT DATA
+    #
+    # NO FOREIGN KEY IDs
+    # ========================================================
+
+    student_columns = [
+        "Admission No",
+        "Roll No",
+        "Full Name",
+        "Username",
+        "Email",
+        "Role",
+        "Account Active",
+        "Verified",
+        "Login Time",
+        "Last Login",
+        "Last Active",
+        "Gender",
+        "Date of Birth",
+        "Place of Birth",
+        "Nationality",
+        "Phone",
+        "Address",
+        "City",
+        "Parent Name",
+        "Parent Phone",
+        "Parent Email",
+        "Parent Address",
+        "Relationship to Student",
+        "Photo",
+        "Status",
+        "Notes",
+        "Created At",
+        "Updated At",
+        "Institution",
+        "Branch",
+    ]
+
+    student_rows = []
+
+    # ========================================================
+    # ENROLLMENT DATA
+    # ========================================================
+
+    enrollment_columns = [
+        "Admission No",
+        "Student Name",
+        "Enrollment No",
+        "Institution",
+        "Branch",
+        "Academic Year",
+        "Program",
+        "Class",
+        "Section",
+        "Enrollment Date",
+        "Status",
+        "Notes",
+        "Created At",
+        "Updated At",
+    ]
+
+    enrollment_rows = []
+
+    # ========================================================
+    # CHARGE DATA
+    # ========================================================
+
+    charge_columns = [
+        "Admission No",
+        "Student Name",
+        "Enrollment No",
+        "Institution",
+        "Branch",
+        "Academic Year",
+        "Charge Type",
+        "Charge Name",
+        "Description",
+        "Amount",
+        "Discount",
+        "Net Amount",
+        "Paid Amount",
+        "Balance",
+        "Due Date",
+        "Payment Status",
+        "Created By",
+        "Created At",
+        "Updated At",
+    ]
+
+    charge_rows = []
+
+    # ========================================================
+    # PROCESS EACH STUDENT
+    # ========================================================
+
+    for student in students:
+
+        # ====================================================
+        # STUDENT RELATIONSHIP NAMES
+        # ====================================================
+
+        institution_name = get_display_name(
+            getattr(
+                student,
+                "institution",
+                None
+            )
+        )
+
+        branch_name = get_display_name(
+            getattr(
+                student,
+                "branch",
+                None
+            )
+        )
+
+        # ====================================================
+        # STUDENT ROW
+        # ====================================================
+
+        student_rows.append({
+
+            "Admission No":
+                format_value(
+                    student.admission_no
+                ),
+
+            "Roll No":
+                format_value(
+                    student.roll_no
+                ),
+
+            "Full Name":
+                format_value(
+                    student.full_name
+                ),
+
+            "Username":
+                format_value(
+                    student.username
+                ),
+
+            "Email":
+                format_value(
+                    student.email
+                ),
+
+            "Role":
+                format_value(
+                    student.role
+                ),
+
+            "Account Active":
+                (
                     "Yes"
-                    if value
+                    if student.is_active
                     else "No"
+                ),
+
+            "Verified":
+                (
+                    "Yes"
+                    if student.is_verified
+                    else "No"
+                ),
+
+            "Login Time":
+                format_value(
+                    student.login_time
+                ),
+
+            "Last Login":
+                format_value(
+                    student.last_login
+                ),
+
+            "Last Active":
+                format_value(
+                    student.last_active
+                ),
+
+            "Gender":
+                format_value(
+                    student.gender
+                ),
+
+            "Date of Birth":
+                format_value(
+                    student.date_of_birth
+                ),
+
+            "Place of Birth":
+                format_value(
+                    student.place_of_birth
+                ),
+
+            "Nationality":
+                format_value(
+                    student.nationality
+                ),
+
+            "Phone":
+                format_value(
+                    student.phone
+                ),
+
+            "Address":
+                format_value(
+                    student.address
+                ),
+
+            "City":
+                format_value(
+                    student.city
+                ),
+
+            "Parent Name":
+                format_value(
+                    student.parent_name
+                ),
+
+            "Parent Phone":
+                format_value(
+                    student.parent_phone
+                ),
+
+            "Parent Email":
+                format_value(
+                    student.parent_email
+                ),
+
+            "Parent Address":
+                format_value(
+                    student.parent_address
+                ),
+
+            "Relationship to Student":
+                format_value(
+                    student.relationship_to_student
+                ),
+
+            "Photo":
+                format_value(
+                    student.photo
+                ),
+
+            "Status":
+                format_value(
+                    student.status
+                ),
+
+            "Notes":
+                format_value(
+                    student.notes
+                ),
+
+            "Created At":
+                format_value(
+                    student.created_at
+                ),
+
+            "Updated At":
+                format_value(
+                    student.updated_at
+                ),
+
+            "Institution":
+                institution_name,
+
+            "Branch":
+                branch_name,
+        })
+
+        # ====================================================
+        # ALL ENROLLMENTS
+        #
+        # IMPORTANT:
+        # We do NOT export student_id, institution_id,
+        # branch_id, academic_year_id, program_id,
+        # class_id, section_id.
+        #
+        # Their names are exported instead.
+        # ====================================================
+
+        student_enrollments = getattr(
+            student,
+            "enrollments",
+            []
+        ) or []
+
+        for enrollment in student_enrollments:
+
+            enrollment_institution = (
+                getattr(
+                    enrollment,
+                    "institution",
+                    None
+                )
+            )
+
+            enrollment_branch = (
+                getattr(
+                    enrollment,
+                    "branch",
+                    None
+                )
+            )
+
+            academic_year = (
+                getattr(
+                    enrollment,
+                    "academic_year",
+                    None
+                )
+            )
+
+            program = (
+                getattr(
+                    enrollment,
+                    "program",
+                    None
+                )
+            )
+
+            class_obj = (
+                getattr(
+                    enrollment,
+                    "class_",
+                    None
+                )
+            )
+
+            section = (
+                getattr(
+                    enrollment,
+                    "section",
+                    None
+                )
+            )
+
+            enrollment_rows.append({
+
+                "Admission No":
+                    format_value(
+                        student.admission_no
+                    ),
+
+                "Student Name":
+                    format_value(
+                        student.full_name
+                    ),
+
+                "Enrollment No":
+                    format_value(
+                        enrollment.enrollment_no
+                    ),
+
+                "Institution":
+                    get_display_name(
+                        enrollment_institution
+                    )
+                    or institution_name,
+
+                "Branch":
+                    get_display_name(
+                        enrollment_branch
+                    )
+                    or branch_name,
+
+                "Academic Year":
+                    get_display_name(
+                        academic_year
+                    ),
+
+                "Program":
+                    get_display_name(
+                        program
+                    ),
+
+                "Class":
+                    get_display_name(
+                        class_obj
+                    ),
+
+                "Section":
+                    get_display_name(
+                        section
+                    ),
+
+                "Enrollment Date":
+                    format_value(
+                        enrollment.enrollment_date
+                    ),
+
+                "Status":
+                    format_value(
+                        enrollment.status
+                    ),
+
+                "Notes":
+                    format_value(
+                        enrollment.notes
+                    ),
+
+                "Created At":
+                    format_value(
+                        enrollment.created_at
+                    ),
+
+                "Updated At":
+                    format_value(
+                        enrollment.updated_at
+                    ),
+            })
+
+        # ====================================================
+        # ALL CHARGES
+        #
+        # IMPORTANT:
+        # We export names instead of FK IDs.
+        # ====================================================
+
+        student_charges = getattr(
+            student,
+            "charges",
+            []
+        ) or []
+
+        for charge in student_charges:
+
+            charge_institution = (
+                getattr(
+                    charge,
+                    "institution",
+                    None
+                )
+            )
+
+            charge_branch = (
+                getattr(
+                    charge,
+                    "branch",
+                    None
+                )
+            )
+
+            academic_year = (
+                getattr(
+                    charge,
+                    "academic_year",
+                    None
+                )
+            )
+
+            enrollment = (
+                getattr(
+                    charge,
+                    "enrollment",
+                    None
+                )
+            )
+
+            created_by_user = (
+                getattr(
+                    charge,
+                    "created_by_user",
+                    None
+                )
+            )
+
+            # -----------------------------------------------
+            # Created By
+            # -----------------------------------------------
+
+            created_by_name = get_display_name(
+                created_by_user
+            )
+
+            # -----------------------------------------------
+            # If User has username/email but no name
+            # -----------------------------------------------
+
+            if (
+                not created_by_name
+                and created_by_user is not None
+            ):
+
+                created_by_name = (
+                    getattr(
+                        created_by_user,
+                        "username",
+                        None
+                    )
+                    or
+                    getattr(
+                        created_by_user,
+                        "email",
+                        None
+                    )
+                    or
+                    ""
                 )
 
-            # ------------------------------------------------
-            # None
-            # ------------------------------------------------
+            charge_rows.append({
 
-            elif value is None:
+                "Admission No":
+                    format_value(
+                        student.admission_no
+                    ),
 
-                value = ""
+                "Student Name":
+                    format_value(
+                        student.full_name
+                    ),
 
-            # ------------------------------------------------
-            # Everything else
-            # ------------------------------------------------
+                "Enrollment No":
+                    format_value(
+                        getattr(
+                            enrollment,
+                            "enrollment_no",
+                            ""
+                        )
+                    ),
 
-            else:
+                "Institution":
+                    get_display_name(
+                        charge_institution
+                    )
+                    or institution_name,
 
-                value = str(value)
+                "Branch":
+                    get_display_name(
+                        charge_branch
+                    )
+                    or branch_name,
 
-            row[column_name] = value
+                "Academic Year":
+                    get_display_name(
+                        academic_year
+                    ),
 
-        rows.append(row)
+                "Charge Type":
+                    format_value(
+                        charge.charge_type
+                    ),
+
+                "Charge Name":
+                    format_value(
+                        charge.charge_name
+                    ),
+
+                "Description":
+                    format_value(
+                        charge.description
+                    ),
+
+                "Amount":
+                    format_value(
+                        charge.amount
+                    ),
+
+                "Discount":
+                    format_value(
+                        charge.discount
+                    ),
+
+                "Net Amount":
+                    format_value(
+                        charge.net_amount
+                    ),
+
+                "Paid Amount":
+                    format_value(
+                        charge.paid_amount
+                    ),
+
+                "Balance":
+                    format_value(
+                        charge.balance
+                    ),
+
+                "Due Date":
+                    format_value(
+                        charge.due_date
+                    ),
+
+                "Payment Status":
+                    format_value(
+                        charge.status
+                    ),
+
+                "Created By":
+                    created_by_name,
+
+                "Created At":
+                    format_value(
+                        charge.created_at
+                    ),
+
+                "Updated At":
+                    format_value(
+                        charge.updated_at
+                    ),
+            })
+
+    # ========================================================
+    # CREATE WORKBOOK
+    # ========================================================
+
+    workbook = Workbook()
+
+    # ========================================================
+    # COMMON SHEET FORMATTER
+    # ========================================================
+
+    def format_worksheet(
+        worksheet,
+        columns,
+        rows,
+        freeze_cell="A2"
+    ):
+
+        # ----------------------------------------------------
+        # HEADER
+        # ----------------------------------------------------
+
+        for column_index, column_name in enumerate(
+            columns,
+            start=1
+        ):
+
+            cell = worksheet.cell(
+                row=1,
+                column=column_index,
+                value=column_name
+            )
+
+            cell.font = Font(
+                bold=True
+            )
+
+            cell.alignment = Alignment(
+                horizontal="center",
+                vertical="center",
+                wrap_text=True
+            )
+
+        # ----------------------------------------------------
+        # DATA
+        # ----------------------------------------------------
+
+        for row_index, row_data in enumerate(
+            rows,
+            start=2
+        ):
+
+            for column_index, column_name in enumerate(
+                columns,
+                start=1
+            ):
+
+                worksheet.cell(
+                    row=row_index,
+                    column=column_index,
+                    value=row_data.get(
+                        column_name,
+                        ""
+                    )
+                )
+
+        # ----------------------------------------------------
+        # FREEZE HEADER
+        # ----------------------------------------------------
+
+        worksheet.freeze_panes = freeze_cell
+
+        # ----------------------------------------------------
+        # AUTO FILTER
+        # ----------------------------------------------------
+
+        if columns:
+
+            last_column = get_column_letter(
+                len(columns)
+            )
+
+            last_row = max(
+                worksheet.max_row,
+                1
+            )
+
+            worksheet.auto_filter.ref = (
+                f"A1:{last_column}{last_row}"
+            )
+
+        # ----------------------------------------------------
+        # COLUMN WIDTH
+        # ----------------------------------------------------
+
+        for column_index, column_name in enumerate(
+            columns,
+            start=1
+        ):
+
+            max_length = len(
+                str(column_name)
+            )
+
+            # ----------------------------------------------
+            # Check up to 500 rows
+            # ----------------------------------------------
+
+            for row_index in range(
+                2,
+                min(
+                    worksheet.max_row + 1,
+                    502
+                )
+            ):
+
+                cell_value = worksheet.cell(
+                    row=row_index,
+                    column=column_index
+                ).value
+
+                if cell_value is not None:
+
+                    max_length = max(
+                        max_length,
+                        len(
+                            str(cell_value)
+                        )
+                    )
+
+            worksheet.column_dimensions[
+                get_column_letter(
+                    column_index
+                )
+            ].width = min(
+                max(
+                    max_length + 2,
+                    12
+                ),
+                40
+            )
+
+        # ----------------------------------------------------
+        # HEADER HEIGHT
+        # ----------------------------------------------------
+
+        worksheet.row_dimensions[1].height = 30
+
+    # ========================================================
+    # SHEET 1
+    # STUDENTS
+    # ========================================================
+
+    students_sheet = workbook.active
+
+    students_sheet.title = "Students"
+
+    format_worksheet(
+        students_sheet,
+        student_columns,
+        student_rows
+    )
+
+    # ========================================================
+    # SHEET 2
+    # ENROLLMENTS
+    # ========================================================
+
+    enrollments_sheet = workbook.create_sheet(
+        "Enrollments"
+    )
+
+    format_worksheet(
+        enrollments_sheet,
+        enrollment_columns,
+        enrollment_rows
+    )
+
+    # ========================================================
+    # SHEET 3
+    # CHARGES
+    # ========================================================
+
+    charges_sheet = workbook.create_sheet(
+        "Charges"
+    )
+
+    format_worksheet(
+        charges_sheet,
+        charge_columns,
+        charge_rows
+    )
 
     # ========================================================
     # FILE NAME
@@ -67565,194 +68312,43 @@ def export_students():
         "%Y%m%d_%H%M%S"
     )
 
-    filename_base = (
-        f"students_export_{timestamp}"
+    filename = (
+        f"students_complete_export_"
+        f"{timestamp}.xlsx"
     )
 
     # ========================================================
-    # CSV EXPORT
-    # ========================================================
-
-    if export_format == "csv":
-
-        output = io.StringIO()
-
-        writer = csv.DictWriter(
-            output,
-            fieldnames=column_names,
-            extrasaction="ignore"
-        )
-
-        writer.writeheader()
-
-        for row in rows:
-
-            writer.writerow(row)
-
-        output.seek(0)
-
-        return send_file(
-            io.BytesIO(
-                output.getvalue().encode(
-                    "utf-8-sig"
-                )
-            ),
-            mimetype=(
-                "text/csv; charset=utf-8"
-            ),
-            as_attachment=True,
-            download_name=(
-                f"{filename_base}.csv"
-            )
-        )
-
-    # ========================================================
-    # EXCEL EXPORT
-    # ========================================================
-
-    workbook = Workbook()
-
-    worksheet = workbook.active
-
-    worksheet.title = "Students"
-
-    # ========================================================
-    # HEADER
-    # ========================================================
-
-    for column_index, column_name in enumerate(
-        column_names,
-        start=1
-    ):
-
-        cell = worksheet.cell(
-            row=1,
-            column=column_index,
-            value=column_name
-        )
-
-        cell.font = Font(
-            bold=True
-        )
-
-        cell.alignment = Alignment(
-            horizontal="center",
-            vertical="center"
-        )
-
-    # ========================================================
-    # DATA
-    # ========================================================
-
-    for row_index, row_data in enumerate(
-        rows,
-        start=2
-    ):
-
-        for column_index, column_name in enumerate(
-            column_names,
-            start=1
-        ):
-
-            worksheet.cell(
-                row=row_index,
-                column=column_index,
-                value=row_data.get(
-                    column_name,
-                    ""
-                )
-            )
-
-    # ========================================================
-    # FREEZE HEADER
-    # ========================================================
-
-    worksheet.freeze_panes = "A2"
-
-    # ========================================================
-    # AUTO FILTER
-    # ========================================================
-
-    if column_names:
-
-        last_column = get_column_letter(
-            len(column_names)
-        )
-
-        last_row = max(
-            worksheet.max_row,
-            1
-        )
-
-        worksheet.auto_filter.ref = (
-            f"A1:{last_column}{last_row}"
-        )
-
-    # ========================================================
-    # COLUMN WIDTH
-    # ========================================================
-
-    for column_index, column_name in enumerate(
-        column_names,
-        start=1
-    ):
-
-        max_length = len(
-            str(column_name)
-        )
-
-        for row_index in range(
-            2,
-            min(
-                worksheet.max_row + 1,
-                500
-            )
-        ):
-
-            cell_value = worksheet.cell(
-                row=row_index,
-                column=column_index
-            ).value
-
-            if cell_value is not None:
-
-                max_length = max(
-                    max_length,
-                    len(str(cell_value))
-                )
-
-        worksheet.column_dimensions[
-            get_column_letter(column_index)
-        ].width = min(
-            max(max_length + 2, 12),
-            40
-        )
-
-    # ========================================================
-    # WRITE WORKBOOK TO MEMORY
+    # WRITE TO MEMORY
     # ========================================================
 
     output = io.BytesIO()
 
-    workbook.save(output)
+    workbook.save(
+        output
+    )
 
     output.seek(0)
 
     # ========================================================
-    # RETURN EXCEL FILE
+    # RETURN ONE EXCEL FILE
+    #
+    # NO ZIP
     # ========================================================
 
     return send_file(
+
         output,
+
         mimetype=(
             "application/vnd.openxmlformats-officedocument."
             "spreadsheetml.sheet"
         ),
+
         as_attachment=True,
-        download_name=(
-            f"{filename_base}.xlsx"
-        )
+
+        download_name=filename
     )
+
 
 
 # ============================================================
