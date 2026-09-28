@@ -65050,7 +65050,17 @@ def import_students_full():
             )
 
     # --------------------------------------------------------
-    # For branch restricted users, always force own branch.
+    # Branch selection rules:
+    #
+    # superadmin:
+    #     CSV Branch is allowed.
+    #
+    # school_admin:
+    #     CSV Branch is allowed, but it must belong to the
+    #     current institution.
+    #
+    # branch_admin:
+    #     Always forced to own branch.
     # --------------------------------------------------------
 
     import_branch_id = user_branch_id
@@ -65378,9 +65388,17 @@ def import_students_full():
     # GENERATE UNIQUE ADMISSION NO
     # ========================================================
 
-    def generate_unique_admission_no():
+    def generate_unique_admission_no(
+        branch_id
+    ):
 
         year = datetime.utcnow().year
+
+        if not branch_id:
+            raise ValueError(
+                "A branch is required before "
+                "generating an admission number."
+            )
 
         while True:
 
@@ -65398,6 +65416,9 @@ def import_students_full():
                 .filter(
                     Student.institution_id
                     == institution_id,
+
+                    Student.branch_id
+                    == branch_id,
 
                     Student.admission_no
                     == candidate,
@@ -65757,6 +65778,69 @@ def import_students_full():
                     )
 
                 # =================================================
+                # BRANCH MUST BE RESOLVED BEFORE STUDENT LOOKUP
+                # =================================================
+                #
+                # IMPORTANT:
+                # Admission No is branch-scoped.
+                #
+                # The same admission number may exist in:
+                #
+                #     Institution 1 / Branch A -> 260001
+                #     Institution 1 / Branch B -> 260001
+                #
+                # Therefore we MUST know the target branch before
+                # checking whether the student already exists.
+                #
+                # =================================================
+
+                student_branch_id = import_branch_id
+
+                if not student_branch_id:
+
+                    csv_branch_value = clean(
+                        row.get("Branch")
+                    )
+
+                    if csv_branch_value:
+
+                        branch_obj = resolve_model(
+                            Branch,
+                            csv_branch_value,
+                            "Branch",
+                            institution_id=(
+                                institution_id
+                            ),
+                        )
+
+                        student_branch_id = (
+                            branch_obj.id
+                        )
+
+                if not student_branch_id:
+
+                    raise ValueError(
+                        "Student branch could "
+                        "not be determined."
+                    )
+
+                # -------------------------------------------------
+                # Branch security
+                # -------------------------------------------------
+
+                if role == "branch_admin":
+
+                    if (
+                        student_branch_id
+                        != user_branch_id
+                    ):
+
+                        raise ValueError(
+                            "You cannot import "
+                            "students into another branch."
+                        )
+
+                # =================================================
                 # ADMISSION NUMBER
                 # =================================================
 
@@ -65771,11 +65855,25 @@ def import_students_full():
                 if not admission_no:
 
                     admission_no = (
-                        generate_unique_admission_no()
+                        generate_unique_admission_no(
+                            student_branch_id
+                        )
                     )
 
                 # =================================================
                 # FIND EXISTING STUDENT
+                # =================================================
+                #
+                # CRITICAL:
+                # Do NOT search by institution + admission_no only.
+                #
+                # Search by:
+                #
+                #     institution + branch + admission_no
+                #
+                # This prevents Branch A's student from being treated
+                # as Branch B's student.
+                #
                 # =================================================
 
                 student = (
@@ -65783,6 +65881,9 @@ def import_students_full():
                     .filter(
                         Student.institution_id
                         == institution_id,
+
+                        Student.branch_id
+                        == student_branch_id,
 
                         Student.admission_no
                         == admission_no,
@@ -65799,31 +65900,11 @@ def import_students_full():
                     # =============================================
                     # BRANCH
                     # =============================================
-
-                    student_branch_id = (
-                        import_branch_id
-                    )
-
-                    if not student_branch_id:
-
-                        csv_branch_value = clean(
-                            row.get("Branch")
-                        )
-
-                        if csv_branch_value:
-
-                            branch_obj = resolve_model(
-                                Branch,
-                                csv_branch_value,
-                                "Branch",
-                                institution_id=(
-                                    institution_id
-                                ),
-                            )
-
-                            student_branch_id = (
-                                branch_obj.id
-                            )
+                    #
+                    # student_branch_id was already resolved and
+                    # security-checked before the student lookup.
+                    #
+                    # =============================================
 
                     if not student_branch_id:
 
@@ -65831,22 +65912,6 @@ def import_students_full():
                             "Student branch could "
                             "not be determined."
                         )
-
-                    # ---------------------------------------------
-                    # BRANCH SECURITY
-                    # ---------------------------------------------
-
-                    if role == "branch_admin":
-
-                        if (
-                            student_branch_id
-                            != user_branch_id
-                        ):
-
-                            raise ValueError(
-                                "You cannot import "
-                                "students into another branch."
-                            )
 
                     # =================================================
                     # USERNAME
@@ -66113,22 +66178,44 @@ def import_students_full():
                 else:
 
                     # ---------------------------------------------
-                    # ACCESS CHECK
+                    # ACCESS / SCOPE CHECK
+                    # ---------------------------------------------
+                    #
+                    # The lookup already used:
+                    #
+                    #     institution_id
+                    #     branch_id
+                    #     admission_no
+                    #
+                    # so a student from another branch cannot be
+                    # selected here.
+                    #
+                    # Keep an explicit final security check as a
+                    # second layer.
+                    #
                     # ---------------------------------------------
 
-                    if not _student_has_access(
-                        student
+                    if (
+                        student.institution_id
+                        != institution_id
                     ):
 
                         raise ValueError(
-                            f"Access denied for "
-                            f"student "
-                            f"'{admission_no}'."
+                            "You cannot update "
+                            "a student from another "
+                            "institution."
                         )
 
-                    # ---------------------------------------------
-                    # Branch
-                    # ---------------------------------------------
+                    if (
+                        student.branch_id
+                        != student_branch_id
+                    ):
+
+                        raise ValueError(
+                            "You cannot update "
+                            "a student from another "
+                            "branch."
+                        )
 
                     if role == "branch_admin":
 
@@ -66631,6 +66718,10 @@ def import_students_full():
                             == institution_id,
 
                             StudentEnrollment
+                            .branch_id
+                            == effective_branch_id,
+
+                            StudentEnrollment
                             .enrollment_no
                             == enrollment_no,
                         )
@@ -66979,6 +67070,8 @@ def import_students_full():
             "main.all_students"
         )
     )
+
+
 
 
 

@@ -1292,6 +1292,13 @@
 
                     <button
                         type="button"
+                        onclick="window.location.href='{{ url_for('main.export_students') }}'"
+                    >
+                        <i class="fas fa-file-circle-plus export-sample"></i>
+                        Export Import Students
+                    </button>
+                    <button
+                        type="button"
                         onclick="window.location.href='{{ url_for('main.export_student_import_sample') }}'"
                     >
                         <i class="fas fa-file-circle-plus export-sample"></i>

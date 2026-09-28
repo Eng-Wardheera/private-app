@@ -3681,6 +3681,10 @@ class TeacherSubject(db.Model):
 # STUDENT MODEL
 # PostgreSQL / Neon
 # ============================================================
+# ============================================================
+# STUDENT MODEL
+# PostgreSQL / Neon
+# ============================================================
 
 class Student(UserMixin, db.Model):
 
@@ -3923,6 +3927,8 @@ class Student(UserMixin, db.Model):
         index=True
     )
 
+    # Allowed:
+    #
     # active
     # inactive
     # graduated
@@ -3974,6 +3980,10 @@ class Student(UserMixin, db.Model):
         back_populates="students"
     )
 
+    # ========================================================
+    # ENROLLMENTS
+    # ========================================================
+
     enrollments = db.relationship(
         "StudentEnrollment",
         back_populates="student",
@@ -3981,19 +3991,27 @@ class Student(UserMixin, db.Model):
         passive_deletes=True
     )
 
+    # ========================================================
+    # CHARGES
+    # ========================================================
+
     charges = db.relationship(
         "StudentCharge",
         back_populates="student",
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+
+    # ========================================================
+    # STUDENT RESULTS
+    # ========================================================
+
     student_results = db.relationship(
         "StudentResult",
         back_populates="student",
         cascade="all, delete-orphan",
         passive_deletes=True
     )
-
 
     # ========================================================
     # MARKS
@@ -4005,6 +4023,10 @@ class Student(UserMixin, db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+
+    # ========================================================
+    # ATTENDANCE
+    # ========================================================
 
     attendance_records = db.relationship(
         "AttendanceRecord",
@@ -4019,11 +4041,36 @@ class Student(UserMixin, db.Model):
 
     __table_args__ = (
 
+        # ====================================================
+        # ADMISSION NUMBER
+        #
+        # UNIQUE PER:
+        #
+        # institution + branch + admission_no
+        #
+        # Example:
+        #
+        # Institution 1 / Branch 1 / 260001  -> ALLOWED
+        # Institution 1 / Branch 2 / 260001  -> ALLOWED
+        # Institution 1 / Branch 3 / 260001  -> ALLOWED
+        #
+        # But:
+        #
+        # Institution 1 / Branch 1 / 260001
+        # Institution 1 / Branch 1 / 260001  -> NOT ALLOWED
+        #
+        # ====================================================
+
         db.UniqueConstraint(
             "institution_id",
+            "branch_id",
             "admission_no",
-            name="uq_student_institution_admission_no"
+            name="uq_student_institution_branch_admission_no"
         ),
+
+        # ====================================================
+        # STUDENT STATUS
+        # ====================================================
 
         db.CheckConstraint(
             "status IN ("
@@ -4119,6 +4166,688 @@ class Student(UserMixin, db.Model):
             f"role={self.role!r} "
             f"status={self.status!r}>"
         )
+
+
+# ============================================================
+# EXPORT STUDENT DATA
+# ============================================================
+#
+# URL:
+#
+# /students/export
+# /students/export?format=xlsx
+# /students/export?format=csv
+#
+# ROLE SCOPE:
+#
+# superadmin
+#     -> ALL institutions / ALL branches
+#
+# school_admin
+#     -> CURRENT institution ONLY
+#
+# branch_admin
+#     -> CURRENT institution + CURRENT branch ONLY
+#
+# teacher
+# student
+# parent
+#     -> DENIED
+#
+# SECURITY:
+#
+# password
+# session_token
+#
+# are NEVER exported.
+#
+# ============================================================
+
+@bp.route(
+    "/students/export",
+    methods=["GET"]
+)
+@login_required
+def export_students():
+
+    # ========================================================
+    # AUTHENTICATION
+    # ========================================================
+
+    if not current_user.is_authenticated:
+        abort(401)
+
+    # ========================================================
+    # ROLE
+    # ========================================================
+
+    current_role = getattr(
+        current_user,
+        "role",
+        None
+    )
+
+    if hasattr(current_role, "value"):
+        current_role = current_role.value
+
+    current_role = (
+        str(current_role).strip().lower()
+        if current_role is not None
+        else ""
+    )
+
+    # ========================================================
+    # ALLOWED ROLES
+    # ========================================================
+
+    allowed_roles = {
+        "superadmin",
+        "school_admin",
+        "branch_admin",
+    }
+
+    if current_role not in allowed_roles:
+
+        abort(403)
+
+    # ========================================================
+    # CURRENT USER SCOPE
+    # ========================================================
+
+    user_institution_id = getattr(
+        current_user,
+        "institution_id",
+        None
+    )
+
+    user_branch_id = getattr(
+        current_user,
+        "branch_id",
+        None
+    )
+
+    # ========================================================
+    # QUERY PARAMETERS
+    # ========================================================
+
+    export_format = (
+        request.args.get(
+            "format",
+            "xlsx"
+        )
+        or "xlsx"
+    ).strip().lower()
+
+    search = (
+        request.args.get(
+            "search",
+            ""
+        )
+        or ""
+    ).strip()
+
+    status = (
+        request.args.get(
+            "status",
+            ""
+        )
+        or ""
+    ).strip().lower()
+
+    institution_filter = request.args.get(
+        "institution_id",
+        type=int
+    )
+
+    branch_filter = request.args.get(
+        "branch_id",
+        type=int
+    )
+
+    # ========================================================
+    # FORMAT VALIDATION
+    # ========================================================
+
+    if export_format not in {
+        "xlsx",
+        "csv",
+    }:
+
+        abort(
+            400,
+            description=(
+                "Invalid export format. "
+                "Use 'xlsx' or 'csv'."
+            )
+        )
+
+    # ========================================================
+    # BASE QUERY
+    # ========================================================
+
+    query = Student.query
+
+    # ========================================================
+    # SUPERADMIN SCOPE
+    # ========================================================
+
+    if current_role == "superadmin":
+
+        # ----------------------------------------------------
+        # Optional institution filter
+        # ----------------------------------------------------
+
+        if institution_filter:
+
+            query = query.filter(
+                Student.institution_id
+                == institution_filter
+            )
+
+        # ----------------------------------------------------
+        # Optional branch filter
+        # ----------------------------------------------------
+
+        if branch_filter:
+
+            query = query.filter(
+                Student.branch_id
+                == branch_filter
+            )
+
+    # ========================================================
+    # SCHOOL ADMIN SCOPE
+    # ========================================================
+
+    elif current_role == "school_admin":
+
+        # ----------------------------------------------------
+        # Institution is REQUIRED
+        # ----------------------------------------------------
+
+        if not user_institution_id:
+
+            abort(
+                403,
+                description=(
+                    "Your account is not assigned "
+                    "to an institution."
+                )
+            )
+
+        # ----------------------------------------------------
+        # LOCK TO CURRENT INSTITUTION
+        # ----------------------------------------------------
+
+        query = query.filter(
+            Student.institution_id
+            == user_institution_id
+        )
+
+        # ----------------------------------------------------
+        # Optional branch filter
+        #
+        # Because institution_id is already locked,
+        # branch_filter cannot escape another institution.
+        # ----------------------------------------------------
+
+        if branch_filter:
+
+            query = query.filter(
+                Student.branch_id
+                == branch_filter
+            )
+
+    # ========================================================
+    # BRANCH ADMIN SCOPE
+    # ========================================================
+
+    elif current_role == "branch_admin":
+
+        # ----------------------------------------------------
+        # Institution REQUIRED
+        # ----------------------------------------------------
+
+        if not user_institution_id:
+
+            abort(
+                403,
+                description=(
+                    "Your account is not assigned "
+                    "to an institution."
+                )
+            )
+
+        # ----------------------------------------------------
+        # Branch REQUIRED
+        # ----------------------------------------------------
+
+        if not user_branch_id:
+
+            abort(
+                403,
+                description=(
+                    "Your account is not assigned "
+                    "to a branch."
+                )
+            )
+
+        # ----------------------------------------------------
+        # HARD LOCK:
+        #
+        # institution + branch
+        #
+        # Client cannot override this using query params.
+        # ----------------------------------------------------
+
+        query = query.filter(
+            Student.institution_id
+            == user_institution_id,
+            Student.branch_id
+            == user_branch_id
+        )
+
+    # ========================================================
+    # SEARCH
+    # ========================================================
+
+    if search:
+
+        search_value = (
+            f"%{search}%"
+        )
+
+        query = query.filter(
+            db.or_(
+                Student.full_name.ilike(
+                    search_value
+                ),
+
+                Student.admission_no.ilike(
+                    search_value
+                ),
+
+                Student.roll_no.ilike(
+                    search_value
+                ),
+
+                Student.username.ilike(
+                    search_value
+                ),
+
+                Student.email.ilike(
+                    search_value
+                ),
+
+                Student.phone.ilike(
+                    search_value
+                ),
+
+                Student.parent_name.ilike(
+                    search_value
+                ),
+
+                Student.parent_phone.ilike(
+                    search_value
+                ),
+
+                Student.parent_email.ilike(
+                    search_value
+                )
+            )
+        )
+
+    # ========================================================
+    # STATUS FILTER
+    # ========================================================
+
+    if status:
+
+        allowed_statuses = {
+            "active",
+            "inactive",
+            "graduated",
+            "transferred",
+            "suspended",
+            "withdrawn",
+        }
+
+        if status not in allowed_statuses:
+
+            abort(
+                400,
+                description=(
+                    "Invalid student status."
+                )
+            )
+
+        query = query.filter(
+            Student.status == status
+        )
+
+    # ========================================================
+    # ORDER
+    # ========================================================
+
+    query = query.order_by(
+        Student.institution_id.asc(),
+        Student.branch_id.asc(),
+        Student.full_name.asc(),
+        Student.id.asc()
+    )
+
+    # ========================================================
+    # FETCH DATA
+    # ========================================================
+
+    students = query.all()
+
+    # ========================================================
+    # EXPORT COLUMNS
+    #
+    # Dynamically collect Student model columns.
+    #
+    # This means if you later add another Student column,
+    # it can automatically appear in the export.
+    #
+    # Sensitive authentication columns are excluded.
+    # ========================================================
+
+    excluded_columns = {
+        "password",
+        "session_token",
+    }
+
+    export_columns = [
+        column
+        for column in Student.__table__.columns
+        if column.name not in excluded_columns
+    ]
+
+    column_names = [
+        column.name
+        for column in export_columns
+    ]
+
+    # ========================================================
+    # BUILD ROW DATA
+    # ========================================================
+
+    rows = []
+
+    for student in students:
+
+        row = {}
+
+        for column in export_columns:
+
+            column_name = column.name
+
+            value = getattr(
+                student,
+                column_name,
+                None
+            )
+
+            # ------------------------------------------------
+            # Date / DateTime formatting
+            # ------------------------------------------------
+
+            if isinstance(
+                value,
+                datetime
+            ):
+
+                value = value.strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+
+            elif hasattr(
+                value,
+                "isoformat"
+            ):
+
+                try:
+
+                    value = value.isoformat()
+
+                except Exception:
+
+                    value = str(value)
+
+            # ------------------------------------------------
+            # Boolean formatting
+            # ------------------------------------------------
+
+            elif isinstance(
+                value,
+                bool
+            ):
+
+                value = (
+                    "Yes"
+                    if value
+                    else "No"
+                )
+
+            # ------------------------------------------------
+            # None
+            # ------------------------------------------------
+
+            elif value is None:
+
+                value = ""
+
+            # ------------------------------------------------
+            # Everything else
+            # ------------------------------------------------
+
+            else:
+
+                value = str(value)
+
+            row[column_name] = value
+
+        rows.append(row)
+
+    # ========================================================
+    # FILE NAME
+    # ========================================================
+
+    timestamp = datetime.now().strftime(
+        "%Y%m%d_%H%M%S"
+    )
+
+    filename_base = (
+        f"students_export_{timestamp}"
+    )
+
+    # ========================================================
+    # CSV EXPORT
+    # ========================================================
+
+    if export_format == "csv":
+
+        output = io.StringIO()
+
+        writer = csv.DictWriter(
+            output,
+            fieldnames=column_names,
+            extrasaction="ignore"
+        )
+
+        writer.writeheader()
+
+        for row in rows:
+
+            writer.writerow(row)
+
+        output.seek(0)
+
+        return send_file(
+            io.BytesIO(
+                output.getvalue().encode(
+                    "utf-8-sig"
+                )
+            ),
+            mimetype=(
+                "text/csv; charset=utf-8"
+            ),
+            as_attachment=True,
+            download_name=(
+                f"{filename_base}.csv"
+            )
+        )
+
+    # ========================================================
+    # EXCEL EXPORT
+    # ========================================================
+
+    workbook = Workbook()
+
+    worksheet = workbook.active
+
+    worksheet.title = "Students"
+
+    # ========================================================
+    # HEADER
+    # ========================================================
+
+    for column_index, column_name in enumerate(
+        column_names,
+        start=1
+    ):
+
+        cell = worksheet.cell(
+            row=1,
+            column=column_index,
+            value=column_name
+        )
+
+        cell.font = Font(
+            bold=True
+        )
+
+        cell.alignment = Alignment(
+            horizontal="center",
+            vertical="center"
+        )
+
+    # ========================================================
+    # DATA
+    # ========================================================
+
+    for row_index, row_data in enumerate(
+        rows,
+        start=2
+    ):
+
+        for column_index, column_name in enumerate(
+            column_names,
+            start=1
+        ):
+
+            worksheet.cell(
+                row=row_index,
+                column=column_index,
+                value=row_data.get(
+                    column_name,
+                    ""
+                )
+            )
+
+    # ========================================================
+    # FREEZE HEADER
+    # ========================================================
+
+    worksheet.freeze_panes = "A2"
+
+    # ========================================================
+    # AUTO FILTER
+    # ========================================================
+
+    if column_names:
+
+        last_column = get_column_letter(
+            len(column_names)
+        )
+
+        last_row = max(
+            worksheet.max_row,
+            1
+        )
+
+        worksheet.auto_filter.ref = (
+            f"A1:{last_column}{last_row}"
+        )
+
+    # ========================================================
+    # COLUMN WIDTH
+    # ========================================================
+
+    for column_index, column_name in enumerate(
+        column_names,
+        start=1
+    ):
+
+        max_length = len(
+            str(column_name)
+        )
+
+        for row_index in range(
+            2,
+            min(
+                worksheet.max_row + 1,
+                500
+            )
+        ):
+
+            cell_value = worksheet.cell(
+                row=row_index,
+                column=column_index
+            ).value
+
+            if cell_value is not None:
+
+                max_length = max(
+                    max_length,
+                    len(str(cell_value))
+                )
+
+        worksheet.column_dimensions[
+            get_column_letter(column_index)
+        ].width = min(
+            max(max_length + 2, 12),
+            40
+        )
+
+    # ========================================================
+    # WRITE WORKBOOK TO MEMORY
+    # ========================================================
+
+    output = io.BytesIO()
+
+    workbook.save(output)
+
+    output.seek(0)
+
+    # ========================================================
+    # RETURN EXCEL FILE
+    # ========================================================
+
+    return send_file(
+        output,
+        mimetype=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+        as_attachment=True,
+        download_name=(
+            f"{filename_base}.xlsx"
+        )
+    )
+
+
 
 
 # ============================================================
