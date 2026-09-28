@@ -2,6 +2,7 @@ import csv
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from functools import wraps
+import hashlib
 from io import StringIO
 import io
 import math
@@ -54496,20 +54497,9 @@ def all_parents():
 
     Parent model ma jiro.
 
-    Parents waxaa laga soo saaraa Student table.
+    Parent records waxaa laga dhisaa Student table.
 
     ONE PARENT = ONE GROUP
-
-    Example:
-
-        Student A -> Hassan Ali -> 0612345678
-        Student B -> Hassan Ali -> 0612345678
-        Student C -> Hassan Ali -> 0612345678
-
-    Result:
-
-        Parents  = 1
-        Children = 3
 
     Parent identity priority:
 
@@ -54517,41 +54507,38 @@ def all_parents():
         2. parent_email
         3. parent_name
 
+    Parent key:
+
+        institution_id
+        +
+        branch_id
+        +
+        identity_type
+        +
+        normalized_identity
+
     Supported roles:
 
         - superadmin
         - school_admin
         - branch_admin
 
-    Parent statistics:
+    Search:
 
-        - total_parents
-        - active_parents
-        - inactive_parents
-        - parents_with_multiple_students
-        - parents_with_one_student
+        Search waxaa lagu sameeyaa AFTER parent grouping.
 
-    Child statistics:
+        Tusaale:
 
-        - total_children
-        - active_children
+            Hassan -> Student A
+            Hassan -> Student B
+            Hassan -> Student C
 
-    Table:
+        Search = Student A
 
-        - student_count
-        - active_student_count
+        Result:
 
-    IMPORTANT:
-
-        Parent data is grouped in Python after retrieving
-        the correctly scoped students.
-
-        This prevents:
-
-            duplicate parent rows
-            duplicate student counting
-            incorrect search child counts
-            cross-branch parent mixing
+            Hassan
+            Children = 3
     """
 
     # ============================================================
@@ -54574,11 +54561,10 @@ def all_parents():
     from hashlib import sha256
 
     import re
-
     import math
 
     # ============================================================
-    # ACCESS CONTROL
+    # ALLOWED ROLES
     # ============================================================
 
     allowed_roles = {
@@ -54588,7 +54574,7 @@ def all_parents():
     }
 
     # ============================================================
-    # NORMALIZE ROLE
+    # NORMALIZE CURRENT ROLE
     # ============================================================
 
     current_role = getattr(
@@ -54604,13 +54590,15 @@ def all_parents():
         current_role = current_role.value
 
     current_role = (
-        str(current_role).strip().lower()
+        str(current_role)
+        .strip()
+        .lower()
         if current_role is not None
         else ""
     )
 
     # ============================================================
-    # ROLE CHECK
+    # ROLE ACCESS
     # ============================================================
 
     if current_role not in allowed_roles:
@@ -54643,7 +54631,7 @@ def all_parents():
     )
 
     # ============================================================
-    # ROLE SCOPE VALIDATION
+    # VALIDATE USER SCOPE
     # ============================================================
 
     if current_role == "school_admin":
@@ -54680,12 +54668,20 @@ def all_parents():
             )
 
     # ============================================================
-    # HELPER
+    # NORMALIZE TEXT
     # ============================================================
 
     def _normalize_text(value):
         """
         Normalize general text.
+
+        Example:
+
+            "  Hassan   Ali  "
+
+        becomes:
+
+            "hassan ali"
         """
 
         if value is None:
@@ -54699,29 +54695,78 @@ def all_parents():
         )
 
     # ============================================================
-    # PHONE NORMALIZER
+    # NORMALIZE PHONE
     # ============================================================
 
     def _normalize_phone(value):
         """
-        Keep only digits.
+        Normalize Somali phone numbers.
 
-        Example:
+        Supported:
 
-            +252 61 234 5678
             0612345678
+            +252612345678
+            252612345678
+            00252612345678
+            00 252 61 234 5678
 
-        Both become normalized numeric strings.
+        Result:
+
+            252612345678
         """
 
         if value is None:
             return ""
 
-        return re.sub(
+        digits = re.sub(
             r"\D+",
             "",
             str(value),
         )
+
+        if not digits:
+            return ""
+
+        # --------------------------------------------------------
+        # Remove international 00 prefix
+        # --------------------------------------------------------
+
+        if digits.startswith("00"):
+
+            digits = digits[2:]
+
+        # --------------------------------------------------------
+        # Somali local format
+        #
+        # 0612345678
+        #
+        # becomes:
+        #
+        # 252612345678
+        # --------------------------------------------------------
+
+        if digits.startswith("0"):
+
+            if len(digits) >= 9:
+
+                digits = (
+                    "252"
+                    + digits[1:]
+                )
+
+        # --------------------------------------------------------
+        # Somali international format
+        #
+        # 252612345678
+        #
+        # remains unchanged
+        # --------------------------------------------------------
+
+        elif digits.startswith("252"):
+
+            pass
+
+        return digits
 
     # ============================================================
     # SAFE FIELD VALUE
@@ -54732,11 +54777,11 @@ def all_parents():
         *field_names,
     ):
         """
-        Get first available non-empty field.
-
-        This allows the route to support slightly different
-        relationship field names without crashing.
+        Return first available non-empty field.
         """
+
+        if student is None:
+            return ""
 
         for field_name in field_names:
 
@@ -54765,24 +54810,50 @@ def all_parents():
         return ""
 
     # ============================================================
+    # STATUS VALUE
+    # ============================================================
+
+    def _status_value(value):
+
+        if value is None:
+            return ""
+
+        enum_value = getattr(
+            value,
+            "value",
+            None,
+        )
+
+        if enum_value is not None:
+            value = enum_value
+
+        return (
+            str(value)
+            .strip()
+            .lower()
+        )
+
+    # ============================================================
     # STUDENT ACTIVE CHECK
     # ============================================================
 
     def _student_is_active(student):
         """
-        Determine whether a student is active.
+        Student active logic.
 
         Priority:
 
             1. Student.status
             2. Enrollment.status
-            3. If no status information exists,
-               consider student active.
-
-        This prevents active_children from becoming 0
-        simply because a particular Student model does not
-        expose a status field.
+            3. Default active
         """
+
+        active_statuses = {
+            "active",
+            "enrolled",
+            "current",
+            "running",
+        }
 
         # --------------------------------------------------------
         # STUDENT STATUS
@@ -54793,35 +54864,23 @@ def all_parents():
             "status",
         ):
 
-            status = getattr(
-                student,
-                "status",
-                None,
+            student_status = _status_value(
+                getattr(
+                    student,
+                    "status",
+                    None,
+                )
             )
 
-            if hasattr(
-                status,
-                "value",
-            ):
-                status = status.value
+            if student_status:
 
-            if status is not None:
-
-                status = (
-                    str(status)
-                    .strip()
-                    .lower()
+                return (
+                    student_status
+                    in active_statuses
                 )
 
-                return status in {
-                    "active",
-                    "enrolled",
-                    "current",
-                    "running",
-                }
-
         # --------------------------------------------------------
-        # ENROLLMENTS
+        # ENROLLMENT STATUS
         # --------------------------------------------------------
 
         enrollments = getattr(
@@ -54842,45 +54901,32 @@ def all_parents():
                 ):
                     continue
 
-                enrollment_status = getattr(
-                    enrollment,
-                    "status",
-                    None,
+                enrollment_status = _status_value(
+                    getattr(
+                        enrollment,
+                        "status",
+                        None,
+                    )
                 )
 
-                if hasattr(
-                    enrollment_status,
-                    "value",
-                ):
-                    enrollment_status = (
-                        enrollment_status.value
-                    )
-
-                if enrollment_status is None:
+                if not enrollment_status:
                     continue
 
                 found_status = True
 
-                enrollment_status = (
-                    str(enrollment_status)
-                    .strip()
-                    .lower()
-                )
-
-                if enrollment_status in {
-                    "active",
-                    "enrolled",
-                    "current",
-                    "running",
-                }:
+                if (
+                    enrollment_status
+                    in active_statuses
+                ):
 
                     return True
 
             if found_status:
+
                 return False
 
         # --------------------------------------------------------
-        # NO STATUS FIELD
+        # NO STATUS
         # --------------------------------------------------------
 
         return True
@@ -54893,9 +54939,9 @@ def all_parents():
         """
         Parent identity priority:
 
-            1. phone
-            2. email
-            3. name
+            1. parent_phone
+            2. parent_email
+            3. parent_name
 
         Returns:
 
@@ -54903,10 +54949,6 @@ def all_parents():
                 identity_type,
                 identity_value
             )
-
-        or:
-
-            (None, None)
         """
 
         # --------------------------------------------------------
@@ -54970,7 +55012,7 @@ def all_parents():
             )
 
         # --------------------------------------------------------
-        # NO PARENT INFORMATION
+        # NO PARENT IDENTITY
         # --------------------------------------------------------
 
         return (
@@ -54979,21 +55021,31 @@ def all_parents():
         )
 
     # ============================================================
-    # PARENT KEY
+    # MAKE PARENT KEY
     # ============================================================
 
-    def _make_parent_key(
-        student,
-    ):
+    def _make_parent_key(student):
         """
-        Generate stable opaque parent key.
+        SINGLE SOURCE FORMULA FOR PARENT KEY.
 
-        Institution + branch are included so that the same
-        parent information in different branches is not
-        accidentally merged.
+        IMPORTANT:
 
-        PII is not exposed directly in the URL.
+        view_parent() MUST use exactly
+        the same formula.
+
+        Formula:
+
+            institution_id
+            +
+            branch_id
+            +
+            identity_type
+            +
+            identity_value
         """
+
+        if student is None:
+            return None
 
         identity_type, identity_value = (
             _parent_identity(student)
@@ -55013,6 +55065,9 @@ def all_parents():
             "branch_id",
             None,
         )
+
+        if institution_id is None:
+            return None
 
         raw_key = (
             f"{institution_id}|"
@@ -55076,10 +55131,11 @@ def all_parents():
     }
 
     if per_page not in allowed_per_page:
+
         per_page = 20
 
     # ============================================================
-    # PARSE INSTITUTION
+    # PARSE INSTITUTION ID
     # ============================================================
 
     selected_institution_id = None
@@ -55100,7 +55156,7 @@ def all_parents():
             selected_institution_id = None
 
     # ============================================================
-    # PARSE BRANCH
+    # PARSE BRANCH ID
     # ============================================================
 
     selected_branch_id = None
@@ -55127,7 +55183,7 @@ def all_parents():
     if current_role == "superadmin":
 
         # --------------------------------------------------------
-        # IF BRANCH SELECTED WITHOUT INSTITUTION
+        # Branch selected without institution
         # --------------------------------------------------------
 
         if selected_branch_id:
@@ -55145,6 +55201,10 @@ def all_parents():
 
                 abort(400)
 
+            # ----------------------------------------------------
+            # Branch must belong to selected institution
+            # ----------------------------------------------------
+
             if selected_institution_id:
 
                 if (
@@ -55153,6 +55213,10 @@ def all_parents():
                 ):
 
                     abort(400)
+
+            # ----------------------------------------------------
+            # Automatically derive institution
+            # ----------------------------------------------------
 
             else:
 
@@ -55167,7 +55231,7 @@ def all_parents():
     elif current_role == "school_admin":
 
         # --------------------------------------------------------
-        # FORCE OWN INSTITUTION
+        # Institution is locked
         # --------------------------------------------------------
 
         selected_institution_id = (
@@ -55175,7 +55239,7 @@ def all_parents():
         )
 
         # --------------------------------------------------------
-        # VALIDATE BRANCH
+        # Branch must belong to institution
         # --------------------------------------------------------
 
         if selected_branch_id:
@@ -55203,7 +55267,7 @@ def all_parents():
     elif current_role == "branch_admin":
 
         # --------------------------------------------------------
-        # FORCE OWN INSTITUTION
+        # Institution locked
         # --------------------------------------------------------
 
         selected_institution_id = (
@@ -55211,7 +55275,7 @@ def all_parents():
         )
 
         # --------------------------------------------------------
-        # FORCE OWN BRANCH
+        # Branch locked
         # --------------------------------------------------------
 
         selected_branch_id = (
@@ -55225,7 +55289,7 @@ def all_parents():
     base_query = Student.query
 
     # ============================================================
-    # ROLE SCOPE
+    # ROLE-BASED STUDENT SCOPE
     # ============================================================
 
     if current_role == "school_admin":
@@ -55280,32 +55344,7 @@ def all_parents():
         )
 
     # ============================================================
-    # FETCH STUDENTS
-    # ============================================================
-    #
-    # IMPORTANT:
-    #
-    # We intentionally do NOT apply the search here.
-    #
-    # Why?
-    #
-    # Suppose:
-    #
-    # Hassan -> Student A
-    # Hassan -> Student B
-    # Hassan -> Student C
-    #
-    # Search "Student A" should find Hassan,
-    # but Hassan must still show:
-    #
-    # student_count = 3
-    #
-    # Therefore:
-    #
-    # 1. Fetch all scoped students.
-    # 2. Group parents.
-    # 3. Apply search to completed parent groups.
-    #
+    # FETCH SCOPED STUDENTS
     # ============================================================
 
     students = (
@@ -55329,7 +55368,7 @@ def all_parents():
     for student in students:
 
         # --------------------------------------------------------
-        # PARENT IDENTITY
+        # GET PARENT IDENTITY
         # --------------------------------------------------------
 
         identity_type, identity_value = (
@@ -55340,7 +55379,7 @@ def all_parents():
             continue
 
         # --------------------------------------------------------
-        # PARENT KEY
+        # CREATE PARENT KEY
         # --------------------------------------------------------
 
         parent_key = _make_parent_key(
@@ -55351,22 +55390,12 @@ def all_parents():
             continue
 
         # --------------------------------------------------------
-        # GROUP KEY
-        # --------------------------------------------------------
-
-        group_key = (
-            parent_key
-        )
-
-        # --------------------------------------------------------
         # CREATE GROUP
         # --------------------------------------------------------
 
-        if group_key not in parent_groups:
+        if parent_key not in parent_groups:
 
-            parent_groups[
-                group_key
-            ] = {
+            parent_groups[parent_key] = {
 
                 "parent_key": parent_key,
 
@@ -55394,16 +55423,15 @@ def all_parents():
 
                 "student_ids": set(),
 
-                "active_student_count": 0,
-
                 "students": [],
 
-                "_search_parts": [],
+                "active_student_count": 0,
 
+                "_search_parts": [],
             }
 
         group = parent_groups[
-            group_key
+            parent_key
         ]
 
         # --------------------------------------------------------
@@ -55417,7 +55445,7 @@ def all_parents():
         )
 
         # --------------------------------------------------------
-        # DUPLICATE STUDENT PROTECTION
+        # DUPLICATE PROTECTION
         # --------------------------------------------------------
 
         if student_id is not None:
@@ -55436,10 +55464,11 @@ def all_parents():
 
         else:
 
-            # Fallback for unusual objects without ID.
-            object_key = id(student)
+            fallback_id = id(
+                student
+            )
 
-            if object_key in group[
+            if fallback_id in group[
                 "student_ids"
             ]:
 
@@ -55448,7 +55477,7 @@ def all_parents():
             group[
                 "student_ids"
             ].add(
-                object_key
+                fallback_id
             )
 
         # --------------------------------------------------------
@@ -55471,9 +55500,7 @@ def all_parents():
         )
 
         if (
-            not group[
-                "parent_name"
-            ]
+            not group["parent_name"]
             and parent_name
         ):
 
@@ -55491,9 +55518,7 @@ def all_parents():
         )
 
         if (
-            not group[
-                "parent_phone"
-            ]
+            not group["parent_phone"]
             and parent_phone
         ):
 
@@ -55511,9 +55536,7 @@ def all_parents():
         )
 
         if (
-            not group[
-                "parent_email"
-            ]
+            not group["parent_email"]
             and parent_email
         ):
 
@@ -55531,9 +55554,7 @@ def all_parents():
         )
 
         if (
-            not group[
-                "parent_address"
-            ]
+            not group["parent_address"]
             and parent_address
         ):
 
@@ -55569,7 +55590,7 @@ def all_parents():
             ] = relationship
 
         # --------------------------------------------------------
-        # ACTIVE STUDENT
+        # ACTIVE CHILD
         # --------------------------------------------------------
 
         if _student_is_active(
@@ -55616,7 +55637,7 @@ def all_parents():
         )
 
     # ============================================================
-    # CONVERT GROUPS TO LIST
+    # CONVERT GROUPS
     # ============================================================
 
     grouped_parents = []
@@ -55624,7 +55645,7 @@ def all_parents():
     for group in parent_groups.values():
 
         # --------------------------------------------------------
-        # STUDENT COUNT
+        # TOTAL CHILDREN
         # --------------------------------------------------------
 
         group[
@@ -55654,7 +55675,7 @@ def all_parents():
         ] = search_blob
 
         # --------------------------------------------------------
-        # REMOVE INTERNAL VALUES
+        # REMOVE INTERNAL STUDENT DATA
         # --------------------------------------------------------
 
         group.pop(
@@ -55672,24 +55693,12 @@ def all_parents():
             None,
         )
 
-        # --------------------------------------------------------
-        # ADD TO LIST
-        # --------------------------------------------------------
-
         grouped_parents.append(
             group
         )
 
     # ============================================================
-    # SEARCH PARENT GROUPS
-    # ============================================================
-    #
-    # Search is now applied AFTER grouping.
-    #
-    # This is important because a parent with 3 children
-    # must continue to show 3 children even when search
-    # matches only one child.
-    #
+    # SEARCH AFTER GROUPING
     # ============================================================
 
     normalized_search = _normalize_text(
@@ -55702,11 +55711,14 @@ def all_parents():
 
         for parent in grouped_parents:
 
+            search_blob = parent.get(
+                "_search_blob",
+                "",
+            )
+
             if (
                 normalized_search
-                in parent[
-                    "_search_blob"
-                ]
+                in search_blob
             ):
 
                 filtered_parents.append(
@@ -55718,7 +55730,7 @@ def all_parents():
         )
 
     # ============================================================
-    # REMOVE INTERNAL SEARCH BLOB
+    # REMOVE INTERNAL SEARCH DATA
     # ============================================================
 
     for parent in grouped_parents:
@@ -55729,54 +55741,37 @@ def all_parents():
         )
 
     # ============================================================
-    # TOTAL PARENTS
+    # STATISTICS
     # ============================================================
 
     total_parents = len(
         grouped_parents
     )
 
-    # ============================================================
-    # TOTAL CHILDREN
-    # ============================================================
-
     total_children = sum(
-        parent[
-            "student_count"
-        ]
+        parent.get(
+            "student_count",
+            0,
+        )
         for parent in grouped_parents
     )
-
-    # ============================================================
-    # ACTIVE CHILDREN
-    # ============================================================
 
     active_children = sum(
-        parent[
-            "active_student_count"
-        ]
+        parent.get(
+            "active_student_count",
+            0,
+        )
         for parent in grouped_parents
     )
-
-    # ============================================================
-    # ACTIVE PARENTS
-    # ============================================================
-    #
-    # Parent is ACTIVE if at least one child is active.
-    #
-    # ============================================================
 
     active_parents = sum(
         1
         for parent in grouped_parents
-        if parent[
-            "active_student_count"
-        ] > 0
+        if parent.get(
+            "active_student_count",
+            0,
+        ) > 0
     )
-
-    # ============================================================
-    # INACTIVE PARENTS
-    # ============================================================
 
     inactive_parents = max(
         total_parents
@@ -55784,32 +55779,26 @@ def all_parents():
         0,
     )
 
-    # ============================================================
-    # MULTIPLE STUDENTS
-    # ============================================================
-
     parents_with_multiple_students = sum(
         1
         for parent in grouped_parents
-        if parent[
-            "student_count"
-        ] > 1
+        if parent.get(
+            "student_count",
+            0,
+        ) > 1
     )
-
-    # ============================================================
-    # ONE STUDENT
-    # ============================================================
 
     parents_with_one_student = sum(
         1
         for parent in grouped_parents
-        if parent[
-            "student_count"
-        ] == 1
+        if parent.get(
+            "student_count",
+            0,
+        ) == 1
     )
 
     # ============================================================
-    # SORT
+    # SORT PARENTS
     # ============================================================
 
     grouped_parents.sort(
@@ -55821,7 +55810,7 @@ def all_parents():
                 )
             ),
 
-            _normalize_text(
+            _normalize_phone(
                 parent.get(
                     "parent_phone",
                     "",
@@ -55849,6 +55838,7 @@ def all_parents():
     )
 
     if page > total_pages:
+
         page = total_pages
 
     start_index = (
@@ -55870,6 +55860,7 @@ def all_parents():
     # ============================================================
 
     pagination = SimpleNamespace(
+
         page=page,
 
         per_page=per_page,
@@ -55996,7 +55987,7 @@ def all_parents():
         )
 
     # ============================================================
-    # FINAL ROLE VALUES
+    # FINAL FILTER VALUES
     # ============================================================
 
     if current_role == "school_admin":
@@ -56023,17 +56014,17 @@ def all_parents():
 
         "backend/pages/parents/all_parents.html",
 
-        # ========================================================
+        # --------------------------------------------------------
         # PARENTS
-        # ========================================================
+        # --------------------------------------------------------
 
         parents=pagination.items,
 
         pagination=pagination,
 
-        # ========================================================
+        # --------------------------------------------------------
         # PARENT STATISTICS
-        # ========================================================
+        # --------------------------------------------------------
 
         total_parents=total_parents,
 
@@ -56049,17 +56040,17 @@ def all_parents():
             parents_with_one_student
         ),
 
-        # ========================================================
+        # --------------------------------------------------------
         # CHILD STATISTICS
-        # ========================================================
+        # --------------------------------------------------------
 
         total_children=total_children,
 
         active_children=active_children,
 
-        # ========================================================
+        # --------------------------------------------------------
         # FILTERS
-        # ========================================================
+        # --------------------------------------------------------
 
         search=search,
 
@@ -56073,17 +56064,17 @@ def all_parents():
 
         per_page=per_page,
 
-        # ========================================================
+        # --------------------------------------------------------
         # FILTER OPTIONS
-        # ========================================================
+        # --------------------------------------------------------
 
         institutions=institutions,
 
         branches=branches,
 
-        # ========================================================
+        # --------------------------------------------------------
         # USER
-        # ========================================================
+        # --------------------------------------------------------
 
         user=current_user,
 
@@ -56099,13 +56090,28 @@ def all_parents():
     )
 
 
-
 # ============================================================
 # PARENT VIEW / EDIT / DELETE
 # ============================================================
 
+
+# ============================================================
+# IMPORTS REQUIRED
+# ============================================================
+
+# ============================================================
+# REQUIRED IMPORT
+# ============================================================
+
+import hashlib
+
+
 # ============================================================
 # PARENT ROLE / SCOPE HELPERS
+# ============================================================
+
+# ============================================================
+# PARENT MANAGEMENT HELPERS
 # ============================================================
 
 
@@ -56124,10 +56130,20 @@ def _current_user_role_value():
         None,
     )
 
-    if hasattr(role, "value"):
-        return role.value
+    if hasattr(
+        role,
+        "value",
+    ):
+        role = role.value
 
-    return role
+    if role is None:
+        return ""
+
+    return (
+        str(role)
+        .strip()
+        .lower()
+    )
 
 
 # ============================================================
@@ -56157,7 +56173,7 @@ def _parent_require_management_access():
     Hubi in current user uu parent management geli karo.
 
     Returns:
-        current role
+        normalized current role
 
     Raises:
         403 haddii role-ku aanu oggolayn.
@@ -56166,62 +56182,503 @@ def _parent_require_management_access():
     role = _current_user_role_value()
 
     if role not in _parent_allowed_roles():
+
         abort(403)
 
     return role
 
 
 # ============================================================
-# PARENT KEY EXPRESSION
+# GENERIC PARENT TEXT NORMALIZER
 # ============================================================
 
 
-def _parent_key_expression():
+def _normalize_parent_text(
+    value,
+):
     """
-    Parent-ka waxaa Student table looga aqoonsanayaa
-    priority-kan:
+    Normalize parent text.
+
+    Rules:
+        - None -> ""
+        - strip
+        - lowercase
+        - multiple spaces -> single space
+    """
+
+    if value is None:
+        return ""
+
+    value = str(
+        value
+    ).strip()
+
+    if not value:
+        return ""
+
+    value = " ".join(
+        value.split()
+    )
+
+    return value.lower()
+
+
+# ============================================================
+# PARENT PHONE NORMALIZER
+# ============================================================
+
+
+def _normalize_parent_phone(
+    value,
+):
+    """
+    Normalize Somali phone numbers.
+
+    Supported examples:
+
+        0612345678
+        +252612345678
+        252612345678
+        00252612345678
+        00 252 61 234 5678
+
+    All supported Somali formats become:
+
+        252612345678
+
+    IMPORTANT:
+
+        This function MUST be used by both:
+
+            - all_parents()
+            - view_parent()
+            - edit_parent()
+            - delete_parent()
+
+        whenever parent_key is generated.
+    """
+
+    if value is None:
+        return ""
+
+    # --------------------------------------------------------
+    # Convert to string
+    # --------------------------------------------------------
+
+    value = str(
+        value
+    ).strip()
+
+    if not value:
+        return ""
+
+    # --------------------------------------------------------
+    # Keep digits only
+    # --------------------------------------------------------
+
+    digits = re.sub(
+        r"\D+",
+        "",
+        value,
+    )
+
+    if not digits:
+        return ""
+
+    # --------------------------------------------------------
+    # Remove 00 international prefix
+    # --------------------------------------------------------
+
+    if digits.startswith("00"):
+
+        digits = digits[2:]
+
+    # --------------------------------------------------------
+    # Somali local format
+    #
+    # 0612345678
+    #
+    # becomes:
+    #
+    # 252612345678
+    # --------------------------------------------------------
+
+    if digits.startswith("0"):
+
+        # ----------------------------------------------------
+        # Typical Somali mobile local number
+        # ----------------------------------------------------
+
+        if len(digits) >= 9:
+
+            digits = (
+                "252"
+                + digits[1:]
+            )
+
+    # --------------------------------------------------------
+    # Already international Somalia format
+    #
+    # 252612345678
+    #
+    # remains unchanged
+    # --------------------------------------------------------
+
+    elif digits.startswith("252"):
+
+        pass
+
+    return digits
+
+
+# ============================================================
+# SAFE STUDENT FIELD VALUE
+# ============================================================
+
+
+def _parent_field_value(
+    student,
+    *field_names,
+):
+    """
+    Soo celi first available non-empty field.
+
+    Waxaa loo isticmaalaa Student parent fields.
+    """
+
+    if student is None:
+        return ""
+
+    for field_name in field_names:
+
+        if not hasattr(
+            student,
+            field_name,
+        ):
+            continue
+
+        value = getattr(
+            student,
+            field_name,
+            None,
+        )
+
+        if value is None:
+            continue
+
+        value = str(
+            value
+        ).strip()
+
+        if value:
+            return value
+
+    return ""
+
+
+# ============================================================
+# PARENT IDENTITY VALUE
+# ============================================================
+
+
+def _get_parent_identity_value(
+    parent_name=None,
+    parent_phone=None,
+    parent_email=None,
+):
+    """
+    Parent identity priority:
 
         1. parent_phone
         2. parent_email
         3. parent_name
 
-    Phone:
-        trim kaliya
+    Address iyo relationship looma isticmaalo
+    identity-ga.
 
-    Email:
-        lowercase + trim
+    Returns:
 
-    Name:
-        lowercase + trim
+        (
+            identity_type,
+            normalized_identity_value
+        )
+
+    Example:
+
+        (
+            "phone",
+            "252612345678"
+        )
     """
 
-    return db.func.coalesce(
+    # ========================================================
+    # PHONE
+    # ========================================================
 
-        db.func.nullif(
-            db.func.trim(
-                Student.parent_phone
-            ),
-            "",
+    phone = _normalize_parent_phone(
+        parent_phone
+    )
+
+    if phone:
+
+        return (
+            "phone",
+            phone,
+        )
+
+    # ========================================================
+    # EMAIL
+    # ========================================================
+
+    email = _normalize_parent_text(
+        parent_email
+    )
+
+    if email:
+
+        return (
+            "email",
+            email,
+        )
+
+    # ========================================================
+    # NAME
+    # ========================================================
+
+    name = _normalize_parent_text(
+        parent_name
+    )
+
+    if name:
+
+        return (
+            "name",
+            name,
+        )
+
+    # ========================================================
+    # NO IDENTITY
+    # ========================================================
+
+    return (
+        None,
+        None,
+    )
+
+
+# ============================================================
+# MAKE PARENT KEY
+# ============================================================
+
+
+def _make_parent_key(
+    parent_name=None,
+    parent_phone=None,
+    parent_email=None,
+    institution_id=None,
+    branch_id=None,
+):
+    """
+    Samee parent_key-ga rasmiga ah.
+
+    Parent identity priority:
+
+        phone
+        email
+        name
+
+    Parent key formula:
+
+        institution_id
+        +
+        branch_id
+        +
+        identity_type
+        +
+        identity_value
+
+    Kadib SHA-256 ayaa lagu sameeyaa.
+
+    IMPORTANT:
+
+        all_parents()
+        view_parent()
+        edit_parent()
+        delete_parent()
+
+        dhammaantood waa inay isticmaalaan
+        function-kan ama _make_parent_key_from_student().
+    """
+
+    # ========================================================
+    # VALIDATE INSTITUTION
+    # ========================================================
+
+    if institution_id is None:
+        return None
+
+    # ========================================================
+    # GET IDENTITY
+    # ========================================================
+
+    identity_type, identity_value = (
+        _get_parent_identity_value(
+            parent_name=parent_name,
+            parent_phone=parent_phone,
+            parent_email=parent_email,
+        )
+    )
+
+    if (
+        not identity_type
+        or not identity_value
+    ):
+        return None
+
+    # ========================================================
+    # NORMALIZE IDS
+    # ========================================================
+
+    try:
+
+        normalized_institution_id = int(
+            institution_id
+        )
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+
+        return None
+
+    # --------------------------------------------------------
+    # branch_id can be NULL
+    # --------------------------------------------------------
+
+    if branch_id is None:
+
+        normalized_branch_id = ""
+
+    else:
+
+        try:
+
+            normalized_branch_id = str(
+                int(branch_id)
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
+            normalized_branch_id = str(
+                branch_id
+            ).strip()
+
+    # ========================================================
+    # CREATE EXACT PAYLOAD
+    # ========================================================
+
+    payload = (
+        f"{normalized_institution_id}|"
+        f"{normalized_branch_id}|"
+        f"{identity_type}|"
+        f"{identity_value}"
+    )
+
+    # ========================================================
+    # SHA-256
+    # ========================================================
+
+    return hashlib.sha256(
+        payload.encode(
+            "utf-8"
+        )
+    ).hexdigest()
+
+
+# ============================================================
+# MAKE PARENT KEY FROM STUDENT
+# ============================================================
+
+
+def _make_parent_key_from_student(
+    student,
+):
+    """
+    Student object -> parent_key.
+
+    IMPORTANT:
+
+        institution_id iyo branch_id
+        waxaa lagu daraa parent key-ga.
+
+    Sidaas darteed:
+
+        Institution 1 / Branch 1 / Hassan
+
+    iyo:
+
+        Institution 1 / Branch 2 / Hassan
+
+    ma noqonayaan hal parent group.
+    """
+
+    if student is None:
+        return None
+
+    # ========================================================
+    # GET STUDENT SCOPE
+    # ========================================================
+
+    institution_id = getattr(
+        student,
+        "institution_id",
+        None,
+    )
+
+    branch_id = getattr(
+        student,
+        "branch_id",
+        None,
+    )
+
+    if institution_id is None:
+        return None
+
+    # ========================================================
+    # CREATE KEY
+    # ========================================================
+
+    return _make_parent_key(
+
+        parent_name=getattr(
+            student,
+            "parent_name",
+            None,
         ),
 
-        db.func.nullif(
-            db.func.lower(
-                db.func.trim(
-                    Student.parent_email
-                )
-            ),
-            "",
+        parent_phone=getattr(
+            student,
+            "parent_phone",
+            None,
         ),
 
-        db.func.nullif(
-            db.func.lower(
-                db.func.trim(
-                    Student.parent_name
-                )
-            ),
-            "",
+        parent_email=getattr(
+            student,
+            "parent_email",
+            None,
         ),
 
+        institution_id=(
+            institution_id
+        ),
+
+        branch_id=(
+            branch_id
+        ),
     )
 
 
@@ -56230,25 +56687,45 @@ def _parent_key_expression():
 # ============================================================
 
 
-def _normalize_parent_key(value):
+def _normalize_parent_key(
+    value,
+):
     """
-    Normalize parent_key si uu ula mid noqdo
-    SQL expression-ka.
+    Normalize parent_key.
+
+    Parent key waa SHA-256 hexadecimal string.
+
+    Valid:
+
+        exactly 64 characters
+        0-9
+        a-f
     """
 
     if value is None:
         return None
 
-    value = str(value).strip()
+    value = str(
+        value
+    ).strip().lower()
 
     if not value:
+        return None
+
+    if len(value) != 64:
+        return None
+
+    if not re.fullmatch(
+        r"[0-9a-f]{64}",
+        value,
+    ):
         return None
 
     return value
 
 
 # ============================================================
-# PARENT SCOPE QUERY
+# PARENT STUDENT SCOPE QUERY
 # ============================================================
 
 
@@ -56265,34 +56742,77 @@ def _parent_student_scope_query():
     branch_admin:
         institution + branch current user
 
-    Waxaa lagu isticmaalaa parent records-ka,
-    sababtoo ah Parent model ma jiro.
+    IMPORTANT:
+
+        Students aan parent information lahayn
+        lama soo celinayo.
     """
 
     role = _current_user_role_value()
 
+    # ========================================================
+    # BASE QUERY
+    # ========================================================
+
     query = Student.query
 
-    # --------------------------------------------------------
+    # ========================================================
     # ONLY STUDENTS WITH PARENT INFORMATION
-    # --------------------------------------------------------
-
-    parent_key = _parent_key_expression()
+    # ========================================================
 
     query = query.filter(
-        parent_key.isnot(None)
+        db.or_(
+
+            # ------------------------------------------------
+            # PHONE
+            # ------------------------------------------------
+
+            db.func.nullif(
+                db.func.trim(
+                    Student.parent_phone
+                ),
+                "",
+            ).isnot(None),
+
+            # ------------------------------------------------
+            # EMAIL
+            # ------------------------------------------------
+
+            db.func.nullif(
+                db.func.lower(
+                    db.func.trim(
+                        Student.parent_email
+                    )
+                ),
+                "",
+            ).isnot(None),
+
+            # ------------------------------------------------
+            # NAME
+            # ------------------------------------------------
+
+            db.func.nullif(
+                db.func.lower(
+                    db.func.trim(
+                        Student.parent_name
+                    )
+                ),
+                "",
+            ).isnot(None),
+        )
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # SUPERADMIN
-    # --------------------------------------------------------
+    # ========================================================
 
     if role == "superadmin":
+
         return query
 
-    # --------------------------------------------------------
-    # INSTITUTION
-    # --------------------------------------------------------
+    # ========================================================
+    # CURRENT INSTITUTION
+    # ========================================================
 
     institution_id = getattr(
         current_user,
@@ -56301,11 +56821,14 @@ def _parent_student_scope_query():
     )
 
     if not institution_id:
-        return query.filter(False)
 
-    # --------------------------------------------------------
+        return query.filter(
+            db.false()
+        )
+
+    # ========================================================
     # SCHOOL ADMIN
-    # --------------------------------------------------------
+    # ========================================================
 
     if role == "school_admin":
 
@@ -56314,9 +56837,9 @@ def _parent_student_scope_query():
             == institution_id
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # BRANCH ADMIN
-    # --------------------------------------------------------
+    # ========================================================
 
     if role == "branch_admin":
 
@@ -56327,7 +56850,10 @@ def _parent_student_scope_query():
         )
 
         if not branch_id:
-            return query.filter(False)
+
+            return query.filter(
+                db.false()
+            )
 
         return query.filter(
             Student.institution_id
@@ -56337,11 +56863,13 @@ def _parent_student_scope_query():
             == branch_id,
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # OTHER ROLES
-    # --------------------------------------------------------
+    # ========================================================
 
-    return query.filter(False)
+    return query.filter(
+        db.false()
+    )
 
 
 # ============================================================
@@ -56353,39 +56881,217 @@ def _get_parent_students(
     parent_key,
 ):
     """
-    Soo hel dhammaan students-ka ku jira
-    parent group-kan.
+    Soo hel dhammaan students-ka parent-kan.
 
     Parent model ma jiro.
-    Student table ayaa source-ka ah.
+
+    Parent information waxay ku jirtaa Student table.
+
+    Parent key-ga URL-ka waxaa lala barbar
+    dhigaa key-ga laga sameeyo Student kasta.
+
+    IMPORTANT:
+
+        Key generation wuxuu isticmaalaa:
+
+            institution_id
+            branch_id
+            identity_type
+            identity_value
     """
 
-    parent_key = _normalize_parent_key(
-        parent_key
+    # ========================================================
+    # NORMALIZE REQUESTED KEY
+    # ========================================================
+
+    normalized_parent_key = (
+        _normalize_parent_key(
+            parent_key
+        )
     )
 
-    if not parent_key:
+    if not normalized_parent_key:
+
         return []
 
-    query = _parent_student_scope_query()
+    # ========================================================
+    # GET SCOPED QUERY
+    # ========================================================
 
-    key_expression = _parent_key_expression()
+    query = (
+        _parent_student_scope_query()
+    )
 
-    return (
+    # ========================================================
+    # GET STUDENTS
+    # ========================================================
+
+    students = (
         query
-        .filter(
-            key_expression
-            == parent_key
-        )
         .order_by(
-            Student.full_name.asc()
+            Student.full_name.asc(),
+            Student.id.asc(),
         )
         .all()
     )
 
+    # ========================================================
+    # MATCH PARENT KEY
+    # ========================================================
+
+    matched_students = []
+
+    # ========================================================
+    # DUPLICATE STUDENT PROTECTION
+    # ========================================================
+
+    matched_student_ids = set()
+
+    # ========================================================
+    # LOOP STUDENTS
+    # ========================================================
+
+    for student in students:
+
+        # ----------------------------------------------------
+        # GENERATE KEY
+        # ----------------------------------------------------
+
+        generated_key = (
+            _make_parent_key_from_student(
+                student
+            )
+        )
+
+        # ----------------------------------------------------
+        # DEBUG LOG
+        # ----------------------------------------------------
+
+        current_app.logger.debug(
+            "PARENT KEY CHECK | "
+            "student_id=%r | "
+            "student_name=%r | "
+            "institution_id=%r | "
+            "branch_id=%r | "
+            "parent_phone=%r | "
+            "parent_email=%r | "
+            "parent_name=%r | "
+            "generated_key=%r | "
+            "requested_key=%r",
+            getattr(
+                student,
+                "id",
+                None,
+            ),
+            getattr(
+                student,
+                "full_name",
+                None,
+            ),
+            getattr(
+                student,
+                "institution_id",
+                None,
+            ),
+            getattr(
+                student,
+                "branch_id",
+                None,
+            ),
+            getattr(
+                student,
+                "parent_phone",
+                None,
+            ),
+            getattr(
+                student,
+                "parent_email",
+                None,
+            ),
+            getattr(
+                student,
+                "parent_name",
+                None,
+            ),
+            generated_key,
+            normalized_parent_key,
+        )
+
+        # ----------------------------------------------------
+        # MATCH
+        # ----------------------------------------------------
+
+        if (
+            generated_key
+            != normalized_parent_key
+        ):
+            continue
+
+        # ----------------------------------------------------
+        # STUDENT ID
+        # ----------------------------------------------------
+
+        student_id = getattr(
+            student,
+            "id",
+            None,
+        )
+
+        # ----------------------------------------------------
+        # DUPLICATE PROTECTION
+        # ----------------------------------------------------
+
+        if student_id is not None:
+
+            if student_id in matched_student_ids:
+
+                continue
+
+            matched_student_ids.add(
+                student_id
+            )
+
+        # ----------------------------------------------------
+        # ADD
+        # ----------------------------------------------------
+
+        matched_students.append(
+            student
+        )
+
+    # ========================================================
+    # RESULT LOG
+    # ========================================================
+
+    current_app.logger.info(
+        "PARENT LOOKUP RESULT | "
+        "requested_key=%r | "
+        "role=%r | "
+        "institution_id=%r | "
+        "branch_id=%r | "
+        "scoped_students=%d | "
+        "matched_students=%d",
+        normalized_parent_key,
+        _current_user_role_value(),
+        getattr(
+            current_user,
+            "institution_id",
+            None,
+        ),
+        getattr(
+            current_user,
+            "branch_id",
+            None,
+        ),
+        len(students),
+        len(matched_students),
+    )
+
+    return matched_students
+
 
 # ============================================================
-# GET SINGLE PARENT REPRESENTATIVE STUDENT
+# GET SINGLE PARENT REPRESENTATIVE
 # ============================================================
 
 
@@ -56393,15 +57099,8 @@ def _get_parent_representative(
     parent_key,
 ):
     """
-    Soo celi student-ka ugu horreeya ee
-    matalaya parent-kan.
-
-    Waxaa loo isticmaalaa:
-        - parent name
-        - phone
-        - email
-        - address
-        - relationship
+    Soo celi student-ka ugu horreeya
+    ee matalaya parent-kan.
     """
 
     students = _get_parent_students(
@@ -56415,29 +57114,24 @@ def _get_parent_representative(
 
 
 # ============================================================
-# PARENT FORM SCOPE
+# GET PARENT FORM SCOPE
 # ============================================================
 
 
-def _get_parent_form_scope(role):
+def _get_parent_form_scope(
+    role,
+):
     """
     Soo celi institutions iyo branches
     uu user-ku leeyahay access.
-
-    Fiiro gaar ah:
-    Parent information lafteeda kama beddelayno
-    institution/branch-ka Student.
-
-    Kuwan waxaa loogu talagalay display/filter
-    haddii edit page-ku u baahan yahay.
     """
 
     institutions = []
     branches = []
 
-    # --------------------------------------------------------
+    # ========================================================
     # SUPERADMIN
-    # --------------------------------------------------------
+    # ========================================================
 
     if role == "superadmin":
 
@@ -56457,9 +57151,9 @@ def _get_parent_form_scope(role):
             .all()
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # SCHOOL ADMIN
-    # --------------------------------------------------------
+    # ========================================================
 
     elif role == "school_admin":
 
@@ -56477,6 +57171,9 @@ def _get_parent_form_scope(role):
                     Institution.id
                     == institution_id
                 )
+                .order_by(
+                    Institution.name.asc()
+                )
                 .all()
             )
 
@@ -56492,9 +57189,9 @@ def _get_parent_form_scope(role):
                 .all()
             )
 
-    # --------------------------------------------------------
+    # ========================================================
     # BRANCH ADMIN
-    # --------------------------------------------------------
+    # ========================================================
 
     elif role == "branch_admin":
 
@@ -56510,6 +57207,10 @@ def _get_parent_form_scope(role):
             None,
         )
 
+        # ----------------------------------------------------
+        # Institution
+        # ----------------------------------------------------
+
         if institution_id:
 
             institutions = (
@@ -56518,16 +57219,29 @@ def _get_parent_form_scope(role):
                     Institution.id
                     == institution_id
                 )
+                .order_by(
+                    Institution.name.asc()
+                )
                 .all()
             )
 
-        if branch_id:
+        # ----------------------------------------------------
+        # Branch
+        # ----------------------------------------------------
+
+        if (
+            institution_id
+            and branch_id
+        ):
 
             branches = (
                 Branch.query
                 .filter(
                     Branch.id
-                    == branch_id
+                    == branch_id,
+
+                    Branch.institution_id
+                    == institution_id,
                 )
                 .order_by(
                     Branch.name.asc()
@@ -56542,209 +57256,512 @@ def _get_parent_form_scope(role):
 
 
 # ============================================================
-# 1. VIEW PARENT
+# STUDENT STATUS VALUE
 # ============================================================
+
+
+def _student_status_value(
+    student,
+):
+    """
+    Student status:
+
+        Enum -> .value
+        String -> string
+    """
+
+    if student is None:
+        return ""
+
+    status = getattr(
+        student,
+        "status",
+        None,
+    )
+
+    if status is None:
+        return ""
+
+    status_value = getattr(
+        status,
+        "value",
+        None,
+    )
+
+    if status_value is not None:
+        status = status_value
+
+    return (
+        str(status)
+        .strip()
+        .lower()
+    )
+
+
+# ============================================================
+# STUDENT ACTIVE CHECK
+# ============================================================
+
+
+def _parent_student_is_active(
+    student,
+):
+    """
+    Determine whether a child/student is active.
+
+    Priority:
+
+        1. Student.status
+        2. Enrollment.status
+        3. Default active
+
+    Active statuses:
+
+        - active
+        - enrolled
+        - current
+        - running
+    """
+
+    if student is None:
+        return False
+
+    active_statuses = {
+        "active",
+        "enrolled",
+        "current",
+        "running",
+    }
+
+    # ========================================================
+    # STUDENT STATUS
+    # ========================================================
+
+    student_status = (
+        _student_status_value(
+            student
+        )
+    )
+
+    if student_status:
+
+        return (
+            student_status
+            in active_statuses
+        )
+
+    # ========================================================
+    # ENROLLMENTS
+    # ========================================================
+
+    enrollments = getattr(
+        student,
+        "enrollments",
+        None,
+    )
+
+    if enrollments:
+
+        found_status = False
+
+        for enrollment in enrollments:
+
+            enrollment_status = getattr(
+                enrollment,
+                "status",
+                None,
+            )
+
+            if enrollment_status is None:
+                continue
+
+            enrollment_status = (
+                getattr(
+                    enrollment_status,
+                    "value",
+                    enrollment_status,
+                )
+            )
+
+            enrollment_status = (
+                str(
+                    enrollment_status
+                )
+                .strip()
+                .lower()
+            )
+
+            if not enrollment_status:
+                continue
+
+            found_status = True
+
+            if (
+                enrollment_status
+                in active_statuses
+            ):
+
+                return True
+
+        if found_status:
+
+            return False
+
+    # ========================================================
+    # NO STATUS INFORMATION
+    # ========================================================
+
+    return True
+
+
+# ============================================================
+# BUILD PARENT DATA
+# ============================================================
+
+
+def _build_parent_data(
+    parent_key,
+    students,
+):
+    """
+    Parent aggregate data.
+
+    Parent information waxaa laga qaadanayaa
+    representative student-ka ugu horreeya.
+
+    Counts waxaa laga sameeyaa dhammaan
+    students-ka parent-ka.
+    """
+
+    # ========================================================
+    # VALIDATE
+    # ========================================================
+
+    if not students:
+        return None
+
+    # ========================================================
+    # NORMALIZE KEY
+    # ========================================================
+
+    normalized_parent_key = (
+        _normalize_parent_key(
+            parent_key
+        )
+    )
+
+    if not normalized_parent_key:
+        return None
+
+    # ========================================================
+    # REPRESENTATIVE
+    # ========================================================
+
+    representative = students[0]
+
+    # ========================================================
+    # TOTAL STUDENTS
+    # ========================================================
+
+    student_count = len(
+        students
+    )
+
+    # ========================================================
+    # ACTIVE STUDENTS
+    # ========================================================
+
+    active_student_count = sum(
+        1
+        for student in students
+        if _parent_student_is_active(
+            student
+        )
+    )
+
+    # ========================================================
+    # INACTIVE STUDENTS
+    # ========================================================
+
+    inactive_student_count = max(
+        student_count
+        - active_student_count,
+        0,
+    )
+
+    # ========================================================
+    # PARENT INFORMATION
+    # ========================================================
+
+    parent_name = _parent_field_value(
+        representative,
+        "parent_name",
+    )
+
+    parent_phone = _parent_field_value(
+        representative,
+        "parent_phone",
+    )
+
+    parent_email = _parent_field_value(
+        representative,
+        "parent_email",
+    )
+
+    parent_address = _parent_field_value(
+        representative,
+        "parent_address",
+    )
+
+    relationship_to_student = _parent_field_value(
+        representative,
+
+        "relationship_to_student",
+
+        "parent_relationship",
+
+        "parent_relation",
+
+        "parent_relation_to_student",
+    )
+
+    # ========================================================
+    # RETURN
+    # ========================================================
+
+    return {
+
+        # ----------------------------------------------------
+        # KEY
+        # ----------------------------------------------------
+
+        "parent_key": (
+            normalized_parent_key
+        ),
+
+        # ----------------------------------------------------
+        # PARENT INFORMATION
+        # ----------------------------------------------------
+
+        "parent_name": (
+            parent_name
+        ),
+
+        "parent_phone": (
+            parent_phone
+        ),
+
+        "parent_email": (
+            parent_email
+        ),
+
+        "parent_address": (
+            parent_address
+        ),
+
+        "relationship_to_student": (
+            relationship_to_student
+        ),
+
+        # ----------------------------------------------------
+        # SCOPE
+        # ----------------------------------------------------
+
+        "institution_id": getattr(
+            representative,
+            "institution_id",
+            None,
+        ),
+
+        "branch_id": getattr(
+            representative,
+            "branch_id",
+            None,
+        ),
+
+        # ----------------------------------------------------
+        # COUNTS
+        # ----------------------------------------------------
+
+        "student_count": (
+            student_count
+        ),
+
+        "active_student_count": (
+            active_student_count
+        ),
+
+        "inactive_student_count": (
+            inactive_student_count
+        ),
+    }
+
+
 # ============================================================
 # VIEW PARENT
-# Parent data is stored inside Student table
 # ============================================================
+
 
 @bp.route(
     "/parents/<path:parent_key>",
     methods=["GET"],
 )
 @login_required
-def view_parent(parent_key):
+def view_parent(
+    parent_key,
+):
 
     # ========================================================
     # SECURITY
     # ========================================================
 
-    _parent_require_management_access()
-
-    # ========================================================
-    # NORMALIZE PARENT KEY
-    # ========================================================
-
-    parent_key = _normalize_parent_key(
-        parent_key
+    role = (
+        _parent_require_management_access()
     )
 
-    if not parent_key:
+    # ========================================================
+    # NORMALIZE KEY
+    # ========================================================
+
+    normalized_parent_key = (
+        _normalize_parent_key(
+            parent_key
+        )
+    )
+
+    if not normalized_parent_key:
+
+        current_app.logger.warning(
+            "INVALID PARENT KEY | "
+            "raw=%r | "
+            "normalized=%r | "
+            "role=%r",
+            parent_key,
+            normalized_parent_key,
+            role,
+        )
+
         abort(404)
 
     # ========================================================
-    # GET ALL STUDENTS BELONGING TO THIS PARENT
-    #
-    # IMPORTANT:
-    # _get_parent_students() must use Student table.
-    # There is NO Parent model/table.
+    # GET STUDENTS
     # ========================================================
 
     students = _get_parent_students(
-        parent_key
+        normalized_parent_key
     )
 
+    # ========================================================
+    # NOT FOUND
+    # ========================================================
+
     if not students:
+
+        current_app.logger.warning(
+            "PARENT LOOKUP FAILED | "
+            "role=%r | "
+            "parent_key=%r | "
+            "institution_id=%r | "
+            "branch_id=%r",
+            role,
+            normalized_parent_key,
+            getattr(
+                current_user,
+                "institution_id",
+                None,
+            ),
+            getattr(
+                current_user,
+                "branch_id",
+                None,
+            ),
+        )
+
         abort(404)
 
     # ========================================================
-    # REPRESENTATIVE STUDENT
-    #
-    # Parent information is duplicated inside each Student
-    # record, so use the first student as the representative
-    # for common parent information.
+    # BUILD PARENT DATA
     # ========================================================
 
-    representative = students[0]
+    parent_data = _build_parent_data(
+        normalized_parent_key,
+        students,
+    )
+
+    if not parent_data:
+
+        abort(404)
 
     # ========================================================
-    # PARENT INFORMATION
+    # COUNTS
     # ========================================================
 
-    parent_data = {
-        "parent_key": parent_key,
+    student_count = (
+        parent_data[
+            "student_count"
+        ]
+    )
 
-        "parent_name": (
-            getattr(
-                representative,
-                "parent_name",
-                None,
-            )
-            or ""
-        ),
+    active_student_count = (
+        parent_data[
+            "active_student_count"
+        ]
+    )
 
-        "parent_phone": (
-            getattr(
-                representative,
-                "parent_phone",
-                None,
-            )
-            or ""
-        ),
-
-        "parent_email": (
-            getattr(
-                representative,
-                "parent_email",
-                None,
-            )
-            or ""
-        ),
-
-        "parent_address": (
-            getattr(
-                representative,
-                "parent_address",
-                None,
-            )
-            or ""
-        ),
-
-        # ----------------------------------------------------
-        # Relationship is student-specific.
-        # We only use representative relationship here.
-        # The actual relationship for every student will be
-        # shown from the student records below.
-        # ----------------------------------------------------
-
-        "relationship_to_student": (
-            getattr(
-                representative,
-                "relationship_to_student",
-                None,
-            )
-            or ""
-        ),
-
-        # ----------------------------------------------------
-        # TOTAL CHILDREN / STUDENTS
-        # ----------------------------------------------------
-
-        "student_count": len(
-            students
-        ),
-
-        # ----------------------------------------------------
-        # ACTIVE STUDENTS
-        # ----------------------------------------------------
-
-        "active_student_count": sum(
-            1
-            for student in students
-            if str(
-                getattr(
-                    student,
-                    "status",
-                    "",
-                )
-            ).strip().lower()
-            == "active"
-        ),
-
-        # ----------------------------------------------------
-        # INACTIVE STUDENTS
-        # ----------------------------------------------------
-
-        "inactive_student_count": sum(
-            1
-            for student in students
-            if str(
-                getattr(
-                    student,
-                    "status",
-                    "",
-                )
-            ).strip().lower()
-            != "active"
-        ),
-    }
+    inactive_student_count = (
+        parent_data[
+            "inactive_student_count"
+        ]
+    )
 
     # ========================================================
     # RENDER
     # ========================================================
 
     return render_template(
+
         "backend/pages/parents/view_parent.html",
 
-        # Parent aggregate information
+        # ----------------------------------------------------
+        # PARENT
+        # ----------------------------------------------------
+
         parent=parent_data,
 
-        # ALL students connected to this parent
+        # ----------------------------------------------------
+        # CHILDREN
+        # ----------------------------------------------------
+
         students=students,
+
+        # ----------------------------------------------------
+        # USER
+        # ----------------------------------------------------
+
         user=current_user,
 
-        # Useful values for template
-        student_count=len(students),
+        # ----------------------------------------------------
+        # COUNTS
+        # ----------------------------------------------------
 
-        active_student_count=sum(
-            1
-            for student in students
-            if str(
-                getattr(
-                    student,
-                    "status",
-                    "",
-                )
-            ).strip().lower()
-            == "active"
+        student_count=(
+            student_count
         ),
 
-        inactive_student_count=sum(
-            1
-            for student in students
-            if str(
-                getattr(
-                    student,
-                    "status",
-                    "",
-                )
-            ).strip().lower()
-            != "active"
+        active_student_count=(
+            active_student_count
         ),
+
+        inactive_student_count=(
+            inactive_student_count
+        ),
+
+        # ----------------------------------------------------
+        # ROLE
+        # ----------------------------------------------------
+
+        current_role=role,
     )
-
-
 
 # ============================================================
 # 2. EDIT PARENT
