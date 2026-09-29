@@ -1,322 +1,479 @@
+<aside
+    class="sidebar"
+    id="teacherSidebar"
+>
 
-    <aside
-        class="sidebar"
-        id="teacherSidebar"
-    >
+    <!-- ====================================================
+         BRAND
+         ==================================================== -->
 
-        <!-- BRAND -->
+    <div class="sidebar-brand">
 
-        <div class="sidebar-brand">
+        {% if global_branch and global_branch.main_logo %}
 
-            {% if institution and institution.main_logo %}
+            <img
+                src="{{ global_branch.main_logo }}"
+                alt="{{ global_branch.name }}"
+                class="brand-logo"
+            >
 
-                <img
-                    src="{{ url_for('static', filename=institution.main_logo) }}"
-                    alt="{{ institution.name }}"
-                    class="brand-logo"
+        {% elif global_institution and global_institution.main_logo %}
+
+            <img
+                src="{{ global_institution.main_logo }}"
+                alt="{{ global_institution.name }}"
+                class="brand-logo"
+            >
+
+        {% else %}
+
+            <div class="brand-placeholder">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+        {% endif %}
+
+
+        <div class="brand-info">
+
+            {% if global_branch %}
+
+                <div
+                    class="brand-name"
+                    title="{{ global_branch.name }}"
                 >
-
-            {% else %}
-
-                <div class="brand-placeholder">
-                    <i class="fa-solid fa-graduation-cap"></i>
+                    {{ global_branch.name }}
                 </div>
 
-            {% endif %}
+
+                {% if global_institution %}
+
+                    <div
+                        class="brand-role"
+                        title="{{ global_institution.name }}"
+                    >
+                        {{ global_institution.name }}
+                    </div>
+
+                {% else %}
+
+                    <div class="brand-role">
+                        Teacher Portal
+                    </div>
+
+                {% endif %}
 
 
-            <div class="brand-info">
+            {% elif global_institution %}
 
-                <div class="brand-name">
-
-                    {{ institution.name
-                       if institution
-                       else 'Educational Institute' }}
-
+                <div
+                    class="brand-name"
+                    title="{{ global_institution.name }}"
+                >
+                    {{ global_institution.name }}
                 </div>
 
                 <div class="brand-role">
                     Teacher Portal
                 </div>
 
-            </div>
+
+            {% else %}
+
+                <div class="brand-name">
+                    PRIVATE INSTITUTION
+                </div>
+
+                <div class="brand-role">
+                    Teacher Portal
+                </div>
+
+            {% endif %}
 
         </div>
 
+    </div>
 
-        <!-- SIDEBAR CONTENT -->
 
-        <div class="sidebar-content">
+    <!-- ====================================================
+         SIDEBAR CONTENT
+         ==================================================== -->
 
+    <div class="sidebar-content">
 
-            <!-- MAIN -->
 
-            <div class="nav-title">
-                Main
-            </div>
+        <!-- ==================================================
+             MAIN
+             ================================================== -->
 
-
-            <ul class="sidebar-nav">
-
-                <li>
-
-                    <a
-                        href="{{ url_for('main.teacher_dashboard') }}"
-                        class="sidebar-link active"
-                    >
-
-                        <i class="fa-solid fa-chart-pie"></i>
-
-                        <span>Dashboard</span>
-
-                    </a>
-
-                </li>
-
-
-                <li>
-
-                    <a
-                        href="{{ url_for('main.teacher_my_subjects') }}"
-                        class="sidebar-link"
-                    >
-
-                        <i class="fa-solid fa-book-open"></i>
-
-                        <span>My Subjects</span>
-
-                        <span class="nav-badge">
-                            {{ subjects_count }}
-                        </span>
-
-                    </a>
-
-                </li>
-
-
-                <li>
-
-                    <a
-                        href="{{ url_for('main.teacher_my_exams') }}"
-                        class="sidebar-link"
-                    >
-
-                        <i class="fa-solid fa-clipboard-list"></i>
-
-                        <span>My Exams Subjects</span>
-
-                        <span class="nav-badge">
-                            {{ exam_subjects_count }}
-                        </span>
-
-                    </a>
-
-                </li>
-
-            </ul>
-
-
-            <!-- ACADEMIC -->
-
-            <div class="nav-title">
-                Academic
-            </div>
-
-
-            <ul class="sidebar-nav">
-
-                <!-- <li>
-
-                    <a
-                        href="#"
-                        class="sidebar-link"
-                    >
-
-                        <i class="fa-solid fa-pen-to-square"></i>
-
-                        <span>Enter Marks</span>
-
-                    </a>
-
-                </li> -->
-
-
-                <!-- <li>
-
-                    <a
-                        href="#"
-                        class="sidebar-link"
-                    >
-
-                        <i class="fa-solid fa-chart-line"></i>
-
-                        <span>Results</span>
-
-                    </a>
-
-                </li> -->
-
-
-                <!-- <li>
-
-                    <a
-                        href="#"
-                        class="sidebar-link"
-                    >
-
-                        <i class="fa-solid fa-calendar-days"></i>
-
-                        <span>Exam Timetable</span>
-
-                    </a>
-
-                </li> -->
-
-
-                <li>
-
-                    <a
-                        href="{{ url_for('main.teacher_take_attendance') }}"
-                        class="sidebar-link"
-                    >
-
-                        <i class="fa-solid fa-users"></i>
-
-                        <span>Take Attendance</span>
-
-                    </a>
-
-                </li>
-
-            </ul>
-
-
-            <!-- MANAGEMENT -->
-
-            <div class="nav-title">
-                Management
-            </div>
-
-
-            <ul class="sidebar-nav">
-
-                <li>
-
-                    <a
-                        href="{{ url_for('main.teacher_profile') }}"
-                        class="sidebar-link"
-                    >
-
-                        <i class="fa-solid fa-user"></i>
-
-                        <span>My Profile</span>
-
-                    </a>
-
-                </li>
-
-
-                <li>
-
-                    <a
-                        href="{{ url_for('main.teacher_change_password') }}"
-                        class="sidebar-link"
-                    >
-
-                        <i class="fa-solid fa-key"></i>
-
-                        <span>Change Password</span>
-
-                    </a>
-
-                </li>
-
-<!-- 
-                <li>
-
-                    <a
-                        href="#"
-                        class="sidebar-link"
-                    >
-
-                        <i class="fa-solid fa-gear"></i>
-
-                        <span>Settings</span>
-
-                    </a>
-
-                </li> -->
-                <li>
-                        <a
-                            href="{{ url_for('main.teacher_logout') }}"
-                            class="sidebar-link"
-                        >
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                            <span>Logout</span>
-                        </a>
-                    </li>
-
-            </ul>
-
+        <div class="nav-title">
+            Main
         </div>
 
 
-        <!-- SIDEBAR FOOTER -->
+        <ul class="sidebar-nav">
 
-        <div class="sidebar-footer">
+            <!-- =================================================
+                 DASHBOARD
+                 ================================================= -->
 
-            <div class="sidebar-profile">
+            <li>
 
+                <a
+                    href="{{ url_for('main.teacher_dashboard') }}"
+                    class="sidebar-link active"
+                >
 
-                {% if teacher.photo %}
-
-                    <img
-                        src="{{ url_for('static', filename=teacher.photo) }}"
-                        class="sidebar-avatar"
-                        alt="{{ teacher.full_name }}"
-                    >
-
-                {% else %}
-
-                    <div class="sidebar-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-
-                {% endif %}
-
-
-                <div class="sidebar-user">
-
-                    <strong>
-                        {{ teacher.full_name }}
-                    </strong>
+                    <i class="fa-solid fa-chart-pie"></i>
 
                     <span>
-                        Teacher
+                        Dashboard
                     </span>
+
+                </a>
+
+            </li>
+
+
+            <!-- =================================================
+                 MY SUBJECTS
+                 ================================================= -->
+
+            <li>
+
+                <a
+                    href="{{ url_for('main.teacher_my_subjects') }}"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-book-open"></i>
+
+                    <span>
+                        My Subjects
+                    </span>
+
+                    <span class="nav-badge">
+                        {{ subjects_count|default(0, true) }}
+                    </span>
+
+                </a>
+
+            </li>
+
+
+            <!-- =================================================
+                 MY EXAM SUBJECTS
+                 ================================================= -->
+
+            <li>
+
+                <a
+                    href="{{ url_for('main.teacher_my_exams') }}"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-clipboard-list"></i>
+
+                    <span>
+                        My Exams Subjects
+                    </span>
+
+                    <span class="nav-badge">
+                        {{ exam_subjects_count|default(0, true) }}
+                    </span>
+
+                </a>
+
+            </li>
+
+        </ul>
+
+
+        <!-- ==================================================
+             ACADEMIC
+             ================================================== -->
+
+        <div class="nav-title">
+            Academic
+        </div>
+
+
+        <ul class="sidebar-nav">
+
+
+            <!-- =================================================
+                 ENTER MARKS
+                 ================================================= -->
+
+            <!-- <li>
+
+                <a
+                    href="#"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-pen-to-square"></i>
+
+                    <span>
+                        Enter Marks
+                    </span>
+
+                </a>
+
+            </li> -->
+
+
+            <!-- =================================================
+                 RESULTS
+                 ================================================= -->
+
+            <!-- <li>
+
+                <a
+                    href="#"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-chart-line"></i>
+
+                    <span>
+                        Results
+                    </span>
+
+                </a>
+
+            </li> -->
+
+
+            <!-- =================================================
+                 EXAM TIMETABLE
+                 ================================================= -->
+
+            <!-- <li>
+
+                <a
+                    href="#"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-calendar-days"></i>
+
+                    <span>
+                        Exam Timetable
+                    </span>
+
+                </a>
+
+            </li> -->
+
+
+            <!-- =================================================
+                 TAKE ATTENDANCE
+                 ================================================= -->
+
+            <li>
+
+                <a
+                    href="{{ url_for('main.teacher_take_attendance') }}"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-users"></i>
+
+                    <span>
+                        Take Attendance
+                    </span>
+
+                    <span class="nav-badge">
+                        {{ teacher_subject_student_counts|default(0, true) }}
+                    </span>
+
+                </a>
+
+            </li>
+
+        </ul>
+
+
+        <!-- ==================================================
+             MANAGEMENT
+             ================================================== -->
+
+        <div class="nav-title">
+            Management
+        </div>
+
+
+        <ul class="sidebar-nav">
+
+
+            <!-- =================================================
+                 MY PROFILE
+                 ================================================= -->
+
+            <li>
+
+                <a
+                    href="{{ url_for('main.teacher_profile') }}"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-user"></i>
+
+                    <span>
+                        My Profile
+                    </span>
+
+                </a>
+
+            </li>
+
+
+            <!-- =================================================
+                 CHANGE PASSWORD
+                 ================================================= -->
+
+            <li>
+
+                <a
+                    href="{{ url_for('main.teacher_change_password') }}"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-key"></i>
+
+                    <span>
+                        Change Password
+                    </span>
+
+                </a>
+
+            </li>
+
+
+            <!-- =================================================
+                 SETTINGS
+                 ================================================= -->
+
+            <!--
+            <li>
+
+                <a
+                    href="#"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-gear"></i>
+
+                    <span>
+                        Settings
+                    </span>
+
+                </a>
+
+            </li>
+            -->
+
+
+            <!-- =================================================
+                 LOGOUT
+                 ================================================= -->
+
+            <li>
+
+                <a
+                    href="{{ url_for('main.teacher_logout') }}"
+                    class="sidebar-link"
+                >
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    <span>
+                        Logout
+                    </span>
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </div>
+
+
+    <!-- ====================================================
+         SIDEBAR FOOTER
+         ==================================================== -->
+
+    <div class="sidebar-footer">
+
+        <div class="sidebar-profile">
+
+
+            <!-- =================================================
+                 TEACHER PHOTO
+                 ================================================= -->
+
+            {% if teacher.photo %}
+
+                <img
+                    src="{{ url_for('static', filename=teacher.photo) }}"
+                    class="sidebar-avatar"
+                    alt="{{ teacher.full_name }}"
+                >
+
+            {% else %}
+
+                <div class="sidebar-avatar">
+
+                    <i class="fa-solid fa-user"></i>
 
                 </div>
 
+            {% endif %}
 
-                <i
-                    class="fa-solid fa-circle"
-                    style="
-                        font-size:7px;
-                        color:#32b73a;
-                    "
-                ></i>
+
+            <!-- =================================================
+                 TEACHER INFORMATION
+                 ================================================= -->
+
+            <div class="sidebar-user">
+
+                <strong>
+                    {{ teacher.full_name }}
+                </strong>
+
+                <span>
+                    Teacher
+                </span>
 
             </div>
 
+
+            <!-- =================================================
+                 ONLINE STATUS
+                 ================================================= -->
+
+            <i
+                class="fa-solid fa-circle"
+                style="
+                    font-size:7px;
+                    color:#32b73a;
+                "
+            ></i>
+
         </div>
 
-    </aside>
+    </div>
+
+</aside>
 
 
-    <!-- SIDEBAR OVERLAY -->
+<!-- ========================================================
+     SIDEBAR OVERLAY
+     ======================================================== -->
 
-    <div
-        class="sidebar-overlay"
-        id="sidebarOverlay"
-    ></div>
-
+<div
+    class="sidebar-overlay"
+    id="sidebarOverlay"
+></div>

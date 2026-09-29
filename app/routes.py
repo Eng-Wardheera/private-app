@@ -866,7 +866,11 @@ def teacher_dashboard():
     # CURRENT TEACHER
     # ========================================================
 
-    teacher = getattr(g, "teacher", None)
+    teacher = getattr(
+        g,
+        "teacher",
+        None
+    )
 
     if not teacher:
         abort(403)
@@ -875,19 +879,51 @@ def teacher_dashboard():
     # BASIC TEACHER IDS
     # ========================================================
 
-    teacher_id = teacher.id
+    teacher_id = getattr(
+        teacher,
+        "id",
+        None
+    )
 
-    institution_id = teacher.institution_id
+    institution_id = getattr(
+        teacher,
+        "institution_id",
+        None
+    )
 
-    branch_id = teacher.branch_id
+    branch_id = getattr(
+        teacher,
+        "branch_id",
+        None
+    )
+
+    if not teacher_id:
+        abort(403)
 
     # ========================================================
-    # INSTITUTION
+    # GLOBAL INSTITUTION
     # ========================================================
-    # Teacher -> Institution
     #
-    # Waxaan si gaar ah u query-gareyneynaa si dashboard-ku
-    # u helo institution-ka saxda ah.
+    # Global branding source:
+    #
+    # institution.name
+    # institution.main_logo
+    # institution.sub_logo
+    # institution.sign_logo
+    # institution.favicon
+    # institution.short_name
+    # institution.tagline
+    # institution.contact
+    # institution.academic_year
+    # institution.principal
+    # institution.exam_title
+    # institution.subtitle
+    # institution.footer
+    # institution.certificate_footer
+    #
+    # Haddii institution model-kaagu leeyahay
+    # branding/settings relation gaar ah, halkaas ayaa
+    # laga sii qaadan karaa.
 
     institution = None
 
@@ -902,13 +938,21 @@ def teacher_dashboard():
         )
 
     # ========================================================
-    # BRANCH
+    # GLOBAL BRANCH
     # ========================================================
+    #
     # Branch waa inuu ka tirsan yahay institution-ka teacher-ka.
+    #
+    # Branch logo ayaa priority leh.
+    # Haddii uusan jirin, template-ku institution.main_logo
+    # ayuu fallback ahaan isticmaali karaa.
 
     branch = None
 
-    if branch_id and institution_id:
+    if (
+        branch_id
+        and institution_id
+    ):
 
         branch = (
             Branch.query
@@ -920,19 +964,96 @@ def teacher_dashboard():
         )
 
     # ========================================================
+    # GLOBAL LOGO VALUES
+    # ========================================================
+    #
+    # Template-yada global-ka ah waxay isticmaali karaan:
+    #
+    # global_logo
+    # global_institution_logo
+    # global_branch_logo
+    # global_institution_name
+    # global_branch_name
+    #
+    # Si template kasta uusan route gaar ah ugu qorin
+    # logic-ga branding-ka.
+
+    global_logo = None
+
+    global_branch_logo = None
+
+    global_institution_logo = None
+
+    global_institution_name = None
+
+    global_branch_name = None
+
+    # --------------------------------------------------------
+    # INSTITUTION BRANDING
+    # --------------------------------------------------------
+
+    if institution:
+
+        global_institution_logo = getattr(
+            institution,
+            "main_logo",
+            None
+        )
+
+        global_institution_name = getattr(
+            institution,
+            "name",
+            None
+        )
+
+    # --------------------------------------------------------
+    # BRANCH BRANDING
+    # --------------------------------------------------------
+
+    if branch:
+
+        global_branch_logo = getattr(
+            branch,
+            "main_logo",
+            None
+        )
+
+        global_branch_name = getattr(
+            branch,
+            "name",
+            None
+        )
+
+    # --------------------------------------------------------
+    # LOGO PRIORITY
+    # --------------------------------------------------------
+    #
+    # 1. Branch logo
+    # 2. Institution logo
+    # 3. None
+    #
+    # Sidaas darteed template-ka wuxuu si toos ah u isticmaali
+    # karaa global_logo.
+
+    if global_branch_logo:
+
+        global_logo = global_branch_logo
+
+    elif global_institution_logo:
+
+        global_logo = global_institution_logo
+
+    # ========================================================
     # TEACHER SUBJECT ASSIGNMENTS
     # ========================================================
-    # TeacherSubject:
     #
-    # Teacher
-    # Subject
-    # Program
-    # Class
-    # Section
-    # Academic Year
+    # Teacher wuxuu arki karaa oo keliya assignments:
     #
-    # Waxaan ku xireynaa institution + branch si aysan
-    # teacher-ku u arkin assignment branch kale.
+    # teacher
+    # + institution
+    # + branch
+    #
+    # Sidaas darteed branch kale ma soo muuqanayo.
 
     teacher_subjects = (
         TeacherSubject.query
@@ -958,13 +1079,17 @@ def teacher_dashboard():
     # ========================================================
     # EXAM SUBJECT ASSIGNMENTS
     # ========================================================
+    #
     # ExamSubject institution/branch columns ma laha.
     #
-    # Sidaas darteed Exam ayaan JOIN gareyneynaa:
+    # Sidaas darteed Exam ayaan JOIN ku sameyneynaa.
     #
     # ExamSubject -> Exam
     #
-    # kadib waxaan ka filter-gareyneynaa institution iyo branch.
+    # Kadib Exam ayaan ka hubineynaa:
+    #
+    # institution
+    # branch
 
     exam_subjects = (
         ExamSubject.query
@@ -995,7 +1120,11 @@ def teacher_dashboard():
     # LAST ACTIVE
     # ========================================================
 
-    last_active = teacher.last_active
+    last_active = getattr(
+        teacher,
+        "last_active",
+        None
+    )
 
     # ========================================================
     # RENDER DASHBOARD
@@ -1003,7 +1132,6 @@ def teacher_dashboard():
 
     return render_template(
         "backend/teacher/home/dashboard.html",
-
 
         # ----------------------------------------------------
         # TEACHER
@@ -1027,10 +1155,25 @@ def teacher_dashboard():
         branch_id=branch_id,
 
         # ----------------------------------------------------
+        # GLOBAL BRANDING
+        # ----------------------------------------------------
+
+        global_logo=global_logo,
+
+        global_branch_logo=global_branch_logo,
+
+        global_institution_logo=global_institution_logo,
+
+        global_branch_name=global_branch_name,
+
+        global_institution_name=global_institution_name,
+
+        # ----------------------------------------------------
         # TEACHER SUBJECTS
         # ----------------------------------------------------
 
         teacher_subjects=teacher_subjects,
+
         subjects_count=subjects_count,
 
         # ----------------------------------------------------
@@ -1038,6 +1181,7 @@ def teacher_dashboard():
         # ----------------------------------------------------
 
         exam_subjects=exam_subjects,
+
         exam_subjects_count=exam_subjects_count,
 
         # ----------------------------------------------------
@@ -1046,6 +1190,820 @@ def teacher_dashboard():
 
         last_active=last_active
     )
+
+
+# ============================================================
+# GLOBAL TEACHER DATA
+# Blueprint / PostgreSQL / Neon
+# ============================================================\
+
+@bp.app_context_processor
+def inject_global_teacher_data():
+
+    # ========================================================
+    # DEFAULT VALUES
+    # ========================================================
+
+    institution = None
+    branch = None
+
+    subjects_count = 0
+    exam_subjects_count = 0
+
+    # ========================================================
+    # UNIQUE STUDENTS ACROSS ALL TEACHER CLASSES
+    # ========================================================
+
+    teacher_total_students = 0
+
+    # ========================================================
+    # SUBJECT-WISE STUDENT COUNTS
+    #
+    # Example:
+    #
+    # {
+    #     1: 55,
+    #     2: 55,
+    #     3: 30
+    # }
+    #
+    # key   = subject_id
+    # value = unique students for that subject
+    # ========================================================
+
+    teacher_subject_student_counts = {}
+
+    # ========================================================
+    # CURRENT TEACHER
+    # ========================================================
+
+    teacher = getattr(
+        g,
+        "teacher",
+        None
+    )
+
+    # ========================================================
+    # CURRENT TEACHER ONLY
+    # ========================================================
+
+    if teacher:
+
+        teacher_id = getattr(
+            teacher,
+            "id",
+            None
+        )
+
+        institution_id = getattr(
+            teacher,
+            "institution_id",
+            None
+        )
+
+        branch_id = getattr(
+            teacher,
+            "branch_id",
+            None
+        )
+
+        # ====================================================
+        # INSTITUTION
+        # ====================================================
+
+        if institution_id:
+
+            institution = (
+                Institution.query
+                .filter(
+                    Institution.id == institution_id
+                )
+                .first()
+            )
+
+        # ====================================================
+        # BRANCH
+        # ====================================================
+
+        if (
+            institution_id
+            and branch_id
+        ):
+
+            branch = (
+                Branch.query
+                .filter(
+                    Branch.id == branch_id,
+                    Branch.institution_id == institution_id
+                )
+                .first()
+            )
+
+        # ====================================================
+        # MY SUBJECTS COUNT
+        # ====================================================
+
+        if (
+            teacher_id
+            and institution_id
+            and branch_id
+        ):
+
+            subjects_count = (
+                db.session.query(
+                    db.func.count(
+                        db.distinct(
+                            TeacherSubject.subject_id
+                        )
+                    )
+                )
+                .filter(
+                    TeacherSubject.teacher_id
+                    == teacher_id,
+
+                    TeacherSubject.institution_id
+                    == institution_id,
+
+                    TeacherSubject.branch_id
+                    == branch_id,
+
+                    TeacherSubject.status
+                    == "active",
+
+                    TeacherSubject.subject_id.isnot(None)
+                )
+                .scalar()
+                or 0
+            )
+
+        # ====================================================
+        # MY EXAM SUBJECTS COUNT
+        # ====================================================
+
+        if (
+            teacher_id
+            and institution_id
+            and branch_id
+        ):
+
+            exam_subject_query = (
+                db.session.query(
+                    ExamSubject.id
+                )
+                .join(
+                    Exam,
+                    Exam.id
+                    == ExamSubject.exam_id
+                )
+                .filter(
+                    ExamSubject.teacher_id
+                    == teacher_id,
+
+                    Exam.institution_id
+                    == institution_id,
+
+                    Exam.branch_id
+                    == branch_id
+                )
+            )
+
+            # =================================================
+            # OPTIONAL ACTIVE FIELD
+            # =================================================
+
+            if hasattr(
+                ExamSubject,
+                "active"
+            ):
+
+                exam_subject_query = (
+                    exam_subject_query
+                    .filter(
+                        ExamSubject.active.is_(True)
+                    )
+                )
+
+            exam_subjects_count = (
+                exam_subject_query
+                .count()
+            )
+
+        # ====================================================
+        # GET ALL ACTIVE TEACHER ASSIGNMENTS
+        # ====================================================
+
+        teacher_assignments = []
+
+        if (
+            teacher_id
+            and institution_id
+            and branch_id
+        ):
+
+            teacher_assignments = (
+                TeacherSubject.query
+                .filter(
+                    TeacherSubject.teacher_id
+                    == teacher_id,
+
+                    TeacherSubject.institution_id
+                    == institution_id,
+
+                    TeacherSubject.branch_id
+                    == branch_id,
+
+                    TeacherSubject.status
+                    == "active"
+                )
+                .all()
+            )
+
+        # ====================================================
+        # SUBJECT-WISE STUDENT COUNT
+        # ====================================================
+
+        if teacher_assignments:
+
+            # =================================================
+            # GROUP ASSIGNMENTS BY SUBJECT
+            # =================================================
+
+            subject_assignments = {}
+
+            for assignment in teacher_assignments:
+
+                assignment_subject_id = getattr(
+                    assignment,
+                    "subject_id",
+                    None
+                )
+
+                assignment_class_id = getattr(
+                    assignment,
+                    "class_id",
+                    None
+                )
+
+                assignment_section_id = getattr(
+                    assignment,
+                    "section_id",
+                    None
+                )
+
+                # =============================================
+                # NO SUBJECT
+                # =============================================
+
+                if not assignment_subject_id:
+                    continue
+
+                # =============================================
+                # NO CLASS
+                #
+                # Program-only / subject-only assignment
+                # does not produce a student count.
+                # =============================================
+
+                if not assignment_class_id:
+                    continue
+
+                # =============================================
+                # CREATE SUBJECT ENTRY
+                # =============================================
+
+                if assignment_subject_id not in subject_assignments:
+
+                    subject_assignments[
+                        assignment_subject_id
+                    ] = {
+                        "class_ids": set(),
+                        "class_section_pairs": set()
+                    }
+
+                # =============================================
+                # CLASS-WIDE ASSIGNMENT
+                #
+                # section_id = NULL
+                #
+                # Entire class is included.
+                # =============================================
+
+                if not assignment_section_id:
+
+                    subject_assignments[
+                        assignment_subject_id
+                    ]["class_ids"].add(
+                        assignment_class_id
+                    )
+
+                # =============================================
+                # SECTION-SPECIFIC ASSIGNMENT
+                # =============================================
+
+                else:
+
+                    subject_assignments[
+                        assignment_subject_id
+                    ]["class_section_pairs"].add(
+                        (
+                            assignment_class_id,
+                            assignment_section_id
+                        )
+                    )
+
+            # =================================================
+            # PROCESS EACH SUBJECT SEPARATELY
+            # =================================================
+
+            for (
+                subject_id,
+                assignment_data
+            ) in subject_assignments.items():
+
+                class_ids = assignment_data[
+                    "class_ids"
+                ]
+
+                class_section_pairs = assignment_data[
+                    "class_section_pairs"
+                ]
+
+                # =============================================
+                # NO VALID CLASS
+                # =============================================
+
+                if not (
+                    class_ids
+                    or class_section_pairs
+                ):
+
+                    teacher_subject_student_counts[
+                        subject_id
+                    ] = 0
+
+                    continue
+
+                # =============================================
+                # STUDENT ENROLLMENT QUERY
+                # =============================================
+
+                subject_enrollment_query = (
+                    db.session.query(
+                        StudentEnrollment.student_id
+                    )
+                    .join(
+                        Student,
+                        Student.id
+                        == StudentEnrollment.student_id
+                    )
+                    .filter(
+                        Student.institution_id
+                        == institution_id,
+
+                        Student.branch_id
+                        == branch_id,
+
+                        Student.status
+                        == "active"
+                    )
+                )
+
+                # =============================================
+                # ASSIGNMENT CONDITIONS
+                # =============================================
+
+                subject_conditions = []
+
+                # =============================================
+                # CLASS-WIDE CONDITIONS
+                # =============================================
+
+                for assignment_class_id in class_ids:
+
+                    subject_conditions.append(
+                        StudentEnrollment.class_id
+                        == assignment_class_id
+                    )
+
+                # =============================================
+                # SECTION-SPECIFIC CONDITIONS
+                # =============================================
+
+                for (
+                    assignment_class_id,
+                    assignment_section_id
+                ) in class_section_pairs:
+
+                    subject_conditions.append(
+                        db.and_(
+                            StudentEnrollment.class_id
+                            == assignment_class_id,
+
+                            StudentEnrollment.section_id
+                            == assignment_section_id
+                        )
+                    )
+
+                # =============================================
+                # APPLY CONDITIONS
+                # =============================================
+
+                if subject_conditions:
+
+                    subject_enrollment_query = (
+                        subject_enrollment_query
+                        .filter(
+                            db.or_(
+                                *subject_conditions
+                            )
+                        )
+                    )
+
+                    # =========================================
+                    # UNIQUE STUDENTS FOR THIS SUBJECT
+                    #
+                    # IMPORTANT:
+                    #
+                    # Math Class 1 = 30
+                    # Math Class 2 = 25
+                    #
+                    # Math TOTAL = 55
+                    #
+                    # Same student appearing in multiple
+                    # enrollment rows is counted once.
+                    # =========================================
+
+                    subject_student_count = (
+                        subject_enrollment_query
+                        .with_entities(
+                            db.func.count(
+                                db.distinct(
+                                    StudentEnrollment.student_id
+                                )
+                            )
+                        )
+                        .scalar()
+                        or 0
+                    )
+
+                else:
+
+                    subject_student_count = 0
+
+                # =============================================
+                # SAVE SUBJECT COUNT
+                # =============================================
+
+                teacher_subject_student_counts[
+                    subject_id
+                ] = subject_student_count
+
+        # ====================================================
+        # TOTAL UNIQUE STUDENTS
+        #
+        # IMPORTANT:
+        #
+        # This count is NOT subject total.
+        #
+        # Example:
+        #
+        # Math Class 1       = 30
+        # English Class 1    = 30
+        # Biology Class 1   = 30
+        # Math Class 2       = 25
+        # English Class 2    = 25
+        #
+        # WRONG:
+        #
+        # 30 + 30 + 30 + 25 + 25 = 140
+        #
+        # CORRECT:
+        #
+        # Class 1 unique students = 30
+        # Class 2 unique students = 25
+        #
+        # TOTAL UNIQUE STUDENTS = 55
+        #
+        # ====================================================
+
+        if teacher_assignments:
+
+            # =================================================
+            # ALL CLASS-WIDE ASSIGNMENTS
+            # =================================================
+
+            all_class_ids = set()
+
+            # =================================================
+            # ALL SECTION-SPECIFIC ASSIGNMENTS
+            # =================================================
+
+            all_class_section_pairs = set()
+
+            # =================================================
+            # COLLECT ALL TEACHER ASSIGNMENTS
+            # =================================================
+
+            for assignment in teacher_assignments:
+
+                assignment_class_id = getattr(
+                    assignment,
+                    "class_id",
+                    None
+                )
+
+                assignment_section_id = getattr(
+                    assignment,
+                    "section_id",
+                    None
+                )
+
+                # =============================================
+                # NO CLASS
+                #
+                # Program-only / subject-only assignment
+                # does not contribute to total students.
+                # =============================================
+
+                if not assignment_class_id:
+                    continue
+
+                # =============================================
+                # CLASS-WIDE
+                #
+                # section_id = NULL
+                #
+                # Entire class is included.
+                # =============================================
+
+                if not assignment_section_id:
+
+                    all_class_ids.add(
+                        assignment_class_id
+                    )
+
+                # =============================================
+                # SECTION-SPECIFIC
+                # =============================================
+
+                else:
+
+                    all_class_section_pairs.add(
+                        (
+                            assignment_class_id,
+                            assignment_section_id
+                        )
+                    )
+
+            # =================================================
+            # THERE ARE VALID CLASS/SECTION ASSIGNMENTS
+            # =================================================
+
+            if (
+                all_class_ids
+                or all_class_section_pairs
+            ):
+
+                # =============================================
+                # BASE STUDENT QUERY
+                # =============================================
+
+                total_student_query = (
+                    db.session.query(
+                        StudentEnrollment.student_id
+                    )
+                    .join(
+                        Student,
+                        Student.id
+                        == StudentEnrollment.student_id
+                    )
+                    .filter(
+                        Student.institution_id
+                        == institution_id,
+
+                        Student.branch_id
+                        == branch_id,
+
+                        Student.status
+                        == "active"
+                    )
+                )
+
+                # =============================================
+                # TOTAL CONDITIONS
+                # =============================================
+
+                total_conditions = []
+
+                # =============================================
+                # CLASS-WIDE CONDITIONS
+                # =============================================
+
+                for class_id in all_class_ids:
+
+                    total_conditions.append(
+                        StudentEnrollment.class_id
+                        == class_id
+                    )
+
+                # =============================================
+                # SECTION-SPECIFIC CONDITIONS
+                # =============================================
+
+                for (
+                    class_id,
+                    section_id
+                ) in all_class_section_pairs:
+
+                    total_conditions.append(
+                        db.and_(
+                            StudentEnrollment.class_id
+                            == class_id,
+
+                            StudentEnrollment.section_id
+                            == section_id
+                        )
+                    )
+
+                # =============================================
+                # APPLY TOTAL CONDITIONS
+                # =============================================
+
+                if total_conditions:
+
+                    total_student_query = (
+                        total_student_query
+                        .filter(
+                            db.or_(
+                                *total_conditions
+                            )
+                        )
+                    )
+
+                    # =========================================
+                    # FINAL UNIQUE TOTAL
+                    #
+                    # PostgreSQL:
+                    #
+                    # COUNT(DISTINCT student_id)
+                    #
+                    # This prevents:
+                    #
+                    # Math
+                    # English
+                    # Biology
+                    #
+                    # from counting the same student multiple
+                    # times.
+                    # =========================================
+
+                    teacher_total_students = (
+                        total_student_query
+                        .with_entities(
+                            db.func.count(
+                                db.distinct(
+                                    StudentEnrollment.student_id
+                                )
+                            )
+                        )
+                        .scalar()
+                        or 0
+                    )
+
+                else:
+
+                    teacher_total_students = 0
+
+            else:
+
+                teacher_total_students = 0
+
+        # ====================================================
+        # NO ASSIGNMENTS
+        # ====================================================
+
+        else:
+
+            teacher_total_students = 0
+
+    # ========================================================
+    # GLOBAL LOGO
+    # ========================================================
+
+    global_logo = None
+
+    # ========================================================
+    # BRANCH LOGO FIRST
+    # ========================================================
+
+    if (
+        branch
+        and getattr(
+            branch,
+            "main_logo",
+            None
+        )
+    ):
+
+        global_logo = branch.main_logo
+
+    # ========================================================
+    # INSTITUTION LOGO FALLBACK
+    # ========================================================
+
+    elif (
+        institution
+        and getattr(
+            institution,
+            "main_logo",
+            None
+        )
+    ):
+
+        global_logo = institution.main_logo
+
+    # ========================================================
+    # GLOBAL DATA
+    # ========================================================
+
+    return {
+
+        # ====================================================
+        # CURRENT TEACHER
+        # ====================================================
+
+        "global_teacher": teacher,
+
+        # ====================================================
+        # INSTITUTION
+        # ====================================================
+
+        "global_institution": institution,
+
+        "global_institution_name": (
+            institution.name
+            if institution
+            else None
+        ),
+
+        "global_institution_logo": (
+            institution.main_logo
+            if institution
+            else None
+        ),
+
+        # ====================================================
+        # BRANCH
+        # ====================================================
+
+        "global_branch": branch,
+
+        "global_branch_name": (
+            branch.name
+            if branch
+            else None
+        ),
+
+        "global_branch_logo": (
+            branch.main_logo
+            if branch
+            else None
+        ),
+
+        # ====================================================
+        # GLOBAL LOGO
+        # ====================================================
+
+        "global_logo": global_logo,
+
+        # ====================================================
+        # MY SUBJECTS
+        # ====================================================
+
+        "subjects_count": subjects_count,
+
+        # ====================================================
+        # MY EXAM SUBJECTS
+        # ====================================================
+
+        "exam_subjects_count": exam_subjects_count,
+
+        # ====================================================
+        # TOTAL UNIQUE STUDENTS
+        # ====================================================
+
+        "teacher_total_students": teacher_total_students,
+
+        # ====================================================
+        # SUBJECT-WISE STUDENTS
+        # ====================================================
+
+        "teacher_subject_student_counts":
+            teacher_subject_student_counts,
+    }
+
+
+
 
 
 
